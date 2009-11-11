@@ -1,0 +1,81 @@
+# JOE syntax highlight file for REXX
+
+=Idle
+=Bad		bold red
+=Comment 	green
+=Constant 	cyan
+=Escape 	bold cyan
+=Keyword 	bold
+
+:idle Idle
+	*			idle
+	"\""			dquote recolor=-1
+	"'"			squote recolor=-1
+	"a-zA-Z.!?@_0-9"	symbol buffer
+	"/"			idle call=.maybe_comment()
+
+:symbol Idle
+	*			idle noeat istrings
+	"address"	kw
+	"arg"		kw
+	"call"		kw
+	"do"		kw
+	"drop"		kw
+	"exit"		kw
+	"if"		kw
+	"interpret"	kw
+	"iterate"	kw
+	"leave"		kw
+	"nop"		kw
+	"numeric"	kw
+	"options"	kw
+	"parse"		kw
+	"procedure"	kw
+	"pull"		kw
+	"push"		kw
+	"queue"		kw
+	"return"	kw
+	"say"		kw
+	"select"	kw
+	"signal"	kw
+	"trace"		kw
+	"upper"		kw
+	"then"		kw
+	"end"		kw
+	"else"		kw
+	"when"		kw
+	"otherwise"	kw
+done
+	"a-zA-Z.!?@_0-9"	symbol
+
+:kw Keyword
+	*		idle noeat
+
+:squote Constant
+	*	squote
+	"'"	idle
+
+:dquote Constant
+	*	dquote
+	"\""	idle
+
+#
+# Subroutine to parse recursive /* */ comments
+#
+
+.subr maybe_comment
+
+:maybe_comment Idle
+	*		maybe_comment return noeat
+	"*"		comment recolor=-2
+
+:comment Comment
+	*	comment
+	"*"	maybe_done
+	"/"	comment call=.maybe_comment()
+
+:maybe_done Comment
+	*	comment noeat
+	"/"	comment	return
+
+.end

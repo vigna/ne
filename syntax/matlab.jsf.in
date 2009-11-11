@@ -1,0 +1,74 @@
+# joe Matlab syntax highlighting
+# Created by Gustav Stenberg 2007-10-30
+#
+
+=Idle
+=Comment 	green
+=Keyword 	blue
+=String 	magenta
+=Secondary	magenta
+=Error		red
+=Command	yellow
+
+:idle Idle
+	*		idle
+	"%"		comment		recolor=-1
+	"\'"		string		mark recolor=-1
+	"a-zA-Z_." 	ident           buffer
+	"!"		command		recolor=-1
+	"([{"		parent		buffer
+
+:command Command
+	*		command
+	"\n"		idle
+
+:comment Comment
+	*		comment
+	"\n"		idle
+
+:keyword Keyword
+	*		idle		noeat
+
+:keywordc Keyword
+	*		comment
+	"\n"		idle
+
+:parent Idle
+	*		parent
+	")]}"		idle
+
+:string Error
+	*		string
+	"\'"		stringdone	recolormark recolor=-1
+	"\n"		idle
+
+:stringdone String
+	*		idle		recolor=-1
+		
+:secondary Secondary
+	*		idle		noeat
+	"a-zA-Z_0-9. "  secondary
+	"\n;:=!\"\'+-,*(){}[]&\\\|/~"	idle recolor=-1
+	 
+:ident Idle
+	*		secondary	noeat strings
+	"..."		keywordc
+	"break"		keyword
+	"case"		keyword
+	"catch"		keyword
+	"continue"	keyword
+	"else"		keyword
+	"elseif"	keyword
+	"end"		keyword
+	"for"		keyword
+	"function"	keyword
+	"global"	keyword
+	"if"		keyword
+	"otherwise"	keyword
+	"persistent"	keyword
+	"return"	keyword
+	"switch"	keyword
+	"try"		keyword
+	"while"		keyword
+done
+	"a-zA-Z0-9_."   ident

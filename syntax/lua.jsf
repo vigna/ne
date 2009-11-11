@@ -1,0 +1,316 @@
+# JOE syntax highlight file for LUA
+
+=Idle
+=Bad		bold red
+=Comment 	green
+=Constant 	cyan
+=Escape 	bold cyan
+=Keyword 	bold
+
+:idle Idle
+	*		idle
+	"0"		first_digit	recolor=-1
+	"1-9"		decimal	recolor=-1
+	"."		maybe_float
+	"\""		string		recolor=-1
+	"'"		char		recolor=-1
+	"a-zA-Z_"	ident		buffer
+	"-"		maybe_comment
+	"["		maybe_lua_string
+
+:maybe_lua_string Idle
+	*		idle noeat
+	"["		lua_string_0 recolor=-2
+	"="		maybe_lua_1
+
+:maybe_lua_1 Idle
+	*		idle noeat
+	"["		lua_string_1 recolor=-3
+	"="		maybe_lua_2
+
+:maybe_lua_2 Idle
+	*		idle noeat
+	"["		lua_string_2 recolor=-4
+	"="		maybe_lua_3
+
+:maybe_lua_3 Idle
+	*		idle noeat
+	"["		lua_string_3 recolor=-5
+
+:lua_string_0 Constant
+	*		lua_string_0
+	"]"		lua_string_0_maybe_done
+
+:lua_string_0_maybe_done Constant
+	*		lua_string_0 noeat
+	"]"		idle
+
+:lua_string_1 Constant
+	*		lua_string_1 noeat
+	"]"		lua_string_1_maybe_donea
+
+:lua_string_1_maybe_donea	Constant
+	*		lua_string_1 noeat
+	"="		lua_string_1_maybe_done
+
+:lua_string_1_maybe_done Constant
+	*		lua_string_1 noeat
+	"]"		idle
+
+:lua_string_2 Constant
+	*		lua_string_2 noeat
+	"]"		lua_string_2_maybe_donea
+
+:lua_string_2_maybe_donea	Constant
+	*		lua_string_2 noeat
+	"="		lua_string_2_maybe_doneb
+
+:lua_string_2_maybe_doneb	Constant
+	*		lua_string_2 noeat
+	"="		lua_string_2_maybe_done
+
+:lua_string_2_maybe_done Constant
+	*		lua_string_2 noeat
+	"]"		idle
+
+:lua_string_3 Constant
+	*		lua_string_3 noeat
+	"]"		lua_string_3_maybe_donea
+
+:lua_string_3_maybe_donea	Constant
+	*		lua_string_3 noeat
+	"="		lua_string_3_maybe_doneb
+
+:lua_string_3_maybe_doneb	Constant
+	*		lua_string_3 noeat
+	"="		lua_string_3_maybe_donec
+
+:lua_string_3_maybe_donec	Constant
+	*		lua_string_3 noeat
+	"="		lua_string_3_maybe_done
+
+:lua_string_3_maybe_done Constant
+	*		lua_string_3 noeat
+	"]"		idle
+
+:maybe_comment Idle
+	*		idle noeat
+	"-"		maybe_long_comment recolor=-2
+
+:maybe_long_comment Comment
+	*		line_comment noeat
+	"["		maybe_long_comment_0
+
+:maybe_long_comment_0 Comment
+	*		line_comment noeat
+	"="		maybe_long_comment_1
+	"["		long_comment_0
+
+:maybe_long_comment_1 Comment
+	*		ling_comment noeat
+	"="		maybe_long_comment_2
+	"["		long_comment_1
+
+:maybe_long_comment_2 Comment
+	*		line_comment noeat
+	"="		maybe_long_comment_3
+	"["		long_comment_2
+
+:maybe_long_comment_3 Comment
+	*		ling_comment noeat
+	"["		long_comment_3
+
+:long_comment_0 Comment
+	*		long_comment_0
+	"]"		maybe_done_comment_0
+
+:maybe_done_comment_0 Comment
+	*		long_comment_0 noeat
+	"]"		idle
+
+:long_comment_1 Comment
+	*		long_comment_1
+	"]"		maybe_done_comment_1a
+
+:maybe_done_comment_1a Comment
+	*		long_comment_1 noeat
+	"="		maybe_done_comment_1
+
+:maybe_done_comment_1 Comment
+	*		long_comment_1 noeat
+	"]"		idle
+
+:long_comment_2 Comment
+	*		long_comment_2
+	"]"		maybe_done_comment_2a
+
+:maybe_done_comment_2a Comment
+	*		long_comment_2 noeat
+	"="		maybe_done_comment_2b
+
+:maybe_done_comment_2b Comment
+	*		long_comment_2 noeat
+	"="		maybe_done_comment_2
+
+:maybe_done_comment_2 Comment
+	*		long_comment_2 noeat
+	"]"		idle
+
+:long_comment_3 Comment
+	*		long_comment_3
+	"]"		maybe_done_comment_3a
+
+:maybe_done_comment_3a Comment
+	*		long_comment_3 noeat
+	"="		maybe_done_comment_3b
+
+:maybe_done_comment_3b Comment
+	*		long_comment_3 noeat
+	"="		maybe_done_comment_3c
+
+:maybe_done_comment_3c Comment
+	*		long_comment_3 noeat
+	"="		maybe_done_comment_3
+
+:maybe_done_comment_3 Comment
+	*		long_comment_2 noeat
+	"]"		idle
+
+:line_comment Comment
+	*		line_comment
+	"\n"		idle
+
+:first_digit Constant
+	*		idle	noeat
+	"xX"		hex
+	"."		float
+	"eE"		epart
+	"0-7"		octal
+	"89"		bad_number	recolor=-1
+
+:bad_number Bad
+	*		idle	noeat
+	"0-9"		bad_number
+
+:octal Constant
+	*		idle	noeat
+	"0-7"		octal
+	"89"		bad_number	recolor=-1
+
+:hex Constant
+	*		idle	noeat
+	"0-9A-Fa-f"	hex
+
+:decimal Constant
+	*		idle	noeat
+	"0-9"		decimal
+	"eE"		epart
+	"."		float
+
+:maybe_float Constant
+	*		idle	recolor=-2	noeat
+	"0-9"		float		recolor=-2
+
+:float Constant
+	*		idle	noeat
+	"eE"		epart
+	"0-9"		float
+
+:epart Constant
+	*		idle	noeat
+	"0-9+\-"	enum
+
+:enum Constant
+	*		idle	noeat
+	"0-9"		enum
+
+:string	Constant
+	*		string
+	"\""		idle
+	"\\"		string_escape	recolor=-1
+	"%"		string_control	recolor=-1
+
+:string_escape Escape
+	*		string
+	"x"		string_hex1
+	"0-7"		string_octal2
+	"\n"		string		recolor=-2
+
+:string_hex1 Escape
+	*		string		noeat
+	"0-9a-fA-F"	string_hex2
+
+:string_hex2 Escape
+	*		string		noeat
+	"0-9a-fA-F"	string
+
+:string_octal2 Escape
+	*		string		noeat
+	"0-7"		string_octal3
+
+:string_octal3 Escape
+	*		string		noeat
+	"0-7"		string
+
+:string_control Escape
+	*		string
+	"\""		string noeat
+	"\n"		reset
+	"0-9.\-+ #hjILtz$"	string_control
+
+:char Constant
+	*		char
+	"\n"		reset
+	"'"		idle
+	"\\"		char_escape	recolor=-1
+
+:char_escape	Escape
+	*		char
+	"x"		char_hex1
+	"0-7"		char_octal2
+	"\n"		char		recolor=-2
+
+:char_hex1 Escape
+	*		char		noeat
+	"0-9a-fA-F"	char_hex2
+
+:char_hex2 Escape
+	*		char		noeat
+	"0-9a-fA-F"	char
+
+:char_octal2 Escape
+	*		char		noeat
+	"0-7"		char_octal3
+
+:char_octal3 Escape
+	*		char		noeat
+	"0-7"		char
+
+:ident Idle
+	*		idle		noeat strings
+	"and"		kw
+	"end"		kw
+	"in"		kw
+	"repeat"	kw
+	"break"		kw
+	"false"		kw
+	"local"		kw
+	"return"	kw
+	"do"		kw
+	"for"		kw
+	"nil"		kw
+	"then"		kw
+	"else"		kw
+	"function"	kw
+	"not"		kw
+	"true"		kw
+	"elseif"	kw
+	"if"		kw
+	"or"		kw
+	"until"		kw
+	"while"		kw
+done
+	"a-zA-Z0-9_"	ident
+
+:kw Keyword
+	*	idle	noeat

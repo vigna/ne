@@ -1,0 +1,85 @@
+# JOE syntax highlight file for typical UNIX configuration files
+
+=Idle
+=Comment 	green
+=String 	cyan
+=Escape 	bold red
+=Backtick	blue
+
+:idle Idle
+	*		idle
+	"#"		comment		recolor=-1
+	"\""		string		recolor=-1
+	"'"		single		recolor=-1
+	"\`"		backtick	recolor=-1
+	"\\"		escape		recolor=-1
+
+:escape Escape
+	*		idle
+
+:comment Comment
+	*		comment
+	"\n"		idle
+
+
+:string String
+	*		string
+	"\""		idle
+	"\`"		backtick_in_str	recolor=-1
+	"\\"		string_escape	recolor=-1
+
+:string_escape Escape
+	*		string
+	"\n"		string		recolor=-2
+
+:backtick_in_str Backtick
+	*		backtick_in_str
+	"\`"		string
+	"\\"		bt_escape_2	recolor=-1
+
+:bt_escape_2 Escape
+	*		backtick_in_str
+	"\n"		backtick_in_str	recolor=-2
+
+
+:single String
+	*		single
+	"'"		idle
+	"\\"		single_escape	recolor=-1
+
+:single_escape Escape
+	*		single
+	"\n"		single		recolor=-2
+
+
+:backtick Backtick
+	*		backtick
+	"\`"		idle
+	"\""		string_in_bt	recolor=-1
+	"'"		single_in_bt	recolor=-1
+	"\\"		bt_escape	recolor=-1
+
+:bt_escape Escape
+	*		backtick
+	"\n"		backtick	recolor=-2
+
+
+:string_in_bt String
+	*		string_in_bt
+	"\""		backtick
+	"\\"		string_escape_b	recolor=-1
+
+:string_escape_b Escape
+	*		string_in_bt
+	"\n"		string_in_bt	recolor=-2
+
+
+:single_in_bt String
+	*		single_in_bt
+	"'"		backtick
+	"\\"		single_escape_b	recolor=-1
+
+:single_escape_b Escape
+	*		single_in_bt
+	"\n"		single_in_bt	recolor=-2
+

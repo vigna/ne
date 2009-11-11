@@ -1,0 +1,274 @@
+# JOE syntax highlight file for Verilog
+
+# Define colors
+
+=Idle
+=Preproc bold blue
+=Comment green
+=Constant cyan
+=Escape bold cyan
+=Type bold
+=Keyword bold
+
+# Skip whitespace at start of line
+:reset Idle
+	*		first		noeat
+	" 	"	reset
+
+:first Idle
+	*		idle		noeat
+	"`"		pre		recolor=-1
+
+:pre Preproc
+	*		idle		noeat
+	"a-zA-Z_"	preident	recolor=-1 buffer
+
+:preident Idle
+	*		idle		noeat strings
+	"ifdef"		preproc
+	"else"		preproc
+	"endif"		preproc
+	"timescale"	preproc
+	"define"	preproc
+	"include"	preproc
+	"resetall"	preproc
+	"signed"	preproc
+	"unsigned"	preproc
+	"celldefine"	preproc
+	"endcelldefine"	preproc
+	"default_nettype"	preproc
+	"unconnected_drive"	preproc
+	"nounconnected_drive"	preproc
+	"protect"	preproc
+	"endprotect"	preproc
+	"protected"	preproc
+	"endprotected"	preproc
+	"expand_vectornets"	preproc
+	"noexpand_vectornets"	preproc
+	"autoexpand_vectornets"	preproc
+	"remove_gatename"	preproc
+	"noremove_gatename"	preproc
+	"remove_netname"	preproc
+	"noremove_netname"	preproc
+done
+	"a-zA-Z0-9_"	preident
+
+:preproc Preproc
+	*		idle		noeat
+
+# All following states are for when we're not in a preprocessor line
+
+:idle Idle
+	*		idle
+	"\n"		reset
+	"/"		slash
+	"0-9"		first_digit	recolor=-1
+	"."		maybe_float
+	"\""		string		recolor=-1
+	"'"		sized_number	recolor=-1
+	"a-zA-Z_"	ident		buffer
+
+:slash Idle
+	*		idle		noeat
+	"*"		comment		recolor=-2
+	"/"		line_comment	recolor=-2
+
+:comment Comment
+	*		comment
+	"*"		maybe_end_comment
+
+:maybe_end_comment Comment
+	*		comment
+	"/"		idle
+	"*"		maybe_end_comment
+
+:line_comment Comment
+	*		line_comment
+	"\n"		reset
+
+# Integer constants
+
+:first_digit Constant
+	*		idle	noeat
+	"'"		sized_number
+	"."		float
+	"0-9"		first_digit
+
+:sized_number Constant
+	*		idle	noeat
+	"hH"		hex_number
+	"oO"		octal_number
+	"bB"		binary_number
+	"dD"		decimal_number
+
+:hex_number Constant
+	*		idle	noeat
+	"0-9A-Fa-f_xz"	hex_number
+
+:binary_number Constant
+	*		idle	noeat
+	"01_xz"		binary_number
+
+:octal_number Constant
+	*		idle	noeat
+	"0-7_xz"	octal_number
+
+:decimal_number Constant
+	*		idle	noeat
+	"0-9_"		decimal_number
+
+# Floating point
+
+:maybe_float Constant
+	*		idle	recolor=-2	noeat
+	"0-9"		float		recolor=-2
+
+:float Constant
+	*		idle	noeat
+	"eE"		epart
+	"0-9"		float
+
+:epart	Constant
+	*		idle	noeat
+	"0-9+\-"	enum
+
+:enum	Constant
+	*		idle	noeat
+	"0-9"		enum
+
+# Strings
+
+:string	Constant
+	*		string
+	"\n"		reset
+	"\""		idle
+	"\\"		string_escape	recolor=-1
+	"%"		string_control	recolor=-1
+
+:string_escape Escape
+	*		string
+	"\n"		string		recolor=-2
+
+:string_control Escape
+	*		string_control
+	"\n"		reset
+	"efghdobcvstmEFGHDOBCVSTM%"	string
+
+# Identifiers
+
+:ident	Idle
+	*		idle		noeat strings
+	"always"	kw
+	"assign"	kw
+	"begin"		kw
+	"case"		kw
+	"casex"		kw
+	"casez"		kw
+	"default"	kw
+	"defparam"	kw
+	"else"		kw
+	"end"		kw
+	"endcase"	kw
+	"endfunction"	kw
+	"endmodule"	kw
+	"endtask"	kw
+	"for"		kw
+	"function"	kw
+	"if"		kw
+	"module"	kw
+	"parameter"	kw
+	"repeat"	kw
+	"task"		kw
+	"while"		kw
+	"forever"	kw
+	"initial"	kw
+	"integer"	type
+	"inout"		type
+	"input"		type
+	"output"	type
+	"reg"		type
+	"real"		type
+	"wire"		type
+	"wor"		type
+	"wand"		type
+	"and"		kw
+	"attribute"	kw
+	"buf"		kw
+	"bufif0"	kw
+	"bufif1"	kw
+	"cmos"		kw
+	"deassign"	kw
+	"disable"	kw
+	"edge"		kw
+	"endattribute"	kw
+	"endprimitive"	kw
+	"endspecify"	kw
+	"endtable"	kw
+	"event"		kw
+	"force"		kw
+	"fork"		kw
+	"highz0"	kw
+	"highz1"	kw
+	"join"		kw
+	"large"		kw
+	"macromodule"	kw
+	"medium"	kw
+	"nand"		kw
+	"negedge"	kw
+	"nmos"		kw
+	"nor"		kw
+	"not"		kw
+	"notif0"	kw
+	"notif1"	kw
+	"or"		kw
+	"pmos"		kw
+	"posedge"	kw
+	"primitive"	kw
+	"pull0"		kw
+	"pull1"		kw
+	"pulldown"	kw
+	"pullup"	kw
+	"rcmos"		kw
+	"realtime"	kw
+	"release"	kw
+	"rnmos"		kw
+	"rpmos"		kw
+	"rtran"		kw
+	"rtranif0"	kw
+	"rtranif1"	kw
+	"scalared"	kw
+	"signed"	kw
+	"small"		kw
+	"specify"	kw
+	"specparam"	kw
+	"strength"	kw
+	"strong0"	kw
+	"strong1"	kw
+	"supply0"	kw
+	"supply1"	kw
+	"table"		kw
+	"time"		kw
+	"tran"		kw
+	"tranif0"	kw
+	"tranif1"	kw
+	"tri"		kw
+	"tri0"		kw
+	"tri1"		kw
+	"triand"	kw
+	"trior"		kw
+	"trireg"	kw
+	"unsigned"	kw
+	"vectored"	kw
+	"wait"		kw
+	"weak0"		kw
+	"weak1"		kw
+	"xnor"		kw
+	"xor"		kw
+done
+	"a-zA-Z0-9_"	ident
+
+:type Type
+	*	idle	noeat
+
+:kw Keyword
+	*	idle	noeat

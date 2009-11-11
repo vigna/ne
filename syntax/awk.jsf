@@ -1,0 +1,231 @@
+# JOE syntax highlight file for AWK
+
+# Resync whole file
+-
+
+=Idle
+=Bad		bold red
+=Preproc 	blue
+=Define		bold blue
+=Comment 	green
+=IncLocal	cyan
+=IncSystem	bold cyan
+=Constant 	cyan
+=Escape 	bold cyan
+=Type 		bold
+=Keyword 	bold
+=CppKeyword	bold
+=Brace		magenta
+=Control
+
+:reset Idle
+	*		first		noeat
+	" \t"		reset
+
+:first Idle
+	*		idle		noeat
+	"/"		regex
+	"#"		reset_line_comment	recolor=-1
+
+:regex Idle
+	*		regex
+	"/"		idle
+	"\\"		regex_skip
+
+:regex_skip Idle
+	*		regex
+
+:reset_line_comment Comment
+	*		reset_line_comment
+	"\n"		reset
+
+:idle Idle
+	*		idle
+	"\n"		reset
+	"#"		line_comment	recolor=-1
+	"0"		first_digit	recolor=-1
+	"1-9"		decimal	recolor=-1
+	"."		maybe_float
+	"\""		string		recolor=-1
+	"'"		char		recolor=-1
+	"a-zA-Z_"	ident		buffer
+	"{}"		brace		recolor=-1
+	"/,:;=()><[]*&|!~+\-%^"	control		recolor=-1
+
+:brace Brace
+	*	idle	noeat
+
+:control Control
+	*	idle	noeat
+
+:line_comment Comment
+	*		line_comment
+	"\n"		reset
+
+:first_digit Constant
+	*		idle	noeat
+	"xX"		hex
+	"."		float
+	"eE"		epart
+	"0-7"		octal
+	"89"		bad_number	recolor=-1
+
+:bad_number Bad
+	*		idle	noeat
+	"0-9"		bad_number
+
+:octal Constant
+	*		idle	noeat
+	"0-7"		octal
+	"89"		bad_number	recolor=-1
+
+:hex Constant
+	*		idle	noeat
+	"0-9A-Fa-f"	hex
+
+:decimal Constant
+	*		idle	noeat
+	"0-9"		decimal
+	"eE"		epart
+	"."		float
+
+:maybe_float Constant
+	*		idle	recolor=-2	noeat
+	"0-9"		float		recolor=-2
+
+:float Constant
+	*		idle	noeat
+	"eE"		epart
+	"0-9"		float
+
+:epart Constant
+	*		idle	noeat
+	"0-9+\-"	enum
+
+:enum Constant
+	*		idle	noeat
+	"0-9"		enum
+
+:string	Constant
+	*		string
+	"\""		idle
+	"\\"		string_escape	recolor=-1
+	"%"		string_control	recolor=-1
+
+:string_escape Escape
+	*		string
+	"x"		string_hex1
+	"0-7"		string_octal2
+	"\n"		string		recolor=-2
+
+:string_hex1 Escape
+	*		string		noeat
+	"0-9a-fA-F"	string_hex2
+
+:string_hex2 Escape
+	*		string		noeat
+	"0-9a-fA-F"	string
+
+:string_octal2 Escape
+	*		string		noeat
+	"0-7"		string_octal3
+
+:string_octal3 Escape
+	*		string		noeat
+	"0-7"		string
+
+:string_control Escape
+	*		string
+	"\""		string noeat
+	"\n"		reset
+	"0-9.\-+ #hjILtz$"	string_control
+
+:char Constant
+	*		char
+	"\n"		reset
+	"'"		idle
+	"\\"		char_escape	recolor=-1
+
+:char_escape	Escape
+	*		char
+	"x"		char_hex1
+	"0-7"		char_octal2
+	"\n"		char		recolor=-2
+
+:char_hex1 Escape
+	*		char		noeat
+	"0-9a-fA-F"	char_hex2
+
+:char_hex2 Escape
+	*		char		noeat
+	"0-9a-fA-F"	char
+
+:char_octal2 Escape
+	*		char		noeat
+	"0-7"		char_octal3
+
+:char_octal3 Escape
+	*		char		noeat
+	"0-7"		char
+
+:ident Idle
+	*		idle		noeat strings
+	"if"		kw
+	"else"		kw
+	"while"		kw
+	"do"		kw
+	"for"		kw
+	"break"		kw
+	"continue"		kw
+	"delete"		kw
+	"exit"		kw
+	"close"		kw
+	"getline"		kw
+	"next"		kw
+	"nextfile"		kw
+	"print"		kw
+	"printf"		kw
+	"system"		kw
+	"fflush"		kw
+	"atan2"		kw
+	"cos"		kw
+	"exp"		kw
+	"int"		kw
+	"log"		kw
+	"rand"		kw
+	"sin"		kw
+	"sqrt"		kw
+	"srand"		kw
+	"asort"		kw
+	"asorti"		kw
+	"gensub"		kw
+	"gsub"		kw
+	"index"		kw
+	"length"		kw
+	"match"		kw
+	"split"		kw
+	"sprintf"		kw
+	"strtonum"		kw
+	"sub"		kw
+	"substr"		kw
+	"tolower"		kw
+	"toupper"		kw
+	"mktime"		kw
+	"strftime"		kw
+	"systime"		kw
+	"and"		kw
+	"compl"		kw
+	"lshift"		kw
+	"or"		kw
+	"rshift"		kw
+	"xor"		kw
+	"bindtextdomain"		kw
+	"dcgettext"		kw
+	"dcngettext"		kw
+	"function"		kw
+	"return"	kw
+done
+	"a-zA-Z0-9_"	ident
+
+:kw Keyword
+	*	idle	noeat

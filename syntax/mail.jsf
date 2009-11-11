@@ -1,0 +1,197 @@
+# JOE syntax highlight file for typical UNIX mail files
+# 2004-04-25 Tomas Szepe <szepe@pinerecords.com>
+
+# Improved to handle quote characters commonly seen on Usenet, and
+# highlighting of the more frequently edited mail and news headers, with
+# some sanity checking of the same.
+# 2004-06-26 Jeff Hurwit <darkmoon@verizon.net>
+
+-
+
+=Idle
+=Head	bold
+=HdTo	red bg_white
+=HdFrom	bold red
+=HdSbj	bold magenta
+=HdDate	bold
+=HdRRT	black bg_white
+=HdGrp	bold white bg_red
+=HdFuT	bold red bg_yellow
+=HdBad	bold red
+=Quot1	green bg_white
+=Quot2	bold blue bg_white
+=Sign	bold magenta
+
+# Start in headers. We know we're out at the first blank line.
+
+:first Idle
+	*		hbol		noeat
+	"\n"		newline
+	">|:~}#]"	newline		noeat
+
+# Require header
+#	"\n"		nohead
+
+:nohead HdBad
+	*		nohead
+
+:hbol Idle
+	*		hbad		recolor=-1
+	"\n"		newline
+	"A-Z"		bufhdrs		buffer
+	"-"		newline		noeat
+
+:hbad HdBad
+	*		hbad
+	"\n"		hbol
+
+:hlbad HdBad
+	*		hbol
+
+:bufhdrs Idle
+	*		hbad		recolor=-1
+	"\n"		hlbad		noeat recolor=-2
+	"-_a-zA-Z0-9"	bufhdrs
+	":"		headers		hold
+
+:headers Idle
+	*		hbad		recolor=-1
+	" \n"		hnocolor	noeat strings
+	"To"		hsto		recolor=-2
+	"Cc"		hsto		recolor=-2
+	"Bcc"		hsto		recolor=-2
+	"From"		hsfrom		recolor=-2
+	"Subject"	hssbj		recolor=-2
+	"Date"		hsdate		recolor=-2
+	"Return-Receipt-To"	hsrrecp	recolor=-2
+	"Newsgroups"	hsgroups	recolor=-2
+	"Followup-To"	hsfolup		recolor=-2
+done
+
+:hnocolor Idle
+	*		hnocolor
+	"\n"		cont_nocolor
+
+:cont_nocolor Idle
+	*		hbol		noeat
+	" \t"		hnocolor	recolor=-1
+
+:hsto Head
+	*		hto
+	"\n"		hbol
+
+:hto HdTo
+	*		hto
+	"\n"		cont_to
+
+:cont_to HdTo
+	*		hbol		noeat
+	" \t"		hto		recolor=-1
+
+:hsfrom Head
+	*		hfrom
+	"\n"		hbol
+
+:hfrom HdFrom
+	*		hfrom
+	"\n"		hbol
+
+:hssbj Head
+	*		hsbj
+	"\n"		hbol
+
+:hsbj HdSbj
+	*		hsbj
+	"\n"		cont_sbj
+
+:cont_sbj HdSbj
+	*		hbol		noeat
+	" \t"		hsbj		recolor=-1
+
+:hsdate Head
+	*		hdate
+	"\n"		hbol
+
+:hdate HdDate
+	*		hdate
+	"\n"		hbol
+
+:hsrrecp Head
+	*		hrrecp
+	"\n"		hbol
+
+:hrrecp HdRRT
+	*		hrrecp
+	"\n"		hbol
+
+:hsgroups Head
+	*		hgroups
+	"\n"		hbol
+
+:hgroups HdGrp
+	*		hgroups
+	"\n"		hbol
+
+:hsfolup Head
+	*		hfolup
+	"\n"		hbol
+
+:hfolup HdFuT
+	*		hfolup
+	"\n"		hbol
+
+# body of the message
+
+:newline Idle
+	*		knocolor
+	"\n"		newline
+	">|:~}#]"	q1		recolor=-1
+	"-"		maybesign1	recolor=-1
+
+:maybesign1 Quot1
+	*		q1
+	" \t"		q1
+	"\n"		newline		recolor=-1
+	">|:~}#]"	q2		recolor=-1
+	"-"		maybesign2	recolor=-1
+
+:maybesign2 Quot2
+	*		q2
+	"\t"		q2
+	"\n"		newline		recolor=-1
+	" "		maybesign3	recolor=-1
+	">|:~}#]"	q1		recolor=-1
+	"-"		knocolor	recolor=-3
+
+:maybesign3 Quot2
+	*		q2
+	" \t"		q2
+	"\n"		sign		recolor=-4
+	"->|:~}#]"	q1		recolor=-1
+
+:sign Sign
+	*		sign
+
+:q1 Quot1
+	*		kq1
+	"\n"		newline
+	" \t"		q1
+	"->|:~}#]"	q2		recolor=-1
+
+:q2 Quot2
+	*		kq2
+	"\n"		newline
+	" \t"		q2
+	"->|:~}#]"	q1		recolor=-1
+
+:knocolor Idle
+	*		knocolor
+	"\n"		newline
+
+:kq1 Quot1
+	*		kq1
+	"\n"		newline
+
+:kq2 Quot2
+	*		kq2
+	"\n"		newline

@@ -1,0 +1,52 @@
+# joe [La]TeX syntax highlighting
+
+=Idle
+=Comment 	green
+=Keyword 	bold
+=Mathmode 	cyan
+=Brace		magenta
+=Parameter	bold blue
+
+:idle Idle
+	*		idle
+	"%"		comment		recolor=-1
+	"$"		math		recolor=-1
+	"\\"		command		recolor=-1
+	"{[]}"		brace		recolor=-1
+	"#"		parameter	recolor=-1
+
+:comment Comment
+	*		comment
+	"\n"		idle
+
+:math Mathmode
+	*		math
+	"\\"		math_command	recolor=-1
+	"{[]}"		math_brace	recolor=-1
+	"$"		idle
+
+:command Keyword
+	*		idle
+	"a-zA-Z@"	command2
+
+:command2 Keyword
+	*		idle		noeat
+	"a-zA-Z@"	command2
+
+:math_command Keyword
+	*		math
+	"a-zA-Z@"	math_command2
+
+:math_command2 Keyword
+	*		math		noeat
+	"a-zA-Z@"	math_command2
+
+:parameter Parameter
+	*		idle		noeat
+	"0-9"		idle
+
+:brace Brace
+	*		idle		noeat
+
+:math_brace Brace
+	*		math		noeat

@@ -1,0 +1,391 @@
+# JOE syntax highlight file for SML
+
+# A (deterministic) state machine which performs lexical analysis of SML.
+# (This is the "assembly language" of syntax highlighting.  A separate
+# program could be used to convert a regular expression NFA syntax into this
+# format).
+
+# Each state begins with ':<name> <color-name>'
+# <color-name> is the color used for characters eaten by the state
+# (really a symbol for a user definable color).
+
+# The first state defined is the initial state.
+
+# Within a state, define transitions (jumps) to other states.  Each
+# jump has the form: <character-list> <target-state> [<option>s]
+
+# There are two ways to specify <character-list>s, either * for any
+# character not otherwise specified, or a literal list of characters within
+# quotes (ranges and escape sequences allows).  When the next character
+# matches any in the list, a jump to the target-state is taken and the
+# character is eaten (we advance to the next character of the file to be
+# colored).
+#
+# The * transition should be the first transition specified in the state.
+#
+# There are several options:
+#   noeat     	do not eat the character, instead feed it to the next state
+#             	(this tends to make the states smaller, but be careful: you
+#		can make infinite loops).  'noeat' implies 'recolor=-1'.
+#
+#   recolor=-N	Recolor the past N characters with the color of the
+#		target-state.  For example once /* is recognized as the
+#		start of C comment, you want to color the /* with the C
+#		comment color.
+#
+#   buffer    	start copying characters to a buffer, beginning with this
+#		one (it's ok to not terminate buffering with a matching
+#		'strings' option- the buffer is limited to leading 19
+#		characters).
+#
+#   strings	A list of strings follows.  If the buffer matches any of the
+#		given strings, a jump to the target-state in the string list
+#		is taken instead of the normal jump.
+#
+#   istrings	Same as strings, but case is ignored.
+#
+#   hold        Stop buffering string- a future 'strings' or 'istrings' will
+#               look at contents of buffer at this point.  Useful for distinguishing
+#               commands and function calls in some languages 'write 7' is a command
+#               'write (' is a function call- hold lets us stop at the space and delay
+#               the string lookup until the ( or 7.
+#
+#   The format of the string list is:
+#
+#      "string"   <target-state> [<options>s]
+#      "string"   <target-state> [<options>s]
+#      done
+#
+#   (all of the options above are allowed except "strings", "istrings" and "noeat".  noeat is
+#    always implied after a matched string).
+#
+# Weirdness: only states have colors, not transitions.  This means that you
+# sometimes have to make dummy states with '* next-state noeat' just to get
+# a color specification.
+
+# Define no. sync lines
+# You can say:
+# -200     means 200 lines
+# -        means always start parsing from beginning of file when we lose sync
+#          if nothing is specified, the default is -50
+
+# Define colors
+#
+# bold inverse blink dim underline
+# white cyan magenta blue yellow green red black
+# bg_white bg_cyan bg_magenta bg_blue bg_yellow bg_green bg_red bg_black
+
+=Expr
+=Bad		bg_red
+=Comment 	green
+=Literal 	cyan
+=Escape 	bold cyan
+=Type 		blue
+=Keyword 	bold
+=Operator	bold black
+=Control	green
+=Id
+
+:expr Expr
+	*		expr
+	".,[{})];"	control		recolor=-1 # . or ... both control
+	"("		bracket		recolor=-1
+	"_"		underline	recolor=-1
+	"!%&$+/:<=>?@`^|*\-" operator	buffer recolor=-1
+	"#"		hash		recolor=-1
+	"~"		tilde		recolor=-1
+	"0"		zero		recolor=-1
+	"1-9"		decimal		recolor=-1
+	"\""		string		recolor=-1
+	"a-zA-Z"	id		buffer recolor=-1
+
+:bad Bad
+	*		expr
+
+:control Control
+	*		expr		noeat
+
+:bracket Control
+	*		expr		noeat
+	"*"		comment1	recolor=-2
+
+:underline Keyword
+	*		expr		noeat
+	"a-zA-Z"	kw
+
+:operator Operator
+	*		expr 		noeat strings
+	":>"		colon
+	":"		colon
+	"::"		control # can be overloaded, but you would burn in hell
+	":="		control # ditto
+	"="		control # only in some contexts is it _really_ control
+	"->"		control
+	"=>"		control
+	"|"		control
+done
+	"!%&$+/:<=>?@~`^|#*\-" operator
+
+:colon Control
+	*		type1		noeat
+
+:hash Control
+	*		expr		noeat
+	"!%&$+/:<=>?@~`^|#*\-" operator	recolor=-2
+	"\""		string		recolor=-2
+	
+:tilde Operator
+	*		expr		noeat
+	"!%&$+/:<=>?@~`^|#*\-" operator
+	"0"		zero		recolor=-2
+	"1-9"		decimal		recolor=-2
+
+:zero Literal
+	*		expr		noeat
+	"0-9"		decimal
+	"w"		word		buffer
+	"x"		hex1		buffer
+	"e"		epart		buffer
+	"E"		epart		buffer
+	"."		float1
+
+:word Literal
+	*		id		noeat recolor=-2
+	"0-9"		decimal
+	"x"		hexword
+
+:hexword Literal
+	*		id		noeat recolor=-3
+	"0-9a-fA-F"	hex
+
+:hex1 Literal
+	*		id		noeat recolor=-2
+	"0-9a-fA-F"	hex
+
+:hex Literal
+	*		expr		noeat
+	"0-9a-fA-F"	hex
+
+:decimal Literal
+	*		expr		noeat
+	"0-9"		decimal
+	"."		float1
+	"e"		epart		buffer
+	"E"		epart		buffer
+
+# trailing digits required in SML (unlike OCaml)
+:float1 Literal
+	*		bad		noeat
+	"0-9"		float
+
+:float Literal
+	*		expr		noeat
+	"0-9"		float
+	"e"		epart		buffer
+	"E"		epart		buffer
+
+:epart Literal
+	*		id		noeat recolor=-2
+	"0-9"		enum
+	"~"		epart		# bug: 3e~~3
+
+:enum Literal
+	*		expr		noeat
+	"0-9"		enum
+
+:string	Literal
+	*		string
+	"\""		expr
+	"\n"		bad
+	"\\"		string_escape	recolor=-1
+
+:string_escape Escape
+	*		bad		noeat
+	"abfnrtv\"\\"	string
+	"^"		string_carret
+	"u"		string_hex1
+	"0-9"		string_decimal2
+	"\n\r\f\t "	string_eatws
+
+:string_carret Escape
+	*		bad		noeat
+	"ABCDEFGHIJKLMNOPQRSTUVWXYZ\\^_" string
+
+:string_eatws Escape
+	*		bad 		noeat
+	"\n\r\f\t "	string_eatws
+	"\\"		string
+
+:string_hex1 Escape
+	*		bad		noeat
+	"0-9a-fA-F"	string_hex2
+
+:string_hex2 Escape
+	*		bad		noeat
+	"0-9a-fA-F"	string_hex3
+
+:string_hex3 Escape
+	*		bad		noeat
+	"0-9a-fA-F"	string_hex4
+
+:string_hex4 Escape
+	*		bad		noeat
+	"0-9a-fA-F"	string
+
+:string_decimal2 Escape
+	*		bad		noeat
+	"0-9"		string_decimal3
+
+:string_decimal3 Escape
+	*		bad		noeat
+	"0-9"		string
+
+:id Id
+	*		expr		noeat strings
+	"_"		kw
+	"ann"		kw
+	"and"		kw
+	"as"		kw
+	"case"		kw
+	"do"		kw
+	"else"		kw
+	"end"		kw
+	"exception"	kw
+	"fn"		kw
+	"fun"		kw
+	"functor"	kw
+	"handle"	kw
+	"if"		kw
+	"in"		kw
+	"include"	kw
+	"infix"		kw
+	"infixr"	kw
+	"let"		kw
+	"local"		kw
+	"nil"		kw
+	"nonfix"	kw
+	"of"		kw
+	"op"		kw
+	"open"		kw
+	"raise"		kw
+	"rec"		kw
+	"sharing"	kw
+	"sig"		kw
+	"signature"	kw
+	"struct"	kw
+	"structure"	kw
+	"then"		kw
+	"val"		kw
+	"where"		kw
+	"while"		kw
+	"with"		kw
+	"abstype"	kwtype
+	"datatype"	kwtype
+	"eqtype"	kwtype
+	"type"		kwtype
+	"withtype"	kwtype
+	"before"	operatorkw
+	"o"		operatorkw
+	"orelse"	operatorkw
+	"andalso"	operatorkw
+	"div"		operatorkw
+	"mod"		operatorkw
+done
+	"a-zA-Z0-9_'"	id
+
+:kw Keyword
+	*		expr		noeat
+	"a-zA-Z0-9_'"	kw
+
+:operatorkw Operator
+	*		expr		noeat
+
+:kwtype Keyword
+	*		kwtype1		noeat
+
+:kwtype1 Type
+	*		expr		noeat
+	"="		typeval		recolor=-1
+	"a-zA-Z0-9_'., :|*>\t\-" kwtype1
+	"({"		kwtype2
+
+:kwtype2 Type
+	*		expr		noeat
+	")}"		kwtype1
+	"a-zA-Z0-9_'., :|*>\t\n\-" kwtype2
+	"({"		kwtype3
+
+:kwtype3 Type
+	*		expr		noeat
+	")}"		kwtype2
+	"a-zA-Z0-9_'., :|*>\t\n\-" kwtype3
+	"({"		expr				# too deep nesting
+
+:typeval Control
+	*		type1		noeat
+	" \t\n"		typeval
+
+:type1 Type
+	*		expr		noeat
+	"a-zA-Z0-9_'., :|*>\t\-" type1
+	"({"		type2
+
+:type2 Type
+	*		expr		noeat
+	")}"		type1
+	"a-zA-Z0-9_'., :|*>\t\n\-" type2
+	"({"		type3
+
+:type3 Type
+	*		expr		noeat
+	")}"		type2
+	"a-zA-Z0-9_'., :|*>\t\n\-" type3
+	"({"		type4
+
+:type4 Type
+	*		expr		noeat
+	")}"		type3
+	"a-zA-Z0-9_'., :|*>\t\n\-" type4
+	"({"		expr 				# too deep nesting
+
+:comment1 Comment
+	*		comment1
+	"("		nestcomment1
+	"*"		endcomment1
+
+:nestcomment1 Comment
+	*		comment1
+	"*"		comment2
+
+:endcomment1 Comment
+	*		comment1
+	")"		expr
+	"*"		endcomment1
+
+:comment2 Comment
+	*		comment2
+	"("		nestcomment2
+	"*"		endcomment2
+
+:nestcomment2 Comment
+	*		comment2
+	"*"		comment3
+
+:endcomment2 Comment
+	*		comment2
+	")"		comment1
+	"*"		endcomment2
+
+:comment3 Comment
+	*		comment3
+	"("		nestcomment3
+	"*"		endcomment3
+
+:nestcomment3 Comment
+	*		comment3
+	"*"		expr				# too deep nesting
+
+:endcomment3 Comment
+	*		comment3
+	")"		comment2
+	"*"		endcomment3

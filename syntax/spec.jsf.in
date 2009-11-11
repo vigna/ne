@@ -1,0 +1,149 @@
+# JOE syntax highlight file for RPM spec files
+# from Suse, joe-3.5-20.src.rpm
+
+# some text sections are _very_ long (e.g. %changelog)
+-4000
+
+=Idle
+=Colon        blue
+=Macro         bold blue
+=CtrlMacro	bold cyan
+=Comment        green
+=Variable       cyan
+=Text		dim white
+=Section	red
+=Shell		magenta
+=Shell2		bold magenta
+=ShellCmd	yellow
+=ShellRedir	bold yellow
+
+:idle	Idle
+	*	idle
+	"%"	expr	recolor=-1
+	"\n"	colident
+	"#"	comment recolor=-1
+	"$"	shellexpr recolor=-1
+
+:colident Colon
+	*		idle noeat recolor=-100
+	":"		idle
+	"A-Za-z0-9"	colident
+
+:shellbracemagic Shell2
+	*	shellbraceexpr
+:shellbraceexpr Shell
+	*	shellexpr
+	"a-zA-Z_0-9 "	shellbraceexpr
+	":?!+-/"	shellbracemagic noeat
+:shellexpr Shell
+	*	idle
+	"a-zA-Z_0-9"	shellexpr
+	"{["	shellbraceexpr
+	"}]"	idle
+	"("	shellexpr2
+	")"	idle
+:shellexpr2 Shell
+	*	shellcmds recolor=-1
+	"("	shellmath
+	")"	shellexpr noeat
+:shellmathops Shell2
+	*	shellmath
+:shellmathvar Shell2
+	*	shellmath
+	"a-zA-Z_0-9{}[]"	shellmathvar
+:shellmath Shell
+	*	idle
+	"+=/%*-"	shellmathops noeat
+	"0-9 "	shellmath
+	"$"	shellmathvar recolor=-1
+	")"	shellexpr2
+:shellcmds	ShellCmd
+	*	shellcmds
+	"|&><"	shellredirs noeat
+	")"	shellexpr recolor=-1
+:shellredirs	ShellRedir
+	*	shellcmds
+
+:expr	Macro
+	*	idle recolor=-1
+	"%"	idle
+	" \t"	expr
+	"a-zA-Z_0-9"	exprident recolor=-1 buffer
+	"{"	exprvar recolor=-1
+	"("	shellexpr noeat
+
+:exprident Variable
+	*	idle	noeat recolor=-1 strings
+	"define"	define
+	"description"	textsection
+	"changelog"	textsection
+	"build"		section
+	"install"	section
+	"clean"		section
+	"files"		section
+	"package"	section
+	"prep"		section
+	"pre"		section
+	"post"		section
+	"postun"	section
+	"preun"		section
+	"setup"		macro
+	"patch"		macronum
+	"dir"		macro
+	"config"	macro
+	"doc"		macro
+	"defattr"	macro
+	"ifarch"	ctrlmacro
+	"ifnarch"	ctrlmacro
+	"endif"		ctrlmacro
+	"else"		ctrlmacro
+	"if"		ctrlmacro
+done
+	"a-zA-Z_"	exprident
+
+:section Section
+	*	idle
+
+:macronum Macro
+	*	idle recolor=-1
+	"0-9"	macronum recolor=-1
+
+:macro Macro
+	*	idle recolor=-1
+
+:ctrlmacro CtrlMacro
+	*	idle recolor=-1
+
+:define	Macro
+	*	defineident noeat recolor=-1
+	" \t"	define
+	"\n"	idle noeat
+	
+:defineident Variable
+	*	defineident
+	" \t\n"	idle noeat
+
+:exprvar	Variable
+	*	exprvar
+	"}"	idle
+
+:textsection	Section
+	*	textsection2 noeat
+
+:textsection2	Idle
+	*	textsection2
+	"\n"	textsection3
+
+:textsection3	Text
+	*	textsection3
+	"%"	textsection4 recolor=-1
+
+:textsection4	Text
+	*	expr noeat recolor=-2
+	"%"	textsection3
+
+:comment Comment
+	*	comment
+	"\n"	idle noeat
+
+ 	  	 

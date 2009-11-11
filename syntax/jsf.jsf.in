@@ -1,0 +1,749 @@
+# JOE Syntax-Highlighting Description
+#                 for
+# JOE Syntax-Highlighting Descriptions
+#
+# Author: Charles J. Tabony
+# Date:   2007-2-13
+#
+# This is a highlighting description for files like this one.
+#
+# When CHECKING is defined, it is very aggressive about error checking.  The
+# idea is that anywhere the highlighted file contains a syntax error, at least
+# one visible character should be highlighted as Bad.  While that feature is
+# useful for finding syntax errors, it is annoying when editing a file, since
+# nearly everything is an error until you finish typing it.
+#
+# In order to not annoy people by default, but keep the option of strictly
+# checking syntax, I predicated the stricter checking on the CHECKING parameter. 
+# By default, things that are incomplete are generally not marked as errors. 
+# Only things that appear to be actual mistakes are highlighted as Bad.  To
+# enable the stricter checking, one can highlight the file with the jsf_check
+# syntax.  jsf_check.jsf simply calls the entire jsf.jsf file with CHECKING
+# defined.
+#
+# The idea is for authors of a jsf file to edit their file, highlight it with
+# jsf_check, and then look for any red characters.  That way they can check for
+# syntax errors before testing the changes.
+
+
+
+
+#####################
+# Color Definitions #
+#####################
+
+=Idle
+=Comment	green
+=Conditional	blue
+=Parameter	bold blue
+=Keyword	bold
+=Color		yellow
+=StandardColor	bold
+=State
+=Subr		magenta
+=Literal	cyan
+=Escape		bold cyan
+=Bad		bold red
+
+
+
+
+##################
+# Initial States #
+##################
+
+# This is a dummy state that simply jumps to comment_or_bad.  It is here so that
+# when this file calls itself with the STRINGS parameter defined, comment_or_bad
+# will effectively be the initial state.  comment_or_bad should be the initial
+# state because strings and istrings options can only be used as the last option
+# of a transition.
+.ifdef STRINGS
+:strings_initial Idle
+	*		comment_or_bad		noeat
+.endif
+
+# Each new line (that is not considered bad from the beginning) begins in the
+# idle state.  The first non-whitespace character determines what the rest of
+# the line should contain.  Following a strings or istrings option, only strings
+# and comments are allowed until the word "done" denotes the end of the list.
+:idle Idle
+	*		bad			noeat
+	" \t\n"		idle
+.ifdef STRINGS
+.else
+	"-"		sync_lines_first
+	"."		conditional_first	mark recolor=-1
+	"="		color_definition_first
+	":"		state_first
+	"*&"		special_character	recolor=-1
+.endif
+	"\""		string			recolor=-1
+.ifdef STRINGS
+	"A-Za-z_"	special_word		mark recolor=-1 buffer
+.endif
+	"#"		comment			recolor=-1
+
+
+##############
+# Sync Lines #
+##############
+
+# Following a '-' should be either the number of sync lines or nothing (meaning
+# unlimited).  Nothing else other than a comment should appear on the same line.
+.ifdef STRINGS
+# A sync lines directive should not appear between "[i]strings" and "done".
+.else
+# If we see a non-digit or a '0', then we have seen the entire sync lines
+# directive.  The only thing that may appear on the rest of the line is a
+# comment.  Otherwise there may be more digits in the number.
+:sync_lines_first Literal
+	*		comment_or_bad		noeat
+	"0"		comment_or_bad
+	"1-9"		sync_lines
+
+# Highlight the remainder of the number.
+:sync_lines Literal
+	*		comment_or_bad		noeat
+	"0-9"		sync_lines
+.endif
+
+
+##########################
+# Conditional Directives #
+##########################
+
+# Following a '.' should be a conditional directive.
+.ifdef STRINGS
+# A conditional directive should not appear between "[i]strings" and "done".
+.else
+# Start buffering the conditional directive.
+:conditional_first Conditional
+	*		conditional		noeat buffer
+
+# Recognize the set of conditional directives.
+:conditional Idle
+	*		conditional_unknown	noeat strings
+	"ifdef"		ifdef_color
+	"else"		conditional_color
+	"endif"		conditional_color
+	"subr"		subr_color
+	"end"		conditional_color
+	done
+	"A-Za-z0-9_"	conditional
+
+# We encountered what looks like a conditional directive but is unrecognized as
+# such.
+:conditional_unknown Idle
+.ifdef CHECKING
+	*		bad_line		recolormark noeat
+.else
+	*		comment_or_bad		noeat
+.endif
+
+# We saw a conditional directive that does not take an argument.  Nothing else
+# other than a comment should appear on the same line.
+:conditional_color Conditional
+	*		comment_or_bad		noeat
+
+# We saw a ".ifdef" which must be followed by a parameter.
+:ifdef_color Conditional
+	*		need_parameter		noeat
+
+# We loop over whitespace until we see the first character of the parameter.
+:need_parameter Idle
+	*		bad			noeat
+	" \t"		need_parameter
+	"A-Za-z_"	parameter		recolor=-1
+
+# Now we highlight the remainder of the parameter.
+:parameter Parameter
+	*		comment_or_bad		noeat
+	"A-Za-z0-9_"	parameter
+
+# The following three states are identical to the previous three except the
+# color.
+:subr_color Conditional
+	*		need_subr		noeat
+
+:need_subr Idle
+	*		bad			noeat
+	" \t"		need_subr
+	"A-Za-z_"	subr			recolor=-1
+
+:subr Subr
+	*		comment_or_bad		noeat
+	"A-Za-z0-9_"	subr
+.endif
+
+
+####################
+# Color Definition #
+####################
+
+# Following an '=' should be a color definition.
+.ifdef STRINGS
+# Color definitions should not appear between "[i]strings" and "done".
+.else
+# A color name must have at least one character.
+:color_definition_first Color
+	*		color_definition
+	" \t#\n"	bad			noeat
+
+# Highlight any remaining characters until we see whitespace, a comment, or a
+# newline.
+:color_definition Color
+	*		color_definition
+	" \t#\n"	colors_ws		noeat
+
+# The color name may be followed by zero or more standard colors or attributes,
+# ending in a comment or newline.
+:colors_ws Idle
+	*		color_bad		recolor=-1
+	" \t"		colors_ws
+	"A-Za-z_"	color			mark recolor=-1 buffer
+	"#\n"		comment			noeat
+
+# Here we recognize the attributes and standard color names.  None of the
+# attributes or standard color names contain a digit except fg_NNN and bg_NNN,
+# which are handled specially below.
+:color Idle
+	*		color_unknown		noeat strings
+	"inverse"	color_color
+	"underline"	color_color
+	"bold"		color_color
+	"blink"		color_color
+	"dim"		color_color
+	"white"		color_color
+	"cyan"		color_color
+	"magenta"	color_color
+	"blue"		color_color
+	"yellow"	color_color
+	"green"		color_color
+	"red"		color_color
+	"black"		color_color
+	"bg_white"	color_color
+	"bg_cyan"	color_color
+	"bg_magenta"	color_color
+	"bg_blue"	color_color
+	"bg_yellow"	color_color
+	"bg_green"	color_color
+	"bg_red"	color_color
+	"bg_black"	color_color
+	"WHITE"		color_color
+	"CYAN"		color_color
+	"MAGENTA"	color_color
+	"BLUE"		color_color
+	"YELLOW"	color_color
+	"GREEN"		color_color
+	"RED"		color_color
+	"BLACK"		color_color
+	"bg_WHITE"	color_color
+	"bg_CYAN"	color_color
+	"bg_MAGENTA"	color_color
+	"bg_BLUE"	color_color
+	"bg_YELLOW"	color_color
+	"bg_GREEN"	color_color
+	"bg_RED"	color_color
+	"bg_BLACK"	color_color
+	"fg_"		color_number_first
+	"bg_"		color_number_first
+	done
+	"A-Za-z_"	color
+
+# We encountered what looks like a standard color but is unrecognized as such.
+:color_unknown Idle
+.ifdef CHECKING
+	*		color_bad		recolormark noeat
+.else
+	*		colors_ws		noeat
+.endif
+
+# Here we have seen either "fg_" or "bg_".  We now expect to find a number. The
+# number should either be a one to two digit number, representing greyscale
+# intensity, in the range 0-23, or a three digit number, where each digit is in
+# the range 0-5 and represents the intensity of red, green, and blue
+# respectively.
+:color_number_first Idle
+.ifdef CHECKING
+	*		color_bad		recolormark noeat
+.else
+	*		color_bad		noeat
+.endif
+	"0"		color_zero
+	"1"		color_one
+	"2"		color_two
+	"3-5"		color_number_second
+	"6-9"		color_end
+
+# The first digit is a zero, thus we either have a greyscale intensity of 0, in
+# which case we should not see any more digits, or we have the first RGB digit,
+# in which case we should see two more ditits in the range 0-5.
+:color_zero Idle
+.ifdef CHECKING
+	*		color_bad		recolormark noeat
+.else
+	*		color_bad		noeat
+.endif
+	"0-5"		color_rgb_third
+	" \t#\n"	color_color		recolormark noeat
+
+# The first digit is a one.  If we see whitespace or a comment, then we have a
+# greyscale intensity of 1.  If we see a digit 6-9, then we have a greyscale
+# intensity of 16-19.  If we see a digit 0-5, then we either have a greyscale
+# intensity of 10-15 or an RGB value.
+:color_one Idle
+.ifdef CHECKING
+	*		color_bad		recolormark noeat
+.else
+	*		color_bad		noeat
+.endif
+	"0-5"		color_number_third
+	"6-9"		color_end
+	" \t#\n"	color_color		recolormark noeat
+
+# The first digit is a two.  If we see whitespace or a comment, then we have a
+# greyscale intensity of 2.  If we see a digit 4-5, then we have the first two
+# digits of an RGB value.  If we see a digit 0-3, then we either have a
+# greyscale intensity of 20-23 or an RGB value.
+:color_two Idle
+.ifdef CHECKING
+	*		color_bad		recolormark noeat
+.else
+	*		color_bad		noeat
+.endif
+	"0-3"		color_number_third
+	"4-5"		color_rgb_third
+	" \t#\n"	color_color		recolormark noeat
+
+# We have seen one digit that could be either the greyscale intensity or the
+# first RGB digit.  If we see any more digits, they we must have an RGB value,
+# because otherwise the number would be outside the range 0-23.
+:color_number_second Idle
+.ifdef CHECKING
+	*		color_bad		recolormark noeat
+.else
+	*		color_bad		noeat
+.endif
+	"0-5"		color_rgb_third
+	" \t#\n"	color_color		recolormark noeat
+
+# We have seen two digits that could be either the greyscale intensity or the
+# first two RGB digits.  If we see any more digits, they we must have an RGB
+# value, because otherwise the number would be outside the range 0-23.
+:color_number_third Idle
+.ifdef CHECKING
+	*		color_bad		recolormark noeat
+.else
+	*		color_bad		noeat
+.endif
+	"0-5"		color_end
+	" \t#\n"	color_color		recolormark noeat
+
+# We have seen two digits, both 0-5, that either start with zero or are outside
+# the range 0-23.  Thus we expect a third 0-5 digit.
+:color_rgb_third Idle
+.ifdef CHECKING
+	*		color_bad		recolormark noeat
+.else
+	*		color_bad		noeat
+.endif
+	"0-5"		color_end
+
+# We have seen "fg_" or "bg_" followed by one to three digits.  Any more digits
+# would either be too many or make the number out of range.  We now expect to
+# see whitespace, a comment, or a newline.
+:color_end Idle
+.ifdef CHECKING
+	*		color_bad		recolormark noeat
+.else
+	*		color_bad		noeat
+.endif
+	" \t#\n"	color_color		recolormark noeat
+
+# This is a dummy state that simply provides the highlighting color for the
+# standard color or attribute and jumps to colors_ws without consuming any
+# characters.
+:color_color StandardColor
+	*		colors_ws		noeat
+
+# We have encountered something that is not recognized as a standard color or
+# attribute.  Continue to highlight characters as Bad until we see whitespace, a
+# comment, or a newline.
+:color_bad Bad
+	*		color_bad
+	" \t#\n"	colors_ws		noeat
+.endif
+
+
+#########
+# State #
+#########
+
+# Following a ':' should be a state definition.
+.ifdef STRINGS
+# New states should not appear between "[i]strings" and "done".
+.else
+# A state name must begin with an alpha character or an underscore.
+:state_first State
+	*		bad			noeat
+	"A-Za-z_"	state
+
+# Subsequent characters in a state name must be alpha-numeric or underscores.
+:state State
+	*		bad			noeat
+	"A-Za-z0-9_"	state
+	" \t"		need_state_color	recolor=-1
+
+# A state must have a color.
+:need_state_color Idle
+	*		state_color		recolor=-1
+	" \t"		need_state_color
+	"#\n"		bad			noeat
+
+# Highlight any remaining characters until we see whitespace, a comment, or a
+# newline.
+:state_color Color
+	*		state_color
+	" \t#\n"	comment_or_bad		noeat
+.endif
+
+
+##############
+# Transition #
+##############
+
+# A state transition starts with a '*', an '&', or a string.
+.ifdef STRINGS
+# Transitions must start with a string between "[i]strings" and "done".
+.else
+# We saw either a '*' or an '&'.  Now we need the next state.
+:special_character Keyword
+	*		need_next_state		noeat
+.endif
+
+# We are in a string.  Continue until we see the close quote or a newline.
+# Highlight escaped characters within the string differently.  They start with a
+# '\'.
+:string Literal
+	*		string
+	"\\"		escape			recolor=-1
+	"\""		need_next_state
+.ifdef CHECKING
+	"\n"		bad
+.else
+	"\n"		bad			noeat
+.endif
+
+# Highlight an escaped character within a string.
+:escape Escape
+	*		string
+
+# Loop over whitespace until we see the first character of the next state.
+:need_next_state Idle
+	*		bad			noeat
+	" \t"		need_next_state
+	"A-Za-z_"	next_state		recolor=-1
+
+# Now we highlight the remainder of the next state.
+:next_state State
+	*		bad			noeat
+	"A-Za-z0-9_"	next_state
+	" \t"		options_ws
+	"#\n"		comment			noeat
+
+# Following the next state should be zero or more options.  Loop over whitespace
+# until we find an option, comment, or newline.
+:options_ws Idle
+	*		option_bad		recolor=-1
+	" \t"		options_ws
+	"A-Za-z_"	option			mark recolor=-1 buffer
+	"#\n"		comment			noeat
+
+# Here we recognize the possible options.  The strings and istrings options
+# cannot be used between "[i]strings" and "done".  Since conditional directives
+# cannot be used between "[i]strings" and "done" either, the list must be
+# duplicated, once without and once with the strings and istrings options.
+:option Idle
+.ifdef STRINGS
+	*		option_unknown		recolormark noeat strings
+	"noeat"		option_color
+	"recolor"	recolor_color
+	"mark"		option_color
+	"markend"	option_color
+	"recolormark"	option_color
+	"buffer"	option_color
+	"save_c"	option_color
+	"save_s"	option_color
+	"hold"		option_color
+	"call"		call_color
+	"return"	option_color
+	"reset"		option_color
+	done
+.else
+	*		option_unknown		recolormark noeat strings
+	"noeat"		option_color
+	"recolor"	recolor_color
+	"mark"		option_color
+	"markend"	option_color
+	"recolormark"	option_color
+	"buffer"	option_color
+	"save_c"	option_color
+	"save_s"	option_color
+	"strings"	strings_color
+	"istrings"	strings_color
+	"hold"		option_color
+	"call"		call_color
+	"return"	option_color
+	"reset"		option_color
+	done
+.endif
+	"A-Za-z0-9_"	option
+
+# We encountered what looks like an option but is unrecognized as such.
+:option_unknown Idle
+.ifdef CHECKING
+	*		option_bad		recolormark noeat
+.else
+	*		options_ws		noeat
+.endif
+
+# We have encountered an option that does not take an argument.  Highlight it
+# and continue to look for more options.
+:option_color Keyword
+	*		options_ws		noeat
+
+.ifdef STRINGS
+# The strings and istrings options cannot be used between "[i]strings" and
+# "done".
+.else
+# The strings and istrings options are followed by a list of transitions. 
+# Rather than duplicate all of the states that highlight transitions, we call
+# this entire file as a subroutine and use the STRINGS parameter to disable
+# everything else and enable the done keyword.  We return to the comment_or_bad
+# state since we will return after seeing the done keyword, and nothing but a
+# comment should follow the done keyword.
+:strings_color Keyword
+	*		comment_or_bad		noeat call=jsf(STRINGS)
+.endif
+
+# Highlight the recolor option.
+:recolor_color Keyword
+	*		recolor_equal		noeat
+
+# The recolor option must be followed by an '='.  Loop over whitespace until we
+# find one.
+:recolor_equal Idle
+.ifdef CHECKING
+	*		option_bad		recolormark noeat
+.else
+	*		options_ws		noeat
+.endif
+	" \t"		recolor_equal
+	"="		recolor_minus		mark
+
+# The recolor option takes an integer argument, and that integer must be
+# negative.  Thus the '=' must be followed by a minus sign.  Loop over
+# whitespace until we find one.
+:recolor_minus Idle
+.ifdef CHECKING
+	*		option_bad		recolormark noeat
+.else
+	*		options_ws		noeat
+.endif
+	" \t"		recolor_minus
+	"-"		recolor_amount_first	mark recolor=-1
+
+# The first digit of the argument to recolor must be non-zero.
+:recolor_amount_first Literal
+.ifdef CHECKING
+	*		option_bad		recolormark noeat
+.else
+	*		options_ws		recolormark noeat
+	"0"		option_bad		recolormark noeat
+.endif
+	"1-9"		recolor_amount
+
+# Keep highlighting digits until we see something else.
+:recolor_amount Literal
+	*		option_bad		recolormark recolor=-1
+	"0-9"		recolor_amount
+	" \t#\n"	options_ws		noeat
+
+# Highlight the call option.
+:call_color Keyword
+	*		call_equal		noeat
+
+# The call option must be followed by an '='.  Loop over whitespace until we
+# find one.
+:call_equal Idle
+.ifdef CHECKING
+	*		option_bad		recolormark noeat
+.else
+	*		options_ws		noeat
+.endif
+	" \t"		call_equal
+	"="		call_file_or_dot	mark
+
+# The first part of the argument to the call option is the name of the file
+# containing the subroutine or a '.', implying the current file.  Loop over
+# whitespace until we see one of those two things.
+:call_file_or_dot Idle
+.ifdef CHECKING
+	*		option_bad		recolormark noeat
+.else
+	*		options_ws		noeat
+.endif
+	" \t"		call_file_or_dot
+	"A-Za-z_"	call_file		mark recolor=-1
+	"."		call_dot		mark
+
+# Highlight the remainder of the file name.  The file name can be followed by a
+# '.', which must then be followed by the name of a subroutine, or by a list of
+# parameters in parentheses.  The '.', if present, cannot have whitespace on
+# either side.
+:call_file Subr
+.ifdef CHECKING
+	*		option_bad		recolormark noeat
+.else
+	*		options_ws		noeat
+.endif
+	"A-Za-z0-9_"	call_file
+	"."		call_dot		mark recolor=-1
+	" \t("		call_open_paren		noeat
+
+# We saw a '.'.  The next character must start the name of a subroutine.
+:call_dot Idle
+.ifdef CHECKING
+	*		option_bad		recolormark noeat
+.else
+	*		options_ws		noeat
+.endif
+	"("		call_dot_bad		recolormark noeat
+	"A-Za-z_"	call_subr		mark recolor=-1
+
+# We have seen a dot followed by an open parenthesis.  A dot must be followed by
+# a subroutine name.  Highlight the dot as Bad.
+:call_dot_bad Bad
+	*		call_open_paren		noeat
+
+# Highlight the remainder of the subroutine name.  Following the subroutine name
+# must be a list of parameters in parentheses, possibly preceded by whitespace.
+:call_subr Subr
+.ifdef CHECKING
+	*		option_bad		recolormark noeat
+.else
+	*		options_ws		noeat
+.endif
+	"A-Za-z0-9_"	call_subr
+	" \t("		call_open_paren		noeat
+
+# Loop over whitespace until we find the open parenthesis.
+:call_open_paren Idle
+.ifdef CHECKING
+	*		option_bad		recolormark noeat
+.else
+	*		options_ws		noeat
+.endif
+	" \t"		call_open_paren
+	"("		call_parameters_ws
+
+# The list of parameters is delimited by whitespace.  Loop over whitespace until
+# we find either the beginning of a parameter or a close parenthesis.  We should
+# not see a comment or newline since the list should be terminated by a close
+# parenthesis.
+:call_parameters_ws Idle
+	*		call_parameter_bad	recolor=-1
+	" \t"		call_parameters_ws
+	"-"		call_parameter_undef
+	"A-Za-z_"	call_parameter		recolor=-1
+	")"		options_ws
+	"#\n"		bad			noeat
+
+# We saw a "-".  The next character should start the parameter being undefined.
+:call_parameter_undef Parameter
+	*		call_parameters_ws	noeat
+	"A-Za-z_"	call_parameter		recolor=-2
+
+# Highlight the remainder of the parameter.
+:call_parameter Parameter
+	*		call_parameters_ws	noeat
+	"A-Za-z0-9_"	call_parameter
+
+# We saw something that is not a valid parameter name.  Continue to highlight it
+# as Bad until we see whitespace.
+:call_parameter_bad Bad
+	*		call_parameter_bad
+	") \t#\n"	call_parameters_ws	noeat
+
+# We saw something that is not a valid option name.  Continue to highlight it as
+# Bad until we see whitespace.
+:option_bad Bad
+	*		option_bad
+	" \t#\n"	options_ws		noeat
+
+
+########
+# Done #
+########
+
+.ifdef STRINGS
+# The special word, "done", can only be used after a strings or istrings option.
+# Recognize the done keyword.
+:special_word Idle
+	*		bad_line		recolormark noeat strings
+	"done"		done_color
+	done
+	"A-Za-z0-9_"	special_word
+
+# Highlight the done keyword and return to highlighting things normally, since
+# the list of strings has been terminated.
+:done_color Keyword
+	*		comment_or_bad		return noeat
+.endif
+
+
+##################
+# Comment or Bad #
+##################
+
+# We have seen everything that should appear on the current line except an
+# optional comment.  Loop over whitespace until we find a comment or newline.
+:comment_or_bad Idle
+	*		bad			noeat
+	" \t"		comment_or_bad
+	"#\n"		comment			noeat
+
+
+###########
+# Comment #
+###########
+
+# Continue to highlight the comment until the end of the line.
+:comment Comment
+	*		comment
+	"\n"		idle
+
+
+#######
+# Bad #
+#######
+
+.ifdef CHECKING
+# We have encountered incorrect syntax.  Loop over whitespace until we see the
+# first visible character.  Highlight that character and the rest of the line as
+# Bad.
+:bad Bad
+	*		bad_line
+	" \t\n"		bad
+.else
+# When not performing strict checking, don't go searching for the next visible
+# character to highlight as Bad.  Simply highlight the rest of the line as Bad,
+# even if it is invisible.
+:bad Bad
+	*		bad_line		noeat
+.endif
+
+# Continue to highlight everything as Bad until the end of the line.
+:bad_line Bad
+	*		bad_line
+	"\n"		idle

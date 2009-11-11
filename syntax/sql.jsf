@@ -1,0 +1,470 @@
+# JOE syntax highlight file for SQL
+
+# See c.jsf for more documentation
+
+# Define no. sync lines
+# You can say:
+# -200     means 200 lines
+# -        means always start parsing from beginning of file when we lose sync
+#          if nothing is specified, the default is -50
+-
+
+=Idle
+=Bad		bold red
+=Preproc 	blue
+=Define		bold blue
+=Comment 	green
+=IncLocal	cyan
+=IncSystem	bold cyan
+=Constant 	cyan
+=Escape 	bold cyan
+=Type 		bold
+=Keyword 	bold
+=CppKeyword	bold
+=Brace		magenta
+=Control
+
+:idle Idle
+	*		idle
+	"\n"		idle
+	"#"		line_comment	recolor=-1
+	"/"		slash
+	"-"		dash
+	"0"		first_digit	recolor=-1
+	"1-9"		decimal	recolor=-1
+	"."		maybe_float
+	"\""		string		recolor=-1
+	"'"		char		recolor=-1
+	"a-zA-Z_@"	ident		buffer
+	"{}"		brace		recolor=-1
+	",:;=()><[]*&|!~+%^"	control		recolor=-1
+
+:brace Brace
+	*	idle	noeat
+
+:control Control
+	*	idle	noeat
+
+:slash Idle
+	*		idle		noeat recolor=-2	# Not sure about this
+	"*"		comment		recolor=-2
+	"/"		line_comment	recolor=-2
+
+:dash Idle
+	*		idle		noeat recolor=-2	# Not sure about this
+	"-"		line_comment	recolor=-2
+
+:comment Comment
+	*		comment
+	"*"		maybe_end_comment
+
+:maybe_end_comment Comment
+	*		comment
+	"/"		idle
+	"*"		maybe_end_comment
+
+:line_comment Comment
+	*		line_comment
+	"\n"		idle
+
+:first_digit Constant
+	*		idle	noeat
+	"xX"		hex
+	"."		float
+	"eE"		epart
+	"0-7"		octal
+	"89"		bad_number	recolor=-1
+
+:bad_number Bad
+	*		idle	noeat
+	"0-9"		bad_number
+
+:octal Constant
+	*		idle	noeat
+	"0-7"		octal
+	"89"		bad_number	recolor=-1
+
+:hex Constant
+	*		idle	noeat
+	"0-9A-Fa-f"	hex
+
+:decimal Constant
+	*		idle	noeat
+	"0-9"		decimal
+	"eE"		epart
+	"."		float
+
+:maybe_float Constant
+	*		idle	recolor=-2	noeat
+	"0-9"		float		recolor=-2
+
+:float Constant
+	*		idle	noeat
+	"eE"		epart
+	"0-9"		float
+
+:epart Constant
+	*		idle	noeat
+	"0-9+\-"	enum
+
+:enum Constant
+	*		idle	noeat
+	"0-9"		enum
+
+:string	Constant
+	*		string
+	"\""		idle
+	"\\"		string_escape	recolor=-1
+	"%"		string_control	recolor=-1
+
+:string_escape Escape
+	*		string
+	"x"		string_hex1
+	"0-7"		string_octal2
+	"\n"		string		recolor=-2
+
+:string_hex1 Escape
+	*		string		noeat
+	"0-9a-fA-F"	string_hex2
+
+:string_hex2 Escape
+	*		string		noeat
+	"0-9a-fA-F"	string
+
+:string_octal2 Escape
+	*		string		noeat
+	"0-7"		string_octal3
+
+:string_octal3 Escape
+	*		string		noeat
+	"0-7"		string
+
+:string_control Escape
+	*		string
+	"\""		string noeat
+	"\n"		idle
+	"0-9.\-+ #hjILtz$"	string_control
+
+:char Constant
+	*		char
+	"\n"		idle
+	"'"		idle
+	"\\"		char_escape	recolor=-1
+
+:char_escape	Escape
+	*		char
+	"x"		char_hex1
+	"0-7"		char_octal2
+	"\n"		char		recolor=-2
+
+:char_hex1 Escape
+	*		char		noeat
+	"0-9a-fA-F"	char_hex2
+
+:char_hex2 Escape
+	*		char		noeat
+	"0-9a-fA-F"	char
+
+:char_octal2 Escape
+	*		char		noeat
+	"0-7"		char_octal3
+
+:char_octal3 Escape
+	*		char		noeat
+	"0-7"		char
+
+:ident Idle
+	*		idle		noeat istrings
+	"absolute"	kw
+	"add"		kw
+	"admindb"		kw
+	"all"		kw
+	"alphanumeric"		kw
+	"alter"		kw
+	"and"		kw
+	"any"		kw
+	"are"		kw
+	"as"		kw
+	"asc"		kw
+	"assertion"		kw
+	"authorization"		kw
+	"autoincrement"		kw
+	"avg"		kw
+	"begin"		kw
+	"between"		kw
+	"binary"		kw
+	"bit"		kw
+	"bit_length"		kw
+	"boolean"		kw
+	"both"		kw
+	"by"		kw
+	"byte"		kw
+	"cascade"		kw
+	"catalog"		kw
+	"char,"		kw
+	"character"		kw
+	"character_length"		kw
+	"char_length"		kw
+	"check"		kw
+	"clause"		kw
+	"close"		kw
+	"clustered"		kw
+	"coalesce"		kw
+	"collate"		kw
+	"collation"		kw
+	"column"		kw
+	"commit"		kw
+	"comp,"		kw
+	"compression"		kw
+	"connect"		kw
+	"connection"		kw
+	"constraint,"		kw
+	"constraints"		kw
+	"container"		kw
+	"contains"		kw
+	"convert"		kw
+	"count"		kw
+	"counter"		kw
+	"create"		kw
+	"currency"		kw
+	"current_date"		kw
+	"current_time"		kw
+	"current_timestamp"		kw
+	"current_user"		kw
+	"cursor"		kw
+	"d"		kw
+	"database"		kw
+	"date"		kw
+	"datetime"		kw
+	"day"		kw
+	"dec,"		kw
+	"decimal"		kw
+	"declare"		kw
+	"delete"		kw
+	"desc"		kw
+	"disallow"		kw
+	"disconnect"		kw
+	"distinct"		kw
+	"distinctrow"		kw
+	"domain"		kw
+	"double"		kw
+	"drop"		kw
+	"eqv"		kw
+	"exclusiveconnect"		kw
+	"exec,"		kw
+	"execute"		kw
+	"exists"		kw
+	"extract"		kw
+	"false"		kw
+	"fetch"		kw
+	"first"		kw
+	"float,"		kw
+	"float4"		kw
+	"float8"		kw
+	"foreign"		kw
+	"from"		kw
+	"general"		kw
+	"grant"		kw
+	"group"		kw
+	"guid"		kw
+	"having"		kw
+	"hour"		kw
+	"i"		kw
+	"identity"		kw
+	"ieeedouble"		kw
+	"ieeesingle"		kw
+	"ignore"		kw
+	"image"		kw
+	"imp"		kw
+	"in"		kw
+	"in"		kw
+	"index"		kw
+	"indexcreatedb"		kw
+	"inner"		kw
+	"input"		kw
+	"insensitive"		kw
+	"insert"		kw
+	"int,"		kw
+	"integer,"		kw
+	"integer1"		kw
+	"integer2"		kw
+	"integer4"		kw
+	"interval"		kw
+	"into"		kw
+	"is"		kw
+	"isolation"		kw
+	"join"		kw
+	"key"		kw
+	"language"		kw
+	"last"		kw
+	"left"		kw
+	"level"		kw
+	"like"		kw
+	"logical,"		kw
+	"logical1"		kw
+	"long"		kw
+	"longbinary"		kw
+	"longchar"		kw
+	"longtext"		kw
+	"lower"		kw
+	"match"		kw
+	"max"		kw
+	"memo"		kw
+	"min"		kw
+	"minute"		kw
+	"mod"		kw
+	"money"		kw
+	"month"		kw
+	"national"		kw
+	"nchar"		kw
+	"nonclustered"		kw
+	"not"		kw
+	"ntext"		kw
+	"null"		kw
+	"number"		kw
+	"numeric"		kw
+	"nvarchar"		kw
+	"octet_length"		kw
+	"oleobject"		kw
+	"on"		kw
+	"open"		kw
+	"option"		kw
+	"or"		kw
+	"order"		kw
+	"outer"		kw
+	"output"		kw
+	"owneraccess"		kw
+	"pad"		kw
+	"parameters"		kw
+	"partial"		kw
+	"password"		kw
+	"percent"		kw
+	"pivot"		kw
+	"position"		kw
+	"precision"		kw
+	"prepare"		kw
+	"primary"		kw
+	"privileges"		kw
+	"proc,"		kw
+	"procedure"		kw
+	"public"		kw
+	"real"		kw
+	"references"		kw
+	"restrict"		kw
+	"revoke"		kw
+	"right"		kw
+	"rollback"		kw
+	"schema"		kw
+	"second"		kw
+	"select"		kw
+	"selectschema"		kw
+	"selectsecurity"		kw
+	"set"		kw
+	"short"		kw
+	"single"		kw
+	"size"		kw
+	"smalldatetime"		kw
+	"smallint"		kw
+	"smallmoney"		kw
+	"some"		kw
+	"space"		kw
+	"sql"		kw
+	"sqlcode,"		kw
+	"sqlerror,"		kw
+	"sqlstate"		kw
+	"stdev"		kw
+	"stdevp"		kw
+	"string"		kw
+	"substring"		kw
+	"sum"		kw
+	"sysname"		kw
+	"system_user"		kw
+	"table"		kw
+	"tableid"		kw
+	"temporary"		kw
+	"text"		kw
+	"time"		kw
+	"timestamp"		kw
+	"timezone_hour"		kw
+	"timezone_minute"		kw
+	"tinyint"		kw
+	"to"		kw
+	"top"		kw
+	"trailing"		kw
+	"transaction"		kw
+	"transform"		kw
+	"translate"		kw
+	"translation"		kw
+	"trim"		kw
+	"true"		kw
+	"union"		kw
+	"unique"		kw
+	"uniqueidentifier"		kw
+	"unknown"		kw
+	"update"		kw
+	"updateidentity"		kw
+	"updateowner"		kw
+	"updatesecurity"		kw
+	"upper"		kw
+	"usage"		kw
+	"user"		kw
+	"using"		kw
+	"value"		kw
+	"values"		kw
+	"var"		kw
+	"varbinary"		kw
+	"varchar"		kw
+	"varp"		kw
+	"varying"		kw
+	"view"		kw
+	"when"		kw
+	"whenever"		kw
+	"where"		kw
+	"with"		kw
+	"work"		kw
+	"xor"		kw
+	"year"		kw
+	"yesno"		kw
+	"zone"		kw
+	"begin"		kw
+	"end"		kw
+# T-SQl
+	"if"		kw
+	"then"		kw
+	"else"		kw
+	"print"		kw
+	"case"		kw
+	"go"		kw
+	"cross"		kw
+	"exec"		kw
+	"use"		kw
+# mysql
+	"int"		kw
+	"char"		kw
+	"default"	kw
+	"type"		kw
+	"float"		kw
+	"begint"	kw
+	"mediumint"	kw
+	"longint"	kw
+	"blob"		kw
+	"tinyblob"	kw
+	"mediumblob"	kw
+	"longblob"	kw
+	"tinytext"	kw
+	"mediumtext"	kw
+	"longtext"	kw
+	"show"		kw
+	"explain"	kw
+	"enum"		kw
+done
+	"a-zA-Z0-9_"	ident
+
+:type Type
+	*	idle	noeat
+
+:kw Keyword
+	*	idle	noeat
+
+:cppkw CppKeyword
+	*	idle	noeat

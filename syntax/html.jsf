@@ -1,0 +1,1334 @@
+# JOE syntax highlight file for HTML
+
+#
+# Note:
+#  * <script>..</script> and <style>..</style>
+#    blocks are assumed to be html-encoded, not raw.
+#    To make them raw, you should enclose them within <!-- -->.
+#
+#  * "#" and "+" are lited as mistakes in unquoted tag values,
+#    although there exist (broken) programs that generate them.
+# 
+#  * Recognizes html-entities and lites mistakes in them.
+#
+#  * SGML comments are parsed in the SGML way. This means there
+#    must be an even amount of "--" markers within the tag.
+#
+#  * Recognizes 1018 different named entities. The list has been
+#    copied from some version of Lynx. Most browsers don't recognize
+#    that many.
+#
+# Todo:
+#  * tag name recognition
+#  * tag parameter name recognition
+#  * inline stylesheet and javascript highlighting
+#    (hard to do fool-proof, because the value may be entity-encoded).
+#
+
+# Colours
+=Background
+=Text
+=TagEdge	green
+=TagName	cyan
+=TagParam	green
+=TagDelim	bold green
+=TagValue	cyan
+=TagEntity	bold blue
+=SGMLtag	magenta
+=XML_pi		yellow
+=Entity		bold blue
+=Mystery	bold yellow bg_red inverse
+
+# Call HTML highlighter subroutine
+
+:first Background
+	*	call_failed	noeat call=.html()
+
+:call_failed Mystery
+	*	call_failed
+
+#
+# HTML highlighter as a subroutine
+#
+
+.subr html
+
+:reset Background
+	*	idle noeat
+.ifdef mason
+	"%"	reset call=perl.perl(mason_line)
+.endif
+
+# Rules
+:idle Background
+	*	idle
+	"\n"	reset
+	"<"	tag_begin recolor=-1
+	"&"	idle call=.entity() recolor=-1
+:mistake_idle Mystery
+	*	idle noeat
+
+# Tags
+:tag_begin TagEdge
+	*			tag_name_first buffer noeat recolor=-1
+	"/"			tag_name_first buffer
+.ifdef mason
+	"&"			rtn_php call=perl.perl(mason_block)
+.endif
+	"!"			sgml_tag recolor=-2
+.ifdef php
+	"?%"			rtn_php call=php.php()
+.else
+	"?"			xml_pi recolor=-2
+.endif
+
+# this state allows php and perl to recolor the ?> %> or &> properly.
+:rtn_php TagEdge
+	*			idle noeat
+
+:tag_name_first Mystery
+	*			tag_idle noeat
+	"-A-Za-z0-9._:"		tag_name recolor=-1
+
+:tag_name TagName
+	*			tag_idle noeat strings
+	"script"		stag_enter_idle
+	"style"			ytag_enter_idle
+done
+	"-A-Za-z0-9._:"		tag_name
+
+:tag_idle Background
+	*			mistake_tag recolor=-1
+	"<"			tag_maybe_php recolor=-1
+	" \t\n"		tag_idle
+	"/"			tag_end recolor=-1 
+	">"			tag_end noeat recolor=-1
+	"-A-Za-z0-9._:"		tag_param noeat recolor=-1
+
+:tag_maybe_php Mystery
+	*			tag_idle
+	"?"			tag_call_php recolor=-2
+
+:tag_call_php TagEdge
+	*			rtn_php_tag noeat call=php.php()
+
+:rtn_php_tag TagEdge
+	*			tag_idle noeat
+
+:tag_param TagParam
+	*			tag_idle noeat recolor=-1
+	"-A-Za-z0-9._:"		tag_param
+	"="			tag_delim recolor=-1
+
+:tag_delim TagDelim
+	*			mistake_tag noeat recolor=-1
+	"\""			tag_idle call=.tag_value_quoted(dquote) recolor=-1
+	"'"			tag_idle call=.tag_value_quoted(squote) recolor=-1
+	"-A-Za-z0-9._:"		tag_value noeat recolor=-1
+
+:tag_value TagValue
+	*			tag_idle noeat recolor=-1
+	"-A-Za-z0-9._:"		tag_value
+
+:tag_end TagEdge
+	*	idle
+
+:mistake_tag Mystery
+	*	tag_idle noeat
+
+# We're about to entry a script...
+
+:stag_enter_idle TagName
+	*	stag_idle noeat
+
+:stag_idle Background
+	*			smistake_tag recolor=-1
+	" \t\n"		stag_idle
+	"/"			stag_end recolor=-1 
+	">"			stag_end noeat recolor=-1
+	"-A-Za-z0-9._:"		stag_param noeat recolor=-1
+
+:stag_param TagParam
+	*			stag_idle noeat recolor=-1
+	"-A-Za-z0-9._:"		stag_param
+	"="			stag_delim recolor=-1
+
+:stag_delim TagDelim
+	*			smistake_tag noeat recolor=-1
+	"\""			stag_idle call=.tag_value_quoted(dquote) recolor=-1
+	"'"			stag_idle call=.tag_value_quoted(squote) recolor=-1
+	"-A-Za-z0-9._:"		stag_value noeat recolor=-1
+
+:stag_value TagValue
+	*			stag_idle noeat recolor=-1
+	"-A-Za-z0-9._:"		stag_value
+
+:stag_end TagEdge
+.ifdef php
+	*	tag_begin	call=php.php(script)
+.else
+	*	tag_begin	call=java.java(script)
+.endif
+
+:stag_done TagEdge
+	*	tag_name_first	buffer noeat
+
+:smistake_tag Mystery
+	*	stag_idle noeat
+
+# We're about to entry a script...
+
+:ytag_enter_idle TagName
+	*	ytag_idle noeat
+
+:ytag_idle Background
+	*			ymistake_tag recolor=-1
+	" \t\n"		ytag_idle
+	"/"			ytag_end recolor=-1 
+	">"			ytag_end noeat recolor=-1
+	"-A-Za-z0-9._:"		ytag_param noeat recolor=-1
+
+:ytag_param TagParam
+	*			ytag_idle noeat recolor=-1
+	"-A-Za-z0-9._:"		ytag_param
+	"="			ytag_delim recolor=-1
+
+:ytag_delim TagDelim
+	*			ymistake_tag noeat recolor=-1
+	"\""			ytag_idle call=.tag_value_quoted(dquote) recolor=-1
+	"'"			ytag_idle call=.tag_value_quoted(squote) recolor=-1
+	"-A-Za-z0-9._:"		ytag_value noeat recolor=-1
+
+:ytag_value TagValue
+	*			ytag_idle noeat recolor=-1
+	"-A-Za-z0-9._:"		ytag_value
+
+:ytag_end TagEdge
+	*	tag_begin	call=css.css()
+
+:ytag_done TagEdge
+	*	tag_name_first	buffer noeat
+
+:ymistake_tag Mystery
+	*	ytag_idle noeat
+
+# SGML and comments
+:sgml_tag SGMLtag
+	*	sgml_tag
+	"-"	sgml_tag_maybe_comment
+	">"	sgml_end noeat recolor=-1
+:sgml_tag_maybe_comment SGMLtag
+	*	sgml_tag
+	"-"	sgml_tag_comment
+:sgml_tag_comment SGMLtag
+	*	sgml_tag_comment
+	"-"	sgml_tag_maybe_comment_end
+:sgml_tag_maybe_comment_end SGMLtag
+	*	sgml_tag_comment
+	"-"	sgml_tag
+:sgml_end SGMLtag
+	*	idle
+
+# XML processing info
+:xml_pi XML_pi
+	*	xml_pi
+	"?"	xml_pi_maybe_end
+:xml_pi_maybe_end XML_pi
+	*	xml_pi
+	"?"	xml_pi_maybe_end
+	">"	xml_pi_end noeat recolor=-1
+:xml_pi_end XML_pi
+	*	idle
+
+.end
+
+#
+# Quoted string tag values
+#
+
+.subr tag_value_quoted
+
+:tag_value_quoted TagValue
+	*			tag_value_quoted
+.ifdef dquote
+	"\""	tag_value_quoted return
+.endif
+.ifdef squote
+	"'"	tag_value_quoted return
+.endif
+	"<"	tag_value_maybe_php
+
+:tag_value_maybe_php TagValue
+	*	tag_value_quoted	noeat
+	"?"	tag_value_call_php recolor=-2
+
+:tag_value_call_php TagEdge
+	*	tag_value_rtn_php	noeat call=php.php()
+
+:tag_value_rtn_php TagEdge
+	*	tag_value_quoted	noeat
+
+# Too many non-html things can be in quotes to do this...
+#	"&"	tag_value_quoted call=.entity() recolor=-1
+
+:mistake_tag_value Mystery
+	*	tag_value_quoted noeat
+
+.end
+
+
+#
+# Entity parser
+#
+
+.subr entity
+
+# Entities within plain content
+:entity Entity
+	*	entity_name noeat buffer recolor=-1
+	"#"	entity_numeric_begin
+:entity_numeric_begin Entity
+	*	entity_numeric noeat
+	"x"	entity_hex
+:entity_numeric Entity
+	*	mistake_idle noeat recolor=-1
+	"0-9"	entity_numeric
+	";"		entity_end noeat recolor=-1
+:entity_hex Entity
+	*		mistake_idle noeat recolor=-1
+	"0-9a-fA-F"	entity_hex
+	";"		entity_end noeat recolor=-1
+:entity_end Entity
+	*	entity	return
+
+:entity_name Mystery
+	*	mistake_idle noeat recolor=-1 strings
+	"AElig"	entity_ok
+	"Aacgr"	entity_ok
+	"Aacute"	entity_ok
+	"Abreve"	entity_ok
+	"Acirc"	entity_ok
+	"Acy"	entity_ok
+	"Agr"	entity_ok
+	"Agrave"	entity_ok
+	"Alpha"	entity_ok
+	"Amacr"	entity_ok
+	"Aogon"	entity_ok
+	"Aring"	entity_ok
+	"Atilde"	entity_ok
+	"Auml"	entity_ok
+	"Barwed"	entity_ok
+	"Bcy"	entity_ok
+	"Beta"	entity_ok
+	"Bgr"	entity_ok
+	"CHcy"	entity_ok
+	"Cacute"	entity_ok
+	"Cap"	entity_ok
+	"Ccaron"	entity_ok
+	"Ccedil"	entity_ok
+	"Ccirc"	entity_ok
+	"Cdot"	entity_ok
+	"Chi"	entity_ok
+	"Cup"	entity_ok
+	"DJcy"	entity_ok
+	"DScy"	entity_ok
+	"DZcy"	entity_ok
+	"Dagger"	entity_ok
+	"Dcaron"	entity_ok
+	"Dcy"	entity_ok
+	"Delta"	entity_ok
+	"Dgr"	entity_ok
+	"Dot"	entity_ok
+	"DotDot"	entity_ok
+	"Dstrok"	entity_ok
+	"EEacgr"	entity_ok
+	"EEgr"	entity_ok
+	"ENG"	entity_ok
+	"ETH"	entity_ok
+	"Eacgr"	entity_ok
+	"Eacute"	entity_ok
+	"Ecaron"	entity_ok
+	"Ecirc"	entity_ok
+	"Ecy"	entity_ok
+	"Edot"	entity_ok
+	"Egr"	entity_ok
+	"Egrave"	entity_ok
+	"Emacr"	entity_ok
+	"Eogon"	entity_ok
+	"Epsilon"	entity_ok
+	"Eta"	entity_ok
+	"Euml"	entity_ok
+	"Fcy"	entity_ok
+	"GJcy"	entity_ok
+	"Gamma"	entity_ok
+	"Gbreve"	entity_ok
+	"Gcedil"	entity_ok
+	"Gcirc"	entity_ok
+	"Gcy"	entity_ok
+	"Gdot"	entity_ok
+	"Gg"	entity_ok
+	"Ggr"	entity_ok
+	"Gt"	entity_ok
+	"HARDcy"	entity_ok
+	"Hcirc"	entity_ok
+	"Hstrok"	entity_ok
+	"IEcy"	entity_ok
+	"IJlig"	entity_ok
+	"IOcy"	entity_ok
+	"Iacgr"	entity_ok
+	"Iacute"	entity_ok
+	"Icirc"	entity_ok
+	"Icy"	entity_ok
+	"Idigr"	entity_ok
+	"Idot"	entity_ok
+	"Igr"	entity_ok
+	"Igrave"	entity_ok
+	"Imacr"	entity_ok
+	"Iogon"	entity_ok
+	"Iota"	entity_ok
+	"Itilde"	entity_ok
+	"Iukcy"	entity_ok
+	"Iuml"	entity_ok
+	"Jcirc"	entity_ok
+	"Jcy"	entity_ok
+	"Jsercy"	entity_ok
+	"Jukcy"	entity_ok
+	"KHcy"	entity_ok
+	"KHgr"	entity_ok
+	"KJcy"	entity_ok
+	"Kappa"	entity_ok
+	"Kcedil"	entity_ok
+	"Kcy"	entity_ok
+	"Kgr"	entity_ok
+	"LJcy"	entity_ok
+	"Lacute"	entity_ok
+	"Lambda"	entity_ok
+	"Larr"	entity_ok
+	"Lcaron"	entity_ok
+	"Lcedil"	entity_ok
+	"Lcy"	entity_ok
+	"Lgr"	entity_ok
+	"Ll"	entity_ok
+	"Lmidot"	entity_ok
+	"Lstrok"	entity_ok
+	"Lt"	entity_ok
+	"Mcy"	entity_ok
+	"Mgr"	entity_ok
+	"Mu"	entity_ok
+	"NJcy"	entity_ok
+	"Nacute"	entity_ok
+	"Ncaron"	entity_ok
+	"Ncedil"	entity_ok
+	"Ncy"	entity_ok
+	"Ngr"	entity_ok
+	"Ntilde"	entity_ok
+	"Nu"	entity_ok
+	"OElig"	entity_ok
+	"OHacgr"	entity_ok
+	"OHgr"	entity_ok
+	"Oacgr"	entity_ok
+	"Oacute"	entity_ok
+	"Ocirc"	entity_ok
+	"Ocy"	entity_ok
+	"Odblac"	entity_ok
+	"Ogr"	entity_ok
+	"Ograve"	entity_ok
+	"Omacr"	entity_ok
+	"Omega"	entity_ok
+	"Omicron"	entity_ok
+	"Oslash"	entity_ok
+	"Otilde"	entity_ok
+	"Ouml"	entity_ok
+	"PHgr"	entity_ok
+	"PSgr"	entity_ok
+	"Pcy"	entity_ok
+	"Pgr"	entity_ok
+	"Phi"	entity_ok
+	"Pi"	entity_ok
+	"Prime"	entity_ok
+	"Psi"	entity_ok
+	"Racute"	entity_ok
+	"Rarr"	entity_ok
+	"Rcaron"	entity_ok
+	"Rcedil"	entity_ok
+	"Rcy"	entity_ok
+	"Rgr"	entity_ok
+	"Rho"	entity_ok
+	"SHCHcy"	entity_ok
+	"SHcy"	entity_ok
+	"SOFTcy"	entity_ok
+	"Sacute"	entity_ok
+	"Scaron"	entity_ok
+	"Scedil"	entity_ok
+	"Scirc"	entity_ok
+	"Scy"	entity_ok
+	"Sgr"	entity_ok
+	"Sigma"	entity_ok
+	"Sub"	entity_ok
+	"Sup"	entity_ok
+	"THORN"	entity_ok
+	"THgr"	entity_ok
+	"TSHcy"	entity_ok
+	"TScy"	entity_ok
+	"Tau"	entity_ok
+	"Tcaron"	entity_ok
+	"Tcedil"	entity_ok
+	"Tcy"	entity_ok
+	"Tgr"	entity_ok
+	"Theta"	entity_ok
+	"Tstrok"	entity_ok
+	"Uacgr"	entity_ok
+	"Uacute"	entity_ok
+	"Ubrcy"	entity_ok
+	"Ubreve"	entity_ok
+	"Ucirc"	entity_ok
+	"Ucy"	entity_ok
+	"Udblac"	entity_ok
+	"Udigr"	entity_ok
+	"Ugr"	entity_ok
+	"Ugrave"	entity_ok
+	"Umacr"	entity_ok
+	"Uogon"	entity_ok
+	"Upsi"	entity_ok
+	"Upsilon"	entity_ok
+	"Uring"	entity_ok
+	"Utilde"	entity_ok
+	"Uuml"	entity_ok
+	"Vcy"	entity_ok
+	"Vdash"	entity_ok
+	"Verbar"	entity_ok
+	"Vvdash"	entity_ok
+	"Wcirc"	entity_ok
+	"Xgr"	entity_ok
+	"Xi"	entity_ok
+	"YAcy"	entity_ok
+	"YIcy"	entity_ok
+	"YUcy"	entity_ok
+	"Yacute"	entity_ok
+	"Ycirc"	entity_ok
+	"Ycy"	entity_ok
+	"Yuml"	entity_ok
+	"ZHcy"	entity_ok
+	"Zacute"	entity_ok
+	"Zcaron"	entity_ok
+	"Zcy"	entity_ok
+	"Zdot"	entity_ok
+	"Zeta"	entity_ok
+	"Zgr"	entity_ok
+	"aacgr"	entity_ok
+	"aacute"	entity_ok
+	"abreve"	entity_ok
+	"acirc"	entity_ok
+	"acute"	entity_ok
+	"acy"	entity_ok
+	"aelig"	entity_ok
+	"agr"	entity_ok
+	"agrave"	entity_ok
+	"alefsym"	entity_ok
+	"aleph"	entity_ok
+	"alpha"	entity_ok
+	"amacr"	entity_ok
+	"amalg"	entity_ok
+	"amp"	entity_ok
+	"and"	entity_ok
+	"ang"	entity_ok
+	"ang90"	entity_ok
+	"angmsd"	entity_ok
+	"angsph"	entity_ok
+	"angst"	entity_ok
+	"aogon"	entity_ok
+	"ap"	entity_ok
+	"ape"	entity_ok
+	"apos"	entity_ok
+	"aring"	entity_ok
+	"ast"	entity_ok
+	"asymp"	entity_ok
+	"atilde"	entity_ok
+	"auml"	entity_ok
+	"b.Delta"	entity_ok
+	"b.Gamma"	entity_ok
+	"b.Lambda"	entity_ok
+	"b.Omega"	entity_ok
+	"b.Phi"	entity_ok
+	"b.Pi"	entity_ok
+	"b.Psi"	entity_ok
+	"b.Sigma"	entity_ok
+	"b.Theta"	entity_ok
+	"b.Upsi"	entity_ok
+	"b.Xi"	entity_ok
+	"b.alpha"	entity_ok
+	"b.beta"	entity_ok
+	"b.chi"	entity_ok
+	"b.delta"	entity_ok
+	"b.epsi"	entity_ok
+	"b.epsis"	entity_ok
+	"b.epsiv"	entity_ok
+	"b.eta"	entity_ok
+	"b.gamma"	entity_ok
+	"b.gammad"	entity_ok
+	"b.iota"	entity_ok
+	"b.kappa"	entity_ok
+	"b.kappav"	entity_ok
+	"b.lambda"	entity_ok
+	"b.mu"	entity_ok
+	"b.nu"	entity_ok
+	"b.omega"	entity_ok
+	"b.phis"	entity_ok
+	"b.phiv"	entity_ok
+	"b.pi"	entity_ok
+	"b.piv"	entity_ok
+	"b.psi"	entity_ok
+	"b.rho"	entity_ok
+	"b.rhov"	entity_ok
+	"b.sigma"	entity_ok
+	"b.sigmav"	entity_ok
+	"b.tau"	entity_ok
+	"b.thetas"	entity_ok
+	"b.thetav"	entity_ok
+	"b.upsi"	entity_ok
+	"b.xi"	entity_ok
+	"b.zeta"	entity_ok
+	"barwed"	entity_ok
+	"bcong"	entity_ok
+	"bcy"	entity_ok
+	"bdquo"	entity_ok
+	"becaus"	entity_ok
+	"bepsi"	entity_ok
+	"bernou"	entity_ok
+	"beta"	entity_ok
+	"beth"	entity_ok
+	"bgr"	entity_ok
+	"blank"	entity_ok
+	"blk12"	entity_ok
+	"blk14"	entity_ok
+	"blk34"	entity_ok
+	"block"	entity_ok
+	"bottom"	entity_ok
+	"bowtie"	entity_ok
+	"boxDL"	entity_ok
+	"boxDR"	entity_ok
+	"boxDl"	entity_ok
+	"boxDr"	entity_ok
+	"boxH"	entity_ok
+	"boxHD"	entity_ok
+	"boxHU"	entity_ok
+	"boxHd"	entity_ok
+	"boxHu"	entity_ok
+	"boxUL"	entity_ok
+	"boxUR"	entity_ok
+	"boxUl"	entity_ok
+	"boxUr"	entity_ok
+	"boxV"	entity_ok
+	"boxVH"	entity_ok
+	"boxVL"	entity_ok
+	"boxVR"	entity_ok
+	"boxVh"	entity_ok
+	"boxVl"	entity_ok
+	"boxVr"	entity_ok
+	"boxdL"	entity_ok
+	"boxdR"	entity_ok
+	"boxdl"	entity_ok
+	"boxdr"	entity_ok
+	"boxh"	entity_ok
+	"boxhD"	entity_ok
+	"boxhU"	entity_ok
+	"boxhd"	entity_ok
+	"boxhu"	entity_ok
+	"boxuL"	entity_ok
+	"boxuR"	entity_ok
+	"boxul"	entity_ok
+	"boxur"	entity_ok
+	"boxv"	entity_ok
+	"boxvH"	entity_ok
+	"boxvL"	entity_ok
+	"boxvR"	entity_ok
+	"boxvh"	entity_ok
+	"boxvl"	entity_ok
+	"boxvr"	entity_ok
+	"bprime"	entity_ok
+	"breve"	entity_ok
+	"brkbar"	entity_ok
+	"brvbar"	entity_ok
+	"bsim"	entity_ok
+	"bsime"	entity_ok
+	"bsol"	entity_ok
+	"bull"	entity_ok
+	"bump"	entity_ok
+	"bumpe"	entity_ok
+	"cacute"	entity_ok
+	"cap"	entity_ok
+	"caret"	entity_ok
+	"caron"	entity_ok
+	"ccaron"	entity_ok
+	"ccedil"	entity_ok
+	"ccirc"	entity_ok
+	"cdot"	entity_ok
+	"cedil"	entity_ok
+	"cent"	entity_ok
+	"chcy"	entity_ok
+	"check"	entity_ok
+	"chi"	entity_ok
+	"cir"	entity_ok
+	"circ"	entity_ok
+	"cire"	entity_ok
+	"clubs"	entity_ok
+	"colon"	entity_ok
+	"colone"	entity_ok
+	"comma"	entity_ok
+	"commat"	entity_ok
+	"comp"	entity_ok
+	"compfn"	entity_ok
+	"cong"	entity_ok
+	"conint"	entity_ok
+	"coprod"	entity_ok
+	"copy"	entity_ok
+	"copysr"	entity_ok
+	"crarr"	entity_ok
+	"cross"	entity_ok
+	"cuepr"	entity_ok
+	"cuesc"	entity_ok
+	"cularr"	entity_ok
+	"cup"	entity_ok
+	"cupre"	entity_ok
+	"curarr"	entity_ok
+	"curren"	entity_ok
+	"cuvee"	entity_ok
+	"cuwed"	entity_ok
+	"dArr"	entity_ok
+	"dagger"	entity_ok
+	"daleth"	entity_ok
+	"darr"	entity_ok
+	"darr2"	entity_ok
+	"dash"	entity_ok
+	"dashv"	entity_ok
+	"dblac"	entity_ok
+	"dcaron"	entity_ok
+	"dcy"	entity_ok
+	"deg"	entity_ok
+	"delta"	entity_ok
+	"dgr"	entity_ok
+	"dharl"	entity_ok
+	"dharr"	entity_ok
+	"diam"	entity_ok
+	"diams"	entity_ok
+	"die"	entity_ok
+	"divide"	entity_ok
+	"divonx"	entity_ok
+	"djcy"	entity_ok
+	"dlarr"	entity_ok
+	"dlcorn"	entity_ok
+	"dlcrop"	entity_ok
+	"dollar"	entity_ok
+	"dot"	entity_ok
+	"drarr"	entity_ok
+	"drcorn"	entity_ok
+	"drcrop"	entity_ok
+	"dscy"	entity_ok
+	"dstrok"	entity_ok
+	"dtri"	entity_ok
+	"dtrif"	entity_ok
+	"dzcy"	entity_ok
+	"eDot"	entity_ok
+	"eacgr"	entity_ok
+	"eacute"	entity_ok
+	"ecaron"	entity_ok
+	"ecir"	entity_ok
+	"ecirc"	entity_ok
+	"ecolon"	entity_ok
+	"ecy"	entity_ok
+	"edot"	entity_ok
+	"eeacgr"	entity_ok
+	"eegr"	entity_ok
+	"efDot"	entity_ok
+	"egr"	entity_ok
+	"egrave"	entity_ok
+	"egs"	entity_ok
+	"ell"	entity_ok
+	"els"	entity_ok
+	"emacr"	entity_ok
+	"emdash"	entity_ok
+	"empty"	entity_ok
+	"emsp"	entity_ok
+	"emsp13"	entity_ok
+	"emsp14"	entity_ok
+	"endash"	entity_ok
+	"eng"	entity_ok
+	"ensp"	entity_ok
+	"eogon"	entity_ok
+	"epsi"	entity_ok
+	"epsilon"	entity_ok
+	"epsis"	entity_ok
+	"epsiv"	entity_ok
+	"equals"	entity_ok
+	"equiv"	entity_ok
+	"erDot"	entity_ok
+	"esdot"	entity_ok
+	"eta"	entity_ok
+	"eth"	entity_ok
+	"euml"	entity_ok
+	"euro"	entity_ok
+	"excl"	entity_ok
+	"exist"	entity_ok
+	"fcy"	entity_ok
+	"female"	entity_ok
+	"ffilig"	entity_ok
+	"fflig"	entity_ok
+	"ffllig"	entity_ok
+	"filig"	entity_ok
+	"fjlig"	entity_ok
+	"flat"	entity_ok
+	"fllig"	entity_ok
+	"fnof"	entity_ok
+	"forall"	entity_ok
+	"fork"	entity_ok
+	"frac12"	entity_ok
+	"frac13"	entity_ok
+	"frac14"	entity_ok
+	"frac15"	entity_ok
+	"frac16"	entity_ok
+	"frac18"	entity_ok
+	"frac23"	entity_ok
+	"frac25"	entity_ok
+	"frac34"	entity_ok
+	"frac35"	entity_ok
+	"frac38"	entity_ok
+	"frac45"	entity_ok
+	"frac56"	entity_ok
+	"frac58"	entity_ok
+	"frac78"	entity_ok
+	"frasl"	entity_ok
+	"frown"	entity_ok
+	"gE"	entity_ok
+	"gEl"	entity_ok
+	"gacute"	entity_ok
+	"gamma"	entity_ok
+	"gammad"	entity_ok
+	"gap"	entity_ok
+	"gbreve"	entity_ok
+	"gcedil"	entity_ok
+	"gcirc"	entity_ok
+	"gcy"	entity_ok
+	"gdot"	entity_ok
+	"ge"	entity_ok
+	"gel"	entity_ok
+	"ges"	entity_ok
+	"ggr"	entity_ok
+	"gimel"	entity_ok
+	"gjcy"	entity_ok
+	"gl"	entity_ok
+	"gnE"	entity_ok
+	"gnap"	entity_ok
+	"gne"	entity_ok
+	"gnsim"	entity_ok
+	"grave"	entity_ok
+	"gsdot"	entity_ok
+	"gsim"	entity_ok
+	"gt"	entity_ok
+	"gvnE"	entity_ok
+	"hArr"	entity_ok
+	"hairsp"	entity_ok
+	"half"	entity_ok
+	"hamilt"	entity_ok
+	"hardcy"	entity_ok
+	"harr"	entity_ok
+	"harrw"	entity_ok
+	"hcirc"	entity_ok
+	"hearts"	entity_ok
+	"hellip"	entity_ok
+	"hibar"	entity_ok
+	"horbar"	entity_ok
+	"hstrok"	entity_ok
+	"hybull"	entity_ok
+	"hyphen"	entity_ok
+	"iacgr"	entity_ok
+	"iacute"	entity_ok
+	"icirc"	entity_ok
+	"icy"	entity_ok
+	"idiagr"	entity_ok
+	"idigr"	entity_ok
+	"iecy"	entity_ok
+	"iexcl"	entity_ok
+	"iff"	entity_ok
+	"igr"	entity_ok
+	"igrave"	entity_ok
+	"ijlig"	entity_ok
+	"imacr"	entity_ok
+	"image"	entity_ok
+	"incare"	entity_ok
+	"infin"	entity_ok
+	"inodot"	entity_ok
+	"int"	entity_ok
+	"intcal"	entity_ok
+	"iocy"	entity_ok
+	"iogon"	entity_ok
+	"iota"	entity_ok
+	"iquest"	entity_ok
+	"isin"	entity_ok
+	"itilde"	entity_ok
+	"iukcy"	entity_ok
+	"iuml"	entity_ok
+	"jcirc"	entity_ok
+	"jcy"	entity_ok
+	"jnodot"	entity_ok
+	"jsercy"	entity_ok
+	"jukcy"	entity_ok
+	"kappa"	entity_ok
+	"kappav"	entity_ok
+	"kcedil"	entity_ok
+	"kcy"	entity_ok
+	"kgr"	entity_ok
+	"kgreen"	entity_ok
+	"khcy"	entity_ok
+	"khgr"	entity_ok
+	"kjcy"	entity_ok
+	"lAarr"	entity_ok
+	"lArr"	entity_ok
+	"lE"	entity_ok
+	"lEg"	entity_ok
+	"lacute"	entity_ok
+	"lagran"	entity_ok
+	"lambda"	entity_ok
+	"lang"	entity_ok
+	"lap"	entity_ok
+	"laquo"	entity_ok
+	"larr"	entity_ok
+	"larr2"	entity_ok
+	"larrhk"	entity_ok
+	"larrlp"	entity_ok
+	"larrtl"	entity_ok
+	"lcaron"	entity_ok
+	"lcedil"	entity_ok
+	"lceil"	entity_ok
+	"lcub"	entity_ok
+	"lcy"	entity_ok
+	"ldot"	entity_ok
+	"ldquo"	entity_ok
+	"ldquor"	entity_ok
+	"le"	entity_ok
+	"leg"	entity_ok
+	"les"	entity_ok
+	"lfloor"	entity_ok
+	"lg"	entity_ok
+	"lgr"	entity_ok
+	"lhard"	entity_ok
+	"lharu"	entity_ok
+	"lhblk"	entity_ok
+	"ljcy"	entity_ok
+	"lmidot"	entity_ok
+	"lnE"	entity_ok
+	"lnap"	entity_ok
+	"lne"	entity_ok
+	"lnsim"	entity_ok
+	"lowast"	entity_ok
+	"lowbar"	entity_ok
+	"loz"	entity_ok
+	"loz"	entity_ok
+	"lozf"	entity_ok
+	"lpar"	entity_ok
+	"lpargt"	entity_ok
+	"lrarr2"	entity_ok
+	"lrhar2"	entity_ok
+	"lrm"	entity_ok
+	"lsaquo"	entity_ok
+	"lsh"	entity_ok
+	"lsim"	entity_ok
+	"lsqb"	entity_ok
+	"lsquo"	entity_ok
+	"lsquor"	entity_ok
+	"lstrok"	entity_ok
+	"lt"	entity_ok
+	"lthree"	entity_ok
+	"ltimes"	entity_ok
+	"ltri"	entity_ok
+	"ltrie"	entity_ok
+	"ltrif"	entity_ok
+	"lvnE"	entity_ok
+	"macr"	entity_ok
+	"male"	entity_ok
+	"malt"	entity_ok
+	"map"	entity_ok
+	"marker"	entity_ok
+	"mcy"	entity_ok
+	"mdash"	entity_ok
+	"mgr"	entity_ok
+	"micro"	entity_ok
+	"mid"	entity_ok
+	"middot"	entity_ok
+	"minus"	entity_ok
+	"minusb"	entity_ok
+	"mldr"	entity_ok
+	"mnplus"	entity_ok
+	"models"	entity_ok
+	"mu"	entity_ok
+	"mumap"	entity_ok
+	"nVDash"	entity_ok
+	"nVdash"	entity_ok
+	"nabla"	entity_ok
+	"nacute"	entity_ok
+	"nap"	entity_ok
+	"napos"	entity_ok
+	"natur"	entity_ok
+	"nbsp"	entity_ok
+	"ncaron"	entity_ok
+	"ncedil"	entity_ok
+	"ncong"	entity_ok
+	"ncy"	entity_ok
+	"ndash"	entity_ok
+	"ne"	entity_ok
+	"nearr"	entity_ok
+	"nequiv"	entity_ok
+	"nexist"	entity_ok
+	"ngE"	entity_ok
+	"nge"	entity_ok
+	"nges"	entity_ok
+	"ngr"	entity_ok
+	"ngt"	entity_ok
+	"nhArr"	entity_ok
+	"nharr"	entity_ok
+	"ni"	entity_ok
+	"njcy"	entity_ok
+	"nlArr"	entity_ok
+	"nlE"	entity_ok
+	"nlarr"	entity_ok
+	"nldr"	entity_ok
+	"nle"	entity_ok
+	"nles"	entity_ok
+	"nlt"	entity_ok
+	"nltri"	entity_ok
+	"nltrie"	entity_ok
+	"nmid"	entity_ok
+	"not"	entity_ok
+	"notin"	entity_ok
+	"npar"	entity_ok
+	"npr"	entity_ok
+	"npre"	entity_ok
+	"nrArr"	entity_ok
+	"nrarr"	entity_ok
+	"nrtri"	entity_ok
+	"nrtrie"	entity_ok
+	"nsc"	entity_ok
+	"nsce"	entity_ok
+	"nsim"	entity_ok
+	"nsime"	entity_ok
+	"nsmid"	entity_ok
+	"nspar"	entity_ok
+	"nsub"	entity_ok
+	"nsubE"	entity_ok
+	"nsube"	entity_ok
+	"nsup"	entity_ok
+	"nsupE"	entity_ok
+	"nsupe"	entity_ok
+	"ntilde"	entity_ok
+	"nu"	entity_ok
+	"num"	entity_ok
+	"numero"	entity_ok
+	"numsp"	entity_ok
+	"nvDash"	entity_ok
+	"nvdash"	entity_ok
+	"nwarr"	entity_ok
+	"oS"	entity_ok
+	"oacgr"	entity_ok
+	"oacute"	entity_ok
+	"oast"	entity_ok
+	"ocir"	entity_ok
+	"ocirc"	entity_ok
+	"ocy"	entity_ok
+	"odash"	entity_ok
+	"odblac"	entity_ok
+	"odot"	entity_ok
+	"oelig"	entity_ok
+	"ogon"	entity_ok
+	"ogr"	entity_ok
+	"ograve"	entity_ok
+	"ohacgr"	entity_ok
+	"ohgr"	entity_ok
+	"ohm"	entity_ok
+	"olarr"	entity_ok
+	"oline"	entity_ok
+	"omacr"	entity_ok
+	"omega"	entity_ok
+	"omicron"	entity_ok
+	"ominus"	entity_ok
+	"oplus"	entity_ok
+	"or"	entity_ok
+	"orarr"	entity_ok
+	"order"	entity_ok
+	"ordf"	entity_ok
+	"ordm"	entity_ok
+	"oslash"	entity_ok
+	"osol"	entity_ok
+	"otilde"	entity_ok
+	"otimes"	entity_ok
+	"ouml"	entity_ok
+	"par"	entity_ok
+	"para"	entity_ok
+	"part"	entity_ok
+	"pcy"	entity_ok
+	"percnt"	entity_ok
+	"period"	entity_ok
+	"permil"	entity_ok
+	"perp"	entity_ok
+	"pgr"	entity_ok
+	"phgr"	entity_ok
+	"phi"	entity_ok
+	"phis"	entity_ok
+	"phiv"	entity_ok
+	"phmmat"	entity_ok
+	"phone"	entity_ok
+	"pi"	entity_ok
+	"piv"	entity_ok
+	"planck"	entity_ok
+	"plus"	entity_ok
+	"plusb"	entity_ok
+	"plusdo"	entity_ok
+	"plusmn"	entity_ok
+	"pound"	entity_ok
+	"pr"	entity_ok
+	"prap"	entity_ok
+	"pre"	entity_ok
+	"prime"	entity_ok
+	"prnE"	entity_ok
+	"prnap"	entity_ok
+	"prnsim"	entity_ok
+	"prod"	entity_ok
+	"prop"	entity_ok
+	"prsim"	entity_ok
+	"psgr"	entity_ok
+	"psi"	entity_ok
+	"puncsp"	entity_ok
+	"quest"	entity_ok
+	"quot"	entity_ok
+	"rAarr"	entity_ok
+	"rArr"	entity_ok
+	"racute"	entity_ok
+	"radic"	entity_ok
+	"rang"	entity_ok
+	"raquo"	entity_ok
+	"rarr"	entity_ok
+	"rarr2"	entity_ok
+	"rarrhk"	entity_ok
+	"rarrlp"	entity_ok
+	"rarrtl"	entity_ok
+	"rarrw"	entity_ok
+	"rcaron"	entity_ok
+	"rcedil"	entity_ok
+	"rceil"	entity_ok
+	"rcub"	entity_ok
+	"rcy"	entity_ok
+	"rdquo"	entity_ok
+	"rdquor"	entity_ok
+	"real"	entity_ok
+	"rect"	entity_ok
+	"reg"	entity_ok
+	"rfloor"	entity_ok
+	"rgr"	entity_ok
+	"rhard"	entity_ok
+	"rharu"	entity_ok
+	"rho"	entity_ok
+	"rhov"	entity_ok
+	"ring"	entity_ok
+	"rlarr2"	entity_ok
+	"rlhar2"	entity_ok
+	"rlm"	entity_ok
+	"rpar"	entity_ok
+	"rpargt"	entity_ok
+	"rsaquo"	entity_ok
+	"rsh"	entity_ok
+	"rsqb"	entity_ok
+	"rsquo"	entity_ok
+	"rsquor"	entity_ok
+	"rthree"	entity_ok
+	"rtimes"	entity_ok
+	"rtri"	entity_ok
+	"rtrie"	entity_ok
+	"rtrif"	entity_ok
+	"rx"	entity_ok
+	"sacute"	entity_ok
+	"samalg"	entity_ok
+	"sbquo"	entity_ok
+	"sbsol"	entity_ok
+	"sc"	entity_ok
+	"scap"	entity_ok
+	"scaron"	entity_ok
+	"sccue"	entity_ok
+	"sce"	entity_ok
+	"scedil"	entity_ok
+	"scirc"	entity_ok
+	"scnE"	entity_ok
+	"scnap"	entity_ok
+	"scnsim"	entity_ok
+	"scsim"	entity_ok
+	"scy"	entity_ok
+	"sdot"	entity_ok
+	"sdotb"	entity_ok
+	"sect"	entity_ok
+	"semi"	entity_ok
+	"setmn"	entity_ok
+	"sext"	entity_ok
+	"sfgr"	entity_ok
+	"sfrown"	entity_ok
+	"sgr"	entity_ok
+	"sharp"	entity_ok
+	"shchcy"	entity_ok
+	"shcy"	entity_ok
+	"shy"	entity_ok
+	"sigma"	entity_ok
+	"sigmaf"	entity_ok
+	"sigmav"	entity_ok
+	"sim"	entity_ok
+	"sime"	entity_ok
+	"smid"	entity_ok
+	"smile"	entity_ok
+	"softcy"	entity_ok
+	"sol"	entity_ok
+	"spades"	entity_ok
+	"spar"	entity_ok
+	"sqcap"	entity_ok
+	"sqcup"	entity_ok
+	"sqsub"	entity_ok
+	"sqsube"	entity_ok
+	"sqsup"	entity_ok
+	"sqsupe"	entity_ok
+	"squ"	entity_ok
+	"square"	entity_ok
+	"squf"	entity_ok
+	"ssetmn"	entity_ok
+	"ssmile"	entity_ok
+	"sstarf"	entity_ok
+	"star"	entity_ok
+	"starf"	entity_ok
+	"sub"	entity_ok
+	"subE"	entity_ok
+	"sube"	entity_ok
+	"subnE"	entity_ok
+	"subne"	entity_ok
+	"sum"	entity_ok
+	"sung"	entity_ok
+	"sup"	entity_ok
+	"sup1"	entity_ok
+	"sup2"	entity_ok
+	"sup3"	entity_ok
+	"supE"	entity_ok
+	"supe"	entity_ok
+	"supnE"	entity_ok
+	"supne"	entity_ok
+	"szlig"	entity_ok
+	"target"	entity_ok
+	"tau"	entity_ok
+	"tcaron"	entity_ok
+	"tcedil"	entity_ok
+	"tcy"	entity_ok
+	"tdot"	entity_ok
+	"telrec"	entity_ok
+	"tgr"	entity_ok
+	"there4"	entity_ok
+	"theta"	entity_ok
+	"thetas"	entity_ok
+	"thetasym"	entity_ok
+	"thetav"	entity_ok
+	"thgr"	entity_ok
+	"thinsp"	entity_ok
+	"thkap"	entity_ok
+	"thksim"	entity_ok
+	"thorn"	entity_ok
+	"tilde"	entity_ok
+	"times"	entity_ok
+	"timesb"	entity_ok
+	"top"	entity_ok
+	"tprime"	entity_ok
+	"trade"	entity_ok
+	"trie"	entity_ok
+	"tscy"	entity_ok
+	"tshcy"	entity_ok
+	"tstrok"	entity_ok
+	"twixt"	entity_ok
+	"uArr"	entity_ok
+	"uacgr"	entity_ok
+	"uacute"	entity_ok
+	"uarr"	entity_ok
+	"uarr2"	entity_ok
+	"ubrcy"	entity_ok
+	"ubreve"	entity_ok
+	"ucirc"	entity_ok
+	"ucy"	entity_ok
+	"udblac"	entity_ok
+	"udiagr"	entity_ok
+	"udigr"	entity_ok
+	"ugr"	entity_ok
+	"ugrave"	entity_ok
+	"uharl"	entity_ok
+	"uharr"	entity_ok
+	"uhblk"	entity_ok
+	"ulcorn"	entity_ok
+	"ulcrop"	entity_ok
+	"umacr"	entity_ok
+	"uml"	entity_ok
+	"uogon"	entity_ok
+	"uplus"	entity_ok
+	"upsi"	entity_ok
+	"upsih"	entity_ok
+	"upsilon"	entity_ok
+	"urcorn"	entity_ok
+	"urcrop"	entity_ok
+	"uring"	entity_ok
+	"utilde"	entity_ok
+	"utri"	entity_ok
+	"utrif"	entity_ok
+	"uuml"	entity_ok
+	"vArr"	entity_ok
+	"vDash"	entity_ok
+	"varr"	entity_ok
+	"vcy"	entity_ok
+	"vdash"	entity_ok
+	"veebar"	entity_ok
+	"vellip"	entity_ok
+	"verbar"	entity_ok
+	"vltri"	entity_ok
+	"vprime"	entity_ok
+	"vprop"	entity_ok
+	"vrtri"	entity_ok
+	"vsubnE"	entity_ok
+	"vsubne"	entity_ok
+	"vsupnE"	entity_ok
+	"vsupne"	entity_ok
+	"wcirc"	entity_ok
+	"wedgeq"	entity_ok
+	"weierp"	entity_ok
+	"wreath"	entity_ok
+	"xcirc"	entity_ok
+	"xdtri"	entity_ok
+	"xgr"	entity_ok
+	"xhArr"	entity_ok
+	"xharr"	entity_ok
+	"xi"	entity_ok
+	"xlArr"	entity_ok
+	"xrArr"	entity_ok
+	"xutri"	entity_ok
+	"yacute"	entity_ok
+	"yacy"	entity_ok
+	"ycirc"	entity_ok
+	"ycy"	entity_ok
+	"yen"	entity_ok
+	"yicy"	entity_ok
+	"yucy"	entity_ok
+	"yuml"	entity_ok
+	"zacute"	entity_ok
+	"zcaron"	entity_ok
+	"zcy"	entity_ok
+	"zdot"	entity_ok
+	"zeta"	entity_ok
+	"zgr"	entity_ok
+	"zhcy"	entity_ok
+	"zwj"	entity_ok
+	"zwnj"	entity_ok
+done
+	".0-9A-Za-z"	entity_name
+
+:entity_ok Entity
+	*	mistake_entity noeat recolor=-1
+	";"	entity_end noeat recolor=-1
+
+:mistake_entity Mystery
+	*	idle noeat
+
+.end

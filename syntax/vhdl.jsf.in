@@ -1,0 +1,211 @@
+# JOE syntax highlight file for VHDL
+
+# Define colors
+
+=Idle
+=Comment green
+=Constant cyan
+=Escape bold cyan
+=Keyword bold
+=Operator bold
+
+# All following states are for when we're not in a preprocessor line
+
+:idle Idle
+	*		idle
+	"-"		maybe_comment
+	"'"		char		recolor=-1
+	"\""		string		recolor=-1
+	"0-9"		first_digit	recolor=-1
+	"."		maybe_float
+	"\""		string		recolor=-1
+	"Bb"		maybe_binary	buffer
+	"Oo"		maybe_octal	buffer
+	"Xx"		maybe_hex	buffer
+	"ac-np-wyzAC-NP-WYZ"	ident	buffer
+
+:maybe_comment Idle
+	*		idle		noeat
+	"-"		comment		recolor=-2
+
+:comment Comment
+	*		comment
+	"\n"		idle
+
+
+# Character constant
+
+:char Constant
+	*		char
+	"'"		idle
+
+# Strings
+
+:maybe_binary Idle
+	*		ident		noeat
+	"\""		string		recolor=-2
+
+:maybe_octal Idle
+	*		ident		noeat
+	"\""		string		recolor=-2
+
+:maybe_hex Idle
+	*		ident		noeat
+	"\""		string		recolor=-2
+
+:string	Constant
+	*		string
+	"\n"		idle
+	"\""		idle
+	"\\"		string_escape	recolor=-1
+
+:string_escape Escape
+	*		string
+	"\n"		string		recolor=-2
+
+# Integer constants
+
+:first_digit Constant
+	*		idle		noeat
+	"."		float
+	"_"		first_digit
+	"0-9"		first_digit
+
+# Floating point
+
+:maybe_float Constant
+	*		idle	recolor=-2	noeat
+	"0-9"		float		recolor=-2
+
+:float Constant
+	*		idle	noeat
+	"eE"		epart
+	"0-9"		float
+
+:epart	Constant
+	*		idle	noeat
+	"0-9+\-"	enum
+
+:enum	Constant
+	*		idle	noeat
+	"0-9"		enum
+
+# Identifiers
+
+:ident	Idle
+	*		quote		noeat istrings
+	"abs"		operator
+	"access"	kw
+	"after"		kw
+	"alias"		kw
+	"all"		kw
+	"and"		operator
+	"architecture"	kw
+	"array"		kw
+	"assert"	kw
+	"attribute"	kw
+	"begin"		kw
+	"block"		kw
+	"body"		kw
+	"buffer"	kw
+	"bus"		kw
+	"case"		kw
+	"component"	kw
+	"configuration"	kw
+	"constant"	kw
+	"disconnect"	kw
+	"downto"	kw
+	"else"		kw
+	"elsif"		kw
+	"end"		kw
+	"entity"	kw
+	"exit"		kw
+	"file"		kw
+	"for"		kw
+	"function"	kw
+	"generate"	kw
+	"generic"	kw
+	"group"		kw
+	"guarded"	kw
+	"if"		kw
+	"impure"	kw
+	"in"		kw
+	"inertial"	kw
+	"inout"		kw
+	"is"		kw
+	"label"		kw
+	"library"	kw
+	"linkage"	kw
+	"literal"	kw
+	"loop"		kw
+	"map"		kw
+	"mod"		operator
+	"nand"		operator
+	"new"		kw
+	"next"		kw
+	"nor"		operator
+	"not"		operator
+	"null"		kw
+	"of"		kw
+	"on"		kw
+	"open"		kw
+	"or"		operator
+	"others"	kw
+	"out"		kw
+	"package"	kw
+	"port"		kw
+	"postponed"	kw
+	"procedure"	kw
+	"process"	kw
+	"process"	kw
+	"pure"		kw
+	"range"		kw
+	"record"	kw
+	"register"	kw
+	"reject"	kw
+	"rem"		operator
+	"report"	kw
+	"return"	kw
+	"rol"		operator
+	"ror"		operator
+	"select"	kw
+	"severity"	kw
+	"signal"	kw
+	"sla"		operator
+	"sll"		operator
+	"sra"		operator
+	"srl"		operator
+	"subtype"	kw
+	"then"		kw
+	"to"		kw
+	"transport"	kw
+	"type"		kw
+	"unaffected"	kw
+	"units"		kw
+	"until"		kw
+	"use"		kw
+	"variable"	kw
+	"wait"		kw
+	"when"		kw
+	"while"		kw
+	"with"		kw
+	"xnor"		operator
+	"xor"		operator
+done
+	"a-zA-Z0-9_"	ident
+
+:operator Operator
+	*	idle	noeat
+
+:kw Keyword
+	*	idle	noeat
+
+# identifiers separated with quote '
+
+:quote	Idle
+	*	idle	noeat
+	"'"	quote_word
+
+:quote_word	Idle
+	*	idle	noeat
+	"a-zA-Z"	ident	buffer

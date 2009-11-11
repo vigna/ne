@@ -1,0 +1,162 @@
+# JOE syntax highlight file for Python
+
+# TODO:
+#  * octal escape sequences
+#  * highlight function and class names?
+
+=Idle
+=Comment 	green
+=Docstring	cyan
+=DocEscape	bold cyan
+=Constant 	cyan
+=Escape 	bold cyan
+=Keyword 	bold
+
+:idle Idle
+	*		idle
+	"#"		comment		recolor=-1
+	"0-9"		first_digit	recolor=-1
+	"'"		string_sq_1	recolor=-1
+	"\""		string_dq_1	recolor=-1
+	"a-zA-Z_"	ident		buffer
+
+:comment Comment
+	*		comment
+	"\n"		idle
+
+:string_sq_1 Constant
+	*		string_sq	noeat
+	"'"		string_sq_2
+
+:string_sq_2 Constant
+	*		idle		noeat
+	"'"		docstr_sq	recolor=-3
+
+:string_sq Constant
+	*		string_sq
+	"\'"		idle
+	"\\"		string_sq_esc	recolor=-1
+
+:string_sq_esc Escape
+	*		string_sq
+	"\n"		string_sq	recolor=-2
+
+:docstr_sq Docstring
+	*		docstr_sq
+	"\\"		docstr_sq_esc	recolor=-1
+	"'"		docstr_sq_1
+
+:docstr_sq_1 Docstring
+	*		docstr_sq	noeat
+	"'"		docstr_sq_2
+
+:docstr_sq_2 Docstring
+	*		docstr_sq	noeat
+	"'"		idle
+
+:docstr_sq_esc DocEscape
+	*		docstr_sq
+	"\n"		docstr_sq	recolor=-2
+
+:string_dq_1 Constant
+	*		string_dq	noeat
+	"\""		string_dq_2
+
+:string_dq_2 Constant
+	*		idle		noeat
+	"\""		docstr_dq	recolor=-3
+
+:string_dq Constant
+	*		string_dq
+	"\""		idle
+	"\\"		string_dq_esc	recolor=-1
+
+:string_dq_esc Escape
+	*		string_dq
+	"\n"		string_dq	recolor=-2
+
+:docstr_dq Docstring
+	*		docstr_dq
+	"\\"		docstr_dq_esc	recolor=-1
+	"\""		docstr_dq_1
+
+:docstr_dq_1 Docstring
+	*		docstr_dq	noeat
+	"\""		docstr_dq_2
+
+:docstr_dq_2 Docstring
+	*		docstr_dq	noeat
+	"\""		idle
+
+:docstr_dq_esc DocEscape
+	*		docstr_dq
+	"\n"		docstr_dq	recolor=-2
+	
+:first_digit Constant
+	*		idle	noeat
+	"xX"		hex
+	"."		float
+	"0-9"		first_number
+
+:hex Constant
+	*		idle	noeat
+	"0-9A-Fa-f"	hex
+
+:first_number Constant
+	*		idle	noeat
+	"0-9"		first_number
+	"."		float
+
+:maybe_float Constant
+	*		idle	recolor=-2	noeat
+	"0-9"		float		recolor=-2
+
+:float Constant
+	*		idle	noeat
+	"eE"		epart
+	"0-9"		float
+
+:epart Constant
+	*		idle	noeat
+	"0-9+\-"	enum
+
+:enum Constant
+	*		idle	noeat
+	"0-9"		enum
+
+:ident Idle
+	*		idle		noeat strings
+	"and"		kw
+	"assert"	kw
+	"break"		kw
+	"class"		kw
+	"continue"	kw
+	"def"		kw
+	"del"		kw
+	"elif"		kw
+	"else"		kw
+	"except"	kw
+	"exec"		kw
+	"finally"	kw
+	"for"		kw
+	"from"		kw
+	"global"	kw
+	"if"		kw
+	"import"	kw
+	"in"		kw
+	"is"		kw
+	"lambda"	kw
+	"not"		kw
+	"or"		kw
+	"pass"		kw
+	"print"		kw
+	"raise"		kw
+	"return"	kw
+	"try"		kw
+	"while"		kw
+	"yield"		kw
+done
+	"a-zA-Z0-9_"	ident
+
+:kw Keyword
+	*	idle	noeat

@@ -1,0 +1,284 @@
+# Improved XML highlighter by: Brian Candler <B.Candler@pobox.com>
+
+# Define no. sync lines
+# You can say:
+# -200     means 200 lines
+# -        means always start parsing from beginning of file when we lose sync
+#          if nothing is specified, the default is -50
+
+-
+
+# Define colors
+#
+# bold inverse blink dim underline
+# white cyan magenta blue yellow green red black
+# bg_white bg_cyan bg_magenta bg_blue bg_yellow bg_green bg_red bg_black
+
+# The underlines are here right now just because I want to distinguish which
+# bits have been coloured (say) CdataStart, CdataBody, CdataEnd. And that's
+# because I think it may be useful to make that distinction for some people.
+
+=Idle
+=Error		red bold
+=Tag		blue
+=Attr		cyan
+=Constant	blue bold
+=EntityRef	magenta
+=Decl		cyan
+=CommentStart	green
+=CommentBody	green
+=CommentEnd	green
+=PIStart	magenta bold
+=PIBody		magenta
+=PIEnd		magenta bold
+=CdataStart	blue bold
+=CdataBody	bold
+=CdataEnd	blue bold
+
+# http://www.w3.org/TR/2004/REC-xml-20040204/
+#
+# NOTE: For UNICODE compatibility, the ranges
+#	"A-Za-z_:"		-- first character of Name
+#	"A-Za-z0-9._:-"		-- subsequent characters of Name
+# ought to be replaced with some appropriate Unicode character classes
+
+:content Idle
+	*		content
+	"<"		tag		recolor=-1
+	"&"		entityref	recolor=-1
+
+# > is allowed
+#	">"		error		noeat recolor=-1
+
+
+# In several contexts a space is an error, and since a coloured space is
+# not visible, we colour the next non-space character as well.
+
+:error Error
+	*		error_visible	noeat recolor=-1
+	" \t\r\n"	error
+
+:error_visible Error
+	*		content
+
+# Matched: &
+
+:entityref EntityRef
+	*		error		noeat recolor=-1
+	"A-Za-z0-9._:-"	entityref
+	"#"		entityref
+	";"		content
+
+# Matched: <
+
+:tag Tag
+	*		error		noeat recolor=-1
+	"/"		end_tag
+	"A-Za-z_:"	start_or_empty_tag
+	"?"		pi_start	recolor=-2
+	"!"		decl		recolor=-2 buffer
+
+# Matched: </
+
+:end_tag Tag
+	*		error		noeat recolor=-1
+	"A-Za-z_:"	end_tag2
+
+:end_tag2 Tag
+	*		error		noeat recolor=-1
+	"A-Za-z0-9._:-"	end_tag2
+	" \t\r\n"	end_tag2_sp	recolor=-1
+	">"		content
+
+:end_tag2_sp Idle
+	*		end_tag3	noeat
+
+:end_tag3 Tag
+	*		error		noeat recolor=-1
+	" \t\r\n"	end_tag3_sp	recolor=-1
+	">"		content
+
+:end_tag3_sp Idle
+	*		end_tag_3	noeat
+
+# Matched: <tag
+
+:start_or_empty_tag Tag
+	*		error		noeat recolor=-1
+	"A-Za-z0-9._:-"	start_or_empty_tag
+	"/"		empty_tag
+	" \t\r\n"	start_or_empty_tag_sp	recolor=-1
+	">"		content
+
+:start_or_empty_tag_sp Idle
+	*		tag_space	noeat
+
+# Matched: <tag/
+
+:empty_tag Tag
+	*		error		noeat recolor=-1
+	">"		content
+
+# Matched: <tag SPACE
+
+:tag_space Attr
+	*		error		noeat recolor=-1
+	" \t\r\n"	tag_space_sp	recolor=-1
+	"A-Za-z_:"	attr
+	"/"		empty_tag	recolor=-1
+	">"		close_tag	recolor=-1
+
+:tag_space_sp Idle
+	*		tag_space	noeat
+
+# Matched: <tag attr
+
+:attr Attr
+	*		error		noeat recolor=-1
+	"A-Za-z0-9._:-" attr
+	" \t\r\n"	attr_sp		recolor=-1
+	"="		string
+
+:attr_sp Idle
+	*		attr_before	noeat
+
+:attr_before Attr
+	*		error		noeat recolor=-1
+	" \t\r\n"	attr_sp		recolor=-1
+	"="		string
+
+# Matched: <tag attr=
+
+:string Attr
+	*		error		noeat recolor=-1
+	" \t\r\n"	string_sp	recolor=-1
+	"\""		astring		recolor=-1
+	"'"		bstring		recolor=-1
+
+:string_sp Idle
+	*		string		noeat
+
+# Matched: <tag attr="
+
+:astring Constant
+	*		astring
+	"<"		error		noeat recolor=-1
+	"&"		achar		recolor=-1
+	"\""		endstring
+
+#	">"		error		noeat recolor=-1
+
+
+:bstring Constant
+	*		bstring
+	"<"		error		noeat recolor=-1
+	"&"		bchar		recolor=-1
+	"'"		endstring
+
+#	">"		error		noeat recolor=-1
+
+
+:achar EntityRef
+	*		error		noeat recolor=-1
+	"A-Za-z0-9._:-"	achar
+	"#"		achar
+	";"		astring
+
+:bchar EntityRef
+	*		error		noeat recolor=-1
+	"A-Za-z0-9._:-"	bchar
+	"#"		bchar
+	";"		bstring
+
+# Matched: <tag attr="foo"
+
+:endstring Attr
+	*		error		noeat recolor=-1
+	" \t\r\n"	tag_space_sp
+	"/"		empty_tag	recolor=-1
+	">"		close_tag	recolor=-1
+
+# This state is just to recolor the final ">" at the end of <tag attr="val">
+
+:close_tag Tag
+	*		content		noeat
+
+# Matched: <?
+
+:pi_start PIStart
+	*		pi		noeat recolor=-1
+
+:pi PIBody
+	*		pi
+	"?"		pi2
+
+:pi2 PIBody
+	*		pi
+	">"		pi_end		recolor=-2
+
+:pi_end PIEnd
+	*		content		noeat recolor=-1
+
+# Matched: <!
+
+:decl Decl
+	*		decl		strings
+	"!--"		comment_start	recolor=-5
+	"![CDATA["	cdata_start	recolor=-10
+done
+	"<"		decl_nest
+	">"		content
+
+# We allow one level of <...> nesting within declarations
+
+:decl_nest Decl
+	*		decl_nest
+	">"		decl
+
+# Matched: <!--
+
+:comment_start CommentStart
+	*		comment		noeat
+
+:comment CommentBody
+	*		comment
+	"-"		comment2
+
+:comment2 CommentBody
+	*		comment
+	"-"		comment3
+
+:comment3 CommentBody
+	*		comment_error	noeat recolor=-3
+	">"		comment_end	recolor=-3
+
+:comment_end CommentEnd
+	*		content		noeat recolor=-1
+
+# For compatibility, the string "--" (double-hyphen) MUST NOT occur within
+# comments. [http://www.w3.org/TR/REC-xml/ section 2.5]
+
+:comment_error Error
+	*		comment
+	"-"		comment_error
+	">"		comment_end	recolor=-3
+
+# Matched: <![CDATA[
+
+:cdata_start CdataStart
+	*		cdata		noeat
+
+:cdata CdataBody
+	*		cdata
+	"]"		cdata2
+
+:cdata2 CdataBody
+	*		cdata
+	"]"		cdata3
+
+:cdata3 CdataBody
+	*		cdata
+	">"		cdata_end	recolor=-3
+
+:cdata_end CdataEnd
+	*		content		noeat recolor=-1

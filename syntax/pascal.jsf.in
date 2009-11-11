@@ -1,0 +1,229 @@
+# PASCAL highlighter for JOE
+# With support for Delphi and FPC by Michael Van Canneyt
+
+=Idle
+=Comment green
+=Constant cyan
+=Type bold
+=Keyword bold
+=Operator bold
+=Function bold
+=Bad bold red
+
+:idle Idle
+	*		idle
+	"a-zA-Z"	ident		buffer
+	"("		maybe_comment
+	"/"		maybe_linecomment
+	"{"		comment		recolor=-1
+	"'"		string		recolor=-1
+	"$"		maybe_hex_number
+	"%"		maybe_bin_number
+	"&"		maybe_oct_number
+	"0-9"		number		recolor=-1 
+
+# Comments
+
+:maybe_comment Idle
+	*		idle		noeat
+	"*"		comment		recolor=-2
+
+:maybe_linecomment Idle
+	*		idle		noeat
+	"/"		line_comment    recolor=-2
+
+:line_comment Comment
+	*		line_comment
+	"\n"		reset
+
+:comment Comment
+	*		comment
+	"*"		maybe_end_comment
+	"}"		idle
+
+:comment Comment
+	*		comment
+	"*"		maybe_end_comment
+	"}"		idle
+
+:maybe_end_comment Comment
+	*		comment		noeat
+	")"		idle
+
+
+# String constant
+
+:string Constant
+	*		string
+	"\n"		idle
+	"'"		maybe_end_string
+
+:maybe_end_string Constant
+	*		idle		recolor=-1 noeat
+	"'"		string
+
+# Numeric constant
+
+:maybe_hex_number Idle
+	*		idle		noeat
+	"0-9A-Fa-f"	hex_number	recolor=-2
+
+:maybe_bin_number Idle
+	*		idle		noeat
+	"01"		bin_number	recolor=-2
+
+:maybe_oct_number Idle
+	*		idle		noeat
+	"0-7"		oct_number	recolor=-2
+
+:bad Bad
+	*		idle
+
+:hex_number	Constant
+	*		idle		noeat
+	"0-9"		hex_number
+	"a-fA-F"	hex_number
+
+:bin_number	Constant
+	*		idle		noeat
+	"01"		bin_number
+	"2-9"		bad		recolor=-1
+
+:oct_number	Constant
+	*		idle		noeat
+	"0-7"		oct_number
+	"89"		bad		recolor=-1
+
+:number Constant
+	*		idle		noeat
+	"0-9"		number
+	"eE"		epart
+	"."		dot
+
+:dot Constant
+	*		idle	noeat
+	"0-9"		float
+
+:float Constant
+	*		idle	noeat
+	"eE"		epart
+	"0-9"		float
+
+:epart Constant
+	*		idle	noeat
+	"0-9+\-"	enum
+
+:enum Constant
+	*		idle	noeat
+	"0-9"		enum
+
+
+# Keywords
+
+:ident Idle
+	*		idle		noeat istrings
+	"and"		operator
+	"array"		type
+	"begin"		kw
+	"case"		kw
+	"const"		kw
+	"div"		operator
+	"do"		kw
+	"downto"	kw
+	"else"		kw
+	"end"		kw
+	"file"		kw
+	"for"		kw
+	"function"	kw
+	"goto"		kw
+	"if"		kw
+	"in"		kw
+	"label"		kw
+	"mod"		operator
+	"nil"		word_constant
+	"not"		operator
+	"of"		kw
+	"or"		operator
+	"packed"	kw
+	"procedure"	kw
+	"program"	kw
+	"record"	kw
+	"repeat"	kw
+	"set"		kw
+	"then"		kw
+	"type"		kw
+	"until"		kw
+	"var"		kw
+	"while"		kw
+	"with"		kw
+# Delphi keywords
+	"to"		kw
+	"try"		kw
+	"finally"	kw
+	"raise"		kw
+	"absolute"      kw
+	"cdecl"		kw
+	"stdcall"	kw
+	"register"	kw
+	"interface"	kw
+	"library"	kw
+	"constructor"	kw
+	"destructor"	kw
+	"dispinterface" kw
+	"inherited"	kw
+	"public"	kw
+	"private"	kw
+	"published"	kw
+	"protected"	kw
+	"initialization"	kw
+	"finalization"	kw
+	"class"		kw
+	"object"	kw
+	"resourcestring"	kw
+	"property"	kw
+	"threadvar"	kw
+	"integer"	type
+	"boolean"	type
+	"real"		type
+	"char"		type
+	"string"	type
+	"text"		type
+	"abs"		function
+	"atan"		function
+	"arctan"	function
+	"concat"	function
+	"cos"		function
+	"eof"		function
+	"eoln"		function
+	"exp"		function
+	"insert"	function
+	"length"	function
+	"ln"		function
+	"log"		function
+	"odd"		function
+	"ord"		function
+	"page"		function
+	"pred"		function
+	"round"		function
+	"sin"		function
+	"sqr"		function
+	"sqrt"		function
+	"succ"		function
+	"trun"		function
+done
+	"a-zA-Z0-9_"	ident
+
+:kw Keyword
+	*	idle	noeat
+
+:type Type
+	*	idle	noeat
+
+:operator Operator
+	*	idle	noeat
+
+:word_constant Constant
+	*	idle	noeat
+
+:function Function
+	*	idle	noeat

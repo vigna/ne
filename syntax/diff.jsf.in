@@ -1,0 +1,422 @@
+# JOE syntax highlight file for diff/patch files
+#
+# 2007-05-11 :
+#
+# This file is just udiff.jsf, ndiff.jsf and cdiff.jsf merged together
+# into one file, to handle cases where A) it's difficult to tell what
+# type of diff might be inside the file to highlight and B) the file to
+# highlight may contain hunks of different types of diffs (unlikely).
+# Of course it can be used to replace the 3 abovementioned files
+# completely. If you want that, you need to edit ftyperc accordingly.
+#
+#   Dirk Schenkewitz <Dirk.Schenkewitz (AT) gmx.de>
+#
+
+
+# Color definitions
+=Idle
+=Garbage	dim white
+=DiffCmd	blue
+=FileOld	bold red
+=FileNew	bold green
+=HunkHead	bold blue
+=HunkMid	bold blue
+=DelLine	red
+=AddLine	green
+=ChgLine	magenta
+=CtxLine
+
+
+:reset Idle
+	*		garbage		recolor=-1
+	"\n"		reset
+	"d"		garbage		buffer	recolor=-1 # may be a "diff" command
+	"-"		udiff_o1			   # may start a unified diff hunk
+	"*"		cdiff_o1			   # may start a context diff hunk
+	"0-9"		ndiff_r0	mark	recolor=-1 # may start a "normal" diff hunk
+
+:garbage Garbage
+	*		garbage		strings
+	"diff"		diff_cmd	recolor=-3
+done
+	"\n"		reset
+
+:diff_cmd DiffCmd
+	*		diff_cmd
+	"\n"		reset
+
+#----------------------------------------------
+
+# unified diffs:
+
+:udiff_o1 Idle
+	*		garbage		recolor=-2	buffer
+	"-"		udiff_o2
+
+:udiff_o2 Idle
+	*		garbage		recolor=-3	buffer
+	"-"		udiff_o3	
+
+:udiff_o3 Idle
+	*		garbage		recolor=-4	buffer
+	" "		udiff_o4
+
+:udiff_o4 Idle
+	*		udiff_oldf	recolor=-5
+	" "		garbage		recolor=-5	buffer
+
+:udiff_n0 Idle
+	*		garbage		recolor=-1	buffer
+	"+"		udiff_n1
+
+:udiff_n1 Idle
+	*		garbage		recolor=-2	buffer
+	"+"		udiff_n2
+
+:udiff_n2 Idle
+	*		garbage		recolor=-3	buffer
+	"+"		udiff_n3	
+
+:udiff_n3 Idle
+	*		garbage		recolor=-4	buffer
+	" "		udiff_newf	recolor=-4
+
+:udiff_oldf FileOld
+	*		udiff_oldf
+	"\n"		udiff_n0
+
+:udiff_newf FileNew
+	*		udiff_newf
+	"\n"		udiff_prehunk1
+
+:udiff_prehunk1 Idle
+	*		garbage
+	"@"		udiff_prehunk2
+	"\n"		reset
+
+:udiff_prehunk2 Idle
+	*		garbage		recolor=-1
+	"@"		udiff_prehunk3
+	"\n"		reset
+
+:udiff_prehunk3 Idle
+	*		garbage		recolor=-1
+	" "		udiff_hunkhead	recolor=-3
+	"\n"		reset
+
+:udiff_hunkhead HunkHead
+	*		udiff_hunkhead
+	"\n"		udiff_hunkbody
+
+:udiff_hunkbody Idle
+	*		reset		noeat
+	"d"		garbage		recolor=-1	buffer
+	"-"		udiff_minus1
+	"+"		udiff_add	recolor=-1
+	" "		udiff_ctx	recolor=-1
+	"@"		udiff_prehunk2
+
+:udiff_minus1 Idle
+	*		udiff_del	noeat recolor=-2
+	"-"		udiff_minus2
+
+:udiff_minus2 Idle
+	*		udiff_del	noeat recolor=-3
+	"-"		udiff_minus3
+
+:udiff_minus3 Idle
+	*		udiff_del	noeat recolor=-4
+	" "		udiff_minus4
+
+:udiff_minus4 Idle
+	*		udiff_oldf	recolor=-5
+	"\n"		udiff_hunkbody
+	" "		udiff_del	recolor=-5
+
+:udiff_del DelLine
+	*		udiff_del
+	"\n"		udiff_hunkbody
+
+:udiff_add AddLine
+	*		udiff_add
+	"\n"		udiff_hunkbody
+
+:udiff_ctx CtxLine
+	*		udiff_ctx
+	"\n"		udiff_hunkbody
+
+#----------------------------------------------
+
+# "normal" diffs:
+
+:ndiff_r0 Idle
+	*		garbage	noeat	recolormark
+	"0-9"		ndiff_r0
+	","		ndiff_r1
+	"adc"		ndiff_r2
+	"\n"		reset	markend
+
+:ndiff_r1 Idle
+	*		garbage	recolormark
+	"0-9"		ndiff_r1
+	"adc"		ndiff_r2
+	"\n"		reset	markend
+
+:ndiff_r2 Idle
+	*		garbage noeat recolormark
+	"0-9"		ndiff_r2
+	","		ndiff_r3
+	"\n"		ndiff_re noeat recolormark
+
+:ndiff_r3 Idle
+	*		garbage noeat recolormark
+	"0-9"		ndiff_r3
+	"\n"		ndiff_re noeat recolormark
+
+:ndiff_re HunkHead
+	"\n"		ndiff_hunk0
+
+:ndiff_hunk0 HunkHead
+	*		reset noeat
+	"<"		ndiff_o1
+	">"		ndiff_n1
+	"\\"		ndiff_t1
+
+
+:ndiff_hunk1 HunkHead
+	*		reset noeat
+	"<"		ndiff_o1
+	">"		ndiff_n1
+	"-"		ndiff_m1	recolor=-1
+	"\\"		ndiff_t1
+
+
+:ndiff_t1 Idle
+	*		garbage		recolor=-3
+	"\n"		reset
+	" "		ndiff_txt	recolor=-3
+
+:ndiff_o1 Idle
+	*		garbage		recolor=-3
+	"\n"		reset
+	" "		ndiff_del	recolor=-3
+
+:ndiff_n1 Idle
+	*		garbage		recolor=-3
+	"\n"		reset
+	" "		ndiff_add	recolor=-3
+
+:ndiff_txt CtxLine
+	*		ndiff_txt
+	"\n"		ndiff_hunk1
+
+:ndiff_del DelLine
+	*		ndiff_del
+	"\n"		ndiff_hunk1
+
+:ndiff_add AddLine
+	*		ndiff_add
+	"\n"		ndiff_hunk1
+
+
+:ndiff_m1 Idle
+	*		garbage		recolor=-2
+	"-"		ndiff_m2
+	"\n"		reset		recolor=-2
+
+:ndiff_m2 Idle
+	*		garbage		recolor=-3
+	"-"		ndiff_m3	recolor=-3
+
+:ndiff_m3 HunkMid
+	*		garbage		recolor=-4
+	"\n"		ndiff_hunk0
+
+#----------------------------------------------
+
+# context diffs:
+
+:cdiff_o1 Idle
+	*		garbage		recolor=-2	buffer
+	"*"		cdiff_o2
+
+:cdiff_o2 Idle
+	*		garbage		recolor=-3	buffer
+	"*"		cdiff_o3	
+
+:cdiff_o3 Idle
+	*		garbage		recolor=-4	buffer
+	" "		cdiff_o4
+
+:cdiff_o4 Idle
+	*		cdiff_oldf	recolor=-5
+	" "		garbage		recolor=-5	buffer
+
+:cdiff_oldf FileOld
+	*		cdiff_oldf
+	"\n"		cdiff_n0
+
+:cdiff_n0 Idle
+	*		garbage		recolor=-1	buffer
+	"-"		cdiff_n1
+
+:cdiff_n1 Idle
+	*		garbage		recolor=-2	buffer
+	"-"		cdiff_n2
+
+:cdiff_n2 Idle
+	*		garbage		recolor=-3	buffer
+	"-"		cdiff_n3	
+
+:cdiff_n3 Idle
+	*		garbage		recolor=-4	buffer
+	" "		cdiff_newf	recolor=-4
+
+:cdiff_newf FileNew
+	*		cdiff_newf
+	"\n"		cdiff_prehunk0
+
+:cdiff_prehunk0 Idle
+	*		manystars	buffer
+
+:manystars Idle
+	*		garbage		noeat strings
+	"***************" cdiff_prehunk1
+done
+	"*"		manystars
+
+
+:cdiff_prehunk1 HunkHead
+	*		cdiff_ho0
+
+:cdiff_ho0 Idle
+	*		garbage		recolor=-1	buffer
+	"*"		cdiff_ho1
+
+:cdiff_ho1 Idle
+	*		garbage		recolor=-2	buffer
+	"*"		cdiff_ho2
+
+:cdiff_ho2 Idle
+	*		garbage		recolor=-3	buffer
+	"*"		cdiff_ho3	
+
+:cdiff_ho3 Idle
+	*		garbage		recolor=-4	buffer
+	" "		cdiff_ho4	recolor=-4	mark
+
+:cdiff_ho4 HunkHead
+	*		garbage		recolormark	buffer
+	"0-9,"		cdiff_ho4
+	" "		cdiff_ho5	recolormark	buffer
+	"\n"		reset	markend
+
+:cdiff_ho5 HunkHead
+	*		garbage		recolor=-1	buffer
+	"*"		cdiff_ho6
+
+:cdiff_ho6 Idle
+	*		garbage		recolor=-2	buffer
+	"*"		cdiff_ho7
+
+:cdiff_ho7 Idle
+	*		garbage		recolor=-3	buffer
+	"*"		cdiff_ho8	
+
+:cdiff_ho8 Idle
+	*		garbage		recolor=-4	buffer
+	"*"		cdiff_ho9	recolor=-4
+
+:cdiff_ho9 HunkHead
+	*		garbage		recolor=-5	buffer
+	"\n"		cdiff_hunk
+
+
+:cdiff_hn0 Idle
+	*		garbage		recolor=-1	buffer
+	"-"		cdiff_hn1
+
+:cdiff_hn1 Idle
+	*		garbage		recolor=-2	buffer
+	"-"		cdiff_hn2
+
+:cdiff_hn2 Idle
+	*		garbage		recolor=-3	buffer
+	"-"		cdiff_hn3	
+
+:cdiff_hn3 Idle
+	*		garbage		recolor=-4	buffer
+	" "		cdiff_hn4	recolor=-4	mark
+
+:cdiff_hn4 HunkHead
+	*		garbage		recolormark	buffer
+	"0-9,"		cdiff_hn4
+	" "		cdiff_hn5	recolormark	buffer
+	"\n"		reset	markend
+
+:cdiff_hn5 HunkHead
+	*		garbage		recolor=-1	buffer
+	"-"		cdiff_hn6
+
+:cdiff_hn6 Idle
+	*		garbage		recolor=-2	buffer
+	"-"		cdiff_hn7
+
+:cdiff_hn7 Idle
+	*		garbage		recolor=-3	buffer
+	"-"		cdiff_hn8	
+
+:cdiff_hn8 Idle
+	*		garbage		recolor=-4	buffer
+	"-"		cdiff_hn9	recolor=-4
+
+:cdiff_hn9 HunkHead
+	*		garbage		recolor=-5	buffer
+	"\n"		cdiff_hunk
+
+
+
+:cdiff_hunk Idle
+	*		garbage		recolor=-1	buffer
+	" "		cdiff_h_c0
+	"+"		cdiff_h_p0
+	"!"		cdiff_h_x0
+	"-"		cdiff_h_m0
+	"*"		manystars	buffer
+
+:cdiff_h_c0 Idle
+	*		garbage		recolor=-2	buffer
+	" "		cdiff_h_c1	recolor=-2
+	"\n"		reset
+
+:cdiff_h_c1 CtxLine
+	*		cdiff_h_c1
+	"\n"		cdiff_hunk
+
+:cdiff_h_p0 Idle
+	*		garbage		recolor=-2	buffer
+	" "		cdiff_h_p1	recolor=-2
+	"\n"		reset
+
+:cdiff_h_p1 AddLine
+	*		cdiff_h_p1
+	"\n"		cdiff_hunk
+
+:cdiff_h_x0 Idle
+	*		garbage		recolor=-2	buffer
+	" "		cdiff_h_x1	recolor=-2
+	"\n"		reset
+
+:cdiff_h_x1 ChgLine
+	*		cdiff_h_x1
+	"\n"		cdiff_hunk
+
+:cdiff_h_m0 Idle
+	*		garbage		recolor=-2	buffer
+	" "		cdiff_h_m1	recolor=-2
+	"-"		cdiff_hn2	recolor=-2
+	"\n"		reset
+
+:cdiff_h_m1 DelLine
+	*		cdiff_h_m1
+	"\n"		cdiff_hunk

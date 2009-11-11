@@ -1,0 +1,144 @@
+# Fancy "sed" highlighter
+
+# Bugs: delimiter should be ignored in [...]
+#
+#       it would be nice if this did more correct
+#       error checking for the sed programmer
+
+-
+
+=Idle
+=Comment 	green
+=String 	cyan
+=Escape 	bold cyan
+=Bad		red
+=Keyword	bold
+=Delimiter	magenta
+
+# Zero address commands: # : }
+# Zero or one address: = a i q r
+# Range address: { b t c d D h H g G x l n N p P s w y
+
+:idle Idle
+	*		cmd		noeat
+	" 	"	idle
+	"\n"		idle
+	"0-9"		first_addr	recolor=-1
+	"$"		first_eof	recolor=-1
+	"/"		first_regex_c	recolor=-1
+
+:first_eof String
+	*		first_addr_done	noeat
+
+:first_regex_c Delimiter
+	*		first_regex	noeat
+
+:first_regex String
+	*		first_regex
+	"\\"		first_regex_quote	recolor=-1
+	"/"		first_regex_e		recolor=-1
+
+:first_regex_e Delimiter
+	*		first_addr_done		noeat
+
+:first_regex_quote Escape
+	*		first_regex
+
+:first_addr String
+	*		first_addr_done	noeat
+	"0-9"		first_addr
+
+:first_addr_done Idle
+	*		cmd		noeat
+	","		second_addr_start
+
+:second_addr_start Idle
+	*		bad		noeat
+	"0-9"		second_addr	recolor=-1
+	"$"		second_eof	recolor=-1
+	"/"		second_regex	recolor=-1
+
+:second_eof String
+	*		cmd		noeat
+
+:second_regex String
+	*		second_regex
+	"/"		cmd
+
+:second_addr String
+	*		cmd		noeat
+	"0-9"		second_addr
+
+:bad Bad
+	*		bad
+	"\n"		idle
+
+:cmd Delimiter
+	*		the_cmd		noeat
+	" 	"	cmd
+	"!"		the_cmd
+
+:the_cmd Idle
+	*		bad		noeat
+	" 	"	the_cmd
+	";"		next		noeat
+	"#"		comment		recolor=-1
+	"sy"		accepts		recolor=-1
+	"{"		accepto		recolor=-1
+	"aic"		accept		recolor=-1
+	"=:}rqbtdDhHgGxlnNpPw"	acceptc	recolor=-1
+
+:accepto Keyword
+	*		idle		noeat
+
+:accept Keyword
+	*		next		noeat
+
+:acceptc Keyword
+	*		nextallow	noeat
+
+:accepts Keyword
+	*		subst		noeat
+
+:subst Delimiter
+	*		subst_rest	save_c
+
+:subst_rest String
+	*		subst_rest
+	&		subst_rest_2_c		recolor=-1
+	"\\"		subst_rest_quote	recolor=-1
+
+:subst_rest_quote Escape
+	*		subst_rest
+
+:subst_rest_2_c Delimiter
+	*		subst_rest_2		noeat
+
+:subst_rest_2 String
+	*		subst_rest_2
+	&		next_c			recolor=-1
+	"\\"		subst_rest_2_quote	recolor=-1
+
+:next_c Delimiter
+	*		nextallow	noeat
+
+:subst_rest_2_quote Escape
+	*		subst_rest_2
+
+:nextallow Idle
+	*		nextallow
+	"\n"		idle
+	";"		idle
+	"#"		comment	recolor=-1
+
+:next Idle
+	*		next
+	"\n"		idle
+	"\\"		continue
+
+:continue Idle
+	*		next
+
+:comment Comment
+	*		comment
+	"\n"		idle

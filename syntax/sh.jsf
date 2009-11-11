@@ -1,0 +1,332 @@
+# JOE syntax highlight file for sh/ksh/bash
+
+# Think about:
+# $'....'
+# $(...)
+# ${...}
+
+# cat <<EOF xxxxxx
+# xxxxx should be interpreted as other arguments for 'cat'.
+
+# Colors
+
+=Idle
+=Comment 	green
+=Constant 	cyan
+=Escape 	bold cyan
+=Keyword 	bold
+=Var		magenta
+
+# Syntax
+
+:idle Idle
+	*		idle
+#	")"		subst_char	recolor=-1
+	"`"		subst_char	recolor=-1
+	"#"		comment		recolor=-1
+	"\\"		escape		recolor=-1
+	"$"		subst		recolor=-1
+	"'"		string_sq	recolor=-1
+	"\""		string_dq	recolor=-1
+	"<"		maybe_inc
+	"a-zA-Z{}![_"	ident		buffer
+
+:subst_char Var
+	*		idle	noeat
+
+:maybe_inc Idle
+	*		idle		noeat
+	"<"		maybe_inc1
+
+:maybe_inc1 Idle
+	*		inc		buffer noeat
+	"\""		inc_quote
+	"'"		inc_quote
+	" 	"	maybe_inc1
+	"\n"		toeof
+	"`&()\\|;<>"	idle	noeat
+	"\\"		skipquote
+	"-"		skipminus
+
+:skipminus Idle
+	*		inc1		buffer noeat
+	" 	"	skipminus
+	"\\"		skipquote
+	"\""		inc1_quote
+	"'"		inc1_quote
+	"`&()\\|;<>\n"	idle	noeat
+
+:skipquote Idle
+	*		inc		buffer noeat
+	"`&()\\|;'\"<> 	\n"	idle	noeat
+
+# All of these are for case of leading -
+
+:inc1 Var
+	*		inc1
+	"`&()\\|;'\"<> 	\n"	skipline1	noeat save_s
+
+:inc1_quote Var
+	*		inc1	buffer noeat
+
+:skipline1 Idle
+	*		skipline1
+	"\n"		next_line1
+
+:todelim1 Constant
+	*		todelim1
+	"\n"		next_line1	strings
+	"&"		founddelim1
+done
+
+:next_line1 Constant
+	*		todelim1	buffer
+	"\t"		next_line1
+	"\n"		next_line1
+
+:founddelim1 Var
+	*		idle		noeat
+
+# No leading -
+
+:inc Var
+	*		inc
+	"`&()\\|;'\"<> 	\n"	skipline	noeat save_s
+
+:inc_quote Var
+	*		inc	noeat buffer
+
+# Should be treated as a normal line here...
+
+:skipline Idle
+	*		skipline
+	"\n"		next_line
+
+:todelim Constant
+	*		todelim
+	"\n"		next_line	strings
+	"&"		founddelim
+done
+
+# eat \n so it's not in string.
+:next_line Constant
+	*		todelim		buffer
+	"\n"		next_line
+
+:founddelim Var
+	*		idle		noeat
+
+# << with no word.  Rest of file is a constant.
+
+:toeof Constant
+	*		toeof
+
+:comment Comment
+	*		comment
+	"\n"		idle
+
+:escape Escape
+	*		idle
+
+:subst Var
+	*		idle noeat
+	"("		idle	recolor=-2 # don't try for now
+	"\""		string_dq	recolor=-2
+	"\'"		string_sq	recolor=-2
+	"{"		subst_brack
+	"a-zA-Z_"	subst_name
+	"0-9*@?\-$_!#"	idle
+
+:subst_name Var
+	*		idle		noeat recolor=-1
+	"a-zA-Z0-9_"	subst_name
+
+:subst_brack Var
+	*		subst_brack
+	"}"		idle
+
+# Simplest case: no quoting allowed
+:string_sq Constant
+	*		string_sq
+	"\'"		idle
+
+
+# double-quote: quoting, backqoutes and substitution allowed
+:string_dq Constant
+	*		string_dq
+	"$"		string_dq_subst	recolor=-1
+	"\""		idle
+	"\\"		string_dq_esc	recolor=-1
+	"`"		string_dq_bq	recolor=-1
+
+:string_dq_subst Var
+	*		string_dq	noeat recolor=-2
+	"$0-9!_\-?*@"	string_dq
+	"a-zA-Z_"	string_dq_subst_name
+	"{"		string_dq_subst_brack
+
+:string_dq_subst_name Var
+	*		string_dq	recolor=-1 noeat
+	"a-zA-Z0-9_"	string_dq_subst_name
+
+:string_dq_subst_brack Var
+	*		string_dq_subst_brack
+	"}"		string_dq
+
+:string_dq_esc Escape
+	*		string_dq	recolor=-2
+	"$`\"\\"	string_dq
+	"\n"		string_dq	recolor=-2
+
+:string_dq_bq Constant
+	*		string_dq_bq
+	"$"		string_dq_bq_subst	recolor=-1
+	"\`"		string_dq
+	"\\"		string_dq_bq_esc	recolor=-1
+
+:string_dq_bq_subst Var
+	*		string_dq_bq	noeat recolor=-2
+	"$0-9!_\-?*@"	string_dq_bq
+	"a-zA-Z_"	string_dq_bq_subst_name
+	"{"		string_dq_bq_subst_brack
+
+:string_dq_bq_subst_name Var
+	*		string_dq_bq	recolor=-1 noeat
+	"a-zA-Z0-9_"	string_dq_bq_subst_name
+
+:string_dq_bq_subst_brack Var
+	*		string_dq_bq_subst_brack
+	"}"		string_dq_bq
+
+:string_dq_bq_esc Escape
+	*		string_dq_bq	recolor=-2
+	"$`\"\\"	string_dq_bq
+	"\n"		string_dq_bq	recolor=-2
+
+
+# backquote
+:string_bq Constant
+	*		string_bq
+	"$"		string_bq_subst	recolor=-1
+	"\`"		idle
+	"\\"		string_bq_esc	recolor=-1
+
+# escape in backquote
+:string_bq_esc Escape
+	*		string_bq	recolor=-2
+	"$`\"\\"	string_bq
+	"\n"		string_bq	recolor=-2
+
+# Substitution in a backquote
+:string_bq_subst Var
+	*		string_bq	noeat recolor=-2
+	"$0-9!_\-?*@"	string_bq
+	"a-zA-Z_"	string_bq_subst_name
+	"{"		string_bq_subst_brack
+
+:string_bq_subst_name Var
+	*		string_bq	recolor=-1 noeat
+	"a-zA-Z0-9_"	string_bq_subst_name
+
+:string_bq_subst_brack Var
+	*		string_bq_subst_brack
+	"}"		string_bq
+
+:ident Idle
+	*		idle		noeat strings
+	"!"		kw
+	"{"		kw
+	"}"		kw
+	"["		kw
+	"]"		kw
+# primary keywords
+	"case"		kw
+	"do"		kw
+	"done"		kw
+	"elif"		kw
+	"else"		kw
+	"esac"		kw
+	"fi"		kw
+	"for"		kw
+	"if"		kw
+	"in"		kw
+	"then"		kw
+	"until"		kw
+	"while"		kw
+# I think these are basically keywords too
+	"break"		kw
+	"continue"	kw
+	"return"	kw
+	"eval"		kw
+	"exec"		kw
+	"exit"		kw
+	"test"		kw	# doesn't have to be a shell command
+# variable management
+	"shift"		kw
+	"unset"		kw
+	"export"	kw
+	"readonly"	kw
+# input
+	"read"		kw
+# job control (not likely to be used in scripts)
+	"bg"		kw
+	"fg"		kw
+	"jobs"		kw
+	"suspend"	kw
+# job control (useful in scripts)
+	"kill"		kw
+	"wait"		kw
+# environment control
+	"cd"		kw
+	"chdir"		kw
+	"pwd"		kw
+	"ulimit"	kw
+	"umask"		kw
+# signal handling
+	"trap"		kw
+# misc shell control
+	"hash"		kw
+	"type"		kw
+	"times"		kw
+	"set"		kw
+# shell builtins
+	"echo"		kw
+	"getopts"	kw
+	"login"		kw	# not bash (logout is)
+	"newgrp"	kw	# not in bash
+	"stop"		kw	# not in bash (suspends a process)
+# additional ksh builtins
+	"alias"		kw
+	"select"	kw
+	"function"	kw
+	"command"	kw
+	"fc"		kw
+	"let"		kw
+	"print"		kw
+	"unalias"	kw
+	"whence"	kw
+	"history"	kw
+	"time"		kw
+	"typeset"	kw
+	"local"		kw
+# additional bash builtins
+	"source"	kw
+	"bind"		kw
+	"builtin"	kw
+	"compgen"	kw
+	"complete"	kw
+	"declare"	kw
+	"dirs"		kw
+	"disown"	kw
+	"enable"	kw
+	"help"		kw
+	"logout"	kw
+	"popd"		kw
+	"printf"	kw
+	"pushd"		kw
+	"shopt"		kw
+done
+	"a-zA-Z0-9_"	ident
+
+:kw Keyword
+	*	idle	noeat

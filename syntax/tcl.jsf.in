@@ -1,0 +1,262 @@
+# JOE syntax highlight file for TCL
+
+=Idle
+=Comment 	green
+=Constant 	cyan
+=Escape 	bold cyan
+=Keyword 	bold
+=Subst		magenta
+=SubstEscape	bold magenta
+
+:reset Idle
+	*		command		noeat
+	"#"		comment		recolor=-1
+	" \t}"		reset
+
+:comment Comment
+	*		comment
+	"\n"		reset
+
+:command Idle
+	*		ident		buffer
+	"\""		string		recolor=-1
+	"\n"		reset
+	";[{"		reset
+
+:args Idle
+	*		args
+	";[{\n"		reset
+	"\\"		quote		recolor=-1
+	"\""		string		recolor=-1
+
+:quote Escape
+	*		args
+
+:string Constant
+	*		string
+	"\\"		escape		recolor=-1
+	"\""		args
+	"$"		subst		recolor=-1
+
+:escape Escape
+	*		string
+	"0-7"		octal2
+	"x"		hex1
+	"u"		unicode1
+
+:octal2 Escape
+	*		string		noeat
+	"0-7"		octal3
+
+:octal3 Escape
+	*		string		noeat
+	"0-7"		string
+
+:unicode1 Escape
+	*		string		noeat
+	"0-9a-fA-F"	unicode2
+
+:unicode2 Escape
+	*		string		noeat
+	"0-9a-fA-F"	hex1
+
+:hex1 Escape
+	*		string		noeat
+	"0-9a-fA-F"	hex2
+
+:hex2 Escape
+	*		string		noeat
+	"0-9a-fA-F"	string
+
+:subst SubstEscape
+	*		string		noeat recolor=-2
+	"a-zA-Z0-9_:"	substrest	recolor=-1
+	"{"		substbrack	recolor=-1
+
+:substrest Subst
+	*		string		noeat
+	"a-zA-Z0-9_:"	substrest
+	"("		index
+
+:substbrack Subst
+	*		substbrack
+	"}"		string
+
+:index Subst
+	*		index
+	")"		string
+
+:ident Idle
+	*		ident
+	" \t\n;}]"	args		noeat strings
+	"after"		kw
+	"alarm"		kw
+	"append"		kw
+	"array"		kw
+	"auto_commands"		kw
+	"auto_execok"		kw
+	"auto_import"		kw
+	"auto_load"		kw
+	"auto_load_index"		kw
+	"auto_load_pkg"		kw
+	"auto_packages"		kw
+	"auto_qualify"		kw
+	"binary"		kw
+	"break"		kw
+	"bsearch"		kw
+	"case"		kw
+	"catch"		kw
+	"catclose"		kw
+	"catgets"		kw
+	"catopen"		kw
+	"ccollate"		kw
+	"cconcat"		kw
+	"cd"		kw
+	"cequal"		kw
+	"chgrp"		kw
+	"chmod"		kw
+	"chown"		kw
+	"chroot"		kw
+	"cindex"		kw
+	"clength"		kw
+	"clock"		kw
+	"close"		kw
+	"cmdtrace"		kw
+	"commandloop"		kw
+	"concat"		kw
+	"continue"		kw
+	"crange"		kw
+	"csubstr"		kw
+	"ctoken"		kw
+	"ctype"		kw
+	"dup"		kw
+	"echo"		kw
+	"else"		kw
+	"encoding"		kw
+	"eof"		kw
+	"error"		kw
+	"eval"		kw
+	"exec"		kw
+	"execl"		kw
+	"exit"		kw
+	"expr"		kw
+	"fblocked"		kw
+	"fcntl"		kw
+	"fconfigure"		kw
+	"fcopy"		kw
+	"file"		kw
+	"fileevent"		kw
+	"flock"		kw
+	"flush"		kw
+	"for"		kw
+	"foreach"		kw
+	"fork"		kw
+	"format"		kw
+	"fstat"		kw
+	"ftruncate"		kw
+	"funlock"		kw
+	"gets"		kw
+	"glob"		kw
+	"global"		kw
+	"history"		kw
+	"host_info"		kw
+	"id"		kw
+	"if"		kw
+	"incr"		kw
+	"info"		kw
+	"infox"		kw
+	"interp"		kw
+	"join"		kw
+	"keyldel"		kw
+	"keylget"		kw
+	"keylkeys"		kw
+	"keylset"		kw
+	"kill"		kw
+	"lappend"		kw
+	"lassign"		kw
+	"lcontain"		kw
+	"lempty"		kw
+	"lgets"		kw
+	"lindex"		kw
+	"link"		kw
+	"linsert"		kw
+	"list"		kw
+	"llength"		kw
+	"lmatch"		kw
+	"load"		kw
+	"loadlibindex"		kw
+	"loop"		kw
+	"lrange"		kw
+	"lreplace"		kw
+	"lsearch"		kw
+	"lset"		kw
+	"lsort"		kw
+	"lvarcat"		kw
+	"lvarpop"		kw
+	"lvarpush"		kw
+	"max"		kw
+	"min"		kw
+	"namespace"		kw
+	"nice"		kw
+	"open"		kw
+	"package"		kw
+	"pid"		kw
+	"pipe"		kw
+	"proc"		kw
+	"profile"		kw
+	"puts"		kw
+	"pwd"		kw
+	"random"		kw
+	"read"		kw
+	"readdir"		kw
+	"regexp"		kw
+	"regsub"		kw
+	"rename"		kw
+	"replicate"		kw
+	"return"		kw
+	"scan"		kw
+	"scancontext"		kw
+	"scanfile"		kw
+	"scanmatch"		kw
+	"seek"		kw
+	"select"		kw
+	"server_accept"		kw
+	"server_create"		kw
+	"set"		kw
+	"signal"		kw
+	"sleep"		kw
+	"socket"		kw
+	"source"		kw
+	"split"		kw
+	"string"		kw
+	"subst"		kw
+	"switch"		kw
+	"sync"		kw
+	"system"		kw
+	"tclLog"		kw
+	"tclx_findinit"		kw
+	"tclx_fork"		kw
+	"tclx_load_tndxs"		kw
+	"tclx_sleep"		kw
+	"tclx_system"		kw
+	"tclx_wait"		kw
+	"tell"		kw
+	"time"		kw
+	"times"		kw
+	"trace"		kw
+	"translit"		kw
+	"try_eval"		kw
+	"umask"		kw
+	"unknown"		kw
+	"unset"		kw
+	"update"		kw
+	"uplevel"		kw
+	"upvar"		kw
+	"variable"		kw
+	"vwait"		kw
+	"wait"		kw
+	"while"		kw
+done
+
+:kw Keyword
+	*	args	noeat

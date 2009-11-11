@@ -1,0 +1,6 @@
+# See jsf.jsf
+
+=Idle
+
+:initial Idle
+	*	initial		noeat call=jsf(CHECKING)

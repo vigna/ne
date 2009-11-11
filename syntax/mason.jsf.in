@@ -1,0 +1,8 @@
+# JOE syntax file for Mason
+
+=Idle
+
+# Call HTML with mason flag.  It will call perl.
+
+:idle Idle
+	*	idle	noeat call=html.html(mason)

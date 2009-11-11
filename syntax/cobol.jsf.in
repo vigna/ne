@@ -1,0 +1,673 @@
+# JOE syntax highlight file for COBOL
+
+=Idle
+=Bad		bold red
+=Preproc 	blue
+=Define		bold blue
+=Comment 	green
+=IncLocal	cyan
+=IncSystem	bold cyan
+=Constant 	cyan
+=Escape 	bold cyan
+=Type 		bold
+=Keyword 	bold
+
+:reset Idle
+	*		idle		noeat
+	"*"		line_comment	recolor=-1
+	" \t"		reset
+
+:line_comment Comment
+	*		line_comment
+	"\n"		reset
+
+# All following states are for when we're not in a preprocessor line
+
+:idle Idle
+	*		idle
+	"\n"		reset
+	"0"		first_digit	recolor=-1
+	"1-9"		decimal	recolor=-1
+	"."		maybe_float
+	"\""		string		recolor=-1
+	"'"		char		recolor=-1
+	"a-zA-Z_"	ident		buffer
+
+:first_digit Constant
+	*		idle	noeat
+	"xX"		hex
+	"."		float
+	"eE"		epart
+	"0-7"		octal
+	"89"		bad_number	recolor=-1
+
+:bad_number Bad
+	*		idle	noeat
+	"0-9"		bad_number
+
+:octal Constant
+	*		idle	noeat
+	"0-7"		octal
+	"89"		bad_number	recolor=-1
+
+:hex Constant
+	*		idle	noeat
+	"0-9A-Fa-f"	hex
+
+:decimal Constant
+	*		idle	noeat
+	"0-9"		decimal
+	"eE"		epart
+	"."		float
+
+:maybe_float Constant
+	*		idle	recolor=-2	noeat
+	"0-9"		float		recolor=-2
+
+:float Constant
+	*		idle	noeat
+	"eE"		epart
+	"0-9"		float
+
+:epart Constant
+	*		idle	noeat
+	"0-9+\-"	enum
+
+:enum Constant
+	*		idle	noeat
+	"0-9"		enum
+
+:string	Constant
+	*		string
+	"\""		idle
+	"\\"		string_escape	recolor=-1
+	"%"		string_control	recolor=-1
+
+:string_escape Escape
+	*		string
+	"x"		string_hex1
+	"0-7"		string_octal2
+	"\n"		string		recolor=-2
+
+:string_hex1 Escape
+	*		string		noeat
+	"0-9a-fA-F"	string_hex2
+
+:string_hex2 Escape
+	*		string		noeat
+	"0-9a-fA-F"	string
+
+:string_octal2 Escape
+	*		string		noeat
+	"0-7"		string_octal3
+
+:string_octal3 Escape
+	*		string		noeat
+	"0-7"		string
+
+:string_control Escape
+	*		string_control
+	"\n"		reset
+	"diouxXeEfFgGaAcspn%SC"	string
+
+:char Constant
+	*		char
+	"\n"		reset
+	"'"		idle
+	"\\"		char_escape	recolor=-1
+
+:char_escape	Escape
+	*		char
+	"x"		char_hex1
+	"0-7"		char_octal2
+	"\n"		char		recolor=-2
+
+:char_hex1 Escape
+	*		char		noeat
+	"0-9a-fA-F"	char_hex2
+
+:char_hex2 Escape
+	*		char		noeat
+	"0-9a-fA-F"	char
+
+:char_octal2 Escape
+	*		char		noeat
+	"0-7"		char_octal3
+
+:char_octal3 Escape
+	*		char		noeat
+	"0-7"		char
+
+:ident Idle
+	*		idle		noeat istrings
+	"accept"	kw
+	"access"	kw
+	"add"	kw
+	"address"	kw
+	"advancing"	kw
+	"after"	kw
+	"all"	kw
+	"allowing"	kw
+	"alphabet"	kw
+	"alphabetic"	kw
+	"alphabetic-lower"	kw
+	"alphabetic-upper"	kw
+	"alphanumeric"	kw
+	"alphanumeric-edited"	kw
+	"also"	kw
+	"alter"	kw
+	"alternate"	kw
+	"and"	kw
+	"any"	kw
+	"apply"	kw
+	"are"	kw
+	"area"	kw
+	"areas"	kw
+	"arithmetic"	kw
+	"ascending"	kw
+	"assign"	kw
+	"at"	kw
+	"author"	kw
+	"automatic"	kw
+	"b-and"	kw
+	"b-exor"	kw
+	"b-less"	kw
+	"b-not"	kw
+	"b-or"	kw
+	"basis"	kw
+	"before"	kw
+	"beginning"	kw
+	"binary"	kw
+	"bit"	kw
+	"bits"	kw
+	"blank"	kw
+	"block"	kw
+	"boolean"	kw
+	"bottom"	kw
+	"by"	kw
+	"call"	kw
+	"cancel"	kw
+	"cbl"	kw
+	"cd"	kw
+	"cf"	kw
+	"ch"	kw
+	"character"	kw
+	"characters"	kw
+	"class"	kw
+	"class-id"	kw
+	"clock-units"	kw
+	"close"	kw
+	"cobol"	kw
+	"code"	kw
+	"code-set"	kw
+	"collating"	kw
+	"column"	kw
+	"com-reg"	kw
+	"comma"	kw
+	"commit"	kw
+	"common"	kw
+	"communication"	kw
+	"comp"	kw
+	"comp-1"	kw
+	"comp-2"	kw
+	"comp-3"	kw
+	"comp-4"	kw
+	"comp-5"	kw
+	"comp-6"	kw
+	"comp-7"	kw
+	"comp-8"	kw
+	"comp-9"	kw
+	"computational"	kw
+	"computational-1"	kw
+	"computational-2"	kw
+	"computational-3"	kw
+	"computational-4"	kw
+	"computational-5"	kw
+	"computational-6"	kw
+	"computational-7"	kw
+	"computational-8"	kw
+	"computational-9"	kw
+	"compute"	kw
+	"configuration"	kw
+	"connect"	kw
+	"contained"	kw
+	"contains"	kw
+	"content"	kw
+	"continue"	kw
+	"control"	kw
+	"controls"	kw
+	"converting"	kw
+	"copy"	kw
+	"corr"	kw
+	"corresponding"	kw
+	"count"	kw
+	"currency"	kw
+	"current"	kw
+	"cycle"	kw
+	"data"	kw
+	"date"	kw
+	"date-compiled"	kw
+	"date-written"	kw
+	"day"	kw
+	"day-of-week"	kw
+	"db"	kw
+	"db-access-control-key"	kw
+	"db-data-name"	kw
+	"db-exception"	kw
+	"db-record-name"	kw
+	"db-set-name"	kw
+	"db-status"	kw
+	"dbcs"	kw
+	"de"	kw
+	"debug-contents"	kw
+	"debug-item"	kw
+	"debug-line"	kw
+	"debug-name"	kw
+	"debug-sub-1"	kw
+	"debug-sub-2"	kw
+	"debug-sub-3"	kw
+	"debugging"	kw
+	"decimal-point"	kw
+	"declaratives"	kw
+	"default"	kw
+	"delete"	kw
+	"delimited"	kw
+	"delimiter"	kw
+	"depending"	kw
+	"descending"	kw
+	"destination"	kw
+	"detail"	kw
+	"disable"	kw
+	"disconnect"	kw
+	"display"	kw
+	"display-1"	kw
+	"display-2"	kw
+	"display-3"	kw
+	"display-4"	kw
+	"display-5"	kw
+	"display-6"	kw
+	"display-7"	kw
+	"display-8"	kw
+	"display-9"	kw
+	"divide"	kw
+	"division"	kw
+	"down"	kw
+	"duplicate"	kw
+	"duplicates"	kw
+	"dynamic"	kw
+	"egcs"	kw
+	"egi"	kw
+	"eject"	kw
+	"else"	kw
+	"emi"	kw
+	"empty"	kw
+	"enable"	kw
+	"end"	kw
+	"end-add"	kw
+	"end-call"	kw
+	"end-compute"	kw
+	"end-delete"	kw
+	"end-disable"	kw
+	"end-divide"	kw
+	"end-enable"	kw
+	"end-evaluate"	kw
+	"end-if"	kw
+	"end-invoke"	kw
+	"end-multiply"	kw
+	"end-of-page"	kw
+	"end-perform"	kw
+	"end-read"	kw
+	"end-receive"	kw
+	"end-return"	kw
+	"end-rewrite"	kw
+	"end-search"	kw
+	"end-send"	kw
+	"end-start"	kw
+	"end-string"	kw
+	"end-subtract"	kw
+	"end-transceive"	kw
+	"end-unstring"	kw
+	"end-write"	kw
+	"ending"	kw
+	"enter"	kw
+	"entry"	kw
+	"environment"	kw
+	"eop"	kw
+	"equal"	kw
+	"equals"	kw
+	"erase"	kw
+	"error"	kw
+	"esi"	kw
+	"evaluate"	kw
+	"every"	kw
+	"exact"	kw
+	"exceeds"	kw
+	"exception"	kw
+	"exclusive"	kw
+	"exit"	kw
+	"extend"	kw
+	"external"	kw
+	"false"	const
+	"fd"	kw
+	"fetch"	kw
+	"file"	kw
+	"file-control"	kw
+	"filler"	kw
+	"final"	kw
+	"find"	kw
+	"finish"	kw
+	"first"	kw
+	"footing"	kw
+	"for"	kw
+	"form"	kw
+	"format"	kw
+	"free"	kw
+	"from"	kw
+	"function"	kw
+	"generate"	kw
+	"get"	kw
+	"giving"	kw
+	"global"	kw
+	"go"	kw
+	"goback"	kw
+	"greater"	kw
+	"group"	kw
+	"heading"	kw
+	"high-value"	const
+	"high-values"	const
+	"i-o"	kw
+	"i-o-control"	kw
+	"id"	kw
+	"identification"	kw
+	"if"	kw
+	"in"	kw
+	"index"	kw
+	"index-1"	kw
+	"index-2"	kw
+	"index-3"	kw
+	"index-4"	kw
+	"index-5"	kw
+	"index-6"	kw
+	"index-7"	kw
+	"index-8"	kw
+	"index-9"	kw
+	"indexed"	kw
+	"indicate"	kw
+	"inherits"	kw
+	"initial"	kw
+	"initialize"	kw
+	"initiate"	kw
+	"input"	kw
+	"input-output"	kw
+	"insert"	kw
+	"inspect"	kw
+	"installation"	kw
+	"into"	kw
+	"invalid"	kw
+	"invoke"	kw
+	"is"	kw
+	"just"	kw
+	"justified"	kw
+	"kanji"	kw
+	"keep"	kw
+	"key"	kw
+	"label"	kw
+	"last"	kw
+	"ld"	kw
+	"leading"	kw
+	"left"	kw
+	"length"	kw
+	"less"	kw
+	"limit"	kw
+	"limits"	kw
+	"linage"	kw
+	"linage-counter"	kw
+	"line"	kw
+	"line-counter"	kw
+	"lines"	kw
+	"linkage"	kw
+	"locally"	kw
+	"local-storage"	kw
+	"lock"	kw
+	"low-value"	const
+	"low-values"	const
+	"member"	kw
+	"memory"	kw
+	"merge"	kw
+	"message"	kw
+	"metaclass"	kw
+	"method"	kw
+	"method-id"	kw
+	"mode"	kw
+	"modify"	kw
+	"modules"	kw
+	"more-labels"	kw
+	"move"	kw
+	"multiple"	kw
+	"multiply"	kw
+	"native"	kw
+	"negative"	kw
+	"next"	kw
+	"no"	kw
+	"normal"	kw
+	"not"	kw
+	"null"	const
+	"nulls"	const
+	"number"	kw
+	"numeric"	kw
+	"numeric-edited"	kw
+	"object"	kw
+	"object-computer"	kw
+	"occurs"	kw
+	"of"	kw
+	"off"	kw
+	"omitted"	kw
+	"on"	kw
+	"only"	kw
+	"open"	kw
+	"optional"	kw
+	"or"	kw
+	"order"	kw
+	"organization"	kw
+	"other"	kw
+	"output"	kw
+	"overflow"	kw
+	"override"	kw
+	"owner"	kw
+	"packed-decimal"	kw
+	"padding"	kw
+	"page"	kw
+	"page-counter"	kw
+	"paragraph"	kw
+	"password"	kw
+	"perform"	kw
+	"pf"	kw
+	"ph"	kw
+	"pic"	kw
+	"picture"	kw
+	"plus"	kw
+	"pointer"	kw
+	"position"	kw
+	"positive"	kw
+	"present"	kw
+	"previous"	kw
+	"printing"	kw
+	"prior"	kw
+	"procedure"	kw
+	"procedure-pointer"	kw
+	"procedures"	kw
+	"proceed"	kw
+	"processing"	kw
+	"program"	kw
+	"program-id"	kw
+	"protected"	kw
+	"purge"	kw
+	"queue"	kw
+	"quote"	const
+	"quotes"	const
+	"random"	kw
+	"rd"	kw
+	"read"	kw
+	"ready"	kw
+	"realm"	kw
+	"receive"	kw
+	"reconnect"	kw
+	"record"	kw
+	"record-name"	kw
+	"recording"	kw
+	"records"	kw
+	"recursive"	kw
+	"redefines"	kw
+	"reel"	kw
+	"reference"	kw
+	"references"	kw
+	"relation"	kw
+	"relative"	kw
+	"release"	kw
+	"reload"	kw
+	"remainder"	kw
+	"removal"	kw
+	"renames"	kw
+	"repeated"	kw
+	"replace"	kw
+	"replacing"	kw
+	"report"	kw
+	"reporting"	kw
+	"reports"	kw
+	"repository"	kw
+	"rerun"	kw
+	"reserve"	kw
+	"reset"	kw
+	"retaining"	kw
+	"retrieval"	kw
+	"return"	kw
+	"return-code"	kw
+	"returning"	kw
+	"reversed"	kw
+	"rewind"	kw
+	"rewrite"	kw
+	"rf"	kw
+	"rh"	kw
+	"right"	kw
+	"rollback"	kw
+	"rounded"	kw
+	"run"	kw
+	"same"	kw
+	"sd"	kw
+	"search"	kw
+	"section"	kw
+	"security"	kw
+	"segment"	kw
+	"segment-limit"	kw
+	"select"	kw
+	"self"	kw
+	"send"	kw
+	"sentence"	kw
+	"separate"	kw
+	"sequence"	kw
+	"sequential"	kw
+	"service"	kw
+	"session-id"	kw
+	"set"	kw
+	"shared"	kw
+	"shift-in"	kw
+	"shift-out"	kw
+	"sign"	kw
+	"size"	kw
+	"skip1"	kw
+	"skip2"	kw
+	"skip3"	kw
+	"sort"	kw
+	"sort-control"	kw
+	"sort-core-size"	kw
+	"sort-file-size"	kw
+	"sort-merge"	kw
+	"sort-message"	kw
+	"sort-mode-size"	kw
+	"sort-return"	kw
+	"source"	kw
+	"source-computer"	kw
+	"space"	const
+	"spaces"	const
+	"special-names"	kw
+	"standard"	kw
+	"standard-1"	kw
+	"standard-2"	kw
+	"standard-3"	kw
+	"standard-4"	kw
+	"start"	kw
+	"status"	kw
+	"stop"	kw
+	"store"	kw
+	"string"	kw
+	"sub-queue-1"	kw
+	"sub-queue-2"	kw
+	"sub-queue-3"	kw
+	"sub-schema"	kw
+	"subtract"	kw
+	"sum"	kw
+	"super"	kw
+	"suppress"	kw
+	"symbolic"	kw
+	"sync"	kw
+	"synchronized"	kw
+	"table"	kw
+	"tally"	kw
+	"tallying"	kw
+	"tape"	kw
+	"tenant"	kw
+	"terminal"	kw
+	"terminate"	kw
+	"test"	kw
+	"text"	kw
+	"than"	kw
+	"then"	kw
+	"through"	kw
+	"thru"	kw
+	"time"	kw
+	"timeout"	kw
+	"times"	kw
+	"title"	kw
+	"to"	kw
+	"top"	kw
+	"trace"	kw
+	"trailing"	kw
+	"transceive"	kw
+	"true"	const
+	"type"	kw
+	"unequal"	kw
+	"unit"	kw
+	"unstring"	kw
+	"until"	kw
+	"up"	kw
+	"update"	kw
+	"upon"	kw
+	"usage"	kw
+	"usage-mode"	kw
+	"use"	kw
+	"using"	kw
+	"valid"	kw
+	"validate"	kw
+	"value"	kw
+	"values"	kw
+	"varying"	kw
+	"wait"	kw
+	"when"	kw
+	"when-compiled"	kw
+	"with"	kw
+	"within"	kw
+	"words"	kw
+	"working-storage"	kw
+	"write"	kw
+	"write-only"	kw
+	"zero"	const
+	"zeroes"	const
+	"zeros"	const
+done
+	"a-zA-Z0-9_\-"	ident
+
+:kw Keyword
+	*	idle	noeat
+
+:const Constant
+	*	idle	noeat

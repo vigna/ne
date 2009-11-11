@@ -1,0 +1,380 @@
+# JOE syntax highlight file for Postscript
+
+=Idle
+=Bad		bold red
+=Preproc 	blue
+=Define		bold blue
+=Comment 	green
+=IncLocal	cyan
+=IncSystem	bold cyan
+=Constant 	cyan
+=Escape 	bold cyan
+=Type 		bold
+=Keyword 	bold
+
+:idle Idle
+	*		idle
+	"%"		line_comment	recolor=-1
+	"0"		first_digit	recolor=-1
+	"1-9"		decimal	recolor=-1
+	"."		maybe_float
+	"(<"		string		recolor=-1 save_c
+	"a-zA-Z_"	ident		buffer
+
+:line_comment Comment
+	*		line_comment
+	"\n"		idle
+
+:first_digit Constant
+	*		idle	noeat
+	"xX"		hex
+	"."		float
+	"eE"		epart
+	"0-7"		octal
+	"89"		bad_number	recolor=-1
+
+:bad_number Bad
+	*		idle	noeat
+	"0-9"		bad_number
+
+:octal Constant
+	*		idle	noeat
+	"0-7"		octal
+	"89"		bad_number	recolor=-1
+
+:hex Constant
+	*		idle	noeat
+	"0-9A-Fa-f"	hex
+
+:decimal Constant
+	*		idle	noeat
+	"0-9"		decimal
+	"eE"		epart
+	"."		float
+
+:maybe_float Constant
+	*		idle	recolor=-2	noeat
+	"0-9"		float		recolor=-2
+
+:float Constant
+	*		idle	noeat
+	"eE"		epart
+	"0-9"		float
+
+:epart Constant
+	*		idle	noeat
+	"0-9+\-"	enum
+
+:enum Constant
+	*		idle	noeat
+	"0-9"		enum
+
+:string	Constant
+	*		string
+	&		idle
+	"\\"		string_escape	recolor=-1
+	"%"		string_control	recolor=-1
+
+:string_escape Escape
+	*		string
+	"x"		string_hex1
+	"0-7"		string_octal2
+	"\n"		string		recolor=-2
+
+:string_hex1 Escape
+	*		string		noeat
+	"0-9a-fA-F"	string_hex2
+
+:string_hex2 Escape
+	*		string		noeat
+	"0-9a-fA-F"	string
+
+:string_octal2 Escape
+	*		string		noeat
+	"0-7"		string_octal3
+
+:string_octal3 Escape
+	*		string		noeat
+	"0-7"		string
+
+:string_control Escape
+	*		string_control
+	"\n"		idle
+	"diouxXeEfFgGaAcspn%SC"	string
+
+:ident Idle
+	*		idle		noeat istrings
+	"exch"		kw
+	"pop"		kw
+	"copy"		kw
+	"dup"		kw
+	"index"		kw
+	"roll"		kw
+	"clear"		kw
+	"count"		kw
+	"mark"		kw
+	"cleartomark"		kw
+	"countomark"		kw
+	"add"		kw
+	"div"		kw
+	"sub"		kw
+	"idiv"		kw
+	"mul"		kw
+	"mod"		kw
+	"abs"		kw
+	"neg"		kw
+	"ceiling"		kw
+	"floor"		kw
+	"round"		kw
+	"truncate"		kw
+	"sqrt"		kw
+	"atan"		kw
+	"cos"		kw
+	"sin"		kw
+	"exp"		kw
+	"ln"		kw
+	"log"		kw
+	"rand"		kw
+	"srand"		kw
+	"rrand"		kw
+	"array"		kw
+	"length"		kw
+	"get"		kw
+	"put"		kw
+	"getinterval"		kw
+	"putinterval"		kw
+	"aload"		kw
+	"astore"		kw
+	"copy"		kw
+	"forall"		kw
+	"dict"		kw
+	"length"		kw
+	"maxlength"		kw
+	"begin"		kw
+	"end"		kw
+	"def"		kw
+	"load"		kw
+	"store"		kw
+	"get"		kw
+	"put"		kw
+	"known"		kw
+	"where"		kw
+	"copy"		kw
+	"forall"		kw
+	"errordict"		kw
+	"systemdict"		kw
+	"userdict"		kw
+	"currentdict"		kw
+	"countdictstack"		kw
+	"dictstack"		kw
+	"string"		kw
+	"length"		kw
+	"get"		kw
+	"put"		kw
+	"getinterval"		kw
+	"putinterval"		kw
+	"copy"		kw
+	"forall"		kw
+	"anchorsearch"		kw
+	"search"		kw
+	"token"		kw
+	"eq"		kw
+	"ne"		kw
+	"ge"		kw
+	"gt"		kw
+	"le"		kw
+	"lt"		kw
+	"and"		kw
+	"not"		kw
+	"or"		kw
+	"xor"		kw
+	"true"		const
+	"false"		const
+	"bitshift"		kw
+	"exec"		kw
+	"if"		kw
+	"ifelse"		kw
+	"for"		kw
+	"repeat"		kw
+	"loop"		kw
+	"exit"		kw
+	"stop"		kw
+	"stopped"		kw
+	"countexecstack"		kw
+	"execstack"		kw
+	"quit"		kw
+	"start"		kw
+	"type"		kw
+	"cvlit"		kw
+	"cvx"		kw
+	"xcheck"		kw
+	"executeonly"		kw
+	"noaccess"		kw
+	"readonly"		kw
+	"rcheck"		kw
+	"wcheck"		kw
+	"cvi"		kw
+	"cvn"		kw
+	"cvr"		kw
+	"cvrs"		kw
+	"cvs"		kw
+	"file"		kw
+	"closefile"		kw
+	"read"		kw
+	"write"		kw
+	"readhexstring"		kw
+	"writehexstring"		kw
+	"readstring"		kw
+	"writestring"		kw
+	"readline"		kw
+	"token"		kw
+	"bytesavailable"		kw
+	"flush"		kw
+	"flushfile"		kw
+	"resetfile"		kw
+	"status"		kw
+	"run"		kw
+	"currentfile"		kw
+	"print"		kw
+	"stack"		kw
+	"pstack"		kw
+	"prompt"		kw
+	"echo"		kw
+	"save"		kw
+	"restore"		kw
+	"vmstatus"		kw
+	"bind"		kw
+	"null"		kw
+	"usertime"		kw
+	"version"		kw
+	"gsave"		kw
+	"grestore"		kw
+	"grestoreall"		kw
+	"initgraphics"		kw
+	"setlinewidth"		kw
+	"currentlinewidth"		kw
+	"setlinecap"		kw
+	"currentlinecap"		kw
+	"setlinejoin"		kw
+	"currentlinejoin"		kw
+	"setmiterlimit"		kw
+	"currentmiterlimit"		kw
+	"setdash"		kw
+	"currentdash"		kw
+	"setflat"		kw
+	"currentflat"		kw
+	"setgray"		kw
+	"currentgray"		kw
+	"sethsbcolor"		kw
+	"currenthsbcolor"		kw
+	"setrgbcolor"		kw
+	"currentrgbcolor"		kw
+	"setscreen"		kw
+	"currentscreen"		kw
+	"settransfer"		kw
+	"currenttransfer"		kw
+	"matrix"		kw
+	"initmatrix"		kw
+	"identmatrix"		kw
+	"defaultmatrix"		kw
+	"currentmatrix"		kw
+	"setmatrix"		kw
+	"translate"		kw
+	"translate"		kw
+	"scale"		kw
+	"scale"		kw
+	"rotate"		kw
+	"concat"		kw
+	"concatmatrix"		kw
+	"transform"		kw
+	"transform"		kw
+	"dtransform"		kw
+	"dtransform"		kw
+	"itransform"		kw
+	"itransform"		kw
+	"idtransform"		kw
+	"idtransform"		kw
+	"invertmatrix"		kw
+	"newpath"		kw
+	"currentpoint"		kw
+	"moveto"		kw
+	"rmoveto"		kw
+	"lineto"		kw
+	"rlineto"		kw
+	"arc"		kw
+	"arcn"		kw
+	"arcto"		kw
+	"curveto"		kw
+	"rcurveto"		kw
+	"closepath"		kw
+	"flattenpath"		kw
+	"reversepath"		kw
+	"strokepath"		kw
+	"charpath"		kw
+	"clippath"		kw
+	"pathbbox"		kw
+	"pathforall"		kw
+	"initclip"		kw
+	"clip"		kw
+	"eoclip"		kw
+	"erasepage"		kw
+	"fill"		kw
+	"eofill"		kw
+	"stroke"		kw
+	"image"		kw
+	"imagemask"		kw
+	"showpage"		kw
+	"copypage"		kw
+	"banddevice"		kw
+	"framedevice"		kw
+	"nulldevice"		kw
+	"renderbands"		kw
+	"definefont"		kw
+	"findfont"		kw
+	"scalefont"		kw
+	"makefont"		kw
+	"setfont"		kw
+	"currentfont"		kw
+	"show"		kw
+	"ashow"		kw
+	"widthshow"		kw
+	"awidthshow"		kw
+	"kshow"		kw
+	"stringwidth"		kw
+	"cachestatus"		kw
+	"setcachedevice"		kw
+	"setcharwidth"		kw
+	"setcachelimit"		kw
+	"dictfull"		kw
+	"dictstackoverflow"		kw
+	"dictstackunderflow"		kw
+	"execstackoverflow"		kw
+	"handleerror"		kw
+	"interrupt"		kw
+	"invalidaccess"		kw
+	"invalidexit"		kw
+	"invalidfileaccess"		kw
+	"invalidfont"		kw
+	"invalidrestore"		kw
+	"ioerror"		kw
+	"limitcheck"		kw
+	"nocurrentpoint"		kw
+	"rangecheck"		kw
+	"stackoverflow"		kw
+	"stackunderflow"		kw
+	"syntaxerror"		kw
+	"timeout"		kw
+	"typecheck"		kw
+	"undefined"		kw
+	"undefinedfilename"		kw
+	"undefinedresult"		kw
+	"unmatchedmark"		kw
+	"unregistered"		kw
+done
+	"a-zA-Z0-9_\-"	ident
+
+:kw Keyword
+	*	idle	noeat
+
+:const Constant
+	*	idle	noeat

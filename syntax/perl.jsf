@@ -1,0 +1,448 @@
+# JOE syntax highlight file for Perl
+
+# Define colors
+
+=Idle
+=Preproc blue
+=Comment green
+=POD green
+=Constant cyan
+=Escape bold cyan
+=Type bold
+=Keyword bold
+=Bad bold red
+=Var yellow
+
+
+:begin Idle
+	*		begin noeat call=.perl()
+
+#
+# Perl as a subroutine for Mason
+#
+
+.subr perl
+
+# Detect pod
+
+:idle Idle
+	*		idle1		noeat
+.ifdef mason_line
+	"\n"		idle return
+.else
+	"\n"		idle
+.endif
+	"="		pod_start
+
+# allow keywords
+
+:idle1 Idle
+	*		idle1
+	"#"		line_comment_i	recolor=-1
+	"\n"		idle noeat
+	"0"		first_digit	recolor=-1
+	"1-9"		decimal	recolor=-1
+	"."		maybe_float
+	"\""		string		recolor=-1
+	"'"		char		recolor=-1
+	"`"		backtick	recolor=-1
+	"<"		maybe_inc
+	"$"		not_string	buffer
+.ifdef mason_block
+	"&%"		perl_maybe_done	buffer
+	"-a-zA-Z_@"	ident		buffer
+.else
+	"/"		regex		recolor=-1
+	"-a-zA-Z_@%&"	ident		buffer
+.endif
+
+:perl_maybe_done Idle
+	*		ident noeat
+	">"		idle1	recolor=-2 return
+
+# prevent keywords
+
+:rest Idle
+	*		rest
+	"({;~"		idle1
+	"#"		line_comment	recolor=-1
+	"\n"		idle noeat
+	"0"		first_digit	recolor=-1
+	"1-9"		decimal	recolor=-1
+	"."		maybe_float
+	"\""		string		recolor=-1
+	"'"		char		recolor=-1
+	"`"		backtick	recolor=-1
+	"$"		not_string	buffer
+	"<"		maybe_inc
+.ifdef mason_block
+	"&%"		perl_maybe_done buffer
+	"a-zA-Z_@"	maybe_string	buffer
+.else
+	"a-zA-Z_@%&"	maybe_string	buffer
+.endif
+
+:pod_start Idle
+	*		pod_start
+	"\n"		pod_block
+
+:pod_block POD
+	*		pod_block
+	"="		pod_ident	buffer
+
+:pod_ident POD
+	*		pod_block	noeat strings
+	"=cut"		rest
+done
+	"a-zA-Z0-9_"	pod_ident
+
+:maybe_inc Idle
+	*		rest		noeat
+.ifdef mason_block
+	"/"		perl_maybe_done_2
+.endif
+	"<"		maybe_inc1
+
+:perl_maybe_done_2 Idle
+	*		perl_idle	noeat
+	"a-z"		perl_maybe_done_2
+	">"		idle
+
+
+:maybe_inc1 Idle
+	*		rest		noeat
+	" 	"	maybe_inc1
+	"'\""		quoted_inc_start	save_c recolor=-1
+	"A-Za-z_"	inc		buffer noeat
+
+:quoted_inc_start Var
+	*		quoted_inc	buffer
+
+:quoted_inc Var
+	*		quoted_inc
+	&		skipline	save_s
+
+:inc Var
+	*		skipline	save_s noeat
+	"A-Za-z0-9_"	inc
+
+# Should be treated as a normal line here...
+
+:skipline Idle
+	*		skipline
+	"\n"		next_line
+
+:todelim Constant
+	*		todelim
+	"\n"		next_line	strings
+	"&"		founddelim
+done
+
+# eat \n so it's not in string.
+:next_line Constant
+	*		todelim		buffer
+	"\n"		next_line
+
+:founddelim Var
+	*		idle		noeat
+
+:regex Constant
+	*		regex
+	"\\"		regex_quote	recolor=-1
+	"/"		rest
+
+:regex_quote Escape
+	*		regex
+
+:not_string Idle
+	*		rest noeat
+	"A-Za-z_"	ident
+	"\"'`#"		rest
+
+:line_comment Comment
+	*		line_comment
+	"\n"		rest
+
+:line_comment_i Comment
+	*		line_comment_i
+	"\n"		idle noeat
+
+:end_of_file_comment Comment
+	*		end_of_file_comment
+
+:first_digit Constant
+	*		rest	noeat
+	"x"		hex
+	"b"		binary
+	"."		float
+	"eE"		epart
+	"0-7"		octal
+	"89"		bad_number	recolor=-1
+
+:bad_number Bad
+	*		rest	noeat
+	"0-9"		bad_number
+
+:octal Constant
+	*		rest	noeat
+	"0-7_"		octal
+	"89"		bad_number	recolor=-1
+
+:binary Constant
+	*		rest	noeat
+	"01_"		binary
+	"2-9"		bad_number	recolor=-1
+
+:hex Constant
+	*		rest	noeat
+	"0-9A-Fa-f_"	hex
+
+:decimal Constant
+	*		rest	noeat
+	"0-9_"		decimal
+	"eE"		epart
+	"."		float
+
+:maybe_float Constant
+	*		rest	recolor=-2	noeat
+	"0-9"		float		recolor=-2
+
+:float Constant
+	*		rest	noeat
+	"eE"		epart
+	"0-9_"		float
+
+:epart Constant
+	*		rest	noeat
+	"0-9+\-"	enum
+
+:enum Constant
+	*		rest	noeat
+	"0-9_"		enum
+
+:string	Constant
+	*		string
+	"\""		rest
+	"\\"		string_escape	recolor=-1
+	"$@"		string_subst	recolor=-1
+
+:string_subst Escape
+	*		string	noeat recolor=-1
+	"a-zA-Z_0-9"	string_subst
+
+:string_escape Escape
+	*		string
+	"x"		string_hex1
+	"c"		string_ctrl
+	"N"		string_named
+	"0-7"		string_octal2
+	"\n"		string		recolor=-2
+
+:string_named Escape
+	*		string
+	"{"		string_named_rest
+
+:string_named_rest Escape
+	*		string_named_rest
+	"}"		string
+
+:string_ctrl Escape
+	*		string
+
+:string_hex1 Escape
+	*		string		noeat
+	"{"		string_unicode
+	"0-9a-fA-F"	string_hex2
+
+:string_unicode Escape
+	*		string_unicode
+	"}"		string
+
+:string_hex2 Escape
+	*		string		noeat
+	"0-9a-fA-F"	string
+
+:string_octal2 Escape
+	*		string		noeat
+	"0-7"		string_octal3
+
+:string_octal3 Escape
+	*		string		noeat
+	"0-7"		string
+
+:char Constant
+	*		char
+	"\n"		idle noeat
+	"'"		rest
+	"\\"		char_escape	recolor=-1
+
+:char_escape	Escape
+	*		char		recolor=-2
+	"\\'"	char
+
+:backtick	Constant
+	*		backtick
+	"`"		rest
+	"\\"		backtick_escape	recolor=-1
+	"$@"		backtick_subst recolor=-1
+
+:backtick_subst Escape
+	*		backtick	noeat recolor=-1
+	"a-zA-Z_0-9"	backtick_subst
+
+:backtick_escape Escape
+	*		backtick
+	"x"		backtick_hex1
+	"c"		backtick_ctrl
+	"N"		backtick_named
+	"0-7"		backtick_octal2
+	"\n"		backtick		recolor=-2
+
+:backtick_named Escape
+	*		backtick
+	"{"		backtick_named_rest
+
+:backtick_named_rest Escape
+	*		backtick_named_rest
+	"}"		backtick
+
+:backtick_ctrl Escape
+	*		backtick
+
+:backtick_hex1 Escape
+	*		backtick		noeat
+	"{"		backtick_unicode
+	"0-9a-fA-F"	backtick_hex2
+
+:backtick_unicode Escape
+	*		backtick_unicode
+	"}"		backtick
+
+:backtick_hex2 Escape
+	*		backtick		noeat
+	"0-9a-fA-F"	backtick
+
+:backtick_octal2 Escape
+	*		backtick		noeat
+	"0-7"		backtick_octal3
+
+:backtick_octal3 Escape
+	*		backtick		noeat
+	"0-7"		backtick
+
+:ident	Idle
+	*		rest		noeat strings
+	"BEGIN"		kw
+	"END"		kw
+	"if"		kw
+	"unless"	kw
+	"while"		kw
+	"until"		kw
+	"foreach"	kw
+	"sub"		kw
+	"my"		kw
+	"do"		kw
+	"if"		kw
+	"else"		kw
+	"elsif"		kw
+	"for"		kw
+	"continue"	kw
+	"last"		kw
+	"print"		kw
+	"reset"		kw
+	"die"		kw
+	"goto"		kw
+	"require"	kw
+	"use"		kw
+	"eval"		kw
+	"redo"		kw
+	"next"		kw
+	"warn"		kw
+	"return"	kw
+	"printf"	kw
+	"close"		kw
+	"package"	kw
+	"m"		match
+	"qr"		match
+	"qq"		match
+	"qx"		match
+	"qw"		match
+	"q"		match
+	"s"		subst
+	"tr"		subst
+	"y"		subst
+	"__END__"	end_of_file_comment
+	"__DATA__"	end_of_file_comment
+done
+	"a-zA-Z0-9_"	ident
+
+:maybe_string Idle
+	*		rest		noeat strings
+	"qr"		match
+	"qq"		match
+	"qx"		match
+	"qw"		match
+	"q"		match
+done
+	"a-zA-Z0-9_"	maybe_string
+
+:type Type
+	*	rest	noeat
+
+:kw Keyword
+	*	rest	noeat
+
+:match Idle
+	*		inmatch		save_c recolor=-1
+	" 	"	match
+
+:inmatch Constant
+	*		inmatch
+	&		rest
+	"\\"		inmatch_quote	recolor=-1
+
+:inmatch_quote Escape
+	*		inmatch
+
+:subst Idle
+	*		insubst		save_c recolor=-1
+	"<([{`"		delim_insubst	save_c recolor=-1
+	" 	"	subst
+
+:insubst Constant
+	*		insubst
+	&		inrepl
+	"\\"		insubst_quote	recolor=-1
+
+:insubst_quote Escape
+	*		insubst
+
+:inrepl Constant
+	*		inrepl
+	&		rest
+	"\\"		inrepl_quote
+
+:inrepl_quote Escape
+	*		inrepl
+
+:delim_insubst Constant
+	*		delim_insubst
+	&		delim_repl
+	"\\"		delim_quote
+
+:delim_quote Escape
+	*		delim_insubst
+
+:delim_repl Constant
+	*		repl		save_c recolor=-1
+	" 	"	delim_repl
+
+:repl Constant
+	*		repl
+	&		rest
+	"\\"		repl_quote
+
+:repl_quote Escape
+	*		repl
+
+.end

@@ -1,0 +1,92 @@
+# JOE syntax highlight file for SKILL
+# Based on the very rudimentary lisp syntax file
+# Written by Joachim Fenkes <skill dot jsf at dojoe dot net> in 2005
+
+=Idle
+=Comment 	green
+=String 	cyan
+=Escape 	bold cyan
+=Bracket	bold
+=Symbol		bold blue
+=Keyword	bold
+=Number		bold magenta
+=Bad		bold red
+
+:idle Idle
+	*		idle
+	";"		comment		recolor=-1
+	"\""		string		recolor=-1
+	"/"		slash
+	"()[]{}"	bracket		recolor=-1
+	"'"		maybe_symbol	recolor=-1
+	"a-zA-Z_"	maybe_keyword	buffer
+	"0-9"		number		recolor=-1
+
+:maybe_keyword Idle
+	*		idle		noeat	strings
+	"list"		keyword
+	"procedure"	keyword
+	"while"		keyword
+	"foreach"	keyword
+	"if"		keyword
+	"for"		keyword
+	"when"		keyword
+	"unless"	keyword
+	"cond"		keyword
+	"defun"		keyword
+	"let"		keyword
+	"prog"		keyword
+	"else"		keyword
+	"then"		keyword
+	"case"		keyword
+	"caseq"		keyword
+	"nil"		keyword
+	"t"		keyword
+done
+	"0-9a-zA-Z_"	maybe_keyword
+	
+:number Number
+	*		idle		noeat
+	"0-9."		number
+	
+:slash Idle
+	*		idle
+	"/"		slash
+	"*"		mcomment	recolor=-2
+
+:comment Comment
+	*		comment
+	"\n"		idle
+
+:mcomment Comment
+	*		mcomment
+	"*"		maybe_end_mcomment
+	
+:maybe_end_mcomment Comment
+	*		mcomment
+	"*"		maybe_end_mcomment
+	"/"		idle
+
+:string String
+	*		string
+	"\""		idle
+	"\\"		string_escape	recolor=-1
+
+:string_escape Escape
+	*		string
+	"\n"		string		recolor=-2
+
+:bracket Bracket
+	*		idle		noeat
+
+:maybe_symbol Idle
+	*		symbol		recolor=-2
+	"(){}"		bracket		recolor=-2
+
+:symbol Symbol
+	*		symbol
+	" \t\n"		idle		recolor=-1
+	")"		bracket		recolor=-1
+
+:keyword Keyword
+	*		idle		noeat

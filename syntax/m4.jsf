@@ -1,0 +1,121 @@
+# m4
+
+=Idle
+=Comment	green
+=Constant	cyan
+=Var		magenta
+=Brace		bold magenta
+=Kw		bold
+
+:start Idle
+	*		start noeat call=.m4()
+
+.subr m4
+
+.ifdef quote
+:idle Constant
+.else
+:idle Idle
+.endif
+	*		idle
+	"["		idle recolor=-1 call=.m4(quote -brace)
+#	"["		idle recolor=-1 call=.quote()
+	"a-zA-Z_"	ident buffer mark
+.ifdef quote
+	"]"		idle return
+.endif
+.ifdef brace
+	")"		endbrace recolor=-1
+.endif
+
+:quote Constant
+	*		quote
+	"]"		idle
+
+:endbrace Brace
+	*		idle noeat return
+
+.ifdef quote
+:ident Constant
+.else
+:ident Idle
+.endif
+	*		maybe_macro noeat strings
+	"builtin"	maybe_kw
+	"changecom"	maybe_kw
+	"changequote"	maybe_kw
+	"changeword"	maybe_kw
+	"debugfile"	maybe_kw
+	"debugmode"	maybe_kw
+	"decr"		maybe_kw
+	"define"	maybe_kw
+	"defn"		maybe_kw
+	"divert"	maybe_kw
+	"divnum"	maybe_kw
+	"dnl"		comment
+	"dumpdef"	maybe_kw
+	"errprint"	maybe_kw
+	"esyscmd"	maybe_kw
+	"eval"		maybe_kw
+	"file"		maybe_kw
+	"format"	maybe_kw
+	"ifdef"		maybe_kw
+	"ifelse"	maybe_kw
+	"include"	maybe_kw
+	"incr"		maybe_kw
+	"index"		maybe_kw
+	"indir"		maybe_kw
+	"len"		maybe_kw
+	"line"		maybe_kw
+	"m4exit"	maybe_kw
+	"m4wrap"	maybe_kw
+	"maketemp"	maybe_kw
+	"patsubst"	maybe_kw
+	"popdef"	maybe_kw
+	"pushdef"	maybe_kw
+	"regexp"	maybe_kw
+	"shift"		maybe_kw
+	"sinclude"	maybe_kw
+	"substr"	maybe_kw
+	"syscmd"	maybe_kw
+	"sysval"	maybe_kw
+	"traceoff"	maybe_kw
+	"traceon"	maybe_kw
+	"translit"	maybe_kw
+	"undefine"	maybe_kw
+	"undivert"	maybe_kw
+done
+	"a-zA-Z0-9_"	ident
+
+:maybe_macro Idle
+	*		idle noeat
+	"("		macro recolormark noeat
+
+:maybe_kw Idle
+	*		idle noeat
+	"("		kw recolormark noeat
+
+:kw Kw
+	*		idle noeat
+	"("		macro noeat
+
+:comment Comment
+	*		comment
+	"\n"		idle
+
+:macro Var
+	*		idle noeat
+	"("		brace recolor=-1
+
+:brace Brace
+	*		idle noeat call=.m4(brace -quote)
+
+.end
+
+.subr quote
+:idle Constant
+	*	idle
+	"]"	idle return
+	"["	idle call=.quote()
+
+.end

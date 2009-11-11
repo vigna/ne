@@ -1,0 +1,233 @@
+# JOE syntax highlight file for csh
+
+# needs work: I just copied this from sh and
+# changed the keywords.
+
+# Colors
+
+=Idle
+=Comment 	green
+=Constant 	cyan
+=Escape 	bold cyan
+=Keyword 	bold
+=Var		magenta
+
+# Syntax
+
+:idle Idle
+	*		idle
+	"#"		comment		recolor=-1
+	"\\"		escape		recolor=-1
+	"$"		subst		recolor=-1
+	"'"		string_sq	recolor=-1
+	"\""		string_dq	recolor=-1
+	"\`"		string_bq	recolor=-1
+	"a-zA-Z{}!["	ident		buffer
+
+:comment Comment
+	*		comment
+	"\n"		idle
+
+:escape Escape
+	*		idle
+
+:subst Var
+	*		idle
+	"{"		subst_brack
+	"a-zA-Z_"	subst_name
+	"0-9*@?\-$_!"	idle
+
+:subst_name Var
+	*		idle		noeat recolor=-1
+	"a-zA-Z0-9_"	subst_name
+
+:subst_brack Var
+	*		subst_brack
+	"}"		idle
+
+# Simplest case: no quoting allowed
+:string_sq Constant
+	*		string_sq
+	"\'"		idle
+
+
+# double-quote: quoting, backqoutes and substitution allowed
+:string_dq Constant
+	*		string_dq
+	"$"		string_dq_subst	recolor=-1
+	"\""		idle
+	"\\"		string_dq_esc	recolor=-1
+	"`"		string_dq_bq	recolor=-1
+
+:string_dq_subst Var
+	*		string_dq	noeat recolor=-2
+	"$0-9!_\-?*@"	string_dq
+	"a-zA-Z_"	string_dq_subst_name
+	"{"		string_dq_subst_brack
+
+:string_dq_subst_name Var
+	*		string_dq	recolor=-1 noeat
+	"a-zA-Z0-9_"	string_dq_subst_name
+
+:string_dq_subst_brack Var
+	*		string_dq_subst_brack
+	"}"		string_dq
+
+:string_dq_esc Escape
+	*		string_dq	recolor=-2
+	"$`\"\\"	string_dq
+	"\n"		string_dq	recolor=-2
+
+:string_dq_bq Constant
+	*		string_dq_bq
+	"$"		string_dq_bq_subst	recolor=-1
+	"\`"		string_dq
+	"\\"		string_dq_bq_esc	recolor=-1
+
+:string_dq_bq_subst Var
+	*		string_dq_bq	noeat recolor=-2
+	"$0-9!_\-?*@"	string_dq_bq
+	"a-zA-Z_"	string_dq_bq_subst_name
+	"{"		string_dq_bq_subst_brack
+
+:string_dq_bq_subst_name Var
+	*		string_dq_bq	recolor=-1 noeat
+	"a-zA-Z0-9_"	string_dq_bq_subst_name
+
+:string_dq_bq_subst_brack Var
+	*		string_dq_bq_subst_brack
+	"}"		string_dq_bq
+
+:string_dq_bq_esc Escape
+	*		string_dq_bq	recolor=-2
+	"$`\"\\"	string_dq_bq
+	"\n"		string_dq_bq	recolor=-2
+
+
+# backquote
+:string_bq Constant
+	*		string_bq
+	"$"		string_bq_subst	recolor=-1
+	"\`"		idle
+	"\\"		string_bq_esc	recolor=-1
+
+# escape in backquote
+:string_bq_esc Escape
+	*		string_bq	recolor=-2
+	"$`\"\\"	string_bq
+	"\n"		string_bq	recolor=-2
+
+# Substitution in a backquote
+:string_bq_subst Var
+	*		string_bq	noeat recolor=-2
+	"$0-9!_\-?*@"	string_bq
+	"a-zA-Z_"	string_bq_subst_name
+	"{"		string_bq_subst_brack
+
+:string_bq_subst_name Var
+	*		string_bq	recolor=-1 noeat
+	"a-zA-Z0-9_"	string_bq_subst_name
+
+:string_bq_subst_brack Var
+	*		string_bq_subst_brack
+	"}"		string_bq
+
+
+:ident Idle
+	*		idle		noeat strings
+	"!"		kw
+	"{"		kw
+	"}"		kw
+	"["		kw
+	"]"		kw
+	"alias"		kw
+	"alloc"		kw
+	"bg"		kw
+	"bindkey"	kw
+	"break"		kw
+	"breaksw"	kw
+	"builtins"	kw
+	"bye"		kw
+	"case"		kw
+	"cd"		kw
+	"chdir"		kw
+	"complete"	kw
+	"continue"	kw
+	"default"	kw
+	"dirs"		kw
+	"echo"		kw
+	"echotc"	kw
+	"else"		kw
+	"end"		kw
+	"endif"		kw
+	"endsw"		kw
+	"eval"		kw
+	"exec"		kw
+	"exit"		kw
+	"fg"		kw
+	"filetest"	kw
+	"foreach"	kw
+	"getspath"	kw
+	"getxvers"	kw
+	"glob"		kw
+	"goto"		kw
+	"hashstat"	kw
+	"history"	kw
+	"hup"		kw
+	"if"		kw
+	"inlib"		kw
+	"jobs"		kw
+	"kill"		kw
+	"limit"		kw
+	"log"		kw
+	"login"		kw
+	"logout"	kw
+	"ls-F"		kw
+	"migrate"	kw
+	"newgrp"	kw
+	"nice"		kw
+	"nohup"		kw
+	"notify"	kw
+	"onintr"	kw
+	"popd"		kw
+	"printenv"	kw
+	"pushd"		kw
+	"rehash"	kw
+	"repeat"	kw
+	"rootnode"	kw
+	"sched"		kw
+	"set"		kw
+	"setenv"	kw
+	"setpath"	kw
+	"setspath"	kw
+	"settc"		kw
+	"setty"		kw
+	"setxvers"	kw
+	"shift"		kw
+	"source"	kw
+	"stop"		kw
+	"suspend"	kw
+	"switch"	kw
+	"case"		kw
+	"telltc"	kw
+	"time"		kw
+	"umask"		kw
+	"unalias"	kw
+	"uncomplete"	kw
+	"unhash"	kw
+	"universe"	kw
+	"unlimit"	kw
+	"unset"		kw
+	"unsetenv"	kw
+	"ver"		kw
+	"wait"		kw
+	"warp"		kw
+	"watchdog"	kw
+	"where"		kw
+	"which"		kw
+	"while"		kw
+done
+	"a-zA-Z0-9\-"	ident
+
+:kw Keyword
+	*	idle	noeat

@@ -1,0 +1,435 @@
+# JOE syntax highlight file for Haskell
+
+# Define colors
+#
+# bold inverse blink dim underline
+# white cyan magenta blue yellow green red black
+# bg_white bg_cyan bg_magenta bg_blue bg_yellow bg_green bg_red bg_black
+
+# not too colorfull to not distract user
+=Idle
+=Special bold
+=ConId bold yellow
+=ModId
+=VarId
+=VarSym
+=ReservedId bold
+=Comment green
+=Pragma bold green
+=Error bg_red black
+=FloatNumber bold cyan
+=DecNumber bold cyan
+=HexNumber cyan
+=OctNumber cyan
+=CharLit cyan
+=StringLit cyan
+=StringGap bg_cyan black
+=EscapedChar bold cyan
+
+:reset Idle
+	*		reset		
+	"a-z_"		varid		buffer recolor=-1
+	"A-Z"		conormodid	mark recolor=-1
+	":"		consym		buffer recolor=-1
+	"!#$%&*+./<=>?@\\^|~" varsym	buffer recolor=-1
+	"-"		dashorvarsym	mark buffer recolor=-1
+	"(),;[]`}"	special		recolor=-1
+	"{"		specialorncomment recolor=-1
+	"0-9"		integerstart	mark noeat
+	"\'"		charlit		recolor=-1
+	"\""		strlit		recolor=-1
+	
+:special Special
+	*		reset		noeat
+	
+:specialorncomment Special
+	*		reset		noeat
+	"-"		ncommentstart	recolor=-2
+	
+:ncommentstart Comment
+	*		reset		noeat call=.comment()
+	"#"		pragma		recolor=-3
+
+.subr comment
+
+:ncomment Comment
+	*		ncomment
+	"-"		ncommentmaybeend
+	"{"		ncommentmaybenest
+
+:ncommentmaybeend Comment
+	*		ncomment	noeat
+	"}"		ncomment	return
+
+:ncommentmaybenest Comment
+	*		ncomment	noeat
+	"-"		ncomment	call=.comment()
+
+.end
+
+:pragma Pragma
+	*		pragma
+	"#"		pragmamaybeend1
+	"-"		pragmamaybebadend
+
+:pragmamaybeend1 Pragma
+	*		pragma		noeat
+	"-"		pragmamaybeend2
+	
+:pragmamaybeend2 Pragma
+	*		pragma		noeat
+	"}"		reset
+	
+:pragmamaybebadend Error
+	*		pragma		noeat
+	"}"		errorstate	recolor=-2
+	
+:errorstate Error
+	*		reset
+
+:conormodid ConId
+	*		reset		noeat
+	"."		probablymodid	recolor=-1
+	"a-zA-Z0-9'_"	conormodid
+	
+# give it color varid to color the dot in case it is *not* a modid in the
+# right color
+:probablymodid VarSym
+	*		ismodid		noeat recolormark recolor=-1
+	" \t\r\n\v\f"	reset
+	
+:ismodid ModId
+	*		reset		noeat
+
+:varid VarId
+	*		reset		noeat strings
+	"case"		reservedid
+	"class"		reservedid
+	"data"		reservedid
+	"default"	reservedid
+	"deriving"	reservedid
+	"do"		reservedid
+	"else"		reservedid
+	"if"		reservedid
+	"import"	reservedid
+	"infix"		reservedid
+	"infixl"	reservedid
+	"infixr"	reservedid
+	"instance"	reservedid
+	"let"		reservedid
+	"module"	reservedid
+	"newtype"	reservedid
+	"of"		reservedid
+	"then"		reservedid
+	"type"		reservedid
+	"where"		reservedid
+	"_"		reservedid
+done
+	"a-zA-Z0-9_'"	varid
+
+:reservedid ReservedId
+	*		reset		noeat
+
+
+:consym ConId
+	*		reset		noeat strings
+	":"		reservedid
+	"::"		reservedid
+done
+	"-!#$%&*+./<=>?@\\^|~:" consym
+
+:varsym VarSym
+	*		reset		noeat strings
+	".."		reservedid
+	"="		reservedid
+	"\\"		reservedid
+	"|"		reservedid
+	"<-"		reservedid
+	"->"		reservedid
+	"@"		reservedid
+	"~"		reservedid
+done
+	"-!#$%&*+./<=>?@\\^|~:" varsym
+
+:dashorvarsym VarSym
+	*		varsym		noeat
+	"-"		dashdash	hold
+	
+:dashdash VarSym
+	*		linecomment	recolormark noeat
+	"!#$%&*+./<=>?@\\^|~:" varsym
+	"-" 		dashdash
+	
+:linecomment Comment
+	*		linecomment
+	"\n"		reset
+
+:integerstart DecNumber
+	*		decnum
+	"0"		intdispatch
+
+:decnum DecNumber
+	*		reset		noeat
+	"."		floatmaybemant
+	"e"		floatexponentstart
+	"0-9"		decnum
+	
+:intdispatch DecNumber
+	*		decnum		noeat
+	"oO"		octstart
+	"xX"		hexstart
+
+# Catch "0o " which is "integer 0" "symbol o" "whitespace"
+# and "0oo" which is "integer 0" "symbol oo"
+:octstart OctNumber
+	*		varid		noeat recolor=-2
+	"0-7"		octint		recolor=-3
+
+# Catch "0o08" which is "(octal) integer 0" "integer 8"
+:octint OctNumber
+	*		reset		noeat
+	"0-7"		octint
+
+:hexstart HexNumber
+	*		varid		noeat recolor=-2
+	"0-9a-fA-F"	hexint		recolor=-3
+
+:hexint HexNumber
+	*		reset		noeat
+	"0-9a-fA-F"	hexint
+
+# default jumps to varsym because the dot that sent us here is the first
+# char of a symbol.
+:floatmaybemant FloatNumber
+	*		varsym		noeat recolor=-2
+	"0-9"		floatmantissa	recolormark
+
+:floatmantissa FloatNumber
+	*		reset		noeat
+	"0-9"		floatmantissa
+	"eE"		floatexponentstart
+
+# after an 'e'
+# default jump is for identifiers starting with e directly pasted to a
+# number
+# recolormark is needed in the case we got here from decnum
+:floatexponentstart FloatNumber
+	*		varid		noeat recolor=-2
+	"+-"		floatexponentstart2
+	"0-9"		floatexponent	recolormark
+
+# in case of non-digit:
+# the e is a one-char-identifier, the + or - is the start of a symbol
+:floatexponentstart2 FloatNumber
+	*		unrollfloat	noeat recolor=-3
+	"0-9"		floatexponent	recolormark
+
+:floatexponent FloatNumber
+	*		reset		noeat
+	"0-9"		floatexponent
+
+# the error is just for testing...
+:unrollfloat VarId
+	*		varsym		noeat recolor=-2
+
+:charlit CharLit
+	*		charlitend
+	"\n"		errorstate	noeat recolor=-2
+	"\'"		errorstate	noeat recolor=-2
+	"\\"		escape_charlit	mark recolor=-1
+
+:charlitend CharLit
+	*		charliterror	noeat
+	"\'"		reset
+
+:escape_charlit EscapedChar
+	*		charliterror	recolor=-2
+	"0-9"		escdecchar
+	"o"		escoctcharstart
+	"x"		eschexcharstart
+	"abfnrtv\\\"\'"	charlitend
+	"A-Z"		escasciichar	buffer
+	"^"		escasciictrlchar
+
+:escoctcharstart EscapedChar
+	*		charliterror	recolor=-3 noeat
+	"0-7"		escoctchar
+
+:escoctchar EscapedChar
+	*		charlitend	noeat
+	"0-7"		escoctchar
+
+:escdecchar EscapedChar
+	*		charlitend	noeat
+	"0-9"		escdecchar
+
+:eschexcharstart EscapedChar
+	*		charliterror	recolor=-3 noeat
+	"0-9a-fA-F"	eschexchar
+
+:eschexchar EscapedChar
+	*		charlitend	noeat
+	"0-9a-fA-F"	eschexchar
+
+:escascnotfoundchar EscapedChar
+	*		charliterror	recolormark noeat
+	"A-Z"		escasciichar
+
+:escasciichar EscapedChar
+	*		charliterror	recolormark
+	"A-Z'"		escascnotfoundchar noeat	strings
+	"NUL"		asciidonechar
+	"STX"		asciidonechar
+	"ETX"		asciidonechar
+	"EOT"		asciidonechar
+	"ENQ"		asciidonechar
+	"ACK"		asciidonechar
+	"BEL"		asciidonechar
+	"BS"		asciidonechar
+	"HT"		asciidonechar
+	"LF"		asciidonechar
+	"VT"		asciidonechar
+	"FF"		asciidonechar
+	"CR"		asciidonechar
+	"SO"		asciiSOchar
+	"SI"		asciidonechar
+	"DLE"		asciidonechar
+	"DC1"		asciidonechar
+	"DC2"		asciidonechar
+	"DC3"		asciidonechar
+	"DC4"		asciidonechar
+	"NAK"		asciidonechar
+	"SYN"		asciidonechar
+	"ETB"		asciidonechar
+	"CAN"		asciidonechar
+	"EM"		asciidonechar
+	"SUB"		asciidonechar
+	"ESC"		asciidonechar
+	"FS"		asciidonechar
+	"GS"		asciidonechar
+	"RS"		asciidonechar
+	"US"		asciidonechar
+	"SP"		asciidonechar
+	"DEL"		asciidonechar
+done
+
+:asciiSOchar EscapedChar
+	*		charliterror	recolormark
+	"'"		charlitend	noeat
+	"H"		charlitend
+
+:escasciictrlchar EscapedChar
+	*		charliterror	noeat recolor=-3
+	"A-Z@[\\]^_"	charlitend
+
+:asciidonechar EscapedChar
+	*		charlitend noeat
+
+:charliterror Error
+	*		charliterror
+	"\'"		charlitend	noeat
+
+# now for string literals
+
+:strlit StringLit
+	*		strlit
+	"\""		reset
+	"\n"		errorstate	noeat recolor=-2
+	"\\"		escape_strlit	mark recolor=-1
+
+:escape_strlit EscapedChar
+	*		strliterror	recolor=-2
+	"0-9"		escdecstr
+	"o"		escoctstrstart
+	"x"		eschexstrstart
+	"abfnrtv\\\"\'&"	strlit
+	"A-Z"		escasciistr	buffer
+	"^"		escasciictrlstr
+	" \t\n\r\v"	stringgap	recolor=-2
+
+:escoctstrstart EscapedChar
+	*		strliterror	recolor=-3 noeat
+	"0-7"		escoctstr
+
+:escoctstr EscapedChar
+	*		strlit	noeat
+	"0-7"		escoctstr
+
+:escdecstr EscapedChar
+	*		strlit	noeat
+	"0-9"		escdecstr
+
+:eschexstrstart EscapedChar
+	*		strliterror	recolor=-3 noeat
+	"0-9a-fA-F"	eschexstr
+
+:eschexstr EscapedChar
+	*		strlit		noeat
+	"0-9a-fA-F"	eschexstr
+
+:escascnotfoundstr EscapedChar
+	*		strliterror	recolormark noeat
+	"A-Z"		escasciistr
+
+:escasciistr EscapedChar
+	*		strliterror	noeat recolormark
+	"A-Z\""		escascnotfoundstr noeat	strings
+	"NUL"		asciidonestr
+	"STX"		asciidonestr
+	"ETX"		asciidonestr
+	"EOT"		asciidonestr
+	"ENQ"		asciidonestr
+	"ACK"		asciidonestr
+	"BEL"		asciidonestr
+	"BS"		asciidonestr
+	"HT"		asciidonestr
+	"LF"		asciidonestr
+	"VT"		asciidonestr
+	"FF"		asciidonestr
+	"CR"		asciidonestr
+	"SO"		asciiSOstr
+	"SI"		asciidonestr
+	"DLE"		asciidonestr
+	"DC1"		asciidonestr
+	"DC2"		asciidonestr
+	"DC3"		asciidonestr
+	"DC4"		asciidonestr
+	"NAK"		asciidonestr
+	"SYN"		asciidonestr
+	"ETB"		asciidonestr
+	"CAN"		asciidonestr
+	"EM"		asciidonestr
+	"SUB"		asciidonestr
+	"ESC"		asciidonestr
+	"FS"		asciidonestr
+	"GS"		asciidonestr
+	"RS"		asciidonestr
+	"US"		asciidonestr
+	"SP"		asciidonestr
+	"DEL"		asciidonestr
+done
+
+:asciiSOstr EscapedChar
+	*		strlit		noeat
+	"H"		strlit
+
+:escasciictrlstr EscapedChar
+	*		strliterror	noeat recolor=-3
+	"A-Z@[\\]^_"	strlit
+
+:asciidonestr EscapedChar
+	*		strlit		noeat
+
+:stringgap StringGap
+	*		strgaperror	recolor=-1
+	"\\"		strlit
+	" \n\r\t\v"	stringgap
+
+:strgaperror Error
+	*		strgaperror
+	"\\"		strlit		
+	"\""		reset
+
+:strliterror Error
+	*		strlit		noeat
+

@@ -1,0 +1,102 @@
+# JOE syntax highlight file for CSS
+# by Eric Lin
+
+-
+
+# Define colors
+
+=Idle
+=Comment 	green
+=Class 	cyan
+=Id red
+=Tag  magenta
+=Keyword  bold
+=HTML
+
+:begin Idle
+	*	begin	noeat call=.css()
+
+#
+# For <style> in html
+#
+
+.subr css
+
+:reset HTML
+	*		  reset
+	"<"	maybe_done
+	"/"		slash
+	"#"   id_block recolor=-1
+	"."   class_block recolor=-1
+	"a-zA-Z"  tag_block recolor=-1
+
+:maybe_done HTML
+	*	reset noeat
+	"/"	reset noeat return recolor=-2
+
+:slash Idle
+	*		reset		noeat
+	"*"		comment		recolor=-2
+
+:comment Comment
+	*		comment
+	"*"		maybe_end_comment
+
+:maybe_end_comment Comment
+	*		comment
+	"/"		reset
+	"*"		maybe_end_comment
+
+:id_block Id
+  *   id_block
+  " " id_block_reset
+  "{" style_block recolor=-1
+
+:id_block_reset Idle
+  *   id_block
+  "a-zA-Z"  tag_block recolor=-1
+  "." class_block recolor=-1
+  "#" id_block  recolor=-1
+  "{" style_block recolor=-1
+   
+:class_block  Class
+  *   class_block
+  " " tag_block
+  "{" style_block recolor=-1
+  
+:tag_block  Tag 
+  *   tag_block
+  "{" style_block recolor=-1
+  "," tag_sep recolor=-1
+  
+:tag_sep  Idle
+  * tag_block recolor=-1
+
+:style_block  Idle
+  * style_block
+  "}" reset
+  "/" maybe_style_comment
+  "a-zA-Z-"  style_word  recolor=-1
+
+:style_word Keyword
+  * style_word
+  ":" style_value  recolor=-1
+
+:style_value Idle
+  * style_value
+  ";" style_block 
+  
+:maybe_style_comment  Idle
+  * style_block recolor=-1
+  "*" style_comment recolor=-2
+
+:style_comment  Comment
+  *   style_comment
+  "*" maybe_end_style_comment
+  
+:maybe_end_style_comment  Comment
+  *   comment
+  "/" style_block
+  "*" maybe_end_style_comment
+  
+.end

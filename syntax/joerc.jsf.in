@@ -1,0 +1,115 @@
+# JOE syntax highlight file for typical UNIX configuration files
+
+=Idle
+=Comment 	green
+=String 	cyan
+=Escape 	bold cyan
+=Bad		bold red
+
+:idle Idle
+	*		not_comment
+	"\n"		idle
+	" 	"	comment
+	"-"		option
+	"\""		keybind_string recolor=-1
+	"a-zA-Z_"	keybind
+
+:keybind Idle
+	*		keybind
+	"\""		keybind_string recolor=-1
+	"\n"		idle
+	","		keybind_after_comma
+	" 	"	keybind1
+
+:keybind_after_comma Idle
+	*		keybind noeat
+	" 	"	keybind_after_comma
+	"\n"		keybind_after_comma
+
+:keybind_string String
+	*		keybind_string
+	"\\"		keybind_escape recolor=-1
+	"\""		keybind
+
+:keybind_escape Escape
+	*		keybind_string
+
+:keybind1 Idle
+	*		keybind2
+	"\n"		idle
+	" 	"	keybind1
+
+:keybind2 Idle
+	*		keybind2
+	"\n"		idle
+	"	"	comment noeat
+	" "		maybe_com
+
+:maybe_com Idle
+	*		keybind2 noeat
+	" 	"	comment noeat
+
+:option Idle
+	*		bad recolor=-1
+	"-"		option
+	"a-zA-Z_"	ident buffer
+
+:ident Idle
+	*		comment noeat strings
+	"backpath"		sopt
+	"lines"			nopt
+	"baud"			nopt
+	"columns"		nopt
+	"skiptop"		nopt
+	"text_color"		sopt
+	"status_color"		sopt
+	"help_color"		sopt
+	"menu_color"		sopt
+	"prompt_color"		sopt
+	"msg_color"		sopt
+	"lmsg"			sopt
+	"rmsg"			sopt
+	"cpara"			sopt
+	"encoding"		sopt
+	"syntax"		sopt
+	"indentc"		nopt
+	"istep"			nopt
+	"lmargin"		nopt
+	"rmargin"		nopt
+	"keymap"		sopt
+	"mfirst"		sopt
+	"mnew"			sopt
+	"mold"			sopt
+	"msnew"			sopt
+	"msold"			sopt
+	"text_delimiters"	sopt
+done
+	"a-zA-Z0-9_"	ident
+
+:sopt Idle
+	*		dosopt noeat
+
+:dosopt String
+	*		dosopt
+	"\n"		idle
+
+:nopt Idle
+	*		bad recolor=-1
+	" 	"	nopt
+	"0-9"		nopt1 recolor=-1
+
+:nopt1 String
+	*		comment noeat
+	"0-9"		nopt1
+
+:bad Bad
+	*		bad
+	"\n"		idle
+
+:comment Comment
+	*		comment
+	"\n"		idle
+
+:not_comment Idle
+	*		not_comment
+	"\n"		idle

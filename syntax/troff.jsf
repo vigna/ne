@@ -1,0 +1,82 @@
+# Syntax file for Troff
+
+=Idle
+=Comment	green
+=Escape		magenta
+=Command	bold
+=Bad		red
+
+# First character of line
+
+:first Idle
+	*		rest		noeat
+	".'"		command_1
+
+:rest Idle
+	*		rest
+	"\n"		first
+	"\\"		escape		recolor=-1
+
+:command_1 Command
+	*		rest		noeat
+	" 	"	command_1
+	"a-zA-Z_"	command_2
+
+:command_2 Command
+	*		rest
+	"a-zA-Z0-9_"	command_done	recolor=-1
+
+:command_done Command
+	*		rest		noeat
+
+:escape Escape
+	*		bad		recolor=-2
+	"-\\e'`. 0|^&!%acdprtu{}"	rest
+	"*fgn"			name
+	"k"			reg
+	"z"			reg
+	"("			name2
+	"$s"			num
+	"bCDhHlLNoSvwxX"	str
+	"\n"		first
+	"\""		comment		recolor=-2
+
+# A name: ( means two characters
+
+:name Escape
+	*		rest
+	"("		name2
+
+# Two character name
+
+:name2 Escape
+	*		reg
+
+# One character name
+
+:reg Escape
+	*		rest
+
+# String
+
+:str Escape
+	*		bad	recolor=-1
+	"'"		str_body
+
+:str_body Escape
+	*		str_body
+	"\n"		first
+	"'"		rest
+
+# Number
+
+:num Escape
+	*		rest	noeat
+	"-+0-9"		num
+
+:comment Comment
+	*		comment
+	"\n"		first
+
+:bad Bad
+	*		rest		noeat

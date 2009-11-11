@@ -1,0 +1,216 @@
+# JOE syntax highlight file for Progress 4GL
+# by Gediminas http://proc.w3.lt
+# Version 1.04
+
+# bold inverse blink dim underline
+# white cyan magenta blue yellow green red black
+# bg_white bg_cyan bg_magenta bg_blue bg_yellow bg_green bg_red bg_black
+
+=Idle
+=Comment	green
+=Constant	cyan
+=Type		magenta
+# conditional operators, blocks
+=Condition	bold
+# buffer repositioning
+=KeyDB		bold green
+# create, delete record
+=CreateDel	bold yellow
+# preprocessor include, definition, reference
+=Include	yellow
+=Preproc	yellow
+=PreRef
+
+:idle Idle
+	*		idle
+	"/"		slash
+	"{"		brace
+	"&"		prep		buffer
+	"a-zA-Z"	ident		buffer
+	"'"		string		recolor=-1
+	"\""		string2		recolor=-1
+	"0-9"		number		recolor=-1 
+	"?"		question	recolor=-1
+
+# Comments - 2 levels of nesting allowed
+
+:slash Idle
+	*		idle		noeat
+	"*"		comment		recolor=-2
+:comment Comment
+	*		comment
+	"/"		slash2
+	"*"		maybe_end_comment
+:maybe_end_comment Comment
+	*		comment
+	"/"		idle
+	"*"		maybe_end_comment
+
+:slash2 Idle
+	*		comment		noeat
+	"*"		comment2	recolor=-2
+:comment2 Comment
+	*		comment2
+	"*"		maybe_end_comment2
+:maybe_end_comment2 Comment
+	*		comment2
+	"/"		comment
+	"*"		maybe_end_comment2
+
+# Preprocessor
+#     Allow preprocessor name reference inside include file reference:
+#     {include/trace {&FILE-NAME} {&LINE-NUMBER}}
+
+:brace Include
+	*		include		noeat
+	"&"		scoped		recolor=-2
+	"}"		idle
+
+:include Include
+	*		include		recolor=-2
+	"{"		brace2
+	"}"		idle
+
+:brace2 Include
+	*		include2	noeat
+	"}"		idle
+
+:include2 Include
+	*		include2	recolor=-2
+	"}"		include
+
+:scoped PreRef
+	*		scoped
+	"}"		idle
+
+:prep Preproc
+	*			idle		noeat istrings
+	"&IF"			predir
+	"&THEN"			predir
+	"&ELSEIF"		predir
+	"&ELSE"			predir
+	"&ENDIF"		predir
+	"&SCOPED-DEFINE"	predir
+	"&SCOP"			predir
+	"&GLOBAL-DEFINE"	predir
+	"&GLOB"			predir
+	"&MESSAGE"		predir
+	"&UNDEFINE"		predir
+	"&UNDEF"		predir
+done
+	"-a-zA-Z0-9_"		prep
+
+:predir Preproc
+	*		idle		noeat
+
+
+# String constants, copied from pascal.jsf with " added
+
+:string Constant
+	*		string
+	"\n"		idle
+	"'"		maybe_end_string
+
+:maybe_end_string Constant
+	*		idle		recolor=-1 noeat
+	"'"		string
+
+:string2 Constant
+	*		string2
+	"\n"		idle
+	"\""		maybe_end_string2
+
+:maybe_end_string2 Constant
+	*		idle		recolor=-1 noeat
+	"\""		string2
+
+# Numeric constant, same as pascal.jsf
+
+:number Constant
+	*		idle		noeat
+	"0-9"		number
+	"eE"		epart
+	"."		dot
+
+:dot Constant
+	*		idle	noeat
+	"0-9"		float
+
+:float Constant
+	*		idle	noeat
+	"eE"		epart
+	"0-9"		float
+
+:epart Constant
+	*		idle	noeat
+	"0-9+\-"	enum
+
+:enum Constant
+	*		idle	noeat
+	"0-9"		enum
+
+:question Constant
+	*		idle noeat
+
+# Keywords
+# Available jumps: operator type kw kwdb credel func
+
+:ident Idle
+	*		idle		noeat istrings
+	"assign"	cond
+	"case"		cond
+	"cha"		type
+	"char"		type
+	"character"	type
+	"create"	credel
+	"dat"		type
+	"date"		type
+	"dec"		type
+	"decimal"	type
+	"defined"	predir
+	"delete"	credel
+	"do"		cond
+	"else"		cond
+	"end"		cond
+	"find"		kwdb
+	"for"		kwdb
+	"function"	cond
+	"get"		kwdb
+	"handle"	type
+	"if"		cond
+	"int"		type
+	"integer"	type
+	"leave"		cond
+	"log"		type
+	"logical"	type
+	"memptr"	type
+	"next"		cond
+	"otherwise"	cond
+	"param"		cond
+	"parameter"	cond
+	"procedure"	cond
+	"raw"		type
+	"rec"		type
+	"repeat"	cond
+	"reposition" kwdb
+	"return"	cond
+	"rowid"		type
+	"run"		cond
+	"then"		cond
+	"when"		cond
+	"widget-handle"	type
+done
+	"-a-zA-Z0-9_"	ident
+
+:cond Condition
+	*	idle	noeat
+
+:kwdb KeyDB
+	*	idle	noeat
+
+:type Type
+	*	idle	noeat
+
+:credel CreateDel
+	*	idle	noeat
+	
