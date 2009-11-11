@@ -1,0 +1,5171 @@
+\input texinfo   @c -*-texinfo-*-
+@setfilename ne.info
+@settitle @code{ne}'s manual
+@dircategory Text creation and manipulation
+@direntry
+* ne: (ne).                     The nice editor
+@end direntry
+@defindex cm
+
+@ignore
+
+This file, besides being a normal Texinfo file, allows generation of
+on-line help and other crucial parts of the C source code for ne. The
+program info2src.pl (a *very* dirty hack) does this. See the Makefile
+to see how this is done.
+
+Conventions:
+	@file for files, directories, etc. (but extensions, etc. use @samp);
+	@code for command line stuff, internal commands, environment variables;
+	@samp for menu/menu item names, and anything left that's literal.
+
+@end ignore
+
+@ifinfo
+This file documents ne 2.0.3, a free text editor for @sc{un*x}.
+
+Copyright (C) 1993-1998 Sebastiano Vigna.
+Copyright (C) 1999-2009 Todd M. Lewis and Sebastiano Vigna.
+
+Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+@ignore
+Permission is granted to process this file through TeX and print the
+results, provided the printed document carries copying permission
+notice identical to this one except for the removal of this paragraph
+(this paragraph not being relevant to the printed manual).
+
+@end ignore
+Permission is granted to copy and distribute modified versions of this
+manual under the conditions for verbatim copying, provided that the entire
+resulting derived work is distributed under the terms of a permission
+notice identical to this one.
+
+Permission is granted to copy and distribute translations of this manual
+into another language, under the above conditions for modified versions,
+except that this permission notice may be stated in a translation approved
+by the Free Software Foundation.
+@end ifinfo
+
+@setchapternewpage odd
+@finalout
+
+@titlepage
+@title ne
+@subtitle A nice editor
+@subtitle Version 2.0.3
+@author by Sebastiano Vigna and Todd M. Lewis
+
+@page
+@vskip 0pt plus 1filll
+Copyright @copyright{} 1993-1998 Sebastiano Vigna@*
+Copyright @copyright{} 1999-2009 Todd M. Lewis and Sebastiano Vigna
+
+Permission is granted to make and distribute verbatim copies of
+this manual provided the copyright notice and this permission notice
+are preserved on all copies.
+
+Permission is granted to copy and distribute modified versions of this
+manual under the conditions for verbatim copying, provided that the entire
+resulting derived work is distributed under the terms of a permission
+notice identical to this one.
+
+Permission is granted to copy and distribute translations of this manual
+into another language, under the above conditions for modified versions,
+except that this permission notice may be stated in a translation approved
+by the Free Software Foundation.
+
+@end titlepage
+
+@ifnottex
+
+@node Top
+@top
+
+This file describes @code{ne} version 2.0.3, a free text editor that runs
+(we hope) on almost any @sc{un*x} machine. @code{ne} is easy to use for
+the beginner, but powerful and fully configurable for the wizard, and
+most sparing in its resource use.
+
+@noindent Copyright (C) 1993-1998 Sebastiano Vigna@*
+@noindent Copyright (C) 1999-2009 Todd M. Lewis and Sebastiano Vigna
+
+@end ifnottex
+
+@menu
+* Introduction::
+* Basics::
+* Reference::
+* Commands::
+* Configuration::
+* Hints and Tricks::
+* Motivations and Design::
+* The Encoding Mess::
+* Some Notes for the Amiga User::
+* History::
+* Portability Problems::
+* Acknowledgments::
+* Concept Index::
+* Command Index::
+@end menu
+
+
+@node Introduction
+@chapter Introduction
+@cindex LITHP
+@cindex Features
+@cindex vi
+@cindex POSIX
+@cindex terminfo
+@cindex termcap
+
+
+@code{ne} is a full screen text editor for @sc{un*x} (or, more
+precisely, for @sc{posix}: @pxref{Motivations and Design}). I came to
+the decision to write such an editor after getting completely sick of
+@code{vi}, both from a feature and user interface point of view. I
+needed an editor that I could use through a @code{telnet} connection or
+a phone line and that wouldn't fire off a full-blown
+@sc{lithp}@footnote{This otherwise unremarkable language is
+distinguished by the absence of an @samp{s} in its character set; users
+must substitute @samp{th}.  @sc{lithp} is said to be useful in
+protheththing lithtth.} operating system just to do some editing.
+
+A concise overview of the main features follows:
+
+@itemize @bullet{}
+
+@item
+three user interfaces: control keystrokes, command line, and menus;
+keystrokes and menus are completely configurable;
+
+@item
+syntax highlighting;
+
+@item
+full support for UTF-8 files, including multiple-column characters;
+
+@item
+the number of documents and clips, the dimensions of the display, and
+the file/line lengths are limited only by the integer size of the machine;
+
+@item
+simple scripting language where scripts can be generated @i{via} an
+idiotproof record/play method;
+
+@item
+unlimited undo/redo capability (can be disabled with a command);
+
+@item
+automatic preferences system based on the extension of the file name being
+edited;
+
+@item
+a file requester with completion features for easy file retrieval;
+
+@item
+extended regular expression search and replace a la @code{emacs} and
+@code{vi};
+
+@item
+a very compact memory model---you can easily load and modify very large files;
+
+@item
+editing of binary files.
+
+@end itemize
+
+@node Basics
+@chapter Basics
+
+@noindent @i{Simple things should be simple. Complex things should be
+possible.} (Alan Kay)
+
+@code{ne}'s user interface is essentially a compromise between the limits of
+character driven terminals and the power of GUIs. While @emph{real} editing is
+done without ever touching a mouse, it is also true that editing should be
+doable without ever touching a manual. These two conflicting goals can be
+accommodated easily in a single program if we can offer a series of interfaces
+that allow for differentiated use.
+
+In other words, it is unlikely that an @code{ne} wizard will ever have to
+activate a menu, but to become an expert user you just have to use
+the menus enough to learn by heart the most important keystrokes. A good
+manual is always invaluable when one comes to configuration and esoteric
+features, but few users will ever need to change @code{ne}'s menus or
+key bindings.
+
+Another important thing is that powerful features should always be
+accessible, at least in part, to every user. The average user should be
+able to record his actions, replay them, and save them in a humanly
+readable format for further use and editing.
+
+In the following sections we shall take a quick tour of @code{ne}'s features.
+
+@menu
+* Terminology::
+* Starting::
+* Loading and Saving::
+* Editing::
+* Basic Preferences::
+* Basic Macros::
+* More Advanced Features::
+@end menu
+
+@node Terminology
+@section Terminology
+@cindex File
+@cindex Document
+@cindex Buffer
+
+In this section we explain and contrast some of the terms
+@code{ne} uses. Understanding these distinctions will go a long way
+towards making the rest of this manual make sense.
+
+A @dfn{file} is a group of bytes stored on disk. This may seem rather
+obvious, but the important distinction here is that @code{ne} does not
+edit files; it edits @dfn{documents}.
+
+A @dfn{document} is what @code{ne} calls one of the ``text thingies''
+that you can edit. It is a sequence of lines of text in the computer's
+memory---not on disk. Documents can be created, edited, saved in
+files, loaded from files, discarded, @i{et cetera}. When a
+document is loaded from or saved to a file, it remains
+associated with that file by name until the document is
+either closed or saved to a different file. Interactions between
+documents and files are handled by the commands under the
+@samp{File} menu. The @samp{Documents} menu commands only deal with
+documents. @xref{Menus}.
+
+Internally, @code{ne} holds its documents in @dfn{buffers}.  A
+@dfn{buffer} is a chunk of memory in which @code{ne} holds something.
+For example, each document is held in its own buffer, as are any loaded
+or recorded macros, undo records, a copy of your last deleted line of
+text, a copy of all your previous responses to long input, and several
+other things.
+
+@node Starting
+@section Starting
+@cindex Keyboard usage
+@cindex Menu usage
+@cindex Shortcuts
+@cindex Status bar
+@cindex Menu bar
+@cindex Control key
+@cindex Meta key
+@cindex Command line
+
+To start @code{ne}, just type @samp{ne} and press @key{Return}. If you
+want to edit some specific file(s), you can put their name(s) on the command
+line just after the command name, as for any @sc{un*x} command. The
+screen of your terminal will be cleared (or filled with text loaded
+from the first file you specified). See @ref{Arguments} for other command line options.
+
+At the bottom of the screen, you will see a line containing some numbers and
+letters. This is called the @dfn{status bar} because it reports to you part of
+the internal state of the editor.
+
+Writing text is pretty straightforward: if your terminal is properly
+configured, every key will (should) do what you expect. Alphabetic
+characters insert text, cursor keys move the cursor, and so on. You can
+use the @key{Delete} and @key{Backspace} key to perform corrections. If
+your keyboard has an @key{Insert} key, you can use it to @dfn{toggle}
+(switch from on to off, or vice versa) insert mode. In general,
+@code{ne} tries to squeeze everything it can from your
+keyboard. Functions keys and special movement keys should work
+flawlessly if your terminal is properly configured. If not, complain to
+your system administrator.
+
+At startup, the status bar has the following form:
+
+@example
+ L:       1 C:       1  12% ia----pvu-------@@A <unnamed>
+@end example
+
+@noindent (the numbers could be different, and a file name could be shown as
+last item instead of @samp{<unnamed>}). You probably already guessed
+that the numbers after @samp{L:} and @samp{C:} are the line and column
+numbers, respectively, whereas the percentage indicates approximately
+your position in the file. The small letters represent user flags that
+you can turn on and off. In particular, @samp{i} tells you that insert
+mode is on, while @samp{p} tells that the automatic preferences system
+is activated. For a thorough explanation of the meaning of the flags on
+the status line, see @ref{The Status Bar}.
+
+Once you are accustomed to cursor movement and line editing, it is time to
+press @key{f1} (the first function key), or in case your keyboard does not
+have such a key, @key{Escape}. Immediately, the @dfn{menu bar} will appear,
+and the first menu will be drawn (if you find yourself waiting for the menu
+to appear, you can press @key{Escape} twice in a row). You can now move
+around menus and menu items by pressing the cursor keys. Moreover, a lower
+case alphabetic key will move to the first item whose name starts with that
+letter, and an upper case alphabetic key will move to the first menu whose
+name starts with that letter.
+
+Moving around the menus should give you an idea of the capabilities of
+@code{ne}. If you want to save your work, you should use the @samp{Save As...}
+item from the @samp{File} menu. Menus are fully discussed in @ref{Menus}.
+When you want to exit from the menu system, press @key{f1} (or @key{Escape})
+again. If you instead prefer to choose a command and execute it, move
+to the respective menu item and press @key{Return}.
+
+At the end of several menu items you will find strange symbols like
+@kbd{^A} or @key{f1}. They represent @dfn{shortcuts} for the respective
+menu items. In other words, instead of activating, selecting and
+executing a menu item, which can take seconds, you can simply press a
+couple of keys. The symbol @samp{^} in front of a character denotes the
+shortcut produced by the @key{Control} key plus that character (we
+assume here that you are perfectly aware of the usage of the
+@key{Control} key: it is just as if you had to type a capital letter
+with @key{Shift}). The descriptions of the form @key{f}@var{n} represent
+instead function keys. Finally, the symbol @samp{[} in front of a
+character denotes the shortcut produced by @key{Control} plus @key{Meta}
+(a.k.a. @key{Alt}) plus that character, @emph{or} @key{Meta} plus that
+character, depending on your terminal emulator---you must check by
+yourself. Moreover, these last bindings could not work with some
+terminals, in which case you can replace them with a sequence: just
+press the @key{Escape} key followed by the letter. A few menu items are
+bound to two control sequences (just in case one does not work, or it is
+impractical).
+
+Note that under certain conditions (for instance, while using
+@code{ne} through a @code{telnet} connection) some of the shortcuts
+might not work because they are trapped by the operating system for
+other purposes (@pxref{Hints and Tricks}).
+
+Finally, we have the third and last interface to @code{ne}'s features: the
+@dfn{command line}. If you press @kbd{@key{Control}-K}, or @key{Escape} followed by
+@samp{:} (a la @code{vi}), you will be requested to enter a command
+to execute. Just press @key{Return} for the time being (or, if you are
+really interested in this topic, @pxref{The Command Line}).
+
+In the sections that follow, when explaining how to use a command we
+shall usually describe the corresponding menu item. The related shortcut
+and command can be found on the menu item itself, and in @ref{Menus}.
+
+@node Loading and Saving
+@section Loading and Saving
+@cindex Loading a file
+@cindex Quitting
+@cindex Exiting
+@cindex Closing a document
+@cindex Opening a file
+@cindex Saving a file
+@cindex Writing a file
+@cindex File requester
+
+The first thing to learn about an editor is how to exit. @code{ne} has a
+@code{CloseDoc} command that can be activated by pressing @kbd{@key{Control}-Q},
+by choosing the @samp{Close} item of the @samp{Document} menu, or by activating
+the command line with @kbd{@key{Control}-K}, writing @samp{cd} and pressing
+@key{Return}. Its effect is to close the current document without saving any
+modifications.  (You will be requested to confirm your choice in case the
+current document has been modified since the last save.)
+
+There is also a @code{Quit} command, which closes all the documents
+without saving any modifications, and a @code{Save&Exit} (@kbd{@key{Meta}-X}) command, which saves
+the modified documents before quitting.
+
+This choice of shortcuts could surprise you. Wouldn't @samp{Quit} be a
+much better candidate for @kbd{@key{Control}-Q}? Well, experience shows that
+the most common operation is closing a document rather than quitting the
+editor. If there is just one document, the two operations coincide (this is
+typical, for instance, when you use @code{ne} for writing electronic mail), and
+if there are many documents, it is far more common to close a single document
+than all the existing documents.
+
+If you want to load a file, you may use the @code{Open} command, which can
+be activated by pressing @kbd{@key{Control}-O}, by choosing the @samp{Open...}
+item of the @samp{File} menu, or by typing it on the command line (as in the
+previous case). You will be prompted with a list of files and directories in
+the current working directory. (You can tell the directory names because they
+end with a slash; they will also appear in a bold face if your terminal
+allows it.) You can select any of the file names by using the
+cursor keys, or any other movement key. Pressing an alphabetic key will
+move the cursor to the first entry after the cursor that starts with the
+given letter. When the cursor is positioned over the file you want to
+open, press @key{Return}, and the file will be opened. If instead
+you move to a directory name, pressing @key{Return} will display the
+contents of that directory.
+
+You can also escape with @key{f1}, @key{Escape} or
+@key{Escape}-@key{Escape}  and manually type the file name on the command
+line (or escape again, and abort the @code{Open} operation). If you escape
+with @key{Tab} instead, the file or directory under the cursor will be
+copied in the input line, where you can modify it manually. @code{ne} has
+also file name completion features activated by @key{Tab} (@pxref{The Input
+Line}).
+
+When you want to save a file, just use the command @code{Save}
+(@kbd{@key{Control}-S}). It will use the current document name or will
+ask you for one if the current document has no name. @code{SaveAs}, on the
+other hand, will always ask for a new name before saving the file.
+
+If @code{ne} is interrupted by an external signal (for instance, if your
+terminal crashes), it will try to save your work in some emergency files.
+These files will have names similar to your current files, but they will
+have a pound sign @samp{#} prefixed to their names.
+@xref{Emergency Save}.
+
+@node Editing
+@section Editing
+@cindex Deleting characters
+@cindex Deleting lines
+@cindex Undeleting lines
+@cindex Block operations
+@cindex Clip usage
+@cindex Multiple documents
+
+An editor is presumably used for editing text. If you decide not to edit text, you
+probably don't want to use @code{ne}, because that's all it does---it edits text.
+It does not play @code{Tetris}. It does not evaluate recursive
+functions. It does not solve your love problems. It just allows you to
+edit text.
+
+The design of @code{ne} makes editing extremely natural and straightforward.
+There is nothing special you have to do to start editing once you've
+started @code{ne}. Just start typing, and the text you type shows up in
+your document.
+
+@code{ne} provides two ways of deleting characters, the @key{Backspace}
+(or @kbd{@key{Control}-H}, if you have no such key) and the @key{Delete}
+key. In the former case you delete the character to the left of the
+cursor, while in the latter case you delete the character just under the
+cursor. This is in contrast with many @sc{un*x} editors, which for
+unknown reasons decide to limit your ways of destroying
+things---something notoriously much funnier than creating. (See
+@ref{DeleteChar} and @ref{Backspace}.)
+
+If you want to delete a line, you can use the @code{DeleteLine} command, or
+@kbd{@key{Control}-Y}. A very nice feature of @code{ne} is that each time a
+nonempty line is deleted, it is stored in a temporary buffer from which it can
+be undeleted via the @code{UndelLine} command or @kbd{@key{Control}-U}. (See
+@ref{DeleteLine} and @ref{UndelLine}.)
+
+If you want to copy, cut, paste or erase a block of text, you have to
+set a mark. This is done via the @code{Mark} command, activated by
+choosing the @samp{Mark Block} item of the @samp{Edit} menu, or by
+pressing @kbd{@key{Control}-B} (think ``block''). This command
+@dfn{toggles} the mark (puts it in the current cursor position or
+removes it from wherever it is).  Whenever the mark is set, the zone
+between the mark and the cursor can be cut, copied or erased. Note that
+by using @kbd{@key{Control}-@@} you can set a @emph{vertical} mark
+instead, which allows you to mark rectangles of text. Whenever a mark
+has been set, either an @samp{M} appears on the command line or a
+@samp{V} appears if the mark is vertical. If you forget where the mark
+is currently, you can use the @samp{Goto Mark} menu item of the
+@samp{Search} menu to move the cursor to it.
+
+When you cut or copy a block, you can save it with the @samp{Save Clip...} menu
+item of the @samp{Edit} menu. You can also load a file into a clip with
+@samp{Open Clip...}, and paste it anywhere. All such operations act on the
+@dfn{current clip}, which is by default the clip 0. You can change the current
+clip number with the @code{ClipNumber} command. @xref{ClipNumber}.
+
+One of the most noteworthy features of @code{ne} is its @dfn{unlimited
+undo/redo} capability. Each editing action is recorded, and can be played
+back and forth as much as you like. Undo and redo are bound to the function
+keys @key{f5} and @key{f6}.
+
+Another interesting feature of @code{ne} is it's ability to load an
+unlimited number of documents. If you activate the @code{NewDoc} command
+(using the @samp{Document} menu or the command line), a new, empty
+document will be created. You can switch between the existing documents
+in memory with @key{f2} and @key{f3}, which are bound to the
+@code{PrevDoc} and @code{NextDoc} commands. If you have a lot of
+documents, the @samp{Select...} menu item (@key{f4}) prompts you with
+the list of names of currently loaded documents and allows you to
+choose directly what to edit.
+
+@node Basic Preferences
+@section Basic Preferences
+@cindex Preferences
+@cindex Flags
+@cindex Insert mode
+@cindex Automatic preferences
+
+@code{ne} has a number of @dfn{flags} that specify alternative
+behaviors, the most prototypical example being the @dfn{insert} flag,
+which specifies whether the text you type is inserted into the existing text
+or overwrites it. You can toggle this flag with the @samp{Insert} menu
+item of the @samp{Prefs} menu, or with the @key{Insert} key of your
+keyboard. (@dfn{Toggle} means to change the value of a flag from true to
+false, or from false to true; @pxref{Insert}.)
+
+Another important flag is the @dfn{free form} flag, which specifies
+whether the cursor can be moved beyond the right end of each line of
+text or only to existing text (a la @code{vi}). Programmers usually
+prefer non free form editing; text writers seem to prefer free form. See
+@ref{FreeForm} for some elaboration. The free form flag can be set with
+the @samp{Free Form} menu item of the @samp{Prefs} menu.
+
+At this point, we suggest you explore by trial and error the other
+flags of the @samp{Prefs} menu, or try the @code{Flags} command (@pxref{Flags}),
+which explains all the flags and the commands that operate on
+them. We prefer spending a few words discussing @dfn{automatic
+preferences} or @dfn{autoprefs}.
+
+Having many flags ensures a high degree of flexibility, but it can turn
+editing into a nightmare if you have to turn on and off dozens of flags
+for each different kind of file you edit. @code{ne}'s solution is to
+automatically set a document's flags when a file is loaded based on your
+stated preferences for each @dfn{file type}. A file's type is determined
+by the @dfn{extension} of its file name, that is, the last group of letters
+after the last dot. For instance, the extension of @file{ne.texinfo} is
+@samp{texinfo}, the extension of @file{source.c} is @samp{c}, and the
+extension of @file{my.txt} is @samp{txt}.
+
+Whenever you select the @samp{Save AutoPrefs} menu item, @code{ne} saves
+the flags of your current document to be used when
+you load other files with the same extension as your current document.
+These @dfn{autoprefs} are saved in a file in your @file{~/.ne}
+directory. This file has the same name as the extension of the current
+document with @samp{#ap} appended to it. It contains all the commands
+necessary to recreate your current document's flag settings. Whenever
+you open a file with this file name extension, @code{ne} will
+automagically recreate your preferred flag settings for that file type.
+(There is a flag that inhibits the process; @pxref{AutoPrefs}.)
+
+Finally, when you select the @samp{Save Def Prefs} menu item, a special
+preferences file named @file{.default#ap} is saved. These preferences
+are loaded whenever @code{ne} is run before loading any file. This is
+how you set up the preferences you always want to be set.
+
+Note also that a preferences file is just a macro (as described in the
+following section). Thus, it can be edited manually if necessary.
+
+@node Basic Macros
+@section Basic Macros
+@cindex Macro definition
+@cindex Recording a macro
+@cindex Saving a macro
+@cindex Interrupting a macro
+@cindex Interrupt character
+@cindex Caching a macro
+@cindex Unloading macros
+@cindex Executing a macro
+
+Very often, the programmer or the text writer has to repeat some complex
+editing action over a series of similar blocks of text. This is where
+@dfn{macros} come in.
+
+A @dfn{macro} is a stored sequence of commands. Any sequence of commands
+you find yourself repeating is an excellent candidate for being made
+into a macro. You could create a macro by editing a document that only
+contains valid @code{ne} commands and saving it, but by far the easiest way to create
+a macro is to have @code{ne} record your actions. @code{ne} allows you
+to record macros and then play them (execute the commands they contain)
+many times. You can save them on disk for future use, edit them, or bind
+them to any key. You could even reconfigure each key of your keyboard to
+play a complex macro if you wanted to.
+
+@code{ne} can have any number of named macros loaded at the same time.
+It can also have one unnamed macro in its @dfn{current macro} buffer.
+The named macros are typically loaded from disk files, while the
+current macro buffer is where your recorded macro is held before you
+save it or record over it.
+
+Recording a macro is very simple. The keystroke @kbd{@key{Control}-T}
+starts and stops recording a macro.  When you start recording a macro,
+@code{ne} clears the @dfn{current macro} buffer and starts recording all
+your actions (with a few exceptions). You can see that you are recording
+a macro if an @samp{R} appears on the status bar. When you stop the
+recording process (again using @kbd{@key{Control}-T}), you can play the
+macro with the @samp{Play Once} item of the @samp{Macros} menu or with
+the @key{f9} key. If you want to repeat the action many times, the
+@code{Play} command allows you to specify a number of times to repeat
+the macro. You can always interrupt the macro's execution with
+@kbd{@key{Control}-\}.
+
+A recorded macro has no name. It's just an anonymous sequence of
+commands in the @dfn{current macro} buffer, and it will go away when you
+exit @code{ne} or record another macro. If you want to save your
+recorded macro for future use, you can give it a name and save it with
+the @samp{Save Macro...} menu item or the @code{SaveMacro} command. The
+macro is saved as a file in your current directory by default or
+whatever directory you specify when prompted for the macro's name. If
+you save it in your @file{~/.ne} directory then it will be easy to
+access it later from any other directory. The @samp{Open Macro...} menu item
+and the @code{OpenMacro} command load a macro from a file into the
+current macro buffer just as if you just @code{Record}ed it.
+
+Any macro can be loaded from a file and played with the @samp{Play Macro...}
+menu item or the @code{Macro} command. (This won't modify any recorded
+anonymous macro that may be in the @dfn{current macro} buffer;
+@code{OpenMacro} does that.) Useful macros can be permanently bound to a
+keystroke as explained in @ref{Key Bindings}. Moreover, whenever a
+command line does not specify one of @code{ne}'s built in commands, it is
+assumed to specify the name of a macro to execute. Thus, you can execute
+macros just by typing their file names. Include a path if the macro
+file's directory is different from your current directory or your
+@file{~/.ne} directory.
+
+If the first attempt to open a macro fails, @code{ne} checks for a macro
+with the given name in your @file{~/.ne} directory. This allows you
+to program simple extensions to @code{ne}'s language. For instance, all
+automatic preferences macros---which are just specially named macros
+that contain only commands to set preferences flags---can be executed
+just by typing their names. For example, if you have an automatic
+preference for the @samp{doc} extension for example, you can set
+@code{ne}'s flags exactly as if you loaded a file ending with
+@samp{.doc} by typing the command @code{doc#ap}.
+
+In general, it is a good idea to save frequently used macros in
+@file{~/.ne} so that you can invoke them by name without specifying
+a path regardless of your current directory. On the other hand, if you
+have a macro that is customized for one document or a set of documents
+that you store in one directory, then you might want to save the
+macro in that directory as well. If you do, then you would want to
+@code{cd} to that directory before you start @code{ne} so that you can
+access that macro without specifying a path.
+
+If your macro has the same name as one of @code{ne}'s built-in commands,
+you can only access it with the @code{Macro @var{name}} command.
+Built-in command names are always found first before @code{ne} command
+interpreter looks for macros.
+
+The system administrator may make some macros available from
+@code{ne}'s global directory. @xref{Arguments}.
+
+Since loading a macro each time it is invoked would be a rather slow and
+expensive process, once a macro has been executed it is cached internally.
+Subsequent invocations of the macro will used the cached version.
+
+@noindent @strong{Warning:} the macro names are @emph{not} case
+sensitive or path sensitive. @code{ne} only caches the file name of a
+macro, not the path name, and uses a case insensitive comparison. That
+is, if you invoke @file{~/foobar/macro}, a subsequent call for
+@file{/usr/MACRO} will use the cached version of @file{~/foobar/macro}.
+You can clear the cache by using the @code{UnloadMacros} command.
+@xref{UnloadMacros}.
+
+
+The behaviour of macros may vary with different preferences. If the user
+changes the AutoIndent and WordWrap flags, for example, new lines and new
+text may not appear in the same way they would have when a macro was
+recorded. Good general purpose macros avoid such problems by using the
+@code{PushPrefs} command first. This preserves the user's preferences.
+Then they set any preferences that could affect their behaviour. Once
+that is taken care of they get on with the actual work for which they
+were intended. Finally, they use the @code{PopPrefs} command to restore
+the user's preferences. Note that if a macro is stopped before it
+restores the preferences (either by the user pressing
+@kbd{@key{Control}-\} or by a command failing) then that responsibility
+falls on the user.
+
+@node More Advanced Features
+@section More Advanced Features
+@cindex UTF-8 support
+@cindex Bookmarks
+@cindex MS-DOS files
+@cindex File requester
+@cindex Binary files
+@cindex Executing @sc{uni*x} commands
+
+@subsection UTF-8 support
+UTF-8 is a character encoding that can represent the whole ISO 10646
+character set---two billion characters! @code{ne} can load and
+manipulate UTF-8 files transparently, in particular on systems that
+provide UTF-8 I/O. @xref{UTF-8 Support}.
+
+@subsection Bookmarks
+It often happens that you have to browse through a file, switching frequently
+between a small number of positions. In this case, you can use
+@dfn{bookmarks}. There are up to ten bookmarks per document, each designated
+by a single digit, with the default being @samp{0}. You can set them with the
+@code{SetBookmark} command, and you can return to any set bookmark with the
+@code{GotoBookmark} command. Also, @code{ne} sets an automatic bookmark
+(designated by @samp{-}) to your current position in a document whenever you
+use the @code{GotoBookmark} command. You can use this automatic bookmark to
+return to that previous location with a @code{GotoBookmark -} command. Doing
+so will reset the automatic bookmark, so that subsequent @code{GotoBookmark -}
+commands will switch between those two locations. @xref{SetBookmark},
+@ref{GotoBookmark}, and @ref{UnsetBookmark}. Note that in the default
+configuration no key binding is assigned to these commands. If you use them
+frequently, you may want to change the key bindings. @xref{Key Bindings}.
+
+@subsection MS-DOS files
+@code{ne} will detect automagically the presence of MS-DOS line terminators
+(CR/LFs) and set the CR/LF flag. When the file will be saved, the
+terminators will be restored correctly. You can change this behaviour
+using the @code{PreserveCR} and @code{CRLF} commands. @xref{PreserveCR},
+and @ref{CRLF}.
+
+@subsection Binary files
+@code{ne} allows a simplified form of @dfn{binary editing}. If the
+binary flag is set, only NULLs are considered newlines when loading or
+saving. Thus, binary files can be safely loaded, modified and saved.
+Inserting a new line or joining two lines has the effect of inserting or
+deleting a NULL. Be careful not to mismatch the state of the binary flag
+when loading and saving the same file.
+
+@subsection File requester
+The @code{NoFileReq} command deactivates the file requester. It is
+intended for ``tough guys'' who always remember the names of their files and can
+type them at the speed of light (maybe with the help of the completer,
+which is activated by the @key{Tab} key; @pxref{The Input Line}).
+
+@subsection Executing @sc{un*x} commands
+There are three ways to execute @sc{un*x} commands from within @code{ne}.
+The @code{System} command can run any @sc{un*x} command; you
+will get back into @code{ne} as soon as the command execution terminates.
+@xref{System}. The @code{Through} (@kbd{@key{Meta}-T}) command (which can be found in the
+@samp{Edit} menu), however, is much more powerful; it cuts the current
+block, passes it as standard input to any @sc{un*x} command, and pastes the
+command's output at the current cursor position. This provides a neat
+way to pass a part of your document through one of @sc{un*x}'s many
+@dfn{filter commands} (commands that read from standard input and write
+to standard output, e.g., @code{sort}). @xref{Through}. Finally, you can use the
+@code{Suspend} (@kbd{@key{Control}-Z}) command to temporarily stop @code{ne} and
+return to your command shell. @xref{Suspend}.
+
+@subsection Advanced key bindings
+
+
+
+For an exhaustive list of the remaining features of @code{ne}, see
+@ref{Reference}.
+
+
+
+@node Reference
+@chapter Reference
+
+In this chapter we shall methodically overview each part of @code{ne}. It
+is required reading for becoming an expert user because some commands
+and features are not available through menus.
+
+@menu
+* Arguments::
+* The Status Bar::
+* The Input Line::
+* The Command Line::
+* The Requester::
+* Syntax Highlighting::
+* Menus::
+* Regular Expressions::
+* Automatic Preferences::
+* Emergency Save::
+* UTF-8 Support::
+@end menu
+
+@node Arguments
+@section Arguments
+@cindex Arguments
+@cindex Global Directory
+@cindex Startup macro
+@cindex Skipping configuration files
+@cindex Setting configuration file names
+
+The main arguments you can give to @code{ne} are the names of files you
+want to edit. They will be loaded into separate documents. If you
+specify @code{--help} anywhere on the command line, a simple help text
+describing @code{ne}'s arguments will be printed.
+
+The @code{+@var{N}} option causes @code{ne} to advance to the @var{N}th
+line of the first document loaded. This option is fairly common among
+editors and text display programs like @code{vi} and @code{less}. The
+@var{N} itself is optional. Without it, a bare @code{+} on the command
+line causes @code{ne} to advance to the last line of the first document.
+
+The @code{--no-config} option skips the reading of the key
+bindings and menu configuration files (@pxref{Configuration}). This is
+essential if you are experimenting with a new configuration and you make
+mistakes in it.
+
+The @code{--macro @var{filename}} option specifies the name of a
+macro that will be started just after all documents have been loaded. A
+typical macro would move the cursor to a certain line.
+
+The @code{--keys @var{filename}} option and the @code{--menus
+@var{filename}} option specify a name different from the default one
+(@file{.keys} and @file{.menus}, respectively) for the key bindings and
+the menu configuration files. Note that @code{ne} searches for these
+files first in the current directory, and then in your @file{~/.ne}
+directory.
+
+The @code{--ansi} and the @code{--no-ansi} options manage
+@code{ne}'s built-in ANSI sequences. Usually @code{ne} tries to retrieve
+from your system some information that is necessary to handle your
+terminal. If for some reason this is impossible, you can ask @code{ne}
+to use a built-in set of sequences that will work on many terminals
+using the @code{--ansi} option (to be true, @code{ne} can be even
+compiled so that it uses directly the built-in set, but you need not
+know this). If you want to be sure (usually for debugging purposes) that
+@code{ne} is not using the built-in set, you can specify
+@code{--no-ansi}.
+
+The @code{--no-syntax} option disables @code{ne}'s normal syntax
+highlighting capability. For most editing situations, this would be
+unnecessary, but for extremely large files it may be helpful. Syntax
+highlighting incurs small memory usage and processor overhead penalties
+for each line of text. The @code{--no-syntax} option eliminates that
+overhead.
+
+The @code{--utf8} and @code{--no-utf8} options can be used to
+force or inhibit UTF-8 I/O, overriding the choice imposed by the system
+locale. Note, however, that in general it is more advisable to set the
+@code{LANG} environment variable to a locale supporting UTF-8 (you can
+usually see the locale list with @code{locale -a}). @xref{UTF-8 Support}.
+
+If you need to open a file whose name starts with @samp{--}, you can put
+@samp{--} before the filename, which will skip command recognition for
+the next word.
+
+Finally, @code{ne} has a @dfn{global directory} where the system
+administrator can store macros, default preferences, and syntax
+definitions for all users of the system. The location of this directory
+is defined when @code{ne} is built, but you can override it by creating
+and exporting the @code{NE_GLOBAL_DIR} environment variable prior to
+invoking @code{ne}. If you load no files when you start @code{ne}, it
+will display a splash screen. The last line on that screen shows the
+global directory @code{ne} is using, if it exists, or an error message,
+otherwise.
+
+@node The Status Bar
+@section The Status Bar
+@cindex Status bar
+@cindex Line and column numbers
+@cindex Fast GUI
+
+The last line of the screen, the @dfn{status bar}, is reserved by
+@code{ne} for displaying some information about its internal state.
+Note that on most terminals it is physically impossible to write a
+character on the last column of the last line, so we are not
+stealing precious editing space.
+
+The status bar looks more or less like this:
+
+@example
+L:      31  C:      25   12% iabcwfpvurBMRPC*@@8       20 /foo/bar
+@end example
+
+The numbers after @samp{L:} and @samp{C:} are the line and column of the
+cursor position. The first line and the first column are both number
+1. Then, @code{ne} shows the percentage of lines before the current line
+(it will be 0% on the first line, and 100% on the last line).
+
+Following that are a sequence of letters or
+dashes. These indicate the status of a series of flags which we shall
+look at later.
+
+The hexadecimal digits following the flags give the code for the
+character at the cursor, and are displayed optionally (@pxref{HexCode}).
+If your cursor is at or beyond the right end of the current line, the
+code disappears.
+
+The file name appearing after the character code is the file name of
+the current document. The left end of very long file names may be
+truncated to keep the right end visible. Of course,
+@code{ne} is keeping track internally of the complete file name. It
+is used by the @code{Save} command and as the default input for the
+@code{SaveAs} command. @xref{Save}, and @ref{SaveAs}.
+
+The displayed line and column numbers, the percentage indicator and the
+character code change when the cursor moves. This fact can really slow
+down cursor movement if you are using @code{ne} through a slow
+connection. If you find this to be a problem, it is a good idea to turn
+off the status bar using either the @samp{Status Bar} menu item of the
+@samp{Prefs} menu or the @code{StatusBar}
+command. @xref{StatusBar}. Alternatively you can turn on the fast GUI
+mode using either the @samp{Fast GUI} menu item of the @samp{Prefs} menu
+or the @code{FastGUI} command (@pxref{FastGUI}). In fast GUI mode the
+status bar is not draw in reverse, so some additional optimization can
+be done when refreshing it.
+
+The letters after the line and column number represent the status of the flags
+associated with the current document. Flags that are off display a
+@samp{-} instead of a letter. Each flag also has an
+associated command. The @code{Flags} command describes them all when
+you don't have this manual handy. Here's the list in detail:
+
+@table @samp
+
+@item i
+appears if the insert flag is true. @xref{Insert}.
+
+@item a
+appears if the auto indent flag is true. @xref{AutoIndent}.
+
+@item b
+appears if the back search flag is true. @xref{SearchBack}.
+
+@item c
+appears if the case sensitive search flag is true. @xref{CaseSearch}.
+
+@item w
+appears if the word wrap flag is true. @xref{WordWrap}.
+
+@item f
+appears if the free form flag is true. @xref{FreeForm}.
+
+@item p
+appears if the automatic preferences flag is true. @xref{AutoPrefs}.
+
+@item v
+appears if the verbose macros flag is true. @xref{VerboseMacros}.
+
+@item u
+appears if the undo flag is true. @xref{DoUndo}.
+
+@item r
+appears if the read only flag is true. @xref{ReadOnly}.
+
+@item B
+appears if the binary flag is true. @xref{Binary}.
+
+@item M
+appears if you are currently marking a block. @xref{Mark}.
+
+@item V
+can appear in place of @samp{M} if you are currently marking a vertical
+block. @xref{MarkVert}.
+
+@item R
+appears if you are currently recording a macro. @xref{Record}.
+
+@item P
+appears if the PreserveCR flag is true. @xref{PreserveCR}.
+
+@item C
+appears if the CRLF flag is true. @xref{CRLF}.
+
+@item *
+appears if the document has been modified since the last save, or if
+the @code{Modified} command was issued to set this flag. @xref{Modified}.
+
+@item @@
+appears if UTF-8 I/O is enabled. @xref{UTF8IO}.
+
+@item A/8/U
+denotes the current buffer encoding---US-ASCII, 8-bit or UTF-8. @xref{UTF8}.
+
+@end table
+
+Note that sometimes @code{ne} needs to communicate some message to you. The
+message is usually written over the status bar, where it stays
+until you do something. Any action such as moving the cursor or inserting a
+character will restore the normal status bar.
+
+
+@node The Input Line
+@section The Input Line
+@cindex Input line
+@cindex Escaping an input
+@cindex Immediate input
+@cindex Long input
+@cindex File name completion
+
+The bottom line of the screen is usually occupied by the status bar
+(@pxref{The Status Bar}). However, whenever @code{ne} prompts you for a
+command or file name or asks you to confirm some action, the bottom line
+becomes the @dfn{input line}. You can see this because a @dfn{prompt} is
+displayed at the start of the line, suggesting what kind of input is
+required. (Prompts always ends with a colon, so it is easy to
+distinguish them from @dfn{error messages}, which overwrite the status
+line from time to time.)
+
+@code{ne} uses the input line in two essentially different ways:
+@dfn{immediate} input and @dfn{long} input. You can easily distinguish
+between these two modes because in immediate input mode the cursor is
+not on the input line, while for long input mode it is.
+
+Immediate input is used whenever @code{ne} needs you to specify a simple
+choice that can be expressed by one character (for example, @samp{y} or
+@samp{n}). When you type the character, @code{ne} will immediately
+accept and use your input. Most immediate inputs display a character
+just after the prompt. This character is the default response, which is
+used if you just press the @key{Return} key. Note that immediate input
+is not case sensitive. Moreover, if a yes/no choice is requested,
+@emph{anything} other than @samp{y} will be considered a negative
+response.
+
+Long input is used when a whole string is required. You can enter and
+edit your response to long inputs like a line of text in a
+document. Most key bindings related to line editing work on the command
+line exactly as they do in a document. This is true even of custom key
+bindings. Just edit as you are used to. Moreover, the you can paste the
+first line of the current clip using the keystroke that is bound to the
+@code{Paste} command, usually @kbd{@key{Control}-V}. If your long input
+is longer than the screen width, the input line scrolls to accommodate
+your text so you can input very long lines even on small
+monitors. (There is a limit of 2048 characters.)
+
+The default response to a long input is the response you gave to the
+previous long input. Your @emph{first action} when presented with a long
+input will either erase the default response or allow you to edit it. If
+the first thing you type is a printing character, the default response
+will be erased. Anything else (cursor movement for example) will allow
+you to edit it further.
+
+Long input also lets you access your previous long input responses with
+the up and down cursor commands (or with wider movement commands, such
+as start/end of file, page up/down, etc.). Once you find a previous
+input you like, you can edit it further. Long input history is not
+document specific, so you can recall any of your inputs regardless of
+which document was active when you entered it. Furthermore, @code{ne}
+saves the most recent long inputs in @file{~/.ne/.history} when you end
+your @code{ne} session and loads them again when you begin another
+@code{ne} session.
+
+When asked to input a number, you can choose between decimal, octal and
+hexadecimal notation in the standard way: a number starting with
+@samp{0} is considered in octal, a number starting with @samp{0x} is
+considered in hexadecimal, and in all other cases decimal base is
+assumed.
+
+Whenever a file name is requested, you can type a partial file name and
+@dfn{complete} it with the @key{Tab} key. @code{ne} will scan the
+current directory (or the directory that you partially specified) and
+search for the files matching your partial suggestion. The longest
+prefix common to all such files will be copied on the input line
+(@code{ne} will beep if no completion exists). It's easier done than
+said---just try. If you press @key{Tab} again, you will be brought into
+the file requester: only the files and directories matching your partial
+specification will appear, and as usual you will be able to navigate and
+select a file or escape. @xref{The Requester}.  Note that @code{ne}
+considers the @emph{last word} on the input line the partial file name
+to complete, no matter where the cursor is currently (you must use quotes
+if the name contains spaces, even if it is the only item on the input line).
+
+Complete long input with the @key{Return} key. You can cancel a long
+input using @key{f1}, @key{Escape}, @key{Escape}-@key{Escape} or any key
+that is bound to the @code{Escape} command. The effect will vary depending
+on what your were requested to input, but the execution of the command
+requiring the input will stop.
+
+
+
+
+@node The Command Line
+@section The Command Line
+@cindex Command line
+
+The command line is a typical (topical) way of controlling an editor on
+character driven systems. It has some advantages over menus in terms of
+access speed, but it is not desirable from a user interface point of
+view. @code{ne} has a command line that should be used whenever strange
+features have to be accessed, or whenever you want to use a command that
+you are familiar with and that is not bound to any key.
+
+You have two ways to access the command line: by activating the menu and
+typing a colon (@samp{:}) or by typing @kbd{@key{Control}-K} (or any key
+that is bound to the @code{Exec} command; @pxref{Exec}). The first
+method will work regardless of any key binding configuration if you
+activate the menus with the @key{Escape} key since that key cannot be
+reconfigured. Of course, there is also a menu entry that does the same
+job.
+
+Once you activate the command line, the status bar will turn into an input
+line (@pxref{The Input Line}) with a @samp{Command:} prompt waiting for you
+to do a long input. In other words, you can now type any command (possibly
+with arguments), and when you press @key{Return}, the command will be
+executed.
+
+If the command you specify does not appear in @code{ne}'s internal tables,
+it is considered to be the name of a macro. @xref{Basic Macros}, for details.
+
+@node The Requester
+@section The Requester
+@cindex Requester
+@cindex File requester
+@cindex Interrupting directory scanning
+@cindex Help requester
+
+In various situations, @code{ne} needs to ask you to choose one string
+from several (where ``several'' can mean a lot).
+For this kind of event, the @dfn{requester} is issued. The requester
+displays the strings in as many columns as possible and lets you move
+with the cursor from one string to another. The strings can fill many
+screens, which are handled as consecutive pages. Most navigation keys
+work exactly as in normal editing. This is true even of custom key
+bindings. Thus, for instance, you can page up and down through the 
+list with @kbd{@key{Control}-P} and @kbd{@key{Control}-N} (in the standard keyboard
+configuration).
+
+As with the input line (@pxref{The Input Line}), you can confirm your
+input with @key{Return} or escape the requester with @key{f1} or the
+@key{Escape} key (or whatever has been bound to the @code{Escape}
+command). Moreover, if you are selecting a file name there is a third
+possibility: by escaping with the @key{Tab} key, the file or directory
+name that the cursor is currently on will be copied on the input
+line. This allows to choose an existing name and modify it.
+
+A special feature is bound to alphabetic characters: they move you to the next
+entry starting with the letter you typed. The search is case insensitive, and
+it continues on to the first string after having passed the last one.
+
+An example of a requester is the list of commands appearing when you use
+the @code{Help} command. Another example is the file requester that
+@code{ne} issues whenever a file operation is going to take place. In
+this case, pressing @key{Return} while on a directory name will enter
+the directory. Note also that, should the requester take too long to
+appear, you can interrupt the directory scanning with
+@kbd{@key{Control}-\}. However, the listing will likely be incomplete.
+
+Note that there are two items that always appear in the file requester:
+@file{./} and @file{../}. The first one represents the current directory
+and can be used to force a reread of the directory. The second one represents the
+parent directory and can be used to move up by one directory level.
+
+@node Syntax Highlighting
+@section Syntax Highlighting
+@cindex Syntax Highlighting
+
+Syntax highlighting is particularly useful for programming language
+text or other types of documents which have a strictly defined syntax.
+Colors indicate different syntactic categories of text according to
+the syntax definition in use.
+
+Syntax definitions are stored in separate files. @code{ne} comes with a
+suite of syntax definitions for many popular programming languages.
+When you load a file, @code{ne} selects the appropriate syntax
+definition as determined by the filename extension in much the same way
+autoprefs are loaded. It also contains a built-in table of common
+filename extensions that share the same syntax definitions. For
+example, both @samp{cbl}, and @samp{cob} files use the @samp{cobol}
+definition. See the @ref{Syntax} command for the complete list of
+built-in extension mappings.
+
+If there is no matching syntax definition for the filename extension,
+or if the buffer you are editing has no filename yet, or you just want
+to try a different syntax definition, you can load and use the
+syntax definition of your choice with the @code{Syntax} command. It
+takes the syntax name as a parameter. For example, the name ``@code{c}''
+works for C syntax files with extensions @samp{.c}, @samp{.h},
+@samp{c++}, etc. @code{ne} searches for the specified syntax definition
+file in the @samp{syntax} subdirectory of your @file{~/.ne} directory
+first. If not found, the there @code{ne} looks in the @samp{syntax}
+subdirectory of @code{ne}'s global directory for the syntax definition
+file. @xref{Arguments}.
+
+You can create your own syntax definitions and store them in your
+@file{~/.ne/syntax} directory (actually, modifying the colors of an
+existing definition is much easier; @pxref{Hints and Tricks}). A complete
+explanation of syntax specifications is beyond the scope of this document,
+but the existing definition files should prove to be useful examples. In
+particular, the @file{syntax/c.jsf} file contains some particularly
+helpful comments. Syntax definition files have a @samp{.jsf} extension. Do
+not include that extension when using the @code{Syntax} command.
+
+Syntax highlighting does incur a slight penalty in memory used per line of
+text, and it also consumes some CPU resources. For small to medium sized
+files you'll probably never notice. But for extremely large files---on
+the order of the size of your system's RAM---the difference could be
+significant. If you invoke @code{ne} with the @code{--no-syntax}
+parameter, @code{ne} will disable the syntax highlighting mechanism
+entirely, freeing up the memory and CPU otherwise consumed. (Note that
+if you are that tight on memory, you may need to disable the undo
+buffer as well. @xref{DoUndo}.)
+
+@code{ne} uses code from another editor---the GPL-licensed
+@code{joe}---for its syntax highlighting capabilities. Because of this fact, the
+syntax definition files are identical, even to the @samp{.jsf}
+extension, which is an acronym for ``Joe's Syntax File''. It's possible
+that if both @code{joe} and @code{ne} are installed on your system that
+they share the same syntax file directory.
+
+
+
+
+@node Menus
+@section Menus
+@cindex Menus
+
+@code{ne}'s menus are extremely straightforward. The suggested way of
+learning their use is by trial and error, with a peek here and there
+at this manual when some doubts arise.
+
+You activate menus with the @key{f1} key, or in case your keyboard does
+not have such a key, @key{Escape}, @key{Escape}-@key{Escape} or any key
+that is bound to the @code{Escape} command. Move around the menus pressing
+with the cursor keys and the page up/down keys (which move to the first or
+last menu item in a menu). You can also move around menus and menu items by
+pressing the alphabetic keys; a lower case letter will move to the first
+item in the current menu whose name starts with the given letter; an upper
+case letter will move to the first menu whose name starts with the given
+letter.
+
+Each menu item of @code{ne}'s standard menu corresponds to a
+single command. In explaining what each menu item allows you to
+do, we shall simply refer you to the section that explains the command
+relative to the menu item.
+
+If you plan to change @code{ne}'s menu (@pxref{Changing Menus}), you should
+take a look at the file @file{default.menus} that comes with @code{ne}'s
+distribution. It contains a complete menu configuration that clones the standard
+one.
+
+@menu
+* File::
+* Documents::
+* Edit::
+* Search::
+* Macros::
+* Extras::
+* Navigation::
+* Prefs::
+@end menu
+
+@node File
+@subsection File
+
+The File menu contains standard items that allow loading and saving
+files. Quitting @code{ne} (which doesn't save changes) or exiting
+@code{ne} (which does save changes) is also possible.
+
+@table @samp
+
+@item Open@dots{}
+@xref{Open}.
+
+@item Open New@dots{}
+@xref{OpenNew}.
+
+@item Save
+@xref{Save}.
+
+@item Save As@dots{}
+@xref{SaveAs}.
+
+@item Quit Now
+@xref{Quit}.
+
+@item Save&Exit
+@xref{Exit}.
+
+@item About
+@xref{About}.
+
+@end table
+
+@node Documents
+@subsection Documents
+
+The Documents menu contains commands that create new documents, destroy
+them, and browse through them.
+
+@table @samp
+
+@item New
+@xref{NewDoc}.
+
+@item Clear
+@xref{Clear}.
+
+@item Close
+@xref{CloseDoc}.
+
+@item Next
+@xref{NextDoc}.
+
+@item Prev
+@xref{PrevDoc}.
+
+@item Select@dots{}
+@xref{SelectDoc}.
+
+@end table
+
+@node Edit
+@subsection Edit
+
+The Edit menu contains commands related to cutting and pasting text.
+
+@table @samp
+
+@item Mark Block
+@xref{Mark}.
+
+@item Cut
+@xref{Cut}.
+
+@item Copy
+@xref{Copy}.
+
+@item Paste
+@xref{Paste}.
+
+@item Erase
+@xref{Erase}.
+
+@item Through
+@xref{Through}.
+
+@item Delete Line
+@xref{DeleteLine}.
+
+@item Delete EOL
+@xref{DeleteEOL}.
+
+@item Mark Vert
+@xref{MarkVert}.
+
+@item Paste Vert
+@xref{PasteVert}.
+
+@item Open Clip@dots{}
+@xref{OpenClip}.
+
+@item Save Clip@dots{}
+@xref{SaveClip}.
+
+@end table
+
+@node Search
+@subsection Search
+
+The Search menu contains commands related to searching for specific
+contents or locations within a document.
+
+@table @samp
+
+@item Find@dots{}
+@xref{Find}.
+
+@item Find RegExp@dots{}
+@xref{FindRegExp}.
+
+@item Replace@dots{}
+@xref{Replace}.
+
+@item Replace Once@dots{}
+@xref{ReplaceOnce}.
+
+@item Replace All@dots{}
+@xref{ReplaceAll}.
+
+@item Repeat Last
+@xref{RepeatLast}.
+
+@item Goto Line@dots{}
+@xref{GotoLine}.
+
+@item Goto Col@dots{}
+@xref{GotoColumn}.
+
+@item Goto Mark@dots{}
+@xref{GotoMark}.
+
+@item Match Bracket
+@xref{MatchBracket}.
+
+@item Set Bookmark
+@xref{SetBookmark}.
+
+@item Unset Bookmark
+@xref{UnsetBookmark}.
+
+@item Goto Bookmark
+@xref{GotoBookmark}.
+
+@end table
+
+@node Macros
+@subsection Macros
+
+The Macros menu contains commands related to creating and using macros.
+
+@table @samp
+
+@item Record
+@xref{Record}.
+
+@item Stop
+@xref{Record}.
+
+@item Replace@dots{}
+@xref{Replace}.
+
+@item Play Once
+@itemx Play Many@dots{}
+@xref{Play}.
+
+@item Play Macro@dots{}
+@xref{Macro}.
+
+@item Open Macro@dots{}
+@xref{OpenMacro}.
+
+@item Save Macro@dots{}
+@xref{SaveMacro}.
+
+@end table
+
+@node Extras
+@subsection Extras
+
+This menu contains a few special items that don't fit in obvious ways
+into other menus.
+
+@table @samp
+
+@item Exec@dots{}
+@xref{Exec}.
+
+@item Suspend
+@xref{Suspend}.
+
+@item Help@dots{}
+@xref{Help}.
+
+@item Refresh
+@xref{Refresh}.
+
+@item Undo
+@xref{Undo}.
+
+@item Redo
+@xref{Redo}.
+
+@item Undel Line
+@xref{UndelLine}.
+
+@item Center
+@xref{Center}.
+
+@item Paragraph
+@xref{Paragraph}.
+
+@item Adjust View
+@itemx Center View
+@xref{AdjustView}.
+
+@item ToUpper
+@xref{ToUpper}.
+
+@item ToLower
+@xref{ToLower}.
+
+@item Capitalize
+@xref{Capitalize}.
+
+@end table
+
+
+@node Navigation
+@subsection Navigation
+
+The Navigation menu contains commands related moving around in a
+document.
+
+@table @samp
+
+@item Move Left
+@xref{MoveLeft}.
+
+@item Move Right
+@xref{MoveRight}.
+
+@item Line Up
+@xref{LineUp}.
+
+@item Line Down
+@xref{LineDown}.
+
+@item Prev Page
+@xref{PrevPage}.
+
+@item Next Page
+@xref{NextPage}.
+
+@item Page Up
+@xref{PageUp}.
+
+@item Page Down
+@xref{PageDown}.
+
+@item Start Of File
+@xref{MoveSOF}.
+
+@item End Of File
+@xref{MoveEOF}.
+
+@item Start Of Line
+@xref{MoveSOL}.
+
+@item End Of Line
+@xref{MoveEOL}.
+
+@item Top Of Screen
+@xref{MoveTOS}.
+
+@item Bottom Of Screen
+@xref{MoveBOS}.
+
+@item Incr Up
+@xref{MoveIncUp}.
+
+@item Incr Down
+@xref{MoveIncDown}.
+
+@item Prev Word
+@xref{PrevWord}.
+
+@item Next Word
+@xref{NextWord}.
+
+@end table
+
+@node Prefs
+@subsection Prefs
+
+The Prefs menu contains commands related to setting, storing, and using
+your preferred document flags.
+
+@table @samp
+
+@item Tab Size@dots{}
+@xref{TabSize}.
+
+@item Insert/Over
+@xref{Insert}.
+
+@item Free Form
+@xref{FreeForm}.
+
+@item Status Bar
+@xref{StatusBar}.
+
+@item Hex Code
+@xref{HexCode}.
+
+@item Fast GUI
+@xref{FastGUI}.
+
+@item Word Wrap
+@xref{WordWrap}.
+
+@item Right Margin
+@xref{RightMargin}.
+
+@item Auto Indent
+@xref{AutoIndent}.
+
+@item Preserve CR
+@xref{PreserveCR}.
+
+@item Save CR/LF
+@xref{CRLF}.
+
+@item Visual Bell
+@xref{VisualBell}.
+
+@item Load Prefs@dots{}
+@xref{LoadPrefs}.
+
+@item Save Prefs@dots{}
+@xref{SavePrefs}.
+
+@item Load AutoPrefs
+@xref{LoadAutoPrefs}.
+
+@item Save AutoPrefs
+@xref{SaveAutoPrefs}.
+
+@item Save Def Prefs
+@xref{SaveDefPrefs}.
+
+@end table
+
+@node Regular Expressions
+@section Regular Expressions
+@cindex Regular Expressions
+
+Regular expressions are a powerful way of specifying complex search and
+replace operations. @code{ne} supports the full regular expression
+syntax on US-ASCII and 8-bit buffers, but has to impose a restriction on
+character sets when searching in UTF-8 text. @xref{UTF-8 Support}.
+
+@subsection Syntax
+
+The following section is taken (with minor modifications) from the GNU regular
+expression library documentation and is Copyright @copyright{} Free Software
+Foundation.
+
+A regular expression describes a set of strings.  The simplest case is one
+that describes a particular string; for example, the string @samp{foo} when
+regarded as a regular expression matches @samp{foo} and nothing else.
+Nontrivial regular expressions use certain special constructs so that they
+can match more than one string.  For example, the regular expression
+@samp{foo|bar} matches either the string @samp{foo} or the string
+@samp{bar}; the regular expression @samp{c[ad]*r} matches any of the strings
+@samp{cr}, @samp{car}, @samp{cdr}, @samp{caar}, @samp{cadddar} and all other
+such strings with any number of @samp{a}'s and @samp{d}'s.
+
+Regular expressions have a syntax in which a few characters are special
+constructs and the rest are @dfn{ordinary}.  An ordinary character is a
+simple regular expression which matches that character and nothing else. The
+special characters are @samp{$}, @samp{^}, @samp{.}, @samp{*}, @samp{+},
+@samp{?}, @samp{[}, @samp{]} , @samp{(}, @samp{)} and @samp{\}.  Any other
+character appearing in a regular expression is ordinary, unless a @samp{\}
+precedes it.@refill
+
+For example, @samp{f} is not a special character, so it is ordinary,
+and therefore @samp{f} is a regular expression that matches the string @samp{f}
+and no other string.  (It does @emph{not} match the string @samp{ff}.)  Likewise,
+@samp{o} is a regular expression that matches only @samp{o}.
+
+Any two regular expressions @var{a} and @var{b} can be concatenated.
+The result is a regular expression that matches a string if @var{a}
+matches some amount of the beginning of that string and @var{b}
+matches the rest of the string.
+
+As a simple example, we can concatenate the regular expressions
+@samp{f} and @samp{o} to get the regular expression @samp{fo},
+which matches only the string @samp{fo}.  Still trivial.
+
+Note: special characters are treated as ordinary ones if they are in
+contexts where their special meanings make no sense.  For example,
+@samp{*foo} treats @samp{*} as ordinary since there is no preceding
+expression on which the @samp{*} can act. It is poor practice to depend on
+this behaviour; better to quote the special character anyway, regardless of
+where is appears.
+
+The following are the characters and character sequences that have special
+meaning within regular expressions. Any character not mentioned here is not
+special; it stands for exactly itself for the purposes of searching and
+matching.
+
+@table @samp
+@item .
+is a special character that matches anything except a newline. Using
+concatenation, we can make regular expressions like @samp{a.b}, which matches
+any three-character string which begins with @samp{a} and ends with
+@samp{b}.
+
+@item *
+is not a construct by itself; it is a suffix, which means the preceding
+regular expression is to be repeated as many times as possible.  In
+@samp{fo*}, the @samp{*} applies to the @samp{o}, so @samp{fo*} matches
+@samp{f} followed by any number of @samp{o}'s.
+
+The case of zero @samp{o}'s is allowed: @samp{fo*} does match
+@samp{f}.
+
+@samp{*} always applies to the @emph{smallest} possible preceding
+expression. Thus, @samp{fo*} has a repeating @samp{o}, not a repeating
+@samp{fo}.
+
+@item +
+@samp{+} is like @samp{*} except that at least one match for the preceding
+pattern is required for @samp{+}.  Thus, @samp{c[ad]+r} does not match
+@samp{cr} but does match anything else that @samp{c[ad]*r} would match.
+
+@item ?
+@samp{?} is like @samp{*} except that it allows either zero or one match for
+the preceding pattern.  Thus, @samp{c[ad]?r} matches @samp{cr} or @samp{car}
+or @samp{cdr}, and nothing else.
+
+@item [ @dots{} ]
+@samp{[} begins a @dfn{character set}, which is terminated by a @samp{]}.
+In the simplest case, the characters between the two form the set.
+Thus, @samp{[ad]} matches either @samp{a} or @samp{d},
+and @samp{[ad]*} matches any string of @samp{a}'s and @samp{d}'s
+(including the empty string), from which it follows that
+@samp{c[ad]*r} matches @samp{car}, @i{et cetera}.
+
+Character ranges can also be included in a character set, by writing two
+characters with a @samp{-} between them.  Thus, @samp{[a-z]} matches any
+lower-case letter.  Ranges may be intermixed freely with individual
+characters, as in @samp{[a-z$%.]}, which matches any lower case letter or
+@samp{$}, @samp{%} or period.
+
+Note that the usual special characters are not special any more inside a
+character set.  A completely different set of special characters exists
+inside character sets: @samp{]}, @samp{-} and @samp{^}.
+
+To include a @samp{]} in a character set, you must make it
+the first character.  For example, @samp{[]a]} matches @samp{]} or @samp{a}.
+To include a @samp{-}, you must use it in a context where it cannot possibly
+indicate a range: that is, as the first character, or immediately
+after a range.
+
+Note that when searching in UTF-8 text, a character set may contain
+US-ASCII characters only.
+
+@item [^ @dots{} ]
+@samp{[^} begins a @dfn{complement character set}, which matches any
+character except the ones specified.  Thus, @samp{[^a-z0-9A-Z]} matches
+all characters @emph{except} letters and digits. Also in this case, when
+searching in UTF-8 text a complemented character set may contain US-ASCII
+characters only. @refill
+
+@samp{^} is not special in a character set unless it is the first character.
+The character following the @samp{^} is treated as if it were first (it may
+be a @samp{-} or a @samp{]}).
+
+@item ^
+is a special character that matches the empty string -- but only if at the
+beginning of a line in the text being matched.  Otherwise it fails to match
+anything.  Thus, @samp{^foo} matches a @samp{foo} that occurs at the
+beginning of a line.
+
+@item $
+is similar to @samp{^} but matches only at the end of a line. Thus,
+@samp{xx*$} matches a string of one or more @samp{x}'s at the end of a
+line.
+
+@item \
+has two functions: it quotes the above special characters (including
+@samp{\}), and it introduces additional special constructs.@refill
+
+Because @samp{\} quotes special characters, @samp{\$} is a regular
+expression that matches only @samp{$}, and @samp{\[} is a regular
+expression that matches only @samp{[}, and so on.
+
+For the most part, @samp{\} followed by any character matches only that
+character.  However, there are several exceptions: characters which, when
+preceded by @samp{\}, are special constructs.  Such characters are always
+ordinary when encountered on their own.
+
+@item |
+specifies an alternative. Two regular expressions @var{a} and @var{b} with
+@samp{|} in between form an expression that matches anything that either
+@var{a} or @var{b} will match.
+
+Thus, @samp{foo|bar} matches either @samp{foo} or @samp{bar} but no other
+string.
+
+@samp{|} applies to the largest possible surrounding expressions.  Only a
+surrounding @samp{( @dots{} )} grouping can limit the grouping power of
+@samp{|}.
+
+@item ( @dots{} )
+is a grouping construct that serves three purposes:
+
+@enumerate
+@item
+To enclose a set of @samp{|} alternatives for other operations.
+Thus, @samp{(foo|bar)x} matches either @samp{foox} or @samp{barx}.
+
+@item
+To enclose a complicated expression for the postfix @samp{*} to operate on.
+Thus, @samp{ba(na)*} matches @samp{bananana} @i{et cetera}, with any (zero or
+more) number of @samp{na}'s.
+
+@item
+To mark a matched substring for future reference.
+
+@end enumerate
+
+This last application is not a consequence of the idea of a parenthetical
+grouping; it is a separate feature that happens to be assigned as a second
+meaning to the same @samp{( @dots{} )} construct because there is no
+conflict in practice between the two meanings.  Here is an explanation of
+this feature:
+
+@item \@var{digit}
+After the end of a @samp{( @dots{} )} construct, the matcher remembers the
+beginning and end of the text matched by that construct.  Then, later on in
+the regular expression, you can use @samp{\} followed by @var{digit} to mean
+``match the same text matched the @var{digit}'th time by the @samp{(
+@dots{} )} construct.''  The @samp{( @dots{} )} constructs are numbered
+in order of commencement in the regexp.
+
+The strings matching the first nine @samp{( @dots{} )} constructs appearing
+in a regular expression are assigned numbers 1 through 9 in order of their
+beginnings.
+@samp{\1} through @samp{\9} may be used to refer to the text matched by
+the corresponding @samp{( @dots{} )} construct.
+
+For example, @samp{(.+)\1} matches any non empty string that is composed of
+two identical halves.  The @samp{(.+)} matches the first half, which may be
+anything non empty, but the @samp{\1} that follows must match the same exact
+text.
+
+@item \b
+matches the empty string, but only if it is at the beginning or
+end of a word.  Thus, @samp{\bfoo\b} matches any occurrence of
+@samp{foo} as a separate word.  @samp{\bball(s|)\b} matches
+@samp{ball} or @samp{balls} as a separate word.
+
+@item \B
+matches the empty string, provided it is @emph{not} at the beginning or end
+of a word.
+
+@item \<
+matches the empty string, but only if it is at the beginning
+of a word.
+
+@item \>
+matches the empty string, but only if it is at the end of a word.
+
+@item \w
+matches any word-constituent character. These are US-ASCII letters,
+numbers and the underscore, independently on the buffer encoding.
+
+@item \W
+matches any character that is not a word-constituent.
+@end table
+
+@subsection Replacing regular expressions
+
+Also the replacement string has some special feature when doing a regular
+expression search and replace. Exactly as during the search, @samp{\} followed
+by @var{digit} stands for ``the text matched the @var{digit}'th time by the
+@samp{( @dots{} )} construct in the search expression''. Moreover, @samp{\0}
+represent the whole string matched by the regular expression. Thus, for
+instance, the replace string @samp{\0\0} has the effect of doubling any string
+matched.
+
+Another example: if you search for @samp{(a+)(b+)}, replacing with
+@samp{\2x\1}, you will match any string composed by a series of @samp{a}'s
+followed by a series of @samp{b}'s, and you will replace it with the
+string obtained by moving the @samp{a} in front of the @samp{b}'s, adding
+moreover @samp{x} inbetween. For instance, @samp{aaaab} will be matched and
+replaced by @samp{bxaaaa}.
+
+Note that the backslash character can escape itself. Thus, to put a
+backslash in the replacement string, you have to use @samp{\\}.
+
+
+@node Automatic Preferences
+@section Automatic Preferences
+@cindex Automatic preferences
+
+Automatic preferences let you set up a custom configuration that is
+automatically used whenever you open a file with a given extension. For
+instance, you may prefer a @sc{tab} size of three when editing C sources, but
+eight could be more palatable when writing electronic mail.
+
+The use of autoprefs is definitely straightforward. You simply use the
+@samp{Save AutoPrefs} menu item (or the @code{SaveAutoPrefs} command;
+@pxref{SaveAutoPrefs}) when the current document has the given extension and
+the current configuration suits your tastes. The internal state of a series of
+options will be recorded as a macro containing commands that reproduce the
+current configuration. The macro is then saved in the @file{~/.ne}
+directory (which is created if necessary) with the name given by the
+extension, postfixed with @samp{#ap}. Thus, the C sources automatic
+preferences file will be named @samp{c#ap}, the one for @TeX{} files @samp{tex#ap},
+and so on.
+
+Macros are generated with short or long command names depending on the
+status of the verbose macros flag. @xref{VerboseMacros}.
+
+Automatic preferences files are loaded and executed whenever a file with a known
+extension is opened. Note that you can manually edit such files, and even
+insert commands, but any command that does something other than setting a flag
+will be rejected, and an error message will be issued.
+
+
+@node Emergency Save
+@section Emergency Save
+@cindex Emergency Save
+
+When @code{ne} is interrupted by an abnormal event (for instance, the
+crash of your terminal), it will try to save all unsaved
+documents in its current directory. Named documents will have their
+names prefixed with a @samp{#}. Unnamed documents will be given names
+made up of hexadecimal numbers obtained by some addresses in memory
+that will make them unique.
+
+@node UTF-8 Support
+@section UTF-8 Support
+@cindex UTF-8 Support
+
+Since version 1.30, @code{ne} can manipulate UTF-8 files and supports
+UTF-8 when communicating with the user. At startup, @code{ne} fetches
+the system locale description, and checks whether it contains the string
+@samp{utf8} or @samp{utf-8}. In this case, it starts communicating with
+the user using UTF-8. This behaviour can be modified either using a
+suitable command line option (see @pxref{Arguments}), or using
+@ref{UTF8IO}. This makes it possible to display and read from the
+keyboard a wide range of characters.
+
+Independently of the input/output encoding, @code{ne} keeps track of the
+encoding of each buffer. @code{ne} does not try to select a particular
+coding on a buffer, unless it is forced to do so, for instance because a
+certain character is inserted. Once a buffer has a definite encoding,
+however, it keeps it forever.
+
+More precisely, every buffer may be in one of three @emph{encoding
+modes}: US-ASCII, when it is entirely composed of US-ASCII characters;
+8-bit, if it contains also other characters, but it is not UTF-8
+encoded; and finally, UTF-8, if it is UTF-8-encoded.
+
+The behaviour of @code{ne} in US-ASCII and 8-bit mode is similar to
+previous versions: each byte in the buffer is considered a separate
+character.
+
+There are, however, two important differences: first, if I/O is not
+UTF-8 encoded, @emph{any} encoding of the ISO-8859 family will work
+flawlessly, as @code{ne} merely reads bytes from the keyboard and
+displays bytes on the screen. On the contrary, in the case of UTF-8
+input/output @code{ne} must take a decision as to which encoding is used
+for non-UTF-8 buffers, and presently this is hardwired to ISO-8859-1.
+Second, since version 1.34, 8-bit buffers use localized casing and
+character type functions. This means that case-insensitive searches or
+case foldings will work with, say, Cyrillic characters, provided that
+your locale is set correctly.
+
+In UTF-8 mode, instead, @code{ne} interprets the bytes in the buffer in
+a different way---several bytes may encode a single character. The whole
+process is completely transparent to the user, but if you really want to
+look at the buffer content, you can switch to 8-bit mode (see
+@pxref{UTF8}).
+
+For most operations, UTF-8 support should be transparent. However, in
+some cases, in particular when mixing buffers with different encodings,
+@code{ne} will refuse to perform certain operations because of
+incompatible encodings.
+
+The main limitation of UTF-8 buffers is that when searching for a
+regular expression in a UTF-8 text, character sets may only contain
+US-ASCII characters (see @pxref{Regular Expressions}). You can, of
+course, partially emulate a full UTF-8 character set implementation
+specifying the possible alternatives using @samp{|} (but you have no
+ranges).
+
+@node Commands
+@chapter Commands
+@cindex Commands
+
+Everything @code{ne} can do is specified through a command. Commands can
+be manually typed on the command line, bound to a key, to a menu item,
+or grouped into macros for easier manipulation. If you want to fully
+exploit the power of @code{ne}, you will be faced sooner or later with
+using commands directly.
+
+@menu
+* General Guidelines::
+* File Commands::
+* Document Commands::
+* Clip Commands::
+* Search Commands::
+* Macros Commands::
+* Undo Commands::
+* Formatting Commands::
+* Preferences Commands::
+* Navigation Commands::
+* Editing Commands::
+* Support Commands::
+@end menu
+
+@node General Guidelines
+@section General Guidelines
+@cindex Long names
+@cindex Short names
+@cindex Command arguments
+@cindex Flags
+@cindex Repeating actions
+@cindex Escape conventions
+@cindex Quoting conventions
+
+Every command in @code{ne} has a long and a short name. Except in a very
+few cases, the short name is given by two or three letters that are the
+initials of the words that form the long name. For instance,
+@code{SearchBack} has short name @code{SB}, @code{SaveDefPrefs} has the
+short name @code{SDP}, and @code{AdjustView}'s short name is @code{AV}.
+There are some exceptions however. The most frequently used commands
+such as @code{Exit} have one-letter short names (@code{X}). Also some
+commands use a different short name to avoid clashes with a more common
+command's short name. For example, @code{StatusBar}'s short name is
+@code{ST} rather than @code{SB}  to avoid clashes with
+@code{SearchBack}'s short name.
+
+A command always has at most one argument. This is a chosen limitation
+that allows @code{ne}'s parsing of commands and macros to be very fast.
+Moreover, it nullifies nearly all problems related to delimiters, escape
+characters, and the like. The unique argument can be a number, a string,
+or a flag modifier. You can easily distinguish these three cases even
+without this manual by looking at what the @code{Help} command says
+about the given command. Note that when a command's argument is enclosed
+in square brackets, it is optional.
+
+Strings are general purpose arguments. Numbers are used to modify internal
+parameters, such as the size of a @sc{tab}. A flag modifier is an optional
+number that is interpreted as follows:
+
+@itemize @bullet{}
+
+@item
+0 means clearing the flag;
+
+@item
+1 (or any positive number) means setting the flag;
+
+@item
+no number means toggling the flag.
+
+@end itemize
+
+Thus, @code{StatusBar 1} will activate that status bar, while @code{I} will
+toggle insert/overstrike. This design choice is due to the fact that most of
+the time during interactive editing you need to @emph{change} a
+flag. For instance, you may be in insert mode and you want to overstrike, or
+vice versa. Absolute settings (those with a number) are useful essentially
+for macros. It is reasonable to use the fastest approach for the most
+frequent interactive event. When a number or a string is required and the
+argument is optional, most of the time you will be prompted to
+type the argument on the command line.
+
+As for the input line, for numeric arguments you can choose between
+decimal, octal and hexadecimal notation in the standard way:
+a number starting with @samp{0} is considered in octal, a number
+starting with @samp{0x} is considered in hexadecimal, and in all other
+cases decimal base is assumed.
+
+When a number represents how many times @code{ne} should repeat an
+action, it is always understood that the command will terminate when the
+conditions for applying it are no longer true. For instance, the
+@code{Paragraph} command accepts the number of paragraphs to format.
+But if not enough paragraphs exists in the text, only the available ones
+will be formatted.
+
+This easily allows performing operations on an entire document by specifying
+preposterously huge numbers as arguments. @code{ToUpper 200000000} will
+make all the words in the document upper case. (At least, one would
+hope so!) Note that this is much faster than recording a macro with
+the command @code{ToUpper} in it and playing it many times because in
+the former case the command has to be parsed just one time.
+
+In any case, if a macro or a repeated operation takes too long, you can stop
+it using the interrupt key (@kbd{@key{Control}-\}).
+
+
+To handle situations such as an argument string starting with a
+space, @code{ne} implements a simple mechanism whereby you can enclose
+any string argument in double quotes. If the first non-blank character
+after the command and last character of the command line are double
+quotes, the quotes will be removed and whatever is left will be used as
+the string argument. For example, the @code{Find} command to find a
+space could be entered on the command line or in a macro as
+@code{Find " "}. The only case needing special treatment is 
+when a string starts and ends with double quotes. The command
+@code{Find ""quote""} would locate the next occurrence of the string
+@samp{"quote"} (including the double quotes). However, 
+@code{Find onequote"} wouldn't require special treatment because the
+command argument doesn't both start and end with a double quote.
+
+@ignore
+
+    N O T E   T O    D O C U M E N T   M A I N T A I N E R S
+
+It is essential that, in the following sections, all cross references
+explaining the text of a command point only to another command, unless
+they are inside an @ifclear autohelp / @endif pair. This way, the text
+can be automagically extracted for the on-line help with makeinfo.
+
+@end ignore
+
+@node File Commands
+@section File Commands
+
+These commands allow opening and saving files. They all act in the
+context of the current document (i.e., the document displayed when the
+command is issued).
+
+
+@menu
+* Open::
+* OpenNew::
+* Save::
+* SaveAs::
+@end menu
+
+@node Open
+@subsection Open
+@cmindex Open
+
+@noindent Syntax: @code{Open [@var{filename}]}@*
+@noindent Abbreviation: @code{O}
+
+@noindent loads the file specified by the @var{filename} string into the
+current document.
+
+If the optional @var{filename} argument is not specified, the
+file requester is opened, and you are prompted to select a file. (You
+can inhibit the file requester opening by using the @code{NoFileReq}
+command; see @ref{NoFileReq}.)
+
+If you escape from the file requester, you can input the file name on the
+command line, the default being the current document name, if available.
+
+If the current document is marked as modified at the time the command is
+issued, you have to confirm the action.
+
+
+@node OpenNew
+@subsection OpenNew
+@cmindex OpenNew
+
+@noindent Syntax: @code{OpenNew [@var{filename}]}@*
+@noindent Abbreviation: @code{ON}
+
+@noindent is the same as @code{Open}, but loads the file specified by the
+@var{filename} string into a new document. See @ref{Open}.
+
+
+@node Save
+@subsection Save
+@cmindex Save
+
+@noindent Syntax: @code{Save}@*
+@noindent Abbreviation: @code{S}
+
+@noindent saves the current document using its default file name.
+
+If the current document is unnamed, the file requester will open and you
+will be prompted to select a file. (You can inhibit the file requester opening by
+using the @code{NoFileReq} command; see @ref{NoFileReq}.)
+
+If you escape from the file requester, you can input the file name on the
+command line.
+
+
+@node SaveAs
+@subsection SaveAs
+@cmindex SaveAs
+
+@noindent Syntax: @code{SaveAs [@var{filename}]}@*
+@noindent Abbreviation: @code{SA}
+
+@noindent saves the current document using the specified string as the file name.
+
+If the optional @var{filename} argument is not specified, the
+file requester will open and you will be prompted to select a file. (You
+can inhibit the file requester opening by using the @code{NoFileReq}
+command; see @ref{NoFileReq}.)
+
+If you escape from the file requester, you can enter the file name on the
+input line, the default being the current document name, if available.
+
+@node Document Commands
+@section Document Commands
+
+These commands allow manipulation of the circular list of documents in @code{ne}.
+
+@menu
+* Quit::
+* Exit::
+* NewDoc::
+* Clear::
+* CloseDoc::
+* NextDoc::
+* PrevDoc::
+* SelectDoc::
+@end menu
+
+@node Quit
+@subsection Quit
+@cmindex Quit
+
+@noindent Syntax: @code{Quit}@*
+@noindent Abbreviation: @code{Q}
+
+@noindent closes all documents and exits. If any documents are modified, you
+have to confirm the action.
+
+
+@node Exit
+@subsection Exit
+@cmindex Exit
+
+@noindent Syntax: @code{Exit}@*
+@noindent Abbreviation: @code{X}
+
+@noindent saves all modified documents, closes them and exits. If
+any documents cannot be saved, the action is suspended and an error message
+is issued.
+
+
+@node NewDoc
+@subsection NewDoc
+@cmindex NewDoc
+
+@noindent Syntax: @code{NewDoc}@*
+@noindent Abbreviation: @code{N}
+
+@noindent creates a new, empty, unnamed document that becomes the current document.
+The position of the document in the document list is just after the current
+document. The preferences of the new document are a copy of the
+preferences of the current document.
+
+@node Clear
+@subsection Clear
+@cmindex Clear
+
+@noindent Syntax: @code{Clear}@*
+@noindent Abbreviation: @code{CL}
+
+@noindent destroys the contents of the current document and of its undo
+buffer. Moreover, the document becomes unnamed. If your current document is
+marked as modified, you have to confirm the action.
+
+@node CloseDoc
+@subsection CloseDoc
+@cmindex CloseDoc
+
+@noindent Syntax: @code{CloseDoc}@*
+@noindent Abbreviation: @code{CD}
+
+@noindent closes the current document. The document is removed from
+@code{ne}'s list and, if it is the only existing document, @code{ne}
+exits. If the document was modified since it was last saved, you have to
+confirm the action.
+
+@node NextDoc
+@subsection NextDoc
+@cmindex NextDoc
+
+@noindent Syntax: @code{NextDoc}@*
+@noindent Abbreviation: @code{ND}
+
+@noindent sets as current document the next document in the document list.
+
+
+@node PrevDoc
+@subsection PrevDoc
+@cmindex PrevDoc
+
+@noindent Syntax: @code{PrevDoc}@*
+@noindent Abbreviation: @code{PD}
+
+@noindent sets as current document the previous document in the document list.
+
+@node SelectDoc
+@subsection SelectDoc
+@cmindex SelectDoc
+
+@noindent Syntax: @code{SelectDoc}@*
+@noindent Abbreviation: @code{SD}
+
+@noindent displays a requester containing the names of all the
+documents in memory. You select whichever document you want to become
+the current document.
+
+If you escape from the requester the requester goes away and you are
+returned to your original current document.
+
+@code{SelectDoc} is especially useful if you have a large number of
+documents open (say, more than 10). Otherwise, @code{NextDoc} and
+@code{PrevDoc} should be enough. See @ref{NextDoc}, and @ref{PrevDoc}.
+
+
+@node Clip Commands
+@section Clip Commands
+
+These commands control the clipping system. A @dfn{clip} is a snippet of
+text separate from any document, which you can save to a file or insert
+into a document. You can select text in a document and copy it to a
+clip, optionally deleting it from your text. You can also load text
+directly from a file into a clip. @code{ne} can have any number of
+clips, which are distinguished by an integer. Most clip commands act on
+the current clip, which can be selected with @code{ClipNumber}. Clips can
+be copied and pasted in two ways---normally (as lines of text) or
+vertically (as a rectangular block of characters).
+
+Note that by using the @code{Through} command you can automatically pass a
+(possibly vertical) block of text through any filter (such as @code{sort} under
+@sc{un*x}).
+
+@menu
+* Mark::
+* MarkVert::
+* Copy::
+* Cut::
+* Paste::
+* PasteVert::
+* Erase::
+* OpenClip::
+* SaveClip::
+* ClipNumber::
+* Through::
+@end menu
+
+@node Mark
+@subsection Mark
+@cmindex Mark
+
+@noindent Syntax: @code{Mark [0|1]}@*
+@noindent Abbreviation: @code{M}
+
+@noindent sets the mark at the current position or cancels the previous mark.
+The mark can then be used to perform clip operations. The clip
+commands act on the characters lying between the mark and the cursor.
+
+If you invoke @code{Mark} with no arguments, it will toggle the mark. If you
+specify 0 or 1, the mark will be canceled or set to the current position,
+respectively.  A capital @samp{M} appears on the status bar, if the mark is
+active.
+
+See @ref{Record}, for the reason the mark is implemented as a flag.
+
+@node MarkVert
+@subsection MarkVert
+@cmindex MarkVert
+
+@noindent Syntax: @code{MarkVert [0|1]}@*
+@noindent Abbreviation: @code{MV}
+
+@noindent is the same as @code{Mark}, but the mark is interpreted as vertical
+by the clip handling commands. This means that the region manipulated by the
+cut/paste commands is the rectangle having as vertices the cursor and the mark.
+Moreover, a capital @samp{V}, rather than a capital @samp{M}, will appear on
+the status bar. Vertical cut/paste operations are useful for handling
+structured program indentation.
+
+@node Copy
+@subsection Copy
+@cmindex Copy
+
+@noindent Syntax: @code{Copy [@var{n}]}@*
+@noindent Abbreviation: @code{C}
+
+@noindent copies the contents of the characters lying between the cursor
+and the mark into the clip specified by the optional numeric argument, the
+default clip being the current clip, which can be set with the
+@code{ClipNumber} command; see @ref{ClipNumber}. If the current mark was
+vertical, the rectangle of characters defined by the cursor and the mark is
+copied instead.
+
+
+@node Cut
+@subsection Cut
+@cmindex Cut
+
+@noindent Syntax: @code{Cut [@var{n}]}@*
+@noindent Abbreviation: @code{CU}
+
+@noindent acts just like @code{Copy}, but also deletes the block being copied.
+
+
+@node Paste
+@subsection Paste
+@cmindex Paste
+
+@noindent Syntax: @code{Paste [@var{n}]}@*
+@noindent Abbreviation: @code{P}
+
+@noindent pastes the contents of specified clip into the current
+document at the cursor position. If you don't specify the clip number,
+the current clip is used; Specify which clip is current with @ref{ClipNumber}.
+
+
+@node PasteVert
+@subsection PasteVert
+@cmindex PasteVert
+
+@noindent Syntax: @code{PasteVert [@var{n}]}@*
+@noindent Abbreviation: @code{PV}
+
+@noindent vertically pastes the contents of the specified clip, the default
+being the current clip. Each line of the clip is inserted on consecutive
+lines at the horizontal cursor position.
+
+
+@node Erase
+@subsection Erase
+@cmindex Erase
+
+@noindent Syntax: @code{Erase}@*
+@noindent Abbreviation: @code{E}
+
+@noindent acts like @code{Cut}, but the block is just deleted and not
+copied into any clip.
+
+
+@node OpenClip
+@subsection OpenClip
+@cmindex OpenClip
+
+@noindent Syntax: @code{OpenClip [@var{filename}]}@*
+@noindent Abbreviation: @code{OC}
+
+@noindent loads the given file name as the current clip, just as if you
+cut or copied it from the current document; see @ref{Copy}.
+
+If the optional @var{filename} argument is not specified, the
+file requester will open and you will be prompted to select a file. (You
+can inhibit the file requester opening by using the @code{NoFileReq}
+command; see @ref{NoFileReq}.)
+
+If you escape from the file requester, you can enter the file name on the
+input line.
+
+@node SaveClip
+@subsection SaveClip
+@cmindex SaveClip
+
+@noindent Syntax: @code{SaveClip [@var{filename}]}@*
+@noindent Abbreviation: @code{SC}
+
+@noindent saves the current clip on the given file name.
+
+If the optional @var{filename} argument is not specified, the
+file requester will open and you will be prompted to select a file. (You
+can inhibit the file requester opening by using the @code{NoFileReq}
+command; see @ref{NoFileReq}.)
+
+If you escape from the file requester, you can enter the file name on the
+input line.
+
+@node ClipNumber
+@subsection ClipNumber
+@cmindex ClipNumber
+
+@noindent Syntax: @code{ClipNumber [@var{n}]}@*
+@noindent Abbreviation: @code{CN}
+
+@noindent sets the current clip number. This number is used by
+@code{OpenClip} and @code{SaveClip}, and by @code{Copy}, @code{Cut} and
+@code{Paste} if they are called without any argument. Its default value is
+zero. @var{n} is limited only by the integer size of the machine @code{ne}
+is running on.
+
+If the optional argument @var{n} is not specified, you can enter it on the
+input line, the default being the current clip number.
+
+@node Through
+@subsection Through
+@cmindex Through
+
+@noindent Syntax: @code{Through [@var{command}]}@*
+@noindent Abbreviation: @code{T}
+
+@noindent asks the shell to execute @var{command}, piping the current block in
+the standard input, and replacing it with the output of the command. This
+command is most useful with filters, such as @code{sort}. Its practical effect
+is to pass the block through the specified filter.
+
+Note that by selecting an empty block (or equivalently by having the mark
+unset) you can use @code{Through} to insert the output of any @sc{un*x}
+command in your file.
+
+If the optional argument @var{command} is not specified, you can enter it on
+the input line.
+
+@node Search Commands
+@section Search Commands
+
+These commands control the search system. @code{ne} offers two complementary
+searching techniques: a simple, fast exact matching search (optionally
+ignoring case), and a very flexible and powerful, but slower, regular
+expression search based on the GNU @code{regex} library (again,
+optionally case insensitive).
+
+@menu
+* Find::
+* FindRegExp::
+* Replace::
+* ReplaceOnce::
+* ReplaceAll::
+* RepeatLast::
+* MatchBracket::
+* SearchBack::
+* CaseSearch::
+@end menu
+
+@node Find
+@subsection Find
+@cmindex Find
+
+@noindent Syntax: @code{Find [@var{pattern}]}@*
+@noindent Abbreviation: @code{F}
+
+@noindent searches for the given pattern. The cursor is positioned on the
+first occurrence of the pattern, or an error message is given. The direction
+and the case sensitivity of the search are established by the value of the
+back search and case sensitive search flags. See @ref{SearchBack}, and
+@ref{CaseSearch}.
+
+If the optional argument @var{pattern} is not specified, you can enter it on
+the input line, the default being the last pattern used.
+
+
+@node FindRegExp
+@subsection FindRegExp
+@cmindex FindRegExp
+
+@noindent Syntax: @code{FindRegExp [@var{pattern}]}@*
+@noindent Abbreviation: @code{FX}
+
+@noindent searches the current document for the given extended regular expression
+@ifclear autohelp
+(@pxref{Regular Expressions})
+@end ifclear
+. The cursor is positioned on the first string
+matching the expression. The direction and the kind of search are established
+by the value of the back search and case sensitive search flags. See
+@ref{SearchBack}, and @ref{CaseSearch}.
+
+If the optional argument @var{pattern} is not specified, you can enter it on
+the input line, the default being the last pattern used.
+
+@node Replace
+@subsection Replace
+@cmindex Replace
+
+@noindent Syntax: @code{Replace [@var{string}]}@*
+@noindent Abbreviation: @code{R}
+
+@noindent moves to the first match of the most recent find string or regular
+expression and prompts you for which action to perform. You can choose among:
+
+@itemize @bullet
+
+@item
+replacing the string found with the given string and moving to the next match
+(@samp{Yes});
+
+@item
+moving to the next match (@samp{No});
+
+@item
+replacing the string found with the given string, and stopping the search (@samp{Last});
+
+@item
+stopping the search immediately (@samp{Quit});
+
+@item
+replacing @emph{all} occurrences of the find string with the given string
+(@samp{All});
+
+@item
+reversing the search direction (@samp{Backward} or @samp{Forward});
+this choice will also modify the value of the back search flag.
+See @ref{SearchBack}.
+
+@end itemize
+
+@code{Replace} is mainly useful for interactive editing. @code{ReplaceOnce},
+@code{ReplaceAll} and @code{RepeatLast} are more suited to macros.
+
+If no find string was ever specified, you can enter it on the input line.
+If the optional argument @var{string} is not specified, you can enter it on
+the input line, the default being the last string used. When the last search
+was a regular expression search, there are some special
+features you can use in the replace string
+@ifclear autohelp
+(@pxref{Regular Expressions})
+@end ifclear
+. See @ref{FindRegExp}.
+
+Note that normally a search starts just one character after the cursor.
+However, when @code{Replace} is invoked, the search starts at the character
+just @emph{under} the cursor, so that you can safely @code{Find} a pattern
+and @code{Replace} it without having to move back.
+
+@noindent @strong{Warning:} when recording a macro with @ref{Record}, there
+is no trace in the macro of your interaction with @code{ne} during the
+replacement process. When the macro is played, you will again have to choose
+which actions to perform. If you want to apply automatic replacement of
+strings for a certain number of times, you should look at @ref{ReplaceOnce},
+@ref{ReplaceAll}, and @ref{RepeatLast}.
+
+@node ReplaceOnce
+@subsection ReplaceOnce
+@cmindex ReplaceOnce
+
+@noindent Syntax: @code{ReplaceOnce [@var{string}]}@*
+@noindent Abbreviation: @code{R1}
+
+@noindent acts just like @code{Replace}, but without any interaction with you
+(unless there is no find string). The first string matched by the last search
+pattern, if it exists, is replaced by the given replacement string.
+
+If the optional argument @var{string} is not specified, you can enter it on
+the input line, the default being the last string used.
+
+@node ReplaceAll
+@subsection ReplaceAll
+@cmindex ReplaceAll
+
+@noindent Syntax: @code{ReplaceAll [@var{string}]}@*
+@noindent Abbreviation: @code{RA}
+
+@noindent is similar to @code{ReplaceOnce}, but replaces @emph{all}
+occurrences of the last search pattern with the given replacement
+string.
+
+If the optional argument @var{string} is not specified, you can enter it on
+the input line, the default being the last string used.
+
+Note that @code{Undo} will restore @emph{all} the occurrences of the search
+pattern replaced by @code{ReplaceAll}. See @ref{Undo}.
+
+
+@node RepeatLast
+@subsection RepeatLast
+@cmindex RepeatLast
+
+@noindent Syntax: @code{RepeatLast [@var{times}]}@*
+@noindent Abbreviation: @code{RL}
+
+@noindent repeats for the given number of times the last find or replace operation
+(with replace we mean here a single replace, even if the last @code{Replace}
+operation ended with a global substitution).
+
+@code{RepeatLast} is especially useful for researching a given number of times, or
+replacing something a given number of times. The standard technique for
+accomplishing this is:
+
+@enumerate
+
+@item
+@code{Find} (or @code{FindRegExp}) the string you are interested in;
+
+@item
+if you want to repeat a replace operation, @code{ReplaceOnce} with
+the replacement string you are interested in;
+
+@item
+now issue a @code{RepeatLast @var{n}-1} command, where @var{n} is the
+number of occurrences you wanted to skip over, or replace.
+
+@end enumerate
+
+The important thing about this sequence of actions is that it will
+work this way even in a macro. The @code{Replace} command cannot be used
+in a macro unless you really want to interact with @code{ne} during the
+macro execution. Avoiding interaction during macros is the primary
+reason the commands @code{ReplaceAll} and @code{ReplaceOnce} are
+provided.
+
+
+@node MatchBracket
+@subsection MatchBracket
+@cmindex MatchBracket
+
+@noindent Syntax: @code{MatchBracket}@*
+@noindent Abbreviation: @code{MB}
+
+@noindent moves the cursor to the bracket associated with the bracket the
+cursor is on. If the cursor is not on a bracket, or there is no bracket
+associated with the current one, an error message is issued. Recognized
+brackets are @samp{@{@}}, @samp{()}, @samp{[]} and @samp{<>}.
+
+@node SearchBack
+@subsection SearchBack
+@cmindex SearchBack
+
+@noindent Syntax: @code{SearchBack [0|1]}@*
+@noindent Abbreviation: @code{SB}
+
+@noindent sets the back search flag. When this flag is true, every search or
+replacement command is performed backwards.
+
+If you invoke @code{SearchBack} with no arguments, it will toggle the flag. If you
+specify 0 or 1, the flag will be set to false or true, respectively. A lower
+case @samp{b} will appear on the status bar if the flag is true.
+
+Note that this flag also can be set through interactions with the
+@code{Replace} command. See @ref{Replace}.
+
+@node CaseSearch
+@subsection CaseSearch
+@cmindex CaseSearch
+
+@noindent Syntax: @code{CaseSearch [0|1]}@*
+@noindent Abbreviation: @code{CS}
+
+@noindent sets the case sensitivity flag. When this flag is true, the
+search commands distinguish between the upper and lower case letters. By
+default the flag is false.
+
+If you invoke @code{CaseSearch} with no arguments, it will toggle the flag. If you
+specify 0 or 1, the flag will be set to false or true, respectively. A lower
+case @samp{c} will appear on the status bar if the flag is true.
+
+@node Macros Commands
+@section Macros Commands
+
+Macros are lists of commands. Any series of operations that has to be
+performed frequently is a good candidate for being a macro.
+
+Macros can be written manually: they are just ASCII files, each command
+occupying a line (lines starting with @samp{#} are considered comments;
+lines starting with other nonalphabetical characters are presently
+ignored). But the real power of macros is that they be recorded during
+the normal usage of @code{ne}. When the recording terminates, the
+operations that have been recorded can be saved for later use. Note that
+each document has a current macro (the last macro that has been opened
+or recorded).
+
+
+@menu
+* Record::
+* Play::
+* Macro::
+* OpenMacro::
+* SaveMacro::
+* UnloadMacros::
+@end menu
+
+@node Record
+@subsection Record
+@cmindex Record
+
+@noindent Syntax: @code{Record [0|1]}@*
+@noindent Abbreviation: @code{Rec}
+
+@noindent sets the recording state flag. When this flag becomes true,
+@code{ne} starts recording your actions in a new macro. When it becomes
+false, the macro recording is stopped, and the macro can be played
+or saved via @ref{Play}, or @ref{SaveMacro}.
+
+If you call invoke @code{Record} with no arguments, it will toggle the flag. If you
+specify 0 or 1, the flag will be set to false or true, respectively. An upper case
+@samp{R} will appear on the status bar if the flag is true.
+
+The reason for providing a flag instead of an explicit start/stop
+recording command pair is that this way it is possible to bind both
+starting and stopping macro recording to a single key while still being
+able to specify ``absolute'' menu items (by using @code{Record 0} and
+@code{Record 1}). For instance, the default key binding for
+@kbd{@key{Control}-T} is simply @code{Record}, which means that this
+shortcut can be used both for initiating and for terminating a macro
+recording.
+
+@node Play
+@subsection Play
+@cmindex Play
+
+@noindent Syntax: @code{Play [@var{times}]}@*
+@noindent Abbreviation: @code{PL}
+
+@noindent plays the current macro for the given number of times. If the
+optional argument @var{times} is not specified, you can enter it on the
+input line.
+
+A (possibly iterated) macro execution terminates as soon as its stream of
+instructions is exhausted, or one of its commands returns an error. This means
+that, for instance, you can perform some complex operation on all the lines
+containing a certain pattern by recording a macro that searches for the pattern
+and performs the operation, and then playing it a preposterously huge number of
+times.
+
+Execution of a macro can be interrupted by @kbd{@key{Control}-\}.
+
+@node Macro
+@subsection Macro
+@cmindex Macro
+
+@noindent Syntax: @code{Macro [@var{filename}]}@*
+@noindent Abbreviation: @code{MA}
+
+@noindent executes the given file name as a macro.
+
+If the optional @var{filename} argument is not specified, the file
+requester is opened, and you are prompted to select a file. (You can
+inhibit the file requester opening by using the @code{NoFileReq}
+command; see @ref{NoFileReq}.)
+
+If you escape from the file requester, you can input the file name on the
+command line.
+
+Note that macros whose names do not conflict with a command can be called
+without using @code{Macro}. Whenever @code{ne} is required to perform a command
+it cannot find in its internal tables, it will look for a macro by that
+name in the current directory. If this search also fails, @code{ne}
+looks in @file{~/.ne} and finally in @code{ne}'s  global directory
+(defined when @code{ne} was built, or in a place specified by your
+@code{NE_GLOBAL_DIR} environment variable) for a macro file by that
+name.
+
+@noindent @strong{Warning:} the first time a macro is executed it is cached
+into a hash table and is kept @emph{forever} in memory unless the
+@code{UnloadMacros} command is issued; see @ref{UnloadMacros}. The next time a
+macro with the same file name is invoked, the cached list is searched for it
+before accessing the file using a case insensitive string comparison. That is,
+if you call @code{~/foobar/macro}, a subsequent call for @code{/usr/MACRO} or
+even just @code{MaCrO} will use the cached version of @code{~/foobar/macro}.
+Note that the cache table is global to @code{ne} and not specific to any single
+document. This greatly improves efficiency when macros are used repeatedly.
+
+
+@node OpenMacro
+@subsection OpenMacro
+@cmindex OpenMacro
+
+@noindent Syntax: @code{OpenMacro [@var{filename}]}@*
+@noindent Abbreviation: @code{OM}
+
+@noindent loads the given file name as the current macro just as if you
+@code{Record}ed it; see @ref{Record}.
+
+If the optional @var{filename} argument is not specified, the
+file requester is opened, and you are prompted to select a file. (You
+can inhibit the file requester opening by using the @code{NoFileReq}
+command; see @ref{NoFileReq}.)
+
+If you escape from the file requester, you can input the file name on the
+command line.
+
+@node SaveMacro
+@subsection SaveMacro
+@cmindex SaveMacro
+
+@noindent Syntax: @code{SaveMacro [@var{filename}]}@*
+@noindent Abbreviation: @code{SM}
+
+@noindent saves the current macro in a file with the given name.
+
+If the optional @var{filename} argument is not specified, the
+file requester is opened, and you are prompted to select a file. (You
+can inhibit the file requester opening by using the @code{NoFileReq}
+command; see @ref{NoFileReq}.)
+
+If you escape from the file requester, you can input the file name on the
+command line.
+
+@code{SaveMacro} is of course most useful for saving macros you just
+recorded. The macros can then be loaded as normal text files for
+further editing, if necessary. Note that @code{SaveMacro} converts
+@code{InsertChar} commands into a possibly smaller number of
+@code{InsertString} commands. This makes macros easier to
+read and edit. See @ref{InsertChar}, and @ref{InsertString}.
+
+
+@node UnloadMacros
+@subsection UnloadMacros
+@cmindex UnloadMacros
+
+@noindent Syntax: @code{UnloadMacros}@*
+@noindent Abbreviation: @code{UM}
+
+@noindent frees the macro cache list. After this command, the @code{Macro}
+command will be forced to search for the file containing the macros it has to
+play.
+
+@code{UnloadMacros} is especially useful if you are experimenting with a macro
+bound to some keystroke, and you are interactively modifying it and playing it.
+@code{UnloadMacros} forces @code{ne} to look for the newer version available.
+
+
+@node Undo Commands
+@section Undo Commands
+
+The following commands control the undo system.
+
+@menu
+* Undo::
+* Redo::
+* UndelLine::
+* DoUndo::
+@end menu
+
+@node Undo
+@subsection Undo
+@cmindex Undo
+
+@noindent Syntax: @code{Undo [@var{n}]}@*
+@noindent Abbreviation: @code{U}
+
+@noindent undoes the last @var{n} actions. If @var{n} is not specified, it is
+assumed to be one. After you undo a number of actions, you can @code{Redo}
+all or some of them; see @ref{Redo}. However, if you take any new
+actions after having @code{Undo}ne some, you can no longer @code{Redo}
+those @code{Undo}ne actions. See @ref{Redo}.
+
+
+
+@node Redo
+@subsection Redo
+@cmindex Redo
+
+@noindent Syntax: @code{Redo [@var{n}]}@*
+@noindent Abbreviation: @code{RE}
+
+@noindent redoes the last @var{n} actions undone by @code{Undo} (as long
+as you don't take any actions that change the text between the
+@code{Undo} and @code{Redo} commands). If @var{n} is not specified, it
+is assumed to be one. You can only @code{Redo} actions that have been
+@code{Undo}ne. See @ref{Undo}.
+
+@node UndelLine
+@subsection UndelLine
+@cmindex UndelLine
+
+@noindent Syntax: @code{UndelLine [@var{n}]}@*
+@noindent Abbreviation: @code{UL}
+
+@noindent inserts at the cursor position for @var{n} times the last non-empty line
+that was deleted with the @code{DeleteLine} command. If @var{n} is not
+specified, it is assumed to be one.
+
+@code{UndelLine} is most useful in that it allows a very fast way of moving
+one line around. Just delete it, and undelete it somewhere else. It is
+also an easy way to replicate a line without getting involved with clips.
+
+Note that @code{UndelLine} works independently of the status of the
+undo flag. See @ref{DoUndo}.
+
+@node DoUndo
+@subsection DoUndo
+@cmindex DoUndo
+
+@noindent Syntax: @code{DoUndo [0|1]}@*
+@noindent Abbreviation: @code{DU}
+
+@noindent sets the flag that enables or disables the undo system. When you turn
+the undo system off, all the recorded actions are discarded, and the undo
+buffers are reset.
+
+If you invoke @code{DoUndo} with no arguments, it will toggle the flag. If you
+specify 0 or 1, the flag will be set to false or true, respectively. A lower
+case @samp{u} will appear on the status bar if the flag is true.
+
+The usefulness of this option relies in the fact that the undo system is a major
+memory eater. If you plan to do massive editing (say, cutting and pasting
+megabytes of text) it is a good idea to disable the undo system, both for
+improving (doubling) performance and for using less (half) memory. Except for
+this, on a virtual memory system we see no reason to not keep the undo flag
+always true, and this is indeed the default.
+
+
+@node Formatting Commands
+@section Formatting Commands
+
+The following commands allow simple formatting operations on the text. Note
+that for @code{ne} a paragraph is delimited by an empty line.
+
+@menu
+* Center::
+* Paragraph::
+* ToUpper::
+* ToLower::
+* Capitalize::
+* RightMargin::
+* WordWrap::
+* AutoIndent::
+@end menu
+
+@node Center
+@subsection Center
+@cmindex Center
+
+@noindent Syntax: @code{Center [@var{n}]}@*
+@noindent Abbreviation: @code{CE}
+
+@noindent centers @var{n} lines from the cursor position onwards. If @var{n}
+is not specified, it is assumed to be one. The lines are centered with
+spaces, relatively to the value of the right margin as set by the
+@code{RightMargin} command. See @ref{RightMargin}.
+
+@node Paragraph
+@subsection Paragraph
+@cmindex Paragraph
+
+@noindent Syntax: @code{Paragraph [@var{n}]}@*
+@noindent Abbreviation: @code{PA}
+
+@noindent reformats @var{n} paragraphs from the cursor position onwards. If
+@var{n} is not specified, it is assumed to be one. The paragraph are
+formatted relatively to the value of the right margin as set by the
+@code{RightMargin} command. See @ref{RightMargin}.
+
+@code{ne}'s notion of a paragraph includes the current non-blank line
+(regardless of its leading white space) and all subsequent non-blank
+lines that have identical (to each other's---not to the first line's)
+leading white space. Therefore your paragraphs can have various first
+line indentations and left margins.
+
+After the @code{Paragraph} command completes, your cursor will be
+positioned on the first non-blank character after the last reformatted
+paragraph (or, if there is no such character, at the end of the document).
+
+If you think paragraphing should insert ``smart'' spaces after full stops
+and colons, and do other ``smart'' things such as justification, you should
+consider using a text formatter. @TeX{} is usually the best choice.
+
+
+@node ToUpper
+@subsection ToUpper
+@cmindex ToUpper
+
+@noindent Syntax: @code{ToUpper [@var{n}]}@*
+@noindent Abbreviation: @code{TU}
+
+@noindent shifts to upper case the letters from the cursor position up to the
+end of a word, and moves to the first letter of next word for @var{n} times.
+
+The description of the command may seem a little bit cryptic. What is really
+happening is that there are situations where you only want to upper case the
+last part of a word. In this case, you just have to position the cursor in
+the first character you want to upper case, and use @code{ToUpper} with no
+argument.
+
+If you apply @code{ToUpper} on the first character of a word, it will
+just upper case @var{n} words.
+
+@node ToLower
+@subsection ToLower
+@cmindex ToLower
+
+@noindent Syntax: @code{ToLower [@var{n}]}@*
+@noindent Abbreviation: @code{TL}
+
+@noindent acts exactly like @code{ToUpper}, but lowers the case. See @ref{ToUpper}.
+
+@node Capitalize
+@subsection Capitalize
+@cmindex Capitalize
+
+@noindent Syntax: @code{Capitalize [@var{n}]}@*
+@noindent Abbreviation: @code{CA}
+
+@noindent acts exactly like @code{ToUpper}, but capitalizes, that is, makes the first
+letter upper case and the other ones lower case. See @ref{ToUpper}.
+
+@node RightMargin
+@subsection RightMargin
+@cmindex RightMargin
+
+@noindent Syntax: @code{RightMargin [@var{n}]}@*
+@noindent Abbreviation: @code{RM}
+
+@noindent sets the right margin for all formatting operations, and for @code{WordWrap}.
+See @ref{WordWrap}.
+
+If the optional argument @var{n} is not specified, you can enter it on the
+input line, the default being the current value of the right margin.
+
+A value of zero for @var{n} will force @code{ne} to use (what it thinks it is)
+the current screen width as right margin.
+
+
+@node WordWrap
+@subsection WordWrap
+@cmindex WordWrap
+
+@noindent Syntax: @code{WordWrap [0|1]}@*
+@noindent Abbreviation: @code{WW}
+
+@noindent sets the word wrap flag. When this flag is true, @code{ne} will automatically
+break lines of text longer than the current right margin 
+while you type them. See @ref{RightMargin}.
+
+If you invoke @code{WordWrap} with no arguments, it will toggle the flag. If you
+specify 0 or 1, the flag will be set to false or true, respectively. A lower
+case @samp{w} will appear on the status bar if the flag is true.
+
+
+@node AutoIndent
+@subsection AutoIndent
+@cmindex AutoIndent
+
+@noindent Syntax: @code{AutoIndent [0|1]}@*
+@noindent Abbreviation: @code{AI}
+
+@noindent sets the auto indent flag. When this flag is true, @code{ne} will
+automatically insert @sc{tab}s and spaces on a new line (created by an
+@code{InsertLine} command, or by automatic word wrapping) in such a way to
+replicate the initial spaces of the previous line. Most useful for indenting
+programs.
+
+If you invoke @code{AutoIndent} with no arguments, it will toggle the flag. If you
+specify 0 or 1, the flag will be set to false or true, respectively. A lower
+case @samp{a} will appear on the status bar if the flag is true.
+
+@code{AutoIndent} features a nice interaction with @code{Undo}. Whenever a
+new line is created, the insertion of spaces is recorded as a separate
+action in the undo buffer (with respect to the line creation). If you are
+not satisfied with the indentation, just give the @code{Undo} command and
+the indentation will disappear (but the new line will remain in place, since
+its creation has been recorded as a separate action). See @ref{Undo}.
+
+
+@node Preferences Commands
+@section Preferences Commands
+
+These commands allow you to set your preferences, that is, the value of
+a series of flags that modify the behaviour of @code{ne}. (Some of the
+flag commands, like the command for the indent flag, appear in other
+sections.) The status of the flags can be saved and restored later
+either by writing them out to a file (saved as a macro that suitably
+sets the flags) or by pushing them onto a ``preferences stack''. The
+back search and the read only flags are not saved, because they do not
+represent a preference, but rather a temporary state. The escape time
+and the turbo parameter are global to @code{ne}, and are not
+saved. However, you can add manually to a preferences file any
+preferences command (such as @code{EscapeTime} or @code{Turbo});
+usually, this will be done to the default preferences file
+@file{~/.ne/.default#ap}.
+
+Note that there is an automatic preferences system, which automagically loads a
+preferences file related to the extension of the file name. Automatic
+preferences files are kept in your @file{~/.ne} directory. They
+are named as an extension postfixed with @samp{#ap}. Each time you open
+a file whose name has an extension for which there is an automatic
+preferences file, the latter is executed. If you want to inhibit this
+process, you can clear the automatic preferences flag. See @ref{AutoPrefs}.
+
+
+@menu
+* Flags::
+* AutoPrefs::
+* Binary::
+* Insert::
+* FastGUI::
+* FreeForm::
+* NoFileReq::
+* StatusBar::
+* HexCode::
+* ReadOnly::
+* EscapeTime::
+* TabSize::
+* Turbo::
+* VerboseMacros::
+* PreserveCR::
+* CRLF::
+* VisualBell::
+* PushPrefs::
+* PopPrefs::
+* LoadPrefs::
+* SavePrefs::
+* LoadAutoPrefs::
+* SaveAutoPrefs::
+* SaveDefPrefs::
+* Modified::
+* Syntax::
+* UTF8::
+* UTF8Auto::
+* UTF8IO::
+@end menu
+
+
+@node Flags
+@subsection Flags
+@cmindex Flags
+
+@noindent Syntax: @code{Flags}@*
+@noindent Abbreviation: @code{FLAG}
+
+@noindent displays a list of all the status flags for ne and their
+associated commands. It is not recorded when recording a macro.
+
+@example
+FLAG COMMAND      ABBR  DESCRIPTION
+  i   Insert        I    inserts new characters (vs. replacing)
+  a   AutoIndent    AI   aligns cursor under previous line after <Return>
+  b   BackSearch    BS   searches search backward rather than forward
+  c   CaseSearch    CS   searches are case sensitive
+  w   WordWrap      WW   breaks long lines as you type
+  f   FreeForm      FF   allows cursor to move beyond the end of lines
+  p   AutoPrefs     AP   use automatic preferences based on file extension
+  v   VerboseMacros VM   record macros using use long command names
+  u   DoUndo        DU   record edits for later undoing
+  r   ReadOnly      RO   changes are not allowed
+  B   Binary        B    affects file loading/saving
+  M   Mark          M    mark set for line-oriented block operations
+  V   MarkVert      MV   like mark, but block is rectangle
+  R   Record        REC  actions are being recorded in a macro
+  P   PreserveCR    PCR  affects how <CR> chars are loaded from files
+  C   CRLF          CRLF use CR/LF as line terminator
+  *   Modified      MOD  document has been modified since last saved
+  @@   UTF8IO        U8IO I/O (keyboard and terminal) are UTF-8 encoded
+A/8/U UTF8          U8   the document encoding (ASCII, 8-bit or UTF-8)
+@end example
+
+@node AutoPrefs
+@subsection AutoPrefs
+@cmindex AutoPrefs
+
+@noindent Syntax: @code{AutoPrefs [0|1]}@*
+@noindent Abbreviation: @code{AP}
+
+@noindent sets the automatic preferences flag. If this flag is true, each
+time an @code{Open} command is executed and a file is loaded, @code{ne} will
+look for an automatic preferences file in your @file{~/.ne} directory.
+The preferences file name is given by the extension of the file loaded,
+postfixed with @samp{#ap}. Thus, for instance, C sources have an associated
+@file{c#ap} file.
+@ifclear autohelp
+@xref{Automatic Preferences}.
+@end ifclear
+
+If you invoke @code{AutoPrefs} with no arguments, it will toggle the flag. If you
+specify 0 or 1, the flag will be set to false or true, respectively. A lower
+case @samp{p} will appear on the status bar if the flag is true.
+
+@node Binary
+@subsection Binary
+@cmindex Binary
+@cindex Binary files
+
+@noindent Syntax: @code{Binary [0|1]}@*
+@noindent Abbreviation: @code{B}
+
+@noindent sets the binary flag. When this flag is true, loading and saving a
+document is performed in a different way. On loading, only nulls are
+considered newlines; on saving, nulls are saved instead of newlines. This
+allows you to edit a binary file, fix some text in it, and save it without
+modifying anything else. Normally, line feeds, carriage returns and nulls are
+considered newlines, so that what you load will have all nulls and carriage
+returns substituted by newlines when saved.
+
+Note that since usually binary files contain a great number of nulls, and every
+null will be considered a line terminator, the memory necessary for loading a
+binary file can be several times bigger than the length of the file
+itself. Thus, binary editing within @code{ne} should be considered not a
+normal activity, but rather an exceptional one.
+
+If you invoke @code{Binary} with no arguments, it will toggle the flag. If you
+specify 0 or 1, the flag will be set to false or true, respectively. An upper
+case @samp{B} will appear on the status bar if the flag is true.
+
+@node Insert
+@subsection Insert
+@cmindex Insert
+
+@noindent Syntax: @code{Insert [0|1]}@*
+@noindent Abbreviation: @code{I}
+
+@noindent sets the insert flag. If this flag is true, the text you type is
+inserted, otherwise it overwrites the existing characters. This also
+governs the behaviour of the @code{InsertChar} and @code{InsertString}
+commands.
+
+If you invoke @code{Insert} with no arguments, it will toggle the flag. If you
+specify 0 or 1, the flag will be set to false or true, respectively. A lower
+case @samp{i} will appear on the status bar if the flag is true.
+
+@node FastGUI
+@subsection FastGUI
+@cmindex FastGUI
+
+@noindent Syntax: @code{FastGUI [0|1]}@*
+@noindent Abbreviation: @code{FG}
+
+@noindent sets the fast graphical user interface flag. When this flag is
+true, @code{ne} tries to print as little as possible while displaying
+menus and the status bar. In particular, menu items are highlighted by
+the cursor only, the status bar is not highlighted (which allows
+printing it with fewer characters) and the hexadecimal code is not
+displayed. This option is only (but very) useful if you are using
+@code{ne} through a slow connection.
+
+If you invoke @code{FastGUI} with no arguments, it will toggle the flag. If you
+specify 0 or 1, the flag will be set to false or true, respectively.
+
+@node FreeForm
+@subsection FreeForm
+@cmindex FreeForm
+
+@noindent Syntax: @code{FreeForm [0|1]}@*
+@noindent Abbreviation: @code{FF}
+
+@noindent sets the free form flag. When this flag is true, you can move with
+the cursor anywhere on the screen, even where there is no text present (however,
+you cannot move inside the space expansion of a @sc{tab} character).
+
+If you invoke @code{FreeForm} with no arguments, it will toggle the flag. If you
+specify 0 or 1, the flag will be set to false or true, respectively. A lower
+case @samp{f} will appear on the status bar if the flag is true.
+
+The issue free-form-versus-non-free-form is a major religious war that
+has engaged users from day one. The due of the implementor is to allow
+both choices, and to set as default the correct one (in his humble
+opinion). In this case, non-free-form.
+
+@node NoFileReq
+@subsection NoFileReq
+@cmindex NoFileReq
+
+@noindent Syntax: @code{NoFileReq [0|1]}@*
+@noindent Abbreviation: @code{NFR}
+
+@noindent sets the file requester flag. When this flag is true,
+the file requester is never opened, under any circumstances.
+
+If you invoke @code{NoFileReq} with no arguments, it will toggle the flag. If you
+specify 0 or 1, the flag will be set to false or true, respectively.
+
+@node StatusBar
+@subsection StatusBar
+@cmindex StatusBar
+
+@noindent Syntax: @code{StatusBar [0|1]}@*
+@noindent Abbreviation: @code{ST}
+
+@noindent sets the status bar flag. When this flag is true, the status bar is
+displayed at the bottom of the screen. There are only two reasons to
+turn off the status bar we are aware of:
+
+@itemize @bullet{}
+
+@item
+if you are using @code{ne} through a slow connection, updating the
+line/column indicator can really slow down editing;
+
+@item
+scrolling caused by cursor movement on terminals that do not allow to set a
+scrolling region can produce annoying flashes at the bottom of the screen.
+
+@end itemize
+
+If you invoke @code{StatusBar} with no arguments, it will toggle the flag. If you
+specify 0 or 1, the flag will be set to false or true, respectively.
+
+
+@node HexCode
+@subsection HexCode
+@cmindex HexCode
+
+@noindent Syntax: @code{HexCode [0|1]}@*
+@noindent Abbreviation: @code{HC}
+
+@noindent sets the hex code flag. When this flag is true, the
+hexadecimal code of the character currently under the cursor is
+displayed on the status line.
+
+
+@node ReadOnly
+@subsection ReadOnly
+@cmindex ReadOnly
+
+@noindent Syntax: @code{ReadOnly [0|1]}@*
+@noindent Abbreviation: @code{RO}
+
+@noindent sets the read only flag. When this flag is true, no editing can be
+performed on the document (any such attempt produces an error message). This
+flag is automatically set whenever you open a file that you cannot write to.
+See @ref{Open}.
+
+If you invoke @code{ReadOnly} with no arguments, it will toggle the flag. If you
+specify 0 or 1, the flag will be set to false or true, respectively. A lower
+case @samp{r} will appear on the status bar if the flag is true.
+
+@node EscapeTime
+@subsection EscapeTime
+@cmindex EscapeTime
+
+@noindent Syntax: @code{EscapeTime [@var{n}]}@*
+@noindent Abbreviation: @code{ET}
+
+@noindent sets the escape time. The @key{Escape} key is recognized as such
+after @var{n} tenths of second.
+@ifclear autohelp
+(@pxref{Motivations and Design}.)
+@end ifclear
+Along slow connections, it can happen that the default value of 10 is
+too low: in this case, escape sequences (e.g., those of the arrow keys)
+could be erroneously broken into an escape and some spurious characters.
+Rising the escape time usually solves this problem. Allowed values range
+from 0 to 255. Note that you can accelerate the recognition of the @key{Escape}
+key by hitting it twice in a row.
+
+Note that the escape time is global to @code{ne}, and it is not saved. However,
+you can add an @code{EscapeTime} command manually to a preferences file.
+
+@node TabSize
+@subsection TabSize
+@cmindex TabSize
+
+@noindent Syntax: @code{TabSize [@var{size}]}@*
+@noindent Abbreviation: @code{TS}
+
+@noindent sets the number of spaces @code{ne} will use when expanding a
+@sc{tab} character.
+
+If the optional argument @var{size} is not specified, you can enter it on the
+input line, the default being the current @sc{tab} size. Allowed values are
+strictly between 0 and half the width of the screen.
+
+@node Turbo
+@subsection Turbo
+@cmindex Turbo
+
+@noindent Syntax: @code{Turbo [@var{steps}]}@*
+@noindent Abbreviation: @code{TUR}
+
+@noindent sets the turbo parameter. Iterated actions and
+global replaces will update at most @var{steps} line of the screen (or
+at most twice the number of visible rows if @var{steps} is zero); then,
+update will be delayed to the end of the action.
+
+This feature is most useful when massive operations (such as replacing
+thousands of occurrences of a pattern) have to be performed. After having
+updated @var{steps} lines, @code{ne} can proceed at maximum speed, because
+no visual update has to be performed.
+
+The value of the turbo parameter has to be adapted to the kind of
+terminal you are using. Very high values can be good on high-speed
+terminals, since the time required for the visual updates is very small,
+and it is always safer to look at what the editor is really doing. On
+slow terminals, however, small values ensure that operations such as
+paragraph formatting will not take too long.
+
+You have to be careful about setting the turbo parameter too low. @code{ne}
+keeps track internally of the part of the screen that needs refresh in a
+very rough way. This means that a value of less than, say, 8 will force it
+to do a lot of unnecessary refresh.
+
+The default value of this parameter is zero, which means twice the number
+of lines of the screen; for several reasons this does seem to be a good
+value.
+
+
+@node VerboseMacros
+@subsection VerboseMacros
+@cmindex VerboseMacros
+
+@noindent Syntax: @code{VerboseMacros [0|1]}@*
+@noindent Abbreviation: @code{VM}
+
+@noindent sets the verbose macros flag. When this flag is true, all macros
+generated by recording or by automatic preferences saving will contain
+full names, instead of short names. This is highly desirable if you are
+going to edit the macro manually, but it can slow down command parsing.
+
+If you invoke @code{VerboseMacros} with no arguments, it will toggle the flag. If you
+specify 0 or 1, the flag will be set to false or true, respectively. A lower
+case @samp{v} will appear on the status bar if the flag is true.
+
+The only reason to use this flag is when recording a macro that will be
+played a great number of times. Automatic preferences files are too short to
+be an issue with respect to execution timing.
+
+
+@node PreserveCR
+@subsection PreserveCR
+@cmindex PreserveCR
+
+@noindent Syntax: @code{PreserveCR [0|1]}@*
+@noindent Abbreviation: @code{PCR}
+
+@noindent sets the preserve carriage returns flag.  When a file is
+loaded into a buffer for which this flag is false, both CR (carriage
+return) and NL (new line) characters are treated as line terminators.
+If the flag is true, CR characters do not act as line terminators but
+are instead preserved in the buffer. This flag has no effect except
+when loading a file into a buffer.
+
+If you invoke @code{PreserveCR} with no arguments, it will toggle the flag.
+If you specify 0 or 1, the flag will be set to false or true,
+respectively. An upper case @samp{P} will appear on the status bar if the
+flag is true.
+
+
+@node CRLF
+@subsection CRLF
+@cmindex CRLF
+
+@noindent Syntax: @code{CRLF [0|1]}@*
+@noindent Abbreviation: @code{CRLF}
+
+@noindent sets the CR/LF flag. When a file is
+saved from a buffer for which this flag is true, both a CR (carriage
+return) and a NL (new line) character are output as line terminators.
+This flag has no effect except when saving a file.
+
+This flag is automatically set if you load a file that has at least one
+CR/LF sequence into it.
+
+If you invoke @code{CRLF} with no arguments, it will toggle the flag.
+If you specify 0 or 1, the flag will be set to false or true,
+respectively. An upper case @samp{C} will appear on the status bar if the
+flag is true.
+
+
+@node VisualBell
+@subsection VisualBell
+@cmindex VisualBell
+
+@noindent Syntax: @code{VisualBell [0|1]}@*
+@noindent Abbreviation: @code{VB}
+
+@noindent sets the visual bell flag. When this flag is true, the terminal will
+flash (if possible) instead of beeping.
+
+If you invoke @code{VisualBell} with no arguments, it will toggle the flag. If
+you specify 0 or 1, the flag will be set to false or true, respectively.
+
+
+@node PushPrefs
+@subsection PushPrefs
+@cmindex PushPrefs
+
+@noindent Syntax: @code{PushPrefs [@var{n}]}@*
+@noindent Abbreviation: @code{PUSHP}
+
+@noindent pushes @var{n} copies of the user preferences onto a stack. If
+not specified, @var{n} defaults to one. Use the @code{PopPrefs} command
+to pop preferences off the stack and restore the values. See @ref{PopPrefs}. Note that the
+preferences stack is global, not buffer-specific, so you could
+@code{PushPrefs} one buffer's preferences, switch buffers, then
+@code{PopPrefs} those preferences, thereby altering the preferences for
+the second buffer. The maximum preferences stack depth is 32.
+
+@code{PushPrefs} and @code{PopPrefs} are useful in macros that require
+certain preferences to work properly.  A macro can @code{PushPrefs},
+change any preferences necessary, do its work, then @code{PopPrefs} to
+restore the users previous preferences settings.
+
+@noindent @code{PushPrefs} saves the following values on the preferences stack:
+
+@example                   
+   AutoIndent   DoUndo    NoFileReq    StatusBar     
+   AutoPrefs    FastGUI   PreserveCR   TabSize       
+   Binary       FreeForm  ReadOnly     Turbo         
+   CaseSearch   HexCode   RightMargin  VerboseMacros 
+   ClipNumber   Insert    SearchBack   WordWrap     
+@end example
+
+@node PopPrefs
+@subsection PopPrefs
+@cmindex PopPrefs
+
+@noindent Syntax: @code{PopPrefs [@var{n}]}@*
+@noindent Abbreviation: @code{POPP}
+
+@noindent pops @var{n} sets of preferences from the preferences stack (where they were
+placed previously by @code{PushPrefs}) and applies those preferences to the
+current buffer. See @ref{PushPrefs}. If not specified, @var{n} defaults to one. Note that the
+preferences stack is global, not buffer specific. Therefore you could
+@code{PushPrefs} one buffer's preferences, switch buffers, then @code{PopPrefs}
+those settings altering the preferences for the second buffer. The
+maximum preferences stack depth is 32.
+
+@code{PushPrefs} and @code{PopPrefs} are useful in macros that require
+certain preferences to work properly.  A macro can @code{PushPrefs},
+change any preferences necessary, do its work, then @code{PopPrefs} to
+restore the users previous preferences settings.
+
+@noindent PopPrefs restores the following values from the preferences stack:
+
+@example                   
+   AutoIndent   DoUndo    NoFileReq    StatusBar     
+   AutoPrefs    FastGUI   PreserveCR   TabSize       
+   Binary       FreeForm  ReadOnly     Turbo         
+   CaseSearch   HexCode   RightMargin  VerboseMacros 
+   ClipNumber   Insert    SearchBack   WordWrap     
+@end example
+
+
+@node LoadPrefs
+@subsection LoadPrefs
+@cmindex LoadPrefs
+
+@noindent Syntax: @code{LoadPrefs [@var{filename}]}@*
+@noindent Abbreviation: @code{LP}
+
+@noindent loads the given preference file, and sets the current preferences
+accordingly.
+
+If the optional @var{filename} argument is not specified, the file
+requester is opened, and you are prompted to select a file. (You can
+inhibit the file requester opening by using the @code{NoFileReq}
+command; see @ref{NoFileReq}.) If you escape from the file requester, you
+can input the file name on the command line.
+
+Note that a preferences file is just a macro containing only option
+modifiers. You can manually edit a preferences file for special
+purposes, such as filtering out specific settings.
+@ifclear autohelp
+@xref{Hints and Tricks}.
+@end ifclear
+
+@node SavePrefs
+@subsection SavePrefs
+@cmindex SavePrefs
+
+@noindent Syntax: @code{SavePrefs [@var{filename}]}@*
+@noindent Abbreviation: @code{SP}
+
+@noindent saves the current preferences on the given file.
+
+If the optional @var{filename} argument is not specified, the file
+requester is opened, and you are prompted to select a file. (You can
+inhibit the file requester opening by using the @code{NoFileReq}
+command; see @ref{NoFileReq}.) If you escape from the file requester, you
+can input the file name on the command line.
+
+@node LoadAutoPrefs
+@subsection LoadAutoPrefs
+@cmindex LoadAutoPrefs
+
+@noindent Syntax: @code{LoadAutoPrefs}@*
+@noindent Abbreviation: @code{LAP}
+
+@noindent loads the preferences file in @file{~/.ne} associated
+with the current document's file name extension. If the current file
+name has no extension, the default preferences are loaded.
+See @ref{AutoPrefs}.
+
+@node SaveAutoPrefs
+@subsection SaveAutoPrefs
+@cmindex SaveAutoPrefs
+
+@noindent Syntax: @code{SaveAutoPrefs}@*
+@noindent Abbreviation: @code{SAP}
+
+@noindent saves the current preferences on the file in @file{~/.ne}
+associated with the current document's file name extension. If the
+current file name has no extension, an error message is issued.
+See @ref{AutoPrefs}.
+
+@node SaveDefPrefs
+@subsection SaveDefPrefs
+@cmindex SaveDefPrefs
+
+@noindent Syntax: @code{SaveDefPrefs}@*
+@noindent Abbreviation: @code{SDP}
+
+@noindent saves the current preferences on the @file{~/.ne/.default#ap} file.
+This file is always loaded by @code{ne} at startup.
+
+@node Modified
+@subsection Modified
+@cmindex Modified
+
+@noindent Syntax: @code{Modified [0|1]}@*
+@noindent Abbreviation: @code{MOD}
+
+@noindent sets the modified flag.  This flag is set automatically
+whenever a buffer is modified, and is used to determine which buffers
+need to be saved when @code{ne} exits.  Normally you would not alter
+this flag, but when a buffer is inadvertently modified and you don't
+want the changes saved, @code{Modified} provides a way to make
+@code{ne} consider the buffer unchanged.
+
+If you invoke @code{Modified} with no arguments, it will toggle the flag.
+If you specify 0 or 1, the flag will be set to false or true,
+respectively. An asterisk (@samp{*}) will appear on the status bar if the
+flag is true.
+
+@node Syntax
+@subsection Syntax
+@cmindex Syntax
+
+@noindent Syntax: @code{Syntax [@var{name}|*]}@*
+@noindent Abbreviation: @code{SY}
+
+@noindent loads the syntax with the given name, and colors the
+current buffer accordingly.
+
+If the optional @var{name} argument is not specified, you are prompted
+for one. The special @var{name} * turns off syntax highlighting for the current
+document. Otherwise, @var{name} must match a syntax definition
+either in your @file{~/.ne/syntax} directory or in a directory
+named @samp{syntax} inside @code{ne}'s
+global directory. Additionally, @code{ne} has a table mapping
+common suffixes to syntax names. If there is no syntax with a given name,
+@code{ne} will try to remap the name using the following table  (the string before the colon
+is the name of the syntax file):
+
+@example
+   ada: adb, ads
+   asm: s
+   c: c++, cc, cpp, h, h++ hpp, l, lex, y, yacc
+   cobol: cbl, cob
+   csh: tcsh
+   diff: patch
+   fortran: f, for
+   html: htm
+   java: js
+   lisp: el, lsp
+   mason: mas
+   ocaml: ml, mli
+   pascal: p, pas
+   perl: pl, pm
+   ps: eps
+   python: py, sage
+   rexx: rex
+   ruby: rb
+   sh: bash, bash_login, bash_logout, bash_profile, bashrc, ksh,
+       profile, rc
+   skill: il
+   tex: latex, dtx, sty
+   troff: 1
+   verilog: v, vh, vhd
+   xml: xsd
+@end example
+
+@node UTF8
+@subsection UTF8
+@cmindex UTF8
+
+@noindent Syntax: @code{UTF8 [0|1]}@*
+@noindent Abbreviation: @code{U8}
+
+@noindent sets the UTF-8 flag.  When this flag is
+true, @code{ne} considers the current buffer as UTF-8 coded.  Note that
+this flag is set automatically upon file loading (if possible) if you
+required automatic detection. See @ref{UTF8Auto}.
+
+If you invoke @code{UTF8} with no arguments, it will toggle the flag.
+If you specify 0 or 1, the flag will be set to false or true,
+respectively. When you try to set this flag, the buffer will be checked
+for UTF-8 compliance, and you will get an error message in case of
+failure. When you try to reset it, the buffer is set to ASCII or
+ISO8859, depending on its content.  A @samp{U} will appear on the
+status bar if the flag is true. Alternatively, an @samp{A} or an
+@samp{8} will be displayed to denote whether the buffer is composed
+exclusively by US-ASCII characters, or also by other 8-bit characters
+(which are likely to be ISO-8859 encoded). Note that each time this
+command modifies the buffer encoding, it also resets the undo buffer.
+
+@node UTF8Auto
+@subsection UTF8Auto
+@cmindex UTF8Auto
+
+@noindent Syntax: @code{UTF8Auto [0|1]}@*
+@noindent Abbreviation: @code{U8A}
+
+@noindent sets the UTF-8 automatic-detection flag.  When this flag is
+true, @code{ne} will try to guess whether a file just loaded is UTF-8
+encoded. Moreover, when a non US-ASCII character is inserted in a pure
+US-ASCII buffer, ne will automatically switch to UTF-8. See @ref{UTF8}. The
+flag is true by default if @code{ne} detects UTF-8 I/O at
+startup. See @ref{UTF8IO}.
+
+If you invoke @code{UTF8Auto} with no arguments, it will toggle the flag.
+If you specify 0 or 1, the flag will be set to false or true,
+respectively.
+
+@node UTF8IO
+@subsection UTF8IO
+@cmindex UTF8IO
+
+@noindent Syntax: @code{UTF8IO [0|1]}@*
+@noindent Abbreviation: @code{U8IO}
+
+@noindent sets the UTF-8 input/output flag.  This flag is set automatically
+depending on your locale setting, and is used to determine whether
+communication with the user (keyboard and terminal) should be UTF-8
+encoded. Normally you would not alter this flag, but sometimes @code{ne}
+may make the wrong guess (e.g., when you are remotely connected).
+
+If you invoke @code{UTF8IO} with no arguments, it will toggle the flag.
+If you specify 0 or 1, the flag will be set to false or true,
+respectively. An @samp{@@} will appear on the status bar if the flag is
+true.
+
+@node Navigation Commands
+@section Navigation Commands
+
+These commands allow you to move through a document. Besides the standard
+commands that allow you to move by lines, pages, @i{et cetera}, @code{ne}
+has bookmarks that let you mark a position in a file so to move
+to the same position later.
+
+@menu
+* MoveLeft::
+* MoveRight::
+* LineUp::
+* LineDown::
+* GotoLine::
+* GotoColumn::
+* GotoMark::
+* PrevPage::
+* NextPage::
+* PageUp::
+* PageDown::
+* PrevWord::
+* NextWord::
+* MoveEOL::
+* MoveSOL::
+* MoveTOS::
+* MoveBOS::
+* MoveEOF::
+* MoveSOF::
+* MoveEOW::
+* MoveIncUp::
+* MoveIncDown::
+* AdjustView::
+* ToggleSEOF::
+* ToggleSEOL::
+* SetBookmark::
+* GotoBookmark::
+* UnsetBookmark::
+@end menu
+
+@node MoveLeft
+@subsection MoveLeft
+@cmindex MoveLeft
+
+@noindent Syntax: @code{MoveLeft [@var{n}]}@*
+@noindent Abbreviation: @code{ML}
+
+@noindent moves the cursor to the left by one character @var{n} times. If
+the optional @var{n} argument is not specified, it is assumed to be one.
+
+@node MoveRight
+@subsection MoveRight
+@cmindex MoveRight
+
+@noindent Syntax: @code{MoveRight [@var{n}]}@*
+@noindent Abbreviation: @code{MR}
+
+@noindent moves the cursor to the right by one character @var{n} times. If
+the optional @var{n} argument is not specified, it is assumed to be one.
+
+@node LineUp
+@subsection LineUp
+@cmindex LineUp
+
+@noindent Syntax: @code{LineUp [@var{n}]}@*
+@noindent Abbreviation: @code{LU}
+
+@noindent moves the cursor up by one line @var{n} times. If the optional
+@var{n} argument is not specified, it is assumed to be one.
+
+@node LineDown
+@subsection LineDown
+@cmindex LineDown
+
+@noindent Syntax: @code{LineDown [@var{n}]}@*
+@noindent Abbreviation: @code{LD}
+
+@noindent moves the cursor down by one line @var{n} times. If the optional
+@var{n} argument is not specified, it is assumed to be one.
+
+@node GotoLine
+@subsection GotoLine
+@cmindex GotoLine
+
+@noindent Syntax: @code{GotoLine [@var{line}]}@*
+@noindent Abbreviation: @code{GL}
+
+@noindent moves the cursor to the @var{line}th line of the file. If @var{line}
+is zero or greater than the number of lines in the file, the cursor is
+moved to the last line.
+
+If the optional argument @var{line} is not specified, you can enter it on
+the input line; the default input response is the current line number.
+
+@node GotoColumn
+@subsection GotoColumn
+@cmindex GotoColumn
+
+@noindent Syntax: @code{GotoColumn [@var{column}]}@*
+@noindent Abbreviation: @code{GC}
+
+@noindent moves the cursor to the @var{column}th column of the file.
+
+If the optional argument @var{line} is not specified, you can enter it on
+the input line; the default input response is the current column number.
+
+@node GotoMark
+@subsection GotoMark
+@cmindex GotoMark
+
+@noindent Syntax: @code{GotoMark}@*
+@noindent Abbreviation: @code{GM}
+
+@noindent moves the cursor to the current mark, if it exists. See @ref{Mark}.
+
+@code{GotoMark} is mainly useful if you forgot where you started marking.
+If you want to record a position in a file and jump to it later, you
+may want to use a bookmark. See @ref{SetBookmark}.
+
+@node PrevPage
+@subsection PrevPage
+@cmindex PrevPage
+
+@noindent Syntax: @code{PrevPage [@var{n}]}@*
+@noindent Abbreviation: @code{PP}
+
+@noindent moves the cursor @var{n} pages backward, if the cursor is on the
+first line of the screen; otherwise moves the cursor to the first line of
+the screen, and moves by @var{n}-1 pages. If the optional @var{n} argument
+is not specified, it is assumed to be one.
+
+
+@node NextPage
+@subsection NextPage
+@cmindex NextPage
+
+@noindent Syntax: @code{NextPage [@var{n}]}@*
+@noindent Abbreviation: @code{NP}
+
+@noindent moves the cursor @var{n} pages forward, if the cursor is on the
+last line of the screen; otherwise moves the cursor to the last line of the
+screen, and moves by @var{n}-1 pages. If the optional @var{n} argument is
+not specified, it is assumed to be one.
+
+
+@node PageUp
+@subsection PageUp
+@cmindex PageUp
+
+@noindent Syntax: @code{PageUp [@var{n}]}@*
+@noindent Abbreviation: @code{PUP}
+
+@noindent pages the screen backward by @var{n} screens.  
+If @var{n} is not specified, it is assumed to be one.
+
+
+
+@node PageDown
+@subsection PageDown
+@cmindex PageDown
+
+@noindent Syntax: @code{PageDown [@var{n}]}@*
+@noindent Abbreviation: @code{PDN}
+
+@noindent pages the screen forward by @var{n} screens.  If @var{n} is not specified, it is
+assumed to be one.
+
+
+@node PrevWord
+@subsection PrevWord
+@cmindex PrevWord
+
+@noindent Syntax: @code{PrevWord [@var{n}]}@*
+@noindent Abbreviation: @code{PW}
+
+@noindent moves the cursor to the first character of the previous word
+@var{n} times. If the optional @var{n} argument is not specified, it is
+assumed to be one (in which case, if the cursor is in the middle of a
+word the effect is just to move it to the start of that word).
+
+@node NextWord
+@subsection NextWord
+@cmindex NextWord
+
+@noindent Syntax: @code{NextWord [@var{n}]}@*
+@noindent Abbreviation: @code{NW}
+
+@noindent moves the cursor to the next word @var{n} times. If the optional
+@var{n} argument is not specified, it is assumed to be one.
+
+@node MoveEOL
+@subsection MoveEOL
+@cmindex MoveEOL
+
+@noindent Syntax: @code{MoveEOL}@*
+@noindent Abbreviation: @code{EOL}
+
+@noindent moves the cursor to the end of the current line  (@code{EOL} = end of
+line).
+
+
+@node MoveSOL
+@subsection MoveSOL
+@cmindex MoveSOL
+
+@noindent Syntax: @code{MoveSOL}@*
+@noindent Abbreviation: @code{SOL}
+
+@noindent moves the cursor to the start of the current line (@code{SOL} = start of
+line).
+
+
+@node MoveTOS
+@subsection MoveTOS
+@cmindex MoveTOS
+
+@noindent Syntax: @code{MoveTOS}@*
+@noindent Abbreviation: @code{TOS}
+
+@noindent moves the cursor to the top line of the screen (@code{TOS} = top of
+screen).
+
+
+@node MoveBOS
+@subsection MoveBOS
+@cmindex MoveBOS
+
+@noindent Syntax: @code{MoveBOS}@*
+@noindent Abbreviation: @code{BOS}
+
+@noindent moves the cursor to the lowest line currently visible (@code{BOS} = bottom of
+screen).
+
+
+
+@node MoveEOF
+@subsection MoveEOF
+@cmindex MoveEOF
+
+@noindent Syntax: @code{MoveEOF}@*
+@noindent Abbreviation: @code{EOF}
+
+@noindent moves the cursor to the end of the document (@code{EOF} = end of
+file).
+
+@node MoveSOF
+@subsection MoveSOF
+@cmindex MoveSOF
+
+@noindent Syntax: @code{MoveSOF}@*
+@noindent Abbreviation: @code{SOF}
+
+@noindent moves the cursor to the start of the document (@code{SOF} = start
+of file).
+
+@node MoveEOW
+@subsection MoveEOW
+@cmindex MoveEOW
+
+@noindent Syntax: @code{MoveEOW}@*
+@noindent Abbreviation: @code{EOW}
+
+@noindent moves the cursor one character past the end of the current word.
+
+@code{MoveEOW} is extremely useful in macros, because it allows you to copy
+precisely the word the cursor is on.
+@ifclear autohelp
+@xref{Hints and Tricks}.
+@end ifclear
+
+
+@node MoveIncUp
+@subsection MoveIncUp
+@cmindex MoveIncUp
+
+@noindent Syntax: @code{MoveIncUp}@*
+@noindent Abbreviation: @code{MIU}
+
+@noindent moves the cursor incrementally towards the beginning of the
+document. More precisely, if the cursor is not on the start of the line
+it lies on, then it is moved to the start of that line. Otherwise, if it
+is on the first line of the screen, then it is moved to the start of the
+document; otherwise, it is moved to the first line of the screen.
+
+@node MoveIncDown
+@subsection MoveIncDown
+@cmindex MoveIncDown
+
+@noindent Syntax: @code{MoveIncDown}@*
+@noindent Abbreviation: @code{MID}
+
+@noindent moves the cursor incrementally towards the end of the
+document.  More precisely, if the cursor is not on the end of the line
+it lies on, then it is moved to the end of that line. Otherwise, if it is
+on the last line of the screen, then it is moved to the end of the
+document; otherwise, it is moved to the last line of the screen.
+
+
+
+@node AdjustView
+@subsection AdjustView
+@cmindex AdjustView
+
+@noindent Syntax: @code{AdjustView [T|C|B|L|M|R]}@*
+@noindent Abbreviation: @code{AV}
+
+@noindent shifts the view (text visible in the terminal window)
+horizontally or vertically without changing the cursor's position in
+the document. View adjustments are constrained by the current @sc{tab}
+size and the length and width of the current document. If called with
+no arguments @samp{T} is assumed.
+
+@samp{T}, @samp{C}, and @samp{B} cause vertical shifts so that the
+current line becomes the top, center, or bottom-most visible line
+respectively.
+
+@samp{L}, @samp{M}, and @samp{R} cause horizontal shifts, making the
+current column the left-most, middle, or right-most visible positions.
+
+Horizontal and vertical adjustment specifications may be combined,
+so that for example @samp{AdjustView TL} shifts the view so
+that the current position becomes the top left-most character on
+screen (within the limits of the current @sc{tab} size).
+
+
+@node ToggleSEOF
+@subsection ToggleSEOF
+@cmindex ToggleSEOF
+
+@noindent Syntax: @code{ToggleSEOF}@*
+@noindent Abbreviation: @code{TSEOF}
+
+@noindent moves the cursor to the start of document, if it is not already
+there; otherwise, moves it to the end of the document.
+
+This kind of toggling command is very useful in
+order to gain some keystrokes on systems with very few keys. See also
+@ref{ToggleSEOL}, @ref{MoveSOF}, and @ref{MoveEOF}.
+
+@node ToggleSEOL
+@subsection ToggleSEOL
+@cmindex ToggleSEOL
+
+@noindent Syntax: @code{ToggleSEOL}@*
+@noindent Abbreviation: @code{TSEOL}
+
+@noindent moves the cursor to the start of the current line, if it is not
+already there; otherwise, moves it to the end of the current line.
+
+This kind of toggling command is very useful in
+order to gain some keystrokes on systems with very few keys. See also
+@ref{ToggleSEOF}, @ref{MoveSOL}, and @ref{MoveEOL}.
+
+@node SetBookmark
+@subsection SetBookmark
+@cmindex SetBookmark
+
+@noindent Syntax: @code{SetBookmark [@var{n}|@var{-}]}@*
+@noindent Abbreviation: @code{SBM}
+
+@noindent sets the @var{n}th bookmark to the current cursor position. If the
+optional @var{n} argument is not specified, it is assumed to be zero. You can
+also unset the @samp{-} automatic bookmark, but it will be reset automatically to
+the current position whenever a @code{GotoBookmark} command is issued. Each
+document's valid bookmark designations are 0 to 9, and the @samp{-} automatic
+bookmark.
+
+@node GotoBookmark
+@subsection GotoBookmark
+@cmindex GotoBookmark
+
+@noindent Syntax: @code{GotoBookmark [@var{n}|@var{-}]}@*
+@noindent Abbreviation: @code{GBM}
+
+@noindent moves the cursor to the @var{n}th or @var{-} automatic bookmark,
+assuming that bookmark has been set; see @ref{SetBookmark}. If the optional
+@var{n} argument is not specified, it is assumed to be zero. When successful,
+the @samp{-} automatic bookmark is set to the position in the document from which
+the command was issued, so that @code{GotoBookmark -} returns you to the location
+from which you last issued a @code{GotoBookmark} command. Subsequent repeated
+@code{GotoBookmark -} commands toggle you between the two locations. Each
+document's valid bookmark designations are 0 to 9, and the @samp{-} automatic
+bookmark.
+
+@node UnsetBookmark
+@subsection UnsetBookmark
+@cmindex UnsetBookmark
+
+@noindent Syntax: @code{UnsetBookmark [@var{n}|@var{-}]}@*
+@noindent Abbreviation: @code{UBM}
+
+@noindent unsets the @var{n}th bookmark, making it as if it had never been
+set; see @ref{SetBookmark}. If the optional @var{n} argument is not specified,
+it is assumed to be zero. You can also unset the @samp{-} automatic bookmark, but
+it will be reset automatically to the current position whenever a @code{GotoBookmark}
+command is issued. Each document's valid bookmark designations are 0 to 9, and
+the  @samp{-} automatic bookmark.
+
+@node Editing Commands
+@section Editing Commands
+
+These commands allow modifying a document directly.
+
+@menu
+* InsertChar::
+* InsertString::
+* DeleteChar::
+* DeletePrevWord::
+* DeleteNextWord::
+* Backspace::
+* InsertLine::
+* DeleteLine::
+* DeleteEOL::
+@end menu
+
+@node InsertChar
+@subsection InsertChar
+@cmindex InsertChar
+
+@noindent Syntax: @code{InsertChar [@var{code}]}@*
+@noindent Abbreviation: @code{IC}
+
+@noindent inserts a character whose @sc{ascii} code is @var{code} at the current
+cursor position. 
+@var{code} must always be different from 0. All the
+currently active preferences options (insert, word wrapping, auto
+indent, @i{et cetera}) are applied.
+
+If the optional argument @var{code} is not specified, you can enter it on
+the input line, the default being the last inserted character.
+
+Note that inserting a line feed (10) is completely different from inserting
+a line with @code{InsertLine}. @code{InsertChar 10} puts the control char
+@kbd{@key{Control}-J} in the text at the current cursor position.
+See @ref{InsertLine}.
+
+Note also that @code{SaveMacro} converts @code{InsertChar} commands into
+a possibly smaller number of @code{InsertString} commands.
+This makes macros easier to read and edit. See @ref{SaveMacro}.
+
+@node InsertString
+@subsection InsertString
+@cmindex InsertString
+
+@noindent Syntax: @code{InsertString [@var{text}]}@*
+@noindent Abbreviation: @code{IS}
+
+@noindent inserts @var{text} at the current cursor position. If
+the optional argument @var{text} is omitted, you will be prompted for it
+on the command line.  All the currently active preferences options
+(insert, word wrapping, auto indent, @i{et cetera}) are applied.
+
+Note that @code{SaveMacro} converts @code{InsertChar} commands into a
+possibly smaller number of @code{InsertString} commands.
+This makes macros easier to read and edit. See @ref{SaveMacro}.
+
+
+@node DeleteChar
+@subsection DeleteChar
+@cmindex DeleteChar
+
+@noindent Syntax: @code{DeleteChar [@var{n}]}@*
+@noindent Abbreviation: @code{DC}
+
+@noindent deletes @var{n} characters from the text. If the optional @var{n}
+argument is not specified, it is assumed to be one. Deleting a character
+when the cursor is just after the last char on a line will join a line with
+the following one; in other words, the carriage return between the two lines
+will be deleted. Note that if the cursor is past the end of the current line,
+no action will be performed.
+
+@node DeletePrevWord
+@subsection DeletePrevWord
+@cmindex DeletePrevWord
+
+@noindent Syntax: @code{DeletePrevWord [@var{n}]}@*
+@noindent Abbreviation: @code{DPW}
+
+@noindent deletes text from the current position to the first character of the
+previous word @var{n} times. If the optional @var{n} argument is not specified,
+it is assumed to be one (in which case, if the cursor is in the middle of a
+word the effect is just to delete to the start of that word).
+
+@node DeleteNextWord
+@subsection DeleteNextWord
+@cmindex DeleteNextWord
+
+@noindent Syntax: @code{DeleteNextWord [@var{n}]}@*
+@noindent Abbreviation: @code{DNW}
+
+@noindent deletes text from the current position to the next word @var{n}
+times. If the optional @var{n} argument is not specified, it is assumed to be
+one.
+
+
+@node Backspace
+@subsection Backspace
+@cmindex Backspace
+
+@noindent Syntax: @code{Backspace [@var{n}]}@*
+@noindent Abbreviation: @code{BS}
+
+@noindent acts like @code{DeleteChar}, but moves the cursor to the left
+before deleting each character.
+
+@node InsertLine
+@subsection InsertLine
+@cmindex InsertLine
+
+@noindent Syntax: @code{InsertLine [@var{n}]}@*
+@noindent Abbreviation: @code{IL}
+
+@noindent inserts @var{n} lines at the current cursor position, breaking the
+current line. If the optional @var{n} argument is not specified, it is
+assumed to be one.
+
+@node DeleteLine
+@subsection DeleteLine
+@cmindex DeleteLine
+
+@noindent Syntax: @code{DeleteLine [@var{n}]}@*
+@noindent Abbreviation: @code{DL}
+
+@noindent deletes @var{n} lines starting from the current cursor
+position, putting the last one in the temporary buffer, from which it
+can be undeleted. See @ref{UndelLine}. If the optional @var{n} argument is
+not specified, it is assumed to be one. Note that this action is in no
+way inverse with respect to @code{InsertLine}.
+
+@node DeleteEOL
+@subsection DeleteEOL
+@cmindex DeleteEOL
+
+@noindent Syntax: @code{DeleteEOL}@*
+@noindent Abbreviation: @code{DE}
+
+@noindent deletes all characters from the current cursor position to the end
+of the line.
+
+@code{DeleteEOL} could be easily implemented with a macro, but it is such a
+common, basic editing feature that it seemed worth a separate implementation.
+
+
+@node Support Commands
+@section Support Commands
+
+These commands perform miscellaneous useful actions. In particular, they
+provide access to the shell and a way to assign the functionality of
+@key{Escape} to another key.
+
+@menu
+* About::
+* Alert::
+* Beep::
+* Exec::
+* Flash::
+* Help::
+* NOP::
+* Refresh::
+* Suspend::
+* System::
+* Escape::
+* KeyCode::
+@end menu
+
+@node About
+@subsection About
+@cmindex About
+
+@noindent Syntax: @code{About}@*
+@noindent Abbreviation: @code{About}
+
+@noindent displays a simple information line about @code{ne} on the status bar.
+
+@node Alert
+@subsection Alert
+@cmindex Alert
+
+@noindent Syntax: @code{Alert}@*
+@noindent Abbreviation: @code{AL}
+
+@noindent beeps or flashes, depending on the value of the visual bell flag.
+
+@node Beep
+@subsection Beep
+@cmindex Beep
+
+@noindent Syntax: @code{Beep}@*
+@noindent Abbreviation: @code{BE}
+
+@noindent beeps. If your terminal cannot beep, it flashes. If it cannot
+flash, nothing happens (but you have a very bad terminal).
+
+@node Exec
+@subsection Exec
+@cmindex Exec
+
+@noindent Syntax: @code{Exec}@*
+@noindent Abbreviation: @code{EX}
+
+@noindent prompts the user on the input line, asking for a command, and
+executes it. It is never registered while recording a macro (though the command
+you type is).
+
+@code{Exec} is mainly useful for key bindings, menu configurations, and in
+manually programmed macros.
+
+Note that if the command you specify does not appear in @code{ne}'s internal
+tables, it is considered to be a macro name. See @ref{Macro}.
+
+@node Flash
+@subsection Flash
+@cmindex Flash
+
+@noindent Syntax: @code{Flash}@*
+@noindent Abbreviation: @code{FL}
+
+@noindent acts as @code{Beep}, but interchanging the words ``beep'' and ``flash''.
+Same comments apply. See @ref{Beep}.
+
+@node Help
+@subsection Help
+@cmindex Help
+
+@noindent Syntax: @code{Help [@var{name}]}@*
+@noindent Abbreviation: @code{H}
+
+@noindent displays some help about the command @var{name} (both the short and
+the long versions of the command names are accepted). If no argument is
+given, a list of all existing commands in long form is displayed,
+allowing you to choose one. You can browse the help text with the
+standard navigation keys. If you press @key{Return}, the command list
+will be displayed again. If you press @key{f1} or @key{Escape}, you will
+return to normal editing.
+
+Invocations of the @code{Help} command are never registered while
+recording macros so that you can safely access the help system while
+recording. See @ref{Record}.
+
+@node NOP
+@subsection NOP
+@cmindex NOP
+
+@noindent Syntax: @code{NOP}@*
+@noindent Abbreviation: @code{NOP}
+
+@noindent does nothing. Mainly useful for inhibiting standard key bindings.
+
+@node Refresh
+@subsection Refresh
+@cmindex Refresh
+
+@noindent Syntax: @code{Refresh}@*
+@noindent Abbreviation: @code{REF}
+
+@noindent refreshes the display. @code{Refresh} is very important, and should
+preferably be bound to the @kbd{@key{Control}-L} sequence, for historical
+reasons. It can always happen that a noisy phone line or a quirk in the
+terminal corrupts the display. This command restores it from scratch.
+
+@code{Refresh} has the side effect of checking to see if your window
+size has changed, and will modify the display to take that into
+account.
+
+@node Suspend
+@subsection Suspend
+@cmindex Suspend
+
+@noindent Syntax: @code{Suspend}@*
+@noindent Abbreviation: @code{SU}
+
+@noindent suspends @code{ne} and returns you to a shell prompt; usually,
+the shell command @code{fg} is used to resume @code{ne}.
+
+@node System
+@subsection System
+@cmindex System
+
+@noindent Syntax: @code{System [@var{command}]}@*
+@noindent Abbreviation: @code{SYS}
+
+@noindent asks the shell to execute @var{command}. The terminal is
+temporarily reset to the state it was in before @code{ne}'s activation, and
+@var{command} is started. When the execution is finished, control
+returns to @code{ne}.
+
+If the optional argument @var{command} is not specified, you can enter it on
+the input line.
+
+@ignore
+
+Before starting the execution, @code{ne} defines a series of environment
+variables which can thus be used on the command line. The variables allow
+to refer to parts of the internal state of @code{ne}.
+
+@end ignore
+
+@node Escape
+@subsection Escape
+@cmindex Escape
+
+@noindent Syntax: @code{Escape}@*
+@noindent Abbreviation: @code{ESC}
+
+@noindent toggles the menus on and off, or escapes from the input line. This
+command is mainly useful for reprogramming the menu activator, and it is
+never registered while recording a macro. See @ref{Record}.
+
+@node KeyCode
+@subsection KeyCode
+@cmindex KeyCode
+
+@noindent Syntax: @code{KeyCode}@*
+@noindent Abbreviation: @code{KC}
+
+@noindent prompts you to press a key, and reports on the status line
+the key code @code{ne} associates with that key. This can be useful
+while configuring your @file{~/.ne/.keys} file. It also reports the
+numeric input class for that key. Input class codes are:
+0=ALPHA, 1=COMMAND, 2=RETURN, 3=TAB, 4=IGNORE, and 5=INVALID.
+
+
+@node Configuration
+@chapter Configuration
+@cindex Meta key
+
+In this chapter we shall see how the menus and the key bindings of @code{ne} can
+be completely configured. Note that the configuration is parsed at startup
+time, and cannot be changed during the execution of the program. This is a
+chosen limitation.
+
+@ignore
+It should also be remarked that the standard configuration of @code{ne} does
+not contain key bindings relative to the @key{Meta} key. This choice was forced
+by the fact that the behaviour of this key is unpredictable on most systems. If
+your @key{Meta} key does what it should (i.e., it rises the high bit of any
+character), you can configure about thirty new shortcuts---the
+@kbd{@key{Control}-@key{Meta}-@var{letter}} combinations---that will produce
+ASCII characters between 128 and 159, and will be parsed as shortcuts by
+@code{ne}.
+@end ignore
+
+@menu
+* Key Bindings::
+* Changing Menus::
+@end menu
+
+@node Key Bindings
+@section Key Bindings
+@cindex Key bindings
+@cindex Configuring the keyboard
+
+@code{ne} allows you to associate any keystroke with any command. To
+accomplish this task, you have to create a (possibly UTf-8) file named
+@file{.keys} in your home directory, or in @file{~/.ne}. You can change
+the default name (possibly specifying a complete path) using the
+@code{--keys} argument (@pxref{Arguments}).
+
+The format of the file is very simple: each line starting with the @samp{KEY}
+sequence of capital characters is considered the description of a key binding.
+All other lines are considered comments. The format of a key binding
+description is
+
+@example
+KEY @var{hexcode} @var{command}
+@end example
+
+The @var{hexcode} value is the @sc{ascii} code of the keystroke. (For
+special keys such as @key{Insert} or function keys, you should take a
+look at the file @file{default.keys} that comes with @code{ne}'s
+distribution: it contains a complete, commented definition of
+@code{ne}'s standard bindings that you can modify with a trial-and-error
+approach.) The easiest way to see the code @code{ne} uses for a given
+key is by using the @ref{KeyCode} command. It prompts you to press a
+key, then reports the code for that key on the status bar.
+
+You can write just the hexadecimal digits, nothing else is
+necessary (but a prefixing @samp{0x} is tolerated).  For instance,
+
+@example
+KEY 1 MoveSOL
+@end example
+
+@noindent binds to @kbd{@key{Control}-A} the action of moving to the start
+of a line, while
+
+@example
+KEY 101 LineUp
+@end example
+
+@noindent binds to the ``cursor-up'' key the action of moving the cursor
+one line up.
+
+@var{command} can be any @code{ne} command, including @code{Escape}
+(which allows reconfiguring the menu activator) and @code{Macro}, which
+allows binding complex sequences of actions to a single keystroke. The binding
+of a macro is very fast because on the first call the macro is cached in memory.
+@xref{Macro}.
+
+Note that you cannot @emph{ever} redefine @key{Return} and @key{Escape}. This
+is a basic issue---however brain damaged is the current configuration, you will
+always be able to exploit fully the menus and the command line.
+
+Besides the ``standard'' combinations (e.g.,
+@kbd{@key{Control}-@var{letter}}), it possible to program combinations
+based on the @key{Meta} key (a.k.a. @key{Alt}). The situation in this
+case is a bit more involved, because depending on the terminal emulator you are
+using, the effect of the @key{Meta} key can be widely different. For
+instance, @code{xterm} raises the eighth bit of a character, so, for
+instance,
+
+@example
+KEY 81 MoveSOF
+@end example
+
+@noindent binds @kbd{@key{Control}-@key{Meta}-a} to the action of moving to the
+start of the document. However, @code{gnome-terminal} will emit the
+character of ASCII code 1 prefixed with ESC instead. To handle this case,
+@code{ne} provides codes from 180 on for @emph{simulated @key{Meta}
+sequences}: for instance,
+
+@example
+KEY 181 MoveSOF
+@end example
+
+@noindent binds the abovementioned sequence to the same action as
+before. In general, the code 180+@var{x} corresponds to the sequence
+ESC followed by the ASCII character of code @var{x}. Note that some of
+these sequences may be disabled, if they conflict with existing sequences
+of your terminal (for instance, ESC followed by @samp{O} is always
+disabled because it prefixes several built-in keyboard sequences).
+
+As a final note, we remark that typing @kbd{@key{Meta}-a} on
+@code{gnome-terminal} will produce an ESC followed by @samp{a}. Since it
+is obviously easier to press just @key{Meta} rather than @key{Meta} and
+@key{Control} at the same time, it is a good idea to associated the same
+sequence also to this combination, using
+
+@example
+KEY 1E1 MoveSOF
+@end example
+
+Moreover, this setting provides the user with a second choice: one can
+press @key{Escape} followed by a letter instead of using modifiers.
+
+This is the approach used by default in @code{ne}: this way,
+@key{Control} with @key{Meta} plus a letter should always work, and
+@key{Meta} should work sometimes (of course, if you're sure to use
+always the same kind of emulator you can bind more features). Again, the
+best place to look at it's @file{default.keys}.
+
+The key binding file is parsed at startup. If something does not work,
+@code{ne} exits displaying an error message. If you want @code{ne} to skip
+parsing the key binding file (for instance, to correct the broken
+file), just give @code{ne} the @code{--no-config} argument. @xref{Arguments}.
+
+@node Changing Menus
+@section Changing Menus
+@cindex Configuring the menus
+
+@code{ne} allows you to change the contents of its menus. To
+accomplish this task, you have to create a file named @file{.menus} in your
+home directory, or in @file{~/.ne}. You can change the default name
+(possibly specifying a complete path) using the @code{--menus} argument
+(@pxref{Arguments}).
+
+Each line of a menu configuration file not starting with the @samp{MENU} or
+@samp{ITEM} keywords is considered a comment. You should describe the menus
+as in the following example:
+
+@example
+MENU "File"
+ITEM "Open...     ^O" Open
+ITEM "Close         " Close
+ITEM "DoIt          " Macro DoIt
+@end example
+
+In other words: a line of this form
+@example
+MENU "@var{title}"
+@end example
+will start the definition of a new menu, having the given title. Each line
+of the form
+@example
+ITEM "@var{text}" @var{command}
+@end example
+will then define a menu item, and associate the given command to it.
+
+Any number of menus can be accommodated, but you should consider that many
+terminals are 80 columns wide. There is also a minor restriction on the
+items---their width has to be constant throughout each menu (but different
+menus can have different widths). Note that the text of an item, as the name of
+a menu, is between quotes. Whatever follows the last quote is considered the
+command associated to the menu.
+
+@noindent @strong{Warning:} the description of key bindings in menus
+(@samp{^O} in the previous example) is very important for the beginner;
+there is no relation inside @code{ne} about what you say in the menu and how
+you configure the key bindings (@pxref{Key Bindings}). Please do not say
+things in the menus that are not true in the key binding file.
+
+The menu configuration file is parsed at startup. If something does not
+work, @code{ne} exits displaying an error message. If you want @code{ne} to
+skip the menu configuration phase (for instance, to correct the
+broken file), just give @code{ne} the @code{--no-config} argument.
+@xref{Arguments}.
+
+
+@node Hints and Tricks
+@chapter Hints and Tricks
+@cindex Escape usage
+@cindex Turbo adjustment
+@cindex Shortcuts not working
+@cindex Meta key
+@cindex Changing colors
+
+@table @emph
+
+@item Use @key{f1} or @key{Escape}-@key{Escape}, not @key{Escape}.
+Due to the limitations of the techniques used when communicating with a
+terminal, it is not possible to ``decide'' that the user pressed the
+@key{Escape} key for about a second after the actual key press
+(@pxref{EscapeTime}). This means that you will experience annoying delays when
+using menus. If you have no @key{f1} key, use @key{Escape}-@key{Escape}, or
+redefine a keystroke assigning the command @code{Escape}, and you will be
+able to use that keystroke instead of @key{Escape}. Unfortunately, 
+some GUI-based terminals (most notably, @code{gnome-terminal}) use @key{f1}
+for their own purposes; in that case, you can assign the @code{Escape}
+command to another key (@pxref{Configuration}).
+
+@item Check for the presence of a @key{Meta} key.
+If your system has a standard @key{Meta} or @key{Alt} key, there is a
+good chance that you have several other shortcuts. If the built-in
+@key{Meta} bindings do not work, you must discover which is the effect
+of the @key{Meta} in your terminal emulator. Indeed, it is possible in
+theory to configure about 150 shortcuts. @xref{Configuration}. In any
+case, prefixing a key with @key{Escape} has the same effect as holding
+down @key{Meta}, so with the standard key bindings 
+you can, for instance, advance by word with @kbd{@key{Escape}} followed by @kbd{F}.
+
+@item Mac users should turn on ``Delete sends CTRL-H'' in the @command{Terminal} settings.
+If you are a Mac user, you need to check the ``Delete sends CTRL-H'' option
+in the @samp{Advanced} tab of the @command{Terminal} application settings.
+
+@item @code{ne} does tilda expansion.
+When you have to specify a file name, you can always start with @file{~/} in
+order to specify your home directory, or @file{~@var{user}/} to
+specify the home directory of another user.
+
+@item It is easy to correct bad colors.
+Sometimes, due to different opinions about the best default foreground and
+background colors, some of the color choices in a syntax file might be
+unreadable (for instance, @samp{dim white} on a terminal with a white
+background). Just copy the guilty syntax specification file in the
+@file{~/.ne/syntax} directory, and change the color names at the start of
+the file.
+
+@item @code{ne} does interactive filename completion.
+When you have to specify a file name as last element of a long input,
+you can invoke the completer using @key{Tab}. If you hit it twice in a
+row, you will enter the file requester, where you can navigate and
+escape back to the command line, either with @key{f1}, which will let
+you edit again your previous input, or with @key{Tab}, which will copy
+your current selection over your previous file name. In other words, you
+can freely alternate completion, editing and browsing.
+
+@item Disable the status line for slow connections.
+@code{ne} tries to emit as few characters as possible when updating the
+screen. However, for each key you type it is likely that the status
+bar has to be updated. If your connection is very slow, you can
+disable the status bar to get a quicker response (@pxref{StatusBar}).
+
+@item The @key{Escape} delay when activating menus can be avoided.
+If you press after @key{Escape} any key that does not produce the second
+character of an escape sequence, @code{ne} will immediately recognize the
+@key{Escape} key code as such. Since non-alphabetical keys have no effect while
+browsing through the menus, if you're forced to use @key{Escape} as menu
+activator you can press, for instance, @samp{,} just after it to speed
+up the menu activation (note that @samp{:} would not work, because it would
+activate the command line). Alternatively, you can just type @key{Escape}
+twice in a row.
+
+@item Use turbo mode for lengthy operations.
+Turbo mode (@pxref{Turbo}) allows performing very complex operations
+without updating the screen until the operations are complete. This can
+be a major plus if you are editing very long files, or if your terminal
+is slow. If the default value (0, which means twice the number of
+visible rows) does not give you the best results, experiment other
+values.
+
+@item Regular expressions are powerful, and slow.
+Regular expressions must be studied very carefully. If you spend a lot
+of time doing editing, it is definitely reasonable to study even their
+most esoteric features. Very complex editing actions can be performed by
+a single find/replace using the @code{\@var{n}} convention. But remember
+always that regular expressions are much slower than a normal search: in
+particular, if you use them on a UTF-8 text, @code{ne} has to transform
+them into an equivalent (but more complex) expression that cannot match
+partially a UTF-8 sequence, and this expansion makes the search even
+slower.
+
+@item Use the correct movement commands in a macro.
+Many boring, repetitive editing actions can be performed in a breeze
+by recording them the first time. Remember, however, that while recording
+a complex macro you should always use a cursor movement that will apply
+in a different context. For instance, if you are copying a word, you cannot
+move with cursor keys, because that word at another application of the
+macro could be of a different length. Rather, use the next/previous word
+keys and the @code{MoveEOW} command, which guarantee a correct behaviour in
+all situations.
+
+@item Some preferences can be preserved even with automatic preferences.
+When you save an autoprefs file, the file simply contains a macro that,
+when executed, produces the current configuration. However, you could want,
+for instance, to never change the insert/overwrite state. In this case, just
+edit the autoprefs files with @code{ne} and delete the line containing the
+command setting the insert flag. When the autoprefs are loaded later, the
+insert flag will be left untouched. This trick is particularly useful with
+the @code{StatusBar} and @code{FastGUI} commands.
+
+@item If some keystrokes do not work, check for system-specific features.
+Sometimes it can happen that a keystroke does not work---for instance,
+@kbd{@key{Control}-O} does not open a file. This usually is due to the kernel
+tracking that key for its purposes. For instance, along a @code{telnet}
+connection with xon/xoff flow control, @kbd{@key{Control}-S} and
+@kbd{@key{Control}-Q} would block and release the output
+instead of saving and quitting.
+
+In these cases, if you do not need the system
+feature you should check how to disable it: for instance, some @sc{bsd}-like
+systems feature a delayed suspend signal that is not in the @sc{posix}
+standard, and thus cannot be disabled by @code{ne}. On @sc{hp-ux}, the command
+@code{stty dsusp ^-} would disable the signal, and would let the control
+sequence previously assigned to it to run up to @code{ne}.
+
+@end table
+
+@node Motivations and Design
+@chapter Motivations and Design
+@cindex Mode
+@cindex curses
+@cindex POSIX
+@cindex terminfo
+@cindex termcap
+@cindex Magic cookie terminals
+@cindex Resource usage
+@cindex Interrupt character
+
+In this chapter I will try to outline the rationale behind @code{ne}'s
+design choices. Moreover, some present, voluntary limitations of the current
+implementation will be described. The intended audience of such a
+description is the programmer wanting to hack up @code{ne}'s sources, or the
+informed user wanting to deepen his knowledge of the limitations.
+
+The design goal of @code{ne} was to write an editor that is easy to use
+at first sight, powerful, and completely configurable. Making @code{ne}
+run on any terminal that @code{vi} could handle was also a basic issue,
+because there is no use getting accustomed to a new tool if you cannot
+use it when you really need it. Finally, using resources sparingly was
+considered essential.
+
+@code{ne} has no concept of @emph{mode}. All shortcuts are defined by a
+single key, possibly with a modifier (such as @key{Control} or @key{Meta}).
+Modality is in my opinion a Bad Thing unless it has a very clear visual
+feedback. As an example, menus are a form of modality. After entering the
+menus, the alphabetic keys and the navigation keys have a different meaning.
+But the modality is clearly reflected by a change in the  user
+interface. The same can be said about the input line, because it is always
+preceded by a (possibly highlighted) prompt ending with a colon.
+
+@code{ne} has no sophisticated visual updating system similar to, for
+instance, the one of @code{curses}. All updating is done while
+manipulating the text, and only if the turbo flag is set can some iterated
+operations delay the update. (In this case, @code{ne} keeps track in a
+very rough way of the part of the screen that changed.) Moreover, the
+output is not preempted by additional input coming in, so that along a
+slow connection the output could not keep up with the input. However,
+along reasonably fast connections, the responsiveness of the editor is
+greatly enhanced by the direct update. And since we update the screen in
+parallel with the internal representation, we can exploit our knowledge to
+output a very small number of characters per modification. As it is
+typical in @code{ne}, when such design tradeoffs arise, preference is
+given to the solution that is effective on a good part of the existing
+hardware and will be very effective on most future hardware.
+
+@code{ne} uses a particular scheme for handling text. There is a doubly
+linked list of line descriptors that contain pointers to each line of text.
+The lines themselves are kept in a list of pools, which is expanded and
+reduced dynamically. The interesting thing is that for each pool @code{ne}
+keeps track just of the first and of the last character used. A character is
+free iff it contains a null, so there is no need for a list of free chunks.
+The point is that the free characters lying between that first and the last
+used characters (the @dfn{lost} characters) can only be allocated
+@emph{locally}: whenever a line has to grow in length, @code{ne} first
+checks if there are enough free characters around it. Otherwise, it remaps
+the line elsewhere. Since editing is essentially a local activity, the
+number of such lost characters remains very low. And the manipulation of a
+line is extremely fast and independent of the size of the file, which can be
+very huge. A mathematical analysis of the space/time tradeoff is rather
+difficult, but empirical evidence suggests that the idea works.
+
+@code{ne} takes the @sc{posix} standard as the basis for @sc{un*x}
+compatibility. The fact that this standard has been designed by a worldwide
+recognized and impartial organization such as @sc{ieee} makes it in my
+opinion the most interesting effort in its league. No attempt is made to
+support ten thousand different versions and releases by using conditional
+compilation. Very few assumptions are made about the behaviour of the system
+calls. This has obvious advantages in terms of code testing, maintenance, and
+reliability. For the same reasons, the availability of an @sc{ansi} C
+(C90) compiler is assumed.
+
+If the system has a @code{terminfo} database and the related functions
+(which are usually contained in @code{curses} library), @code{ne} will
+use them. The need for a terminal capability database is clear, and the
+choice of @code{terminfo} (with respect to @code{termcap}) is compulsory
+if you want to support a series of features (such as more than ten
+function keys) that @code{termcap} lacks. If @code{terminfo} is not
+available, @code{ne} can use a @code{termcap} database, or, as a last
+resort, a built-in set of ANSI control sequences. Some details about
+this can be found in @ref{Portability Problems}.
+
+@code{ne} does not allow redefinition of the @key{Escape}, @key{Tab} and
+@key{Return} keys, and of the interrupt character
+@kbd{@key{Control}-\}. This decision has been made mainly for two
+reasons. First of all, it is necessary to keep a user from transforming
+@code{ne}'s bindings to such a point that another unaware user cannot
+work with it. These two keys and the alphabetic keys allow activating
+any command without any further knowledge of the key bindings, so it
+seems to me this is a good choice. As a second point, the @key{Escape}
+key usage should generally be avoided. The reason is that most escape
+sequences that are produced by special keys start with the escape
+character. When @key{Escape} is pressed, @code{ne} has to wait for one
+second (this timing can be changed with the @code{EscapeTime} command),
+just to be sure that it did not receive the first character of an escape
+sequence. This makes the response of the key very slow, unless it is
+immediately followed by another key such as @samp{:}, or by @key{Escape},
+again.  @xref{Hints and Tricks}.
+
+Note that, as has been stated several times, the custom key bindings also work
+when doing a long input, navigating through the menus or browsing the
+requester. However, this is only partially true. To keep the code size
+and complexity down, in these cases @code{ne} recognizes only direct bindings to
+commands, and discards the arguments. Thus, for instance, if a key is bound to
+the command line @code{LineUp 2}, it will act like @code{LineUp}, while a
+binding to @code{Macro MoveItUp} would produce no result. Of course full
+binding capability is available while writing text. (This limitation will
+probably be lifted in a future version: presently it does not seem to limit
+seriously the configurability of @code{ne}.)
+
+@code{ne} has some restrictions in its terminal handling. It does not support
+highlighting on terminals that use a magic cookie. Supporting such terminals
+correctly is a royal pain, and I did not have any means of testing the code anyway.
+Moreover, they are rather obsolete. Another lack of support is for the
+capability strings that specify a file to print or a program to launch in
+order to initialize the terminal.
+
+The macro capabilities of @code{ne} are rather limited. For instance, you
+cannot give an argument to a macro: macros are simply scripts that can be played
+back automatically. This makes them very useful for everyday use in a
+learn/play context, but rather inflexible for extending the capabilities of the
+editor. However, it is not reasonable to incorporate in an editor an
+interpreter for a custom language. Rather, a system-wide macro language should
+control the editor @i{via} interprocess communication. This is the way of the
+REXX language, and it is likely that future versions of @code{ne} will
+support optionally macros written in REXX.
+
+@code{ne} has been written with sparing resource use as a basic goal.
+Every possible effort has been made to reduce the use of @sc{cpu} time and
+memory, the number of system calls, and the number of characters output to
+the terminal. For instance, command parsing is done through hash
+techniques, and the escape sequence analysis uses the order structure of
+strings for minimizing the number of comparisons. The optimal cursor
+motion functions were directly copied from @code{emacs}. The update of
+files using syntax highlighting is as lazy as possible: modifications
+cause just the update of the current line, and the rest of the screen is
+updated only when you move away. The search algorithm is a simplified
+version of the Boyer-Moore algorithm that provides high performance with a
+minimal setup time. An effort has been taken to move to the text segment
+all data that do not change during the program execution. When the status
+bar is switched off, additional optimizations reduce the cursor movement
+to a minimum.
+
+A word should be said about lists. Clearly, handling the text as a
+single block with an insertion gap (a la @code{emacs}) allows you to
+gain some memory. However, the management of the text as a linked list
+requires much less @sc{cpu} time, and the tradeoff seems to be
+particularly favorable on virtual memory systems, where moving the
+insertion gap can require a lot of accesses to different pages. 
+
+In practice, @code{ne} occupies less memory than any memory-based editor
+we are aware of. (Of course, this does not take into account some
+sophisticated features of @code{ne}, such as unlimited undo/redo, which
+can cause major memory consumption.)
+
+@node The Encoding Mess
+@chapter The Encoding Mess 
+@cindex UTF-8
+@cindex ISO-8859 family
+@cindex ISO-8859-1
+
+The original @code{ne} handled 8-bit text files, and assumed that every
+byte coming from the keyboard could be output to the terminal. No other
+assumption was made---for instance, the up/down casing functions did not
+assume a particular encoding for non-US-ASCII characters. This choice
+had a significant advantage: @code{ne} could handle easily several
+different encodings, with minor nuisances for the end user.
+
+Since version 1.30, @code{ne} supports UTF-8. It can use UTF-8 for its
+input/output, and it can also interpret one or more buffers as containing
+UTF-8 encoded text, acting accordingly. Note that the buffer content is
+actual UTF-8 text---@code{ne} does not use wide characters. As a
+positive side-effect, @code{ne} can support fully the ISO-10646
+standard, but nonetheless non-UTF-8 texts occupy exactly one byte per
+character.
+
+More precisely, @emph{any} piece of text in @code{ne} is classified as
+US-ASCII, 8-bit or UTF-8. A US-ASCII text contains only US-ASCII
+characters. An 8-bit text sports a one-to-one correspondence between
+characters and bytes, whereas an UTF-8 text is interpreted in UTF-8.  Of
+course, this rises a difficult question: @emph{when} should a buffer be
+classified as UTF-8?
+
+Character encodings are a mess. There is nothing we can do to change
+this fact, as character encodings are @emph{metadata that modify data
+semantics}. The same file may represent different texts of different
+lengths when interpreted with different encodings. Thus, there is no safe
+way of guessing the encoding of a file.
+
+@code{ne} stays on the safe side: it will never try to convert a file
+from an encoding to another one. It can, however, interpret data
+contained in a buffer depending on an encoding: in other words,
+encodings are truly treated as metadata. You can switch off UTF-8
+at any time, and see the same buffer as a standard 8-bit file.
+
+Moreover, @code{ne} uses a @emph{lazy} approach to the problem: first of
+all, unless the UTF-8 automatic detection flag is set
+(@pxref{UTF8Auto}), no attempt is ever made to consider a file as UTF-8
+encoded.  Every file, clip, command line, etc., is firstly scanned for
+non-US-ASCII characters: if it is entirely made of US-ASCII characters,
+it is classified as US-ASCII. An US-ASCII piece of text is compatible
+with anything else---it may be pasted in any buffer, or, if it is a
+buffer, it may accept any form of text. Buffers classified as US-ASCII
+are distinguished by an @samp{A} on the status bar.
+
+As soon as a user action forces a choice of encoding (e.g., an accented
+character is typed, or an UTF-8-encoded clip is pasted), @code{ne} fixes
+the mode to 8-bit or UTF-8 (when there is a choice, this depends on
+the value of the @ref{UTF8Auto} flag). Of course, in some cases this may
+be impossible, and in that case an error will be reported.
+
+All this happens behind the scenes, and it is designed so that in 99% of
+the cases there is no need to think of encodings. In any case, should
+@code{ne}'s behaviour not match your needs, you can always change at run
+time the level of UTF-8 support.
+
+
+@node Some Notes for the Amiga User
+@chapter Some Notes for the Amiga User
+@cindex Amiga
+
+This section describes the differences between the Amiga and @sc{un*x} versions of
+@code{ne}, and some of the misfeatures inherited by its @sc{un*x}ish design.
+
+Of course, the Amiga user will find @code{ne} much less attractive than
+@sc{un*x} users will. There are several excellent editors for the Amiga,
+and @code{ne} lacks many powerful features that Amiga users are now
+accustomed to. However, for very special uses, such as editing through a
+serial terminal connected to the @code{AUX:} device, @code{ne} is the
+only choice, since it runs in any CLI (even in remote ones). Of course,
+a correct installation of @code{aterminfo} (the Amiga @code{terminfo}
+clone) is a basic requirement.
+
+To keep maintenance of the code simple, conditional code was avoided
+when possible. Thus, some features had to be dropped. First of all, there is no
+interrupt character. This happens because the Amiga handles signals in a way very
+different from @sc{un*x}, and it would have been very complex to reproduce the
+original behaviour.
+
+In the file requester, it is not possible to obtain a list of the
+available devices. Indeed, it is not even possible to pass from a device
+to another inside the requester. You have to escape, then input manually
+the device name as a file name (which will produce a spurious error) and
+open again: this time, the device scanned by the requester will be the
+new one. Another alternative, of course, is simply to input a complete
+pathname.
+
+@code{ne} will not behave particularly well under low memory conditions. It
+won't crash, but it could behave improperly.
+
+The @file{$HOME} (a.k.a @file{~}) directory has no meaning on the Amiga: rather, the
+@file{PROGDIR:} directory is used. For instance, the @file{~/.ne} directory
+is really @file{PROGDIR:.ne}.
+
+
+@node History
+@chapter History
+@cindex TurboText
+@cindex Amiga
+
+The main inspiration for this work came from Martin Taillefer's
+@code{TurboText} for the Amiga, which is the best editor I ever saw on
+any computer.
+
+The first versions of @code{ne} were created on an Amiga 3000T, using
+the port of the @code{curses} library by Simon John Raybould. After
+switching to the lower-level @code{terminfo} library, the development
+continued under @sc{un*x}. Finally, I ported @code{terminfo} to the
+Amiga, thus making it possible to develop on that platform again. For
+@code{ne} 1.0, an effort has been made to provide a @code{terminfo}
+emulation using GNU's @code{termcap}. 
+The development eventually moved to Linux.
+
+Todd Lewis got involved with @code{ne} when the University of North
+Carolina's Chapel Hill campus migrated its central research computers
+from @sc{mvs} to @sc{unix} in 1995. The readily available @sc{unix} editors
+had serious weaknesses in their user interfaces, especially from the
+standpoint of @sc{mvs} users who were not too excited about having to move
+their projects to another platform while learning an entirely new suite
+of tools. @code{ne} offered an easily understood interface with enough
+capabilities to keep these new @sc{unix} users productive. Todd installed and
+has maintained @sc{ne} at UNC since then, making several improvements to the
+code to meet his users' needs. In early 1999 his code base and
+mine were merged to become version 1.17.
+
+Support for syntax highlighting was added in 2009 with code and
+techniques heavily borrowed from the GNU-licensed editor @code{joe},
+which was written by Joseph H. Allen. Much of the work to incorporate
+this code into @code{ne} was undertaken by Daniele Filaretti, an
+undergraduate student working under the direction of Sebastiano at the
+Universit@`a degli Studi di Milano.
+
+
+@node Portability Problems
+@chapter Portability Problems
+@cindex Portability
+@cindex POSIX
+@cindex terminfo
+@cindex termcap
+@cindex Printable characters
+
+This chapter is devoted to the description of the (hopefully very few) problems
+that could arise when porting @code{ne} to other flavors of @sc{un*x}.
+
+@ignore
+Compatibility within the Amiga family of computers is complete, so there are no
+problems in recompiling @code{ne} for a different processor or architecture in
+this case.
+@end ignore
+
+The fact that only @sc{posix} calls have been used (@pxref{Motivations
+and Design}) should guarantee that on @sc{posix}-compliant systems a
+recompilation should suffice. Unfortunately, @code{terminfo} has not
+been standardized by @sc{ieee}, so that different calls could be
+available. The necessary calls are @code{setupterm()}, @code{tparm()}
+and @code{tputs()}. The other @code{terminfo} functions are never used.
+
+If @code{terminfo} is not available, the source files @file{info2cap.c}
+and @file{info2cap.h} map @code{terminfo} calls on @code{termcap}
+calls. The complete GNU @code{termcap} sources are distributed with
+@code{ne}, so no library at all is needed to use them. You just have to
+compile using one of the options explained in the @file{makefile} and in
+the @file{README}. Should you need comprehensive information on GNU
+@code{termcap}, you can find the distribution files on any @code{ftp}
+site that distributes the GNU archives. I should note that the GNU
+@code{termcap} manual is definitely the best manual ever written about
+terminal databases.
+
+There are, however, some details that are not specified by @sc{posix}, or are
+specified with insufficient precision. The places of the source where such
+details come to the light are evidenced by the @samp{PORTABILITY PROBLEM}
+string, which is followed by a complete explanation of the problem.
+
+For instance, there is no standard way of printing extended @sc{ascii}
+characters (i.e., characters whose code is smaller than 32 or greater than
+126). On many system, these characters have to be filtered and replaced with
+something printable: the default behaviour is to add 64 to all characters under
+32 (so that control characters will translate to the respective letter) and to print
+them in reverse video; moreover, all characters between 127 and 160 are visualized
+as a reversed question mark (this works particularly well with ISO Latin
+1, but Windows users might not like it). This behavior can be easily changed
+by modifying the @code{out()} function in @file{term.c}.
+
+Note that it is certainly possible that some system features not standardized
+by @sc{posix} interfere with @code{ne}'s use of the I/O stream. Such problems
+should be dealt with locally by using the system facilities rather than by
+horribly @code{#ifdef}'ing the source code. An example is given in @ref{Hints
+and Tricks}.
+
+
+
+@node Acknowledgments
+@chapter Acknowledgments
+
+A lot of people contributed to this project. Part of the code comes from 
+@code{emacs} and @code{joe}. Many people, in particular at the silab (the Milan
+University Computer Science Department Laboratory), helped in beta testing the 
+first versions. Daniele Filaretti worked at the integration of syntax-highlighting
+code from @code{joe}.
+
+Comments, complaints, desiderata are welcome.
+
+@example
+    Sebastiano Vigna
+    Via California 22
+    I-20144 Milano MI
+    Italia
+
+    vigna@@dsi.unimi.it
+
+
+    Todd M. Lewis
+    ATN Computing Systems
+    CB 1150 G309 ITS Franklin
+    University of North Carolina
+    Chapel Hill, NC 27599-1150
+    USA
+
+    utoddl@@email.unc.edu
+
+@end example
+@page
+
+@page
+@node Command Index
+@unnumbered Command Index
+@printindex cm
+
+@page
+@node Concept Index
+@unnumbered Concept Index
+@printindex cp
+
+@contents
+@bye

@@ -1,0 +1,112 @@
+#
+# This is a ready-made menu configuration file that replicates ne's built-in
+# menus.
+#
+
+MENU "Project"
+ITEM "Open...    ^O" Open
+ITEM "Open New...[N" OpenNew
+ITEM "Save       ^S" Save
+ITEM "Save As...   " SaveAs
+ITEM "Quit Now   [Q" Quit
+ITEM "Save&Exit  [X" Exit
+ITEM "About        " About
+
+MENU "Documents"
+ITEM "New       ^D" NewDoc
+ITEM "Clear       " Clear
+ITEM "Close     ^Q" CloseDoc
+ITEM "Next   f2/[D" NextDoc
+ITEM "Prev      f3" PrevDoc
+ITEM "Select... f4" SelectDoc
+
+MENU "Edit"
+ITEM "Mark Block  ^B" Mark
+ITEM "Cut         ^X" Cut
+ITEM "Copy        ^C" Copy
+ITEM "Paste       ^V" Paste
+ITEM "Erase         " Erase
+ITEM "Through     [T" Through
+ITEM "Delete Line ^Y" DeleteLine
+ITEM "Delete EOL  [Y" DeleteEOL
+ITEM "Mark Vert   ^@" MarkVert
+ITEM "Paste Vert  ^W" PasteVert
+ITEM "Open Clip   [O" OpenClip
+ITEM "Save Clip   [S" SaveClip
+
+MENU "Search"
+ITEM "Find...        ^F" Find
+ITEM "Find RegExp... ^_" FindRegExp
+ITEM "Replace...     ^R" Replace
+ITEM "Replace Once...  " ReplaceOnce
+ITEM "Replace All...   " ReplaceAll
+ITEM "Repeat Last    ^G" RepeatLast
+ITEM "Goto Line...   ^J" GotoLine
+ITEM "Goto Col...    [J" GotoColumn
+ITEM "Goto Mark        " GotoMark
+ITEM "Match Bracket  ^]" MatchBracket
+ITEM "Set Bookmark   [K" SetBookmark
+ITEM "Goto Bookmark  [G" GotoBookmark
+
+MENU "Macros"
+ITEM "Start/Stop Rec ^T" Record
+ITEM "Play Once   f9/[M" Play 1
+ITEM "Play Many...     " Play
+ITEM "Play Macro...    " Macro
+ITEM "Open Macro...    " OpenMacro
+ITEM "Save Macro...    " SaveMacro
+
+MENU "Extras"
+ITEM "Exec...     ^K" Exec
+ITEM "Suspend     ^Z" Suspend
+ITEM "Help...    f10" Help
+ITEM "Refresh     ^L" Refresh
+ITEM "Undo     f5/[U" Undo
+ITEM "Redo     f6/[R" Redo
+ITEM "Undel Line  ^U" UndelLine
+ITEM "Center        " Center
+ITEM "Paragraph   [P" Paragraph
+ITEM "Adjust View ^^" AdjustView
+ITEM "Center View [C" AdjustView
+ITEM "ToUpper     [V" ToUpper
+ITEM "ToLower     [L" ToLower
+ITEM "Capitalize    " Capitalize
+ITEM "UTF-8         " UTF8
+
+MENU "Navigation"
+ITEM "Move Left       " MoveLeft
+ITEM "Move Right      " MoveRight
+ITEM "Line Up         " LineUp
+ITEM "Line Down       " LineDown
+ITEM "Prev Page     ^P" PrevPage
+ITEM "Next Page     ^N" NextPage
+ITEM "Page Up         " PageUp
+ITEM "Page Down       " PageDown
+ITEM "Start of file [A" MoveSOF
+ITEM "End of file   [E" MoveEOF
+ITEM "Start Of Line ^A" MoveSOL
+ITEM "End Of Line   ^E" MoveEOL
+ITEM "Top Of Screen   " MoveTOS
+ITEM "Bottom Of Screen" MoveBOS
+ITEM "Incr Up     Home" MoveIncUp 
+ITEM "Incr Down    End" MoveIncDown
+ITEM "Prev Word  f7/[B" PrevWord
+ITEM "Next Word  f8/[F" NextWord
+
+MENU "Prefs"
+ITEM "Tab Size...     " TABSize
+ITEM "Insert/Over  Ins" Insert
+ITEM "Free Form       " FreeForm
+ITEM "Status Bar      " StatusBar
+ITEM "Hex Code        " HexCode
+ITEM "Fast GUI        " FastGUI
+ITEM "Word Wrap     [W" WordWrap
+ITEM "Right Margin    " RightMargin
+ITEM "Auto Indent   [I" AutoIndent
+ITEM "Preserve CR     " PreserveCR
+ITEM "Save CR/LF    [Z" CRLF
+ITEM "Load Prefs...   " LoadPrefs
+ITEM "Save Prefs...   " SavePrefs
+ITEM "Load Auto Prefs " LoadAutoPrefs
+ITEM "Save Auto Prefs " SaveAutoPrefs
+ITEM "Save Def Prefs  " SaveDefPrefs

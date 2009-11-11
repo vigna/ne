@@ -1,0 +1,480 @@
+#
+# This is a ready-made keyboard binding configuration file that replicates
+# ne's built-in bindings. You can use it as a start for modifications.
+#
+
+#
+# Cursor/editing keys
+#
+
+# Cursor up
+
+KEY     101	LineUp
+
+# Cursor down
+
+KEY     102	LineDown
+
+# Cursor left
+
+KEY	103	MoveLeft
+
+# Cursor right
+
+KEY     104     MoveRight
+
+# Cursor home
+
+KEY	105	MovIncUp
+
+# Cursor end
+
+KEY	106	MoveIncDown
+
+# Cursor next page
+
+KEY     107     NextPage
+
+# Cursor prev page
+
+KEY     108     PrevPage
+
+# Scroll forward
+
+KEY     109     LineDown
+
+# Scroll backward
+
+KEY     10A     LineUp
+
+# Clear to end of line
+
+KEY	110	DeleteEOL
+
+# Clear to end of screen
+
+KEY	111     NOP
+
+# Backspace
+
+KEY	112	BackSpace
+
+# Delete line
+
+KEY	113	DeleteLine
+
+# Insert line
+
+KEY	114	InsertLine
+
+# Delete char
+
+KEY	115	DeleteChar
+
+# Insert char
+
+KEY	116	Insert
+
+# Exit insert mode
+
+KEY	117	NOP
+
+# Clear
+
+KEY	118	Clear
+
+# Keypad A1
+
+KEY	120	MoveSOF
+
+# Keypad A3
+
+KEY	121	PrevPage
+
+# Keypad B2
+
+KEY	122	ToggleSEOL
+
+# Keypad C1
+
+KEY     123	MoveEOF
+
+# Keypad C3
+
+KEY	124	NextPage
+
+# Clear all tabs
+
+KEY	128	NOP
+
+# Clear tab
+
+KEY	129	NOP
+
+# Set tab
+
+KEY	12A	NOP
+
+
+
+#
+# Function keys
+#
+
+# F0
+
+KEY	140	Escape
+
+# F1
+
+KEY	141	Escape
+
+# F2
+
+KEY	142	NextDoc
+
+# F3
+
+KEY	143	PrevDoc
+
+# F4
+
+KEY	144	SelectDoc
+
+# F5
+
+KEY	145	Undo
+
+# F6
+
+KEY	146	Redo
+
+# F7
+
+KEY	147	PrevWord
+
+# F8
+
+KEY     148     NextWord
+
+# F9
+
+KEY	149	PlayOnce
+
+# F10
+
+KEY	14A	Help
+
+
+
+#
+# CONTROL-letter shortcuts
+#
+
+
+# CONTROL-@
+
+KEY	0	MarkVert
+
+# CONTROL-a
+
+KEY	1	MoveSOL
+
+# CONTROL-b
+
+KEY	2	Mark
+
+# CONTROL-c
+
+KEY	3	Copy
+
+# CONTROL-d
+
+KEY	4	NewDoc
+
+# CONTROL-e
+
+KEY	5	MoveEOL
+
+# CONTROL-f
+
+KEY	6	Find
+
+# CONTROL-g
+
+KEY	7	RepeatLast
+
+# CONTROL-h
+
+KEY     8       BackSpace
+
+# CONTROL-i cannot be redefined (it's TAB)
+
+# CONTROL-j 
+
+KEY     A	GotoLine
+
+# CONTROL-k
+
+KEY     B	Exec
+
+# CONTROL-l
+
+KEY     C	Refresh
+
+# CONTROL-m cannot be redefined (it's RETURN)
+
+# CONTROL-n
+
+KEY     E	NextPage
+
+# CONTROL-o
+
+KEY     F	Open
+
+# CONTROL-p
+
+KEY     10	PrevPage
+
+# CONTROL-q
+
+KEY     11	CloseDoc
+
+# CONTROL-r
+
+KEY     12	Replace
+
+# CONTROL-s
+
+KEY     13	Save
+
+# CONTROL-t
+
+KEY     14	Record
+
+# CONTROL-u
+
+KEY     15	UndelLine
+
+# CONTROL-v
+
+KEY     16	Paste
+
+# CONTROL-w
+
+KEY     17	PasteVert
+
+# CONTROL-x
+
+KEY     18	Cut
+
+# CONTROL-y 
+
+KEY     19	DeleteLine
+
+# CONTROL-z
+
+KEY     1A	Suspend
+
+# CONTROL-[ cannot be redefined (it's Escape)
+
+# CONTROL-\ cannot be redefined (it's the interrupt character)
+
+# CONTROL-]
+
+KEY     1D	MatchBracket
+
+# CONTROL-^
+
+KEY     1E	AdjustView
+
+# CONTROL-_
+
+KEY     1F	FindRegExp
+
+# Delete
+
+KEY	7F	DeleteChar
+
+
+#
+# The following bindings set up the same actions for a number of correlated
+#codes. This guarantees that the user is able to use the '~' bindings with
+# CTRL-META, META or just a prefixed ESC.
+#
+
+
+# CONTROL-META-a, META-a, ESC A and ESC a
+
+KEY	81	MoveSOF
+KEY	181	MoveSOF
+KEY	1C1	MoveSOF
+KEY	1E1	MoveSOF
+
+# CONTROL-META-b, META-b, ESC B and ESC b
+
+KEY	82	PrevWord
+KEY	182	PrevWord
+KEY	1C2	PrevWord
+KEY	1E2	PrevWord
+
+# CONTROL-META-c, META-c, ESC C and ESC c
+
+KEY	83	AdjustView C
+KEY	183	AdjustView C
+KEY	1C3	AdjustView C
+KEY	1E3	AdjustView C
+
+# CONTROL-META-d, META-d, ESC D and ESC d
+
+KEY	84	NextDoc
+KEY	184	NextDoc
+KEY	1C4	NextDoc
+KEY	1E4	NextDoc
+
+# CONTROL-META-e, META-e, ESC E and ESC e
+
+KEY	85	MoveEOF
+KEY	185	MoveEOF
+KEY	1C5	MoveEOF
+KEY	1E5	MoveEOF
+
+# CONTROL-META-f, META-f, ESC F and ESC f
+
+KEY	86	NextWord
+KEY	186	NextWord
+KEY	1C6	NextWord
+KEY	1E6	NextWord
+
+# CONTROL-META-g, META-g, ESC G and ESC g
+
+KEY	87	GotoBookMark
+KEY	187	GotoBookMark
+KEY	1C7	GotoBookMark
+KEY	1E7	GotoBookMark
+
+# CONTROL-META-i, META-i, ESC I and ESC i
+
+KEY	89	AutoIndent
+KEY	189	AutoIndent
+KEY	1C9	AutoIndent
+KEY	1E9	AutoIndent
+
+# CONTROL-META-j, META-j, ESC J and ESC j
+
+KEY	8A	GotoColumn
+KEY	18A	GotoColumn
+KEY	1CA	GotoColumn
+KEY	1EA	GotoColumn
+
+# CONTROL-META-k, META-k, ESC K and ESC k
+
+KEY	8B	SetBookmark
+KEY	18B	SetBookmark
+KEY	1CB	SetBookmark
+KEY	1EB	SetBookmark
+
+# CONTROL-META-l, META-l, ESC L and ESC l
+
+KEY	8C	ToLower
+KEY	18C	ToLower
+KEY	1CC	ToLower
+KEY	1EC	ToLower
+
+# CONTROL-META-m, META-m, ESC M and ESC m
+
+KEY	8D	Play 1
+KEY	18D	Play 1
+KEY	1CD	Play 1
+KEY	1ED	Play 1
+
+# CONTROL-META-n, META-n, ESC N and ESC n
+
+KEY	8E	OpenNew
+KEY	18E	OpenNew
+KEY	1CE	OpenNew
+KEY	1EE	OpenNew
+
+# CONTROL-META-o, META-o, ESC O and ESC o
+
+KEY	8F	OpenClip
+KEY	18F	OpenClip
+KEY	1CF	OpenClip
+KEY	1EF	OpenClip
+
+# CONTROL-META-p, META-p, ESC P and ESC p
+
+KEY	90	Paragraph
+KEY	190	Paragraph
+KEY	1B0	Paragraph
+KEY	1F0	Paragraph
+
+# CONTROL-META-q, META-q, ESC Q and ESC q
+
+KEY	91	Quit
+KEY	191	Quit
+KEY	1B1	Quit
+KEY	1F1	Quit
+
+# CONTROL-META-r, META-r, ESC R and ESC r
+
+KEY	92	Redo
+KEY	192	Redo
+KEY	1B2	Redo
+KEY	1F2	Redo
+
+# CONTROL-META-s, META-s, ESC S and ESC s
+
+KEY	93	SaveClip
+KEY	193	SaveClip
+KEY	1B3	SaveClip
+KEY	1F3	SaveClip
+
+# CONTROL-META-t, META-t, ESC T and ESC t
+
+KEY	94	Through
+KEY	194	Through
+KEY	1B4	Through
+KEY	1F4	Through
+
+# CONTROL-META-u, META-u, ESC U and ESC u
+
+KEY	95	Undo
+KEY	195	Undo
+KEY	1B5	Undo
+KEY	1F5	Undo
+
+# CONTROL-META-v, META-v, ESC V and ESC v
+
+KEY	96	ToUpper
+KEY	196	ToUpper
+KEY	1B6	ToUpper
+KEY	1F6	ToUpper
+
+# CONTROL-META-w, META-w, ESC W and ESC w
+
+KEY	97	WordWrap
+KEY	197	WordWrap
+KEY	1B7	WordWrap
+KEY	1F7	WordWrap
+
+# CONTROL-META-x, META-x, ESC X and ESC x
+
+KEY	98	Exit
+KEY	198	Exit
+KEY	1B8	Exit
+KEY	1F8	Exit
+
+# CONTROL-META-y, META-y, ESC Y and ESC y
+
+KEY	99	DeleteEOL
+KEY	199	DeleteEOL
+KEY	1B9	DeleteEOL
+KEY	1F9	DeleteEOL
+
+# CONTROL-META-z, META-z, ESC Z and ESC z
+
+KEY	9A	CRLF
+KEY	19A	CRLF
+KEY	1BA	CRLF
+KEY	1FA	CRLF

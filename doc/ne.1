@@ -1,0 +1,71 @@
+.TH NE 1 "by Sebastiano Vigna and Todd M. Lewis" "ne" \" -*- nroff -*-
+.SH NAME
+ne \- A nice editor
+.SH SYNOPSIS
+.B ne [options] files
+.TP
+Options:
+[\-\-help]
+[\-\-]
+[+[N]]
+[\-\-utf8]
+[\-\-no\-utf8]
+[\-\-ansi]
+[\-\-no\-ansi]
+[\-\-no\-config]
+[\-\-no\-syntax]
+[\-\-keys key\-configuration\-file]
+[\-\-menus menu\-configuration\-file]
+[\-\-macro macro\-file]
+
+.SH DESCRIPTION
+\fBne\fR is a free text editor that runs on (hopefully almost) any UN*X
+machine.  \fBne\fR is easy to use for the beginner, but powerful and fully
+configurable for the wizard, and most sparing in its resource usage.
+
+This documentation is incomplete.  The Texinfo/info/HTML/PDF documentation is the
+authoritative source (try \fBinfo ne\fR or \fBinfo \-f ne\fR).
+.SS OPTIONS
+.TP
+.I "--help"
+Prints a help message.
+.TP
+.I "--"
+Next token is a filename.
+.TP
+.I "+[N]"
+Moves to the N-th line of the first file, or to the last line, if N is missing.
+.TP
+.I "--utf8"
+Use UTF-8 I/O.
+.TP
+.I "--no-utf8"
+Do not use UTF-8 I/O.
+.TP
+.I "--ansi"
+Use the built-in ANSI sequences.
+.TP
+.I "--no-ansi"
+Never use the built-in ANSI sequences.
+.TP
+.I "--no-config"
+Skip reading the menu and keyboard configuration files.
+.TP
+.I "--no-syntax"
+Disable syntax-highlighting support.
+.TP
+.I "--keys key-configuration-file"
+Use the specified keyboard configuration file.
+.TP
+.I "--menus menu-configuration-file"
+Use the specified menu configuration file.
+.TP
+.I "--macro macro-file"
+Execute the given macro after startup.
+.SS USAGE
+Start \fBne\fR, then use escape, escape-escape or F1 to access the menus.
+.SS BUGS
+Please send bug reports to Sebastiano Vigna <vigna@dsi.unimi.it> or Todd Lewis <utoddl@email.unc.edu>.
+.SS AUTHORS
+\fBne\fR was originally written by Sebastiano Vigna. Todd M. Lewis added
+several new features. Daniele Filaretti helped with syntax highlighting.
