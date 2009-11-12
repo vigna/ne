@@ -279,15 +279,15 @@ static void request_move_right(void) {
 			
 
 /* If mark_dirs is TRUE, we bold names ending with a slash. */
-int request_strings(const char * const * const _entries, const int _num_entries, const int _max_name_len, int _mark_dirs) {
+int request_strings(const char * const * const _entries, const int _num_entries, int n, const int _max_name_len, int _mark_dirs) {
 
 	action a;
 	input_class ic;
-	int c, i, n, ne_lines0, ne_columns0;
+	int c, i, ne_lines0, ne_columns0;
 
 	assert(_num_entries > 0);
 
-	ne_lines0 = ne_columns0 = names_per_line = names_per_col = n = x = y = page = 0;
+	ne_lines0 = ne_columns0 = names_per_line = names_per_col = x = y = page = 0;
 	entries = _entries;
 	num_entries = _num_entries;
 	max_name_len = _max_name_len;
@@ -561,7 +561,7 @@ char *request_files(const char * const filename, int use_prefix) {
 					if (num_entries) {
 						qsort(entries, num_entries, sizeof(char *), filenamecmpp);
 
-						if ((i = request_strings((const char * const *)entries, num_entries, max_name_len, TRUE)) != ERROR) {
+						if ((i = request_strings((const char * const *)entries, num_entries, 0, max_name_len, TRUE)) != ERROR) {
 							p = entries[i >= 0 ? i : -i - 2];
 							if (p[strlen(p) - 1] == '/' && i >= 0) {
 #ifndef _AMIGA
@@ -665,7 +665,7 @@ int request_document(void) {
 					b = (buffer *)b->b_node.next;
 				}
 
-				i = request_strings((const char * const *)entries, num_entries, max_name_len, FALSE);
+				i = request_strings((const char * const *)entries, num_entries, 0, max_name_len, FALSE);
 
 				reset_window();
 

@@ -449,7 +449,6 @@ static void out(int c, const int attr) {
 	}
 
 	if (attr != -1) set_attr(attr | add_attr);
-/*	else set_attr(add_attr); */
 
 	if (io_utf8) {
 		if (c < 0x80) putchar(c); /* ASCII */

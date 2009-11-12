@@ -15,7 +15,9 @@ Changes from version 2.0.3
   * Display request lists by columns instead of rows.
   
   * Allow window resizing during requests.
-
+  
+  * Enter in Help places you on the right command in the command list.
+	
 Changes from version 2.0.2
 
 ---- Bug fixes ----

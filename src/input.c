@@ -268,7 +268,7 @@ static void input_refresh(void) {
 	move_cursor(ne_lines - 1, start_x);
 	for(i = start_x, j = offset; j < len; i += get_char_width(&input_buffer[j], encoding), j = next_pos(input_buffer, j, encoding)) {
 		if (i + get_char_width(&input_buffer[j], encoding) >= ne_columns) break;
-		output_char(get_char(&input_buffer[j], encoding), -1, encoding);
+		output_char(get_char(&input_buffer[j], encoding), 0, encoding);
 	}
 	clear_to_eol();
 	fflush(stdout);
