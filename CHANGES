@@ -13,6 +13,8 @@ Changes from version 2.0.3
   * Now we highlight correctly control characters in the command line.
 
   * Display request lists by columns instead of rows.
+  
+  * Allow window resizing during requests.
 
 Changes from version 2.0.2
 

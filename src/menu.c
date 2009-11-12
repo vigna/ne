@@ -720,28 +720,39 @@ void draw_status_bar(void) {
 
 
 /* Prints a message over the status bar. It also sets showing_msg and
-	bar_gone. */
+	bar_gone. If message is NULL and showing_msg is true, we reprint
+	the last message. That necessitates caching the message when it
+	isn't NULL. */
 
 void print_message(const char * const message) {
 
-	move_cursor(ne_lines - 1, 0);
-
-	set_attr(0);
-
-	if (cur_buffer->opt.fast_gui || !standout_ok || !cur_buffer->opt.status_bar) {
-		clear_to_eol();
-		output_string(message, TRUE);
+	static char msg_cache[MAX_BAR_BUFFER_SIZE];
+	
+	if (message) {
+		strncpy(msg_cache, message, MAX_BAR_BUFFER_SIZE);
+		msg_cache[MAX_BAR_BUFFER_SIZE - 1] = '\0';
 	}
-	else {
-		standout_on();
-		output_string(message, TRUE);
-		output_spaces(ne_columns - strlen(message), NULL);
-		standout_off();
+	
+   if (message || showing_msg) {
+		move_cursor(ne_lines - 1, 0);
+
+		set_attr(0);
+
+		if (cur_buffer->opt.fast_gui || !standout_ok || !cur_buffer->opt.status_bar) {
+			clear_to_eol();
+			output_string(msg_cache, TRUE);
+		}
+		else {
+			standout_on();
+			output_string(msg_cache, TRUE);
+			output_spaces(ne_columns - strlen(msg_cache), NULL);
+			standout_off();
+		}
+
+		fflush(stdout);
+
+		showing_msg = TRUE;
 	}
-
-	fflush(stdout);
-
-	showing_msg = TRUE;
 }
 
 

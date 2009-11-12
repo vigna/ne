@@ -639,6 +639,7 @@ void help(char *p) {
 	int i;
 	D(fprintf(stderr,"Help Called with parm %ld.\n",p);)
 	do {
+		print_message("Help: select Command and press Enter, or F1 or Escape or Escape-Escape");
 		if (p || (i = request_strings(command_names, ACTION_COUNT, MAX_COMMAND_WIDTH, FALSE)) >= 0) {
          D(fprintf(stderr,"Help check #2: p=%lx, i=%d\n",p,i);)
 			if (p) {
@@ -665,7 +666,9 @@ void help(char *p) {
 
 			assert(i >= 0 && i < ACTION_COUNT);
 
+			print_message("Help: press Enter, or F1 or Escape or Escape-Escape");
 			i = request_strings(commands[i].help, commands[i].help_len, ne_columns, FALSE);
 		}
 	} while(i >= 0);
+	draw_status_bar();
 }

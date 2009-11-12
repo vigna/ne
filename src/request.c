@@ -50,7 +50,7 @@ reasonable number of retries. */
 We rely on a series of auxiliary functions. */
 
 
-static int x, y, page, names_per_line, names_per_page, num_entries, max_name_len, mark_dirs;
+static int x, y, page, names_per_line, names_per_col, names_per_page, num_entries, max_name_len, mark_dirs;
 
 static const char * const *entries;
 
@@ -78,7 +78,7 @@ static const char * const *entries;
 
 #if DISPLAYBYROW
 
-#define PXY2N(p,x,y) (((y) + (p) * (ne_lines - 1)) * names_per_line + (x))
+#define PXY2N(p,x,y) (((y) + (p) * names_per_col) * names_per_line + (x))
 #define N2P(n)       ((n) / names_per_page)
 #define N2X(n)       (((n) % names_per_page) % names_per_line)
 #define N2Y(n)       (((n) % names_per_page) / names_per_line)
@@ -87,11 +87,11 @@ static const char * const *entries;
 
 #else
 
-#define PXY2N(p,x,y) ((p) * (ne_lines - 1) * names_per_line + (x) * (ne_lines - 1) + (y))
+#define PXY2N(p,x,y) ((p) * names_per_col * names_per_line + (x) * names_per_col + (y))
 #define N2P(n)       ((n) / names_per_page)
-#define N2X(n)       (((n) % names_per_page) / (ne_lines - 1)) 
-#define N2Y(n)       (((n) % names_per_page) % (ne_lines - 1))
-#define DX           (ne_lines - 1)
+#define N2X(n)       (((n) % names_per_page) / names_per_col) 
+#define N2Y(n)       (((n) % names_per_page) % names_per_col)
+#define DX           names_per_col
 #define DY           1
 
 #endif
@@ -106,7 +106,7 @@ static void print_strings() {
 	const char *p;
 
 	set_attr(0);
-	for(row = 0; row < ne_lines - 1; row++) {
+	for(row = 0; row < names_per_col; row++) {
 		move_cursor(row, 0);
 		clear_to_eol();
 
@@ -283,22 +283,30 @@ int request_strings(const char * const * const _entries, const int _num_entries,
 
 	action a;
 	input_class ic;
-	int c, i, n;
+	int c, i, n, ne_lines0, ne_columns0;
 
 	assert(_num_entries > 0);
 
-	x = y = page = 0;
+	ne_lines0 = ne_columns0 = names_per_line = names_per_col = n = x = y = page = 0;
 	entries = _entries;
 	num_entries = _num_entries;
 	max_name_len = _max_name_len;
 	mark_dirs = _mark_dirs;
 
-	if (!(names_per_line = ne_columns / (++max_name_len))) names_per_line = 1;
-	names_per_page = names_per_line * (ne_lines - 1);
-
-	print_strings();
-
 	while(TRUE) {
+		if (ne_lines0 != ne_lines || ne_columns0 != ne_columns) {
+			if (ne_lines0 && ne_columns0 ) n = PXY2N(page,x,y);
+			if (!(names_per_line = ne_columns / (++max_name_len))) names_per_line = 1;
+			names_per_col  = ne_lines - 1;
+			names_per_page = names_per_line * names_per_col;
+			ne_lines0 = ne_lines;
+			ne_columns0 = ne_columns;
+			x = N2X(n);
+			y = N2Y(n);
+			page = N2P(n);
+			print_strings();
+			print_message(NULL);
+		}
 
 		move_cursor(y, x * max_name_len);
 
