@@ -93,7 +93,7 @@ char request_char(const buffer * const b, const char * const prompt, const char 
 	set_attr(0);
 	print_prompt(prompt);
 
-	if (default_value) output_char(default_value, -1, FALSE);
+	if (default_value) output_char(default_value, 0, FALSE);
 	move_cursor(b->cur_y, b->cur_x);
 
 	while(TRUE) {
@@ -330,12 +330,12 @@ static void input_move_right(const int do_refresh) {
 				move_cursor(ne_lines - 1, start_x);
 				delete_chars(width);
 				move_cursor(ne_lines - 1, x - x_delta);
-				output_char(get_char(&input_buffer[prev_pos], encoding), -1, encoding);
+				output_char(get_char(&input_buffer[prev_pos], encoding), 0, encoding);
 
 				i = x;
 				j = pos;
 				while(j < len && i + (width = get_char_width(&input_buffer[j], encoding)) < ne_columns) {
-					output_char(get_char(&input_buffer[j], encoding), -1, encoding);
+					output_char(get_char(&input_buffer[j], encoding), 0, encoding);
 					i += width;
 					j = next_pos(input_buffer, j, encoding);
 				}
@@ -505,8 +505,8 @@ char *request(const char *prompt, const char * const default_string, const int a
 				move_cursor(ne_lines - 1, x);
 
 				if (x < ne_columns - c_width) {
-					if (pos == len - c_len) output_char(c, -1, encoding);
-					else if (char_ins_del_ok) insert_char(c, -1, encoding);
+					if (pos == len - c_len) output_char(c, 0, encoding);
+					else if (char_ins_del_ok) insert_char(c, 0, encoding);
 					else input_refresh();
 				}
 
@@ -658,7 +658,7 @@ char *request(const char *prompt, const char * const default_string, const int a
 							if (j < len) {
 								move_cursor(ne_lines - 1, i);
 								while(j < len && i + get_char_width(&input_buffer[j], encoding) < ne_columns) {
-									output_char(get_char(&input_buffer[j], encoding), -1, encoding);
+									output_char(get_char(&input_buffer[j], encoding), 0, encoding);
 									i += get_char_width(&input_buffer[j], encoding);
 									j = next_pos(input_buffer, j, encoding);
 								}
