@@ -341,7 +341,11 @@ int main(int argc, char **argv) {
 			output_string("Global Directory: ", FALSE);
 			output_string(exists_gprefs_dir(), FALSE);
 		}
-		else output_string("Global directory not found!", FALSE);
+		else {
+			output_string("Global directory \"", FALSE);
+			output_string(get_global_dir(), FALSE);
+			output_string("\" not found!", FALSE);
+		}
 	}
 
 	while(TRUE) {
