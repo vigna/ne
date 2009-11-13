@@ -284,7 +284,7 @@ void read_key_capabilities(void) {
 
 		Unfortunately, quite a few terminfo and termcap entries out there have
 		bad values for cursor key capability strings. (The f# values are
-		generally is sad shape too, but that's a much larger problem.)  However,
+		generally in sad shape too, but that's a much larger problem.)  However,
 		certain escape sequences are quite common among large sets of terminals,
 		and so we define the most common ones here.
 		

@@ -4453,8 +4453,8 @@ never registered while recording a macro. See @ref{Record}.
 @noindent prompts you to press a key, and reports on the status line
 the key code @code{ne} associates with that key. This can be useful
 while configuring your @file{~/.ne/.keys} file. It also reports the
-numeric input class for that key. Input class codes are:
-0=ALPHA, 1=COMMAND, 2=RETURN, 3=TAB, 4=IGNORE, and 5=INVALID.
+input class for that key. Input class codes are: ALPHA, COMMAND,
+RETURN, TAB, IGNORE, and INVALID.
 
 
 @node Configuration

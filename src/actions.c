@@ -627,7 +627,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
    	   int ic = CHAR_CLASS(c);
 
    		if ( key_code_buffer ) {
-   			snprintf(key_code_buffer, 48, "Key Code was: %0x, Class: %0x", (c < 0) ? -c-1 : c, ic );
+   			snprintf(key_code_buffer, 48, "Key Code was: %0x, Class: %s", (c < 0) ? -c-1 : c, input_class_names[ic] );
    			print_message(key_code_buffer);
    			free(key_code_buffer);
    		}

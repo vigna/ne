@@ -83,6 +83,8 @@ typedef enum {
 	 ALPHA, COMMAND, RETURN, TAB, IGNORE, INVALID, INPUT_CLASS_COUNT
 } input_class;
 
+extern const char *input_class_names[];
+
 /* The name of the default preferences file name. */
 
 #define DEF_PREFS_NAME			".default"

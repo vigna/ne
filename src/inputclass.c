@@ -23,6 +23,9 @@
 
 #include "ne.h"
 
+const char *input_class_names[INPUT_CLASS_COUNT] = {
+	"ALPHA", "COMMAND", "RETURN", "TAB", "IGNORE", "INVALID"
+}; 
 
 /* This vector contains all key bindings. Each entry points to a command line
 	to be executed when the corresponding keystroke is input. The index
