@@ -43,14 +43,14 @@ static int to_something(buffer *b, int (to_first)(int), int (to_rest)(int)) {
 	if (b->cur_line == b->num_lines -1 && b->cur_pos >= b->cur_line_desc->line_len) return ERROR;
 
 	/* First of all, we search for the word start, if we're not over it. */
-	if (pos >= b->cur_line_desc->line_len || ne_ispunct(c = get_char(&b->cur_line_desc->line[pos], b->encoding), b->encoding) || ne_isspace(c, b->encoding)) search_word(b, 1);
+	if (pos >= b->cur_line_desc->line_len || !ne_isword(c = get_char(&b->cur_line_desc->line[pos], b->encoding), b->encoding)) search_word(b, 1);
 	x = b->cur_x; /* The original x position (to perform the line update). */
 
 	pos = b->cur_pos;
 	new_len = 0;
 	/* Then, we compute the word position extremes, length of the result (which
 		may change because of casing). */
-	while (pos < b->cur_line_desc->line_len && !(ne_ispunct(c = get_char(&b->cur_line_desc->line[pos], b->encoding), b->encoding) || ne_isspace(c, b->encoding))) {
+	while (pos < b->cur_line_desc->line_len && ne_isword(c = get_char(&b->cur_line_desc->line[pos], b->encoding), b->encoding)) {
 		new_c = new_len ? to_rest(c) : to_first(c);
 		changed |= (c != new_c);
 
@@ -73,7 +73,7 @@ static int to_something(buffer *b, int (to_first)(int), int (to_rest)(int)) {
 		pos = b->cur_pos;
 		new_len = 0;
 		/* Second pass: we actually build the transformed word. */
-		while (pos < b->cur_line_desc->line_len && !(ne_ispunct(c = get_char(&b->cur_line_desc->line[pos], b->encoding), b->encoding) || ne_isspace(c, b->encoding))) {
+		while (pos < b->cur_line_desc->line_len && ne_isword(c = get_char(&b->cur_line_desc->line[pos], b->encoding), b->encoding)) {
 			if (b->encoding == ENC_UTF8) new_len += utf8str(new_len ? to_rest(c) : to_first(c), word + new_len);
 			else {
 				word[new_len] = new_len ? to_rest(c) : to_first(c);

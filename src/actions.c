@@ -311,7 +311,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		if (c < 0 && (c = request_number("Column", b->cur_x + b->win_x + 1))<0) return NUMERIC_ERROR(c);
 		goto_column(b, c ? --c : 0);
 		return OK;
-			
+	
 	case INSERTSTRING_A: {
 		/* Since we are going to call another action, we do not want to record this insertion twice. */
 		int recording= b->recording;
@@ -1392,8 +1392,45 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		keep_cursor_on_screen(cur_buffer);
 		return OK;
 
+	case AUTOCOMPLETE_A: {
+		/* Since we are going to call other actions (INSERTSTRING_A and DELETEPREVWORD_A),
+		     we do not want to record this insertion twice.
+	     Also, we are counting on INSERTSTRING_A to handle character encoding issues. */
+		int recording = b->recording;
+
+		if ( !p ) { /* no prefix give; find one left of the cursor. */
+			i = b->cur_pos;
+			if (i && i <= b->cur_line_desc->line_len) {
+				i = prev_pos(b->cur_line_desc->line, i, b->encoding);
+				while (i && ne_isword(c = get_char(&b->cur_line_desc->line[i], b->encoding), b->encoding))
+					i = prev_pos(b->cur_line_desc->line, i, b->encoding);
+				if (! ne_isword(c = get_char(&b->cur_line_desc->line[i], b->encoding), b->encoding))
+					i = next_pos(b->cur_line_desc->line, i, b->encoding);
+				p = malloc(b->cur_pos - i + 1);
+				if (!p) return OUT_OF_MEMORY;
+				strncpy(p, &b->cur_line_desc->line[i], b->cur_pos - i);
+			} else p = malloc(1); /* no prefix left of the cursor; we'll find _all_ word strings! */
+			p[b->cur_pos - i] = 0;	
+			if (p = autocomplete(p) ) {
+				b->recording = 0;
+				start_undo_chain(b);
+				if (i < b->cur_pos)
+					if ( (error = do_action(b, DELETEPREVWORD_A, 1, NULL)) == OK)
+						error = do_action(b, INSERTSTRING_A, 0, p);
+				end_undo_chain(b);
+			}
+		} else if (p = autocomplete(p) ) {
+			b->recording = 0;
+			error = do_action(b, INSERTSTRING_A, 0, p);
+		}
+		reset_window();
+		b->recording = recording;
+		return error;
+	}
+
 	default:
 		if (p) free(p);
 		return OK;
 	}
 }
+

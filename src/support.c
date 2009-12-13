@@ -600,3 +600,13 @@ int ne_isspace(const int c, const int encoding) {
 	return encoding != ENC_UTF8 ? isspace(c) : iswspace(c);
 #endif
 }
+
+/* Returns whether the given character is a "word" character.
+   Word characters are '_' plus any non-punctuation or space.
+   
+   TODO: implement a way for users to specify their own word characters.
+   For now, hardcode '_'.  */
+
+int ne_isword( const int c, const int encoding) {
+   return c == '_' || !(ne_isspace(c, encoding) || ne_ispunct(c, encoding));
+}

@@ -926,7 +926,7 @@ int search_word(buffer * const b, const int dir) {
 	if (pos >= ld->line_len) pos = ld->line_len;
 	else {
 		c = get_char(&ld->line[pos], b->encoding);
-		if (ne_ispunct(c, b->encoding) || ne_isspace(c, b->encoding)) space_skipped = TRUE;
+		if (!ne_isword(c, b->encoding)) space_skipped = TRUE;
 	}
 
 	pos = (dir > 0 ? next_pos : prev_pos)(ld->line, pos, b->encoding);
@@ -936,11 +936,11 @@ int search_word(buffer * const b, const int dir) {
 	while(y < b->num_lines && y >= 0) {
 		while(pos < ld->line_len && pos >= 0) {
 			c = get_char(&ld->line[pos], b->encoding);
-			if (ne_ispunct(c, b->encoding) || ne_isspace(c, b->encoding)) space_skipped = TRUE;
+			if (!ne_isword(c, b->encoding)) space_skipped = TRUE;
 			else word_started = TRUE;
 
 			if (dir > 0) {
-				if (space_skipped && !(ne_ispunct(c, b->encoding) || ne_isspace(c, b->encoding))) {
+				if (space_skipped && ne_isword(c, b->encoding)) {
 					goto_line(b, y);
 					goto_pos(b, pos);
 					return OK;
@@ -948,7 +948,7 @@ int search_word(buffer * const b, const int dir) {
 			}
 			else {
 				if (word_started) {
-					if (ne_ispunct(c, b->encoding) || ne_isspace(c, b->encoding)) {
+					if (!ne_isword(c, b->encoding)) {
 						goto_line(b, y);
 						goto_pos(b, pos + 1);
 						return OK;
@@ -989,11 +989,11 @@ void move_to_eow(buffer * const b) {
 	line_desc *ld = b->cur_line_desc;
    int pos = b->cur_pos, c;
 
-	if (pos >= ld->line_len || ne_ispunct(c = get_char(&ld->line[pos], b->encoding), b->encoding) || ne_isspace(c, b->encoding)) return;
+	if (pos >= ld->line_len || !ne_isword(c = get_char(&ld->line[pos], b->encoding), b->encoding)) return;
 
 	while(pos < ld->line_len) {
 		c = get_char(&ld->line[pos], b->encoding);
-		if (ne_ispunct(c, b->encoding) || ne_isspace(c, b->encoding)) break;
+		if (!ne_isword(c, b->encoding)) break;
 		pos += b->encoding == ENC_UTF8 ? utf8len(ld->line[pos]) : 1;
 	}
 

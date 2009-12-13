@@ -22,6 +22,7 @@ PROGRAM       = ne
 
 OBJS	      = actions.o \
 		ansi.o \
+		autocomp.o \
 		buffer.o \
 		clips.o \
 		cm.o \
@@ -100,6 +101,8 @@ enums.h names.c names.h hash.c hash.h help.c help.h ext.c: ne.texinfo info2src.p
 	rm -f ne.info*
 
 actions.o: ne.h	keycodes.h names.h errors.h protos.h version.h
+
+autocomp.o: ne.h protos.h
 
 buffer.o: ne.h keycodes.h names.h errors.h protos.h
 

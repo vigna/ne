@@ -50,7 +50,7 @@ reasonable number of retries. */
 We rely on a series of auxiliary functions. */
 
 
-static int x, y, page, names_per_line, names_per_col, names_per_page, num_entries, max_name_len, mark_dirs;
+static int x, y, page, names_per_line, names_per_col, names_per_page, num_entries, max_name_len, mark_char;
 
 static const char * const *entries;
 
@@ -114,7 +114,7 @@ static void print_strings() {
 			if (PXY2N(page,col,row) < num_entries) {
 				move_cursor(row, col * max_name_len);
 				p = entries[PXY2N(page,col,row)];
-				if (mark_dirs) set_attr(p[strlen(p) - 1] == '/' ? BOLD : 0);
+				if (mark_char) set_attr(p[strlen(p) - 1] == mark_char ? BOLD : 0);
 				output_string(p, io_utf8);
 			}
 		}
@@ -278,8 +278,8 @@ static void request_move_right(void) {
 }
 			
 
-/* If mark_dirs is TRUE, we bold names ending with a slash. */
-int request_strings(const char * const * const _entries, const int _num_entries, int n, const int _max_name_len, int _mark_dirs) {
+/* If mark_char is not '\0', we bold names ending with it. */
+int request_strings(const char * const * const _entries, const int _num_entries, int n, const int _max_name_len, int _mark_char) {
 
 	action a;
 	input_class ic;
@@ -291,7 +291,7 @@ int request_strings(const char * const * const _entries, const int _num_entries,
 	entries = _entries;
 	num_entries = _num_entries;
 	max_name_len = _max_name_len;
-	mark_dirs = _mark_dirs;
+	mark_char = _mark_char;
 
 	while(TRUE) {
 		if (ne_lines0 != ne_lines || ne_columns0 != ne_columns) {
@@ -561,7 +561,7 @@ char *request_files(const char * const filename, int use_prefix) {
 					if (num_entries) {
 						qsort(entries, num_entries, sizeof(char *), filenamecmpp);
 
-						if ((i = request_strings((const char * const *)entries, num_entries, 0, max_name_len, TRUE)) != ERROR) {
+						if ((i = request_strings((const char * const *)entries, num_entries, 0, max_name_len, '/')) != ERROR) {
 							p = entries[i >= 0 ? i : -i - 2];
 							if (p[strlen(p) - 1] == '/' && i >= 0) {
 #ifndef _AMIGA
@@ -665,7 +665,7 @@ int request_document(void) {
 					b = (buffer *)b->b_node.next;
 				}
 
-				i = request_strings((const char * const *)entries, num_entries, 0, max_name_len, FALSE);
+				i = request_strings((const char * const *)entries, num_entries, 0, max_name_len, '\0');
 
 				reset_window();
 

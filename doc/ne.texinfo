@@ -4148,6 +4148,7 @@ These commands allow modifying a document directly.
 * InsertLine::
 * DeleteLine::
 * DeleteEOL::
+* AutoComplete::
 @end menu
 
 @node InsertChar
@@ -4276,6 +4277,24 @@ of the line.
 
 @code{DeleteEOL} could be easily implemented with a macro, but it is such a
 common, basic editing feature that it seemed worth a separate implementation.
+
+@node AutoComplete
+@subsection AutoComplete
+@cmindex AutoComplete
+
+@noindent Syntax: @code{AutoComplete [@var{prefix}]}@*
+@noindent Abbreviation: @code{AC}
+
+@noindent displays a selection of all words in open documents which match
+@var{prefix}, and inserts the selected word into the current document. Use
+the cursor keys to select the desired word and press @key{Return}, or escape
+with @key{f1}, @key{Escape} or @key{Escape}-@key{Escape} to abort the
+operation. Matching words from the current document display normally; those
+which only exist in other open documents are shown bold and are followed by
+an asterisk. If no @var{prefix} is given, the word characters to the
+immediate left of the cursor are used. Prefix matches may be case sensitive
+or not depending on the @code{CaseSearch} flag state. See @ref{CaseSearch}.
+
 
 
 @node Support Commands

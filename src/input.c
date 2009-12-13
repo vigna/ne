@@ -210,8 +210,8 @@ static void add_to_history(const unsigned char * const str) {
 
 	move_to_bof(history_buff);
 
-	/* This insert_stream() takes care of adding a line, including a life
-		feed at the end. */
+	/* This insert_stream() takes care of adding a line, including a line-feed
+	   at the end. */
 
 	insert_stream(history_buff,
 						history_buff->cur_line_desc,
@@ -390,7 +390,7 @@ static void input_next_word(void) {
 
 	while(pos < len) {
 		const int c = get_char(&input_buffer[pos], encoding);
-		if (ne_isspace(c, encoding) || ne_ispunct(c, encoding)) space_skipped = TRUE;
+		if (!ne_isword(c, encoding)) space_skipped = TRUE;
 		else if (space_skipped) break;
 		input_move_right(FALSE);
 	}
@@ -408,7 +408,7 @@ static void input_prev_word(void) {
 	while(pos > 0) {
 		input_move_left(FALSE);
 		c = get_char(&input_buffer[pos], encoding);
-		if (!(ne_isspace(c, encoding) || ne_ispunct(c, encoding))) word_skipped = TRUE;
+		if (ne_isword(c, encoding)) word_skipped = TRUE;
 		else if (word_skipped) {
 			input_move_right(FALSE);
 			break;

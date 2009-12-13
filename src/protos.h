@@ -22,6 +22,7 @@
 
 /* actions.c */
 int do_action(buffer *b, action a, int c, unsigned char *p);
+unsigned char *autocomplete(unsigned char *p);
 
 /* ansi.c */
 void setup_ansi_term(void);
@@ -286,6 +287,7 @@ int get_char(const unsigned char *s, encoding_type encoding);
 int get_char_width(const unsigned char * const s, const encoding_type encoding);
 int ne_ispunct(const int c, const int encoding);
 int ne_isspace(const int c, const int encoding);
+int ne_isword(const int c, const int encoding);
 
 /* term.c */
 int output_width(int c);
