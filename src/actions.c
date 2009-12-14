@@ -1414,9 +1414,8 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			if (p = autocomplete(p) ) {
 				b->recording = 0;
 				start_undo_chain(b);
-				if (i < b->cur_pos)
-					if ( (error = do_action(b, DELETEPREVWORD_A, 1, NULL)) == OK)
-						error = do_action(b, INSERTSTRING_A, 0, p);
+				if (i >= b->cur_pos || (error = do_action(b, DELETEPREVWORD_A, 1, NULL)) == OK)
+					error = do_action(b, INSERTSTRING_A, 0, p);
 				end_undo_chain(b);
 			}
 		} else if (p = autocomplete(p) ) {
