@@ -50,7 +50,7 @@ reasonable number of retries. */
 We rely on a series of auxiliary functions. */
 
 
-static int x, y, page, names_per_line, names_per_col, names_per_page, num_entries, max_name_len, mark_char;
+static int x, y, page, max_names_per_line, max_names_per_col, names_per_page, num_entries, max_name_len, mark_char;
 
 static const char * const *entries;
 
@@ -78,27 +78,63 @@ static const char * const *entries;
 
 #if DISPLAYBYROW
 
-#define PXY2N(p,x,y) (((y) + (p) * names_per_col) * names_per_line + (x))
-#define N2P(n)       ((n) / names_per_page)
-#define N2X(n)       (((n) % names_per_page) % names_per_line)
-#define N2Y(n)       (((n) % names_per_page) / names_per_line)
-#define DX           1
-#define DY           names_per_line
+#define NAMES_PER_LINE(p) max_names_per_line
+#define NAMES_PER_COL(p) max_names_per_col
+#define PXY2N(p,x,y)  (((y) + (p) * max_names_per_col) * max_names_per_line + (x))
+#define N2P(n)        ((n) / names_per_page)
+#define N2X(n)        (((n) % names_per_page) % max_names_per_line)
+#define N2Y(n)        (((n) % names_per_page) / max_names_per_line)
+#define DX(p)         1
+#define DY            max_names_per_line
 
 #else
+/* #define NAMES_PER_COL(p) (LASTPAGE(p) ? (((num_entries % names_per_page) / max_names_per_line) + 1: max_names_per_col) */
 
-#define PXY2N(p,x,y) ((p) * names_per_col * names_per_line + (x) * names_per_col + (y))
-#define N2P(n)       ((n) / names_per_page)
-#define N2X(n)       (((n) % names_per_page) / names_per_col) 
-#define N2Y(n)       (((n) % names_per_page) % names_per_col)
-#define DX           names_per_col
-#define DY           1
+#define LASTPAGE(p)      ((num_entries / names_per_page) > p ? 0 : 1 )
+/*
+    This Perl snippet is useful for tweaking the NAMES_PER_LINE and NAMES_PER_COL macros. The point of
+    the complexity on the last page is to use a rectangle in the upper-left part of the window that's
+    roughly porportional to the window itself. (Prior pages use the entire window of course.)
+    Calculating $x first gives slight priority to taller columns rather than wider lines.
+    
+    Translating the Perl "$x =" and "$y =" to the C macros NAMES_PER_LINE and NAMES_PER_COL,
+    respectively, is a matter of substituting the following:
+      $N  ($M - $n)
+      $n  (num_entries % names_per_page)    The number of actual entries on the last page.
+      $X  max_names_per_line
+      $Y  max_names_per_col
+      $M  names_per_page
+      $x  NAMES_PER_LINE(p)
+      
+#!/usr/bin/perl -w
+use strict;
+my ($X,$Y,$M,$N,$x,$y,$n);
+use integer; # use integer math, like C macros do
+($X,$Y) = (5,9);  # change to test different column/row configurations.
+$M = $X * $Y;
+for $n ( 1 .. $M ) {
+    $N = $M - $n;
+    $x = $X - ($X*($N-1)*($N-1)-$M)/($M*$M);
+    $y = ($n+$x-1) / $x;
+    print  "  n (rows,cols) (capacity => n)\n" if $n == 1;
+    printf "%3d: (%2d,%2d)  (%3d >= %3d)? %s\n", $n, $x, $y, $x*$y, $n, ($x*$y >= $n ? "good" : '**BAD**');
+}
+
+*/
+#define NAMES_PER_LINE(p) (LASTPAGE(p) ? (max_names_per_line - (max_names_per_line*((names_per_page - (num_entries % names_per_page))-1)*((names_per_page - (num_entries % names_per_page))-1)-names_per_page)/(names_per_page*names_per_page)) : max_names_per_line )
+#define NAMES_PER_COL(p)  (LASTPAGE(p) ? (((num_entries % names_per_page)+NAMES_PER_LINE(p)-1) / NAMES_PER_LINE(p)) : max_names_per_col)
+#define PXY2N(p,x,y)   ((p) * names_per_page + (x) * NAMES_PER_COL(p) + (y))
+#define N2P(n)         ((n) / names_per_page)
+#define N2X(n)        (((n) % names_per_page) / NAMES_PER_COL(N2P(n))) 
+#define N2Y(n)        (((n) % names_per_page) % NAMES_PER_COL(N2P(n)))
+#define DX(p)         NAMES_PER_COL(p)
+#define DY            1
 
 #endif
 
 /* This is the printing function used by the requester. It prints the
 strings from the entries array existing in a certain page (a page contains
-(lines-1)*names_per_line items) with max_name_len maximum width. */
+(lines-1)*max_names_per_line items) with max_name_len maximum width. */
 
 static void print_strings() {
 
@@ -106,16 +142,17 @@ static void print_strings() {
 	const char *p;
 
 	set_attr(0);
-	for(row = 0; row < names_per_col; row++) {
+	for(row = 0; row < max_names_per_col; row++) {
 		move_cursor(row, 0);
 		clear_to_eol();
-
-		for(col = 0; col < names_per_line; col++) {
-			if (PXY2N(page,col,row) < num_entries) {
-				move_cursor(row, col * max_name_len);
-				p = entries[PXY2N(page,col,row)];
-				if (mark_char) set_attr(p[strlen(p) - 1] == mark_char ? BOLD : 0);
-				output_string(p, io_utf8);
+      if (row < NAMES_PER_COL(page)) {
+			for(col = 0; col < NAMES_PER_LINE(page); col++) {
+				if (PXY2N(page,col,row) < num_entries) {
+					move_cursor(row, col * max_name_len);
+					p = entries[PXY2N(page,col,row)];
+					if (mark_char) set_attr(p[strlen(p) - 1] == mark_char ? BOLD : 0);
+					output_string(p, io_utf8);
+				}
 			}
 		}
 	}
@@ -128,7 +165,7 @@ static void request_move_to_sol(void) {
 
 
 static void request_move_to_eol(void) {
-	while (x < names_per_line - 1 && PXY2N(page,x+1,y) < num_entries) {
+	while (x < NAMES_PER_LINE(page) - 1 && PXY2N(page,x+1,y) < num_entries) {
 		x++;
 	}
 }
@@ -147,9 +184,9 @@ static void request_move_to_eof() {
 
 	int i = page;
 
+	page = N2P(num_entries - 1);
 	x = N2X(num_entries - 1);
 	y = N2Y(num_entries - 1);
-	page = N2P(num_entries - 1);
 	if (i != page) print_strings();
 }
 
@@ -171,7 +208,7 @@ static void request_prev_page(int force) {
 
 
 static void request_next_page(int force) {
-	if (!force && y < ne_lines - 2) y = ne_lines - 2;
+	if (!force && y < NAMES_PER_COL(page) - 1) y = NAMES_PER_COL(page) - 1;
 	else if ((page + 1) * names_per_page < num_entries) {
 		page++;
 		print_strings();
@@ -222,8 +259,8 @@ static void request_move_down(void) {
 
 
 void request_move_inc_down(void) {
-	if (x == names_per_line - 1) {
-		if (y == ne_lines - 2) request_move_to_eof();
+	if (x == NAMES_PER_LINE(page) - 1) {
+		if (y == NAMES_PER_COL(page)) request_move_to_eof();
 		else request_next_page(FALSE);
 	}
 	else request_move_to_eol();
@@ -240,11 +277,11 @@ static void request_move_left(void) {
 		request_move_to_eol();
 	}
 	else {
-		n -= DX;
+		n -= DX(page);
 		if ( n > -1 ) {
+			page = N2P(n);
 			x = N2X(n);
 			y = N2Y(n);
-			page = N2P(n);
 			if ( p != page ) print_strings();
 		}
 	}
@@ -256,22 +293,22 @@ static void request_move_right(void) {
 	int p = page;
 	int n = PXY2N(page,x,y);
 	
-	if (y < ne_lines - 2 && PXY2N(page,0,y+1) < num_entries && 
-	    (x == names_per_line - 1 || PXY2N(page,x+1,y) > num_entries -1)  ) {
+	if (y < NAMES_PER_COL(page) - 1 && PXY2N(page,0,y+1) < num_entries && 
+	    (x == NAMES_PER_LINE(page) - 1 || PXY2N(page,x+1,y) > num_entries -1)  ) {
 		request_move_to_sol();
 		request_move_down();
 	}
-	else if ( y == ne_lines - 2 && x == names_per_line - 1 && PXY2N(page+1,0,0) < num_entries) {
+	else if ( y == NAMES_PER_COL(page) - 1 && x == NAMES_PER_LINE(page) - 1 && PXY2N(page+1,0,0) < num_entries) {
 		page++;
 		x = y = 0;
 		print_strings();
 	}
 	else  {
-		n += DX;
+		n += DX(page);
 		if ( n < num_entries) {
+			page = N2P(n);
 			x = N2X(n);
 			y = N2Y(n);
-			page = N2P(n);
 			if ( p != page ) print_strings();
 		}
 	}
@@ -287,23 +324,23 @@ int request_strings(const char * const * const _entries, const int _num_entries,
 
 	assert(_num_entries > 0);
 
-	ne_lines0 = ne_columns0 = names_per_line = names_per_col = x = y = page = 0;
+	ne_lines0 = ne_columns0 = max_names_per_line = max_names_per_col = x = y = page = 0;
 	entries = _entries;
 	num_entries = _num_entries;
-	max_name_len = _max_name_len;
+	max_name_len = _max_name_len + 1;
 	mark_char = _mark_char;
 
 	while(TRUE) {
 		if (ne_lines0 != ne_lines || ne_columns0 != ne_columns) {
 			if (ne_lines0 && ne_columns0 ) n = PXY2N(page,x,y);
-			if (!(names_per_line = ne_columns / (++max_name_len))) names_per_line = 1;
-			names_per_col  = ne_lines - 1;
-			names_per_page = names_per_line * names_per_col;
+			if (!(max_names_per_line = ne_columns / (max_name_len))) max_names_per_line = 1;
+			max_names_per_col = ne_lines - 1;
+			names_per_page = max_names_per_line * max_names_per_col;
 			ne_lines0 = ne_lines;
 			ne_columns0 = ne_columns;
+			page = N2P(n);
 			x = N2X(n);
 			y = N2Y(n);
-			page = N2P(n);
 			print_strings();
 			print_message(NULL);
 		}

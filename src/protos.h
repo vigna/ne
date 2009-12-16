@@ -262,6 +262,7 @@ const char *file_part(const char *pathname);
 char *str_dup(const char *s);
 int strnlen_ne(const char *s, int n);
 int strcmpp(const void *a, const void *b);
+int strdictcmp(const void *a, const void *b);
 int filenamecmpp(const void *a, const void *b);
 void set_interactive_mode(void);
 void unset_interactive_mode(void);

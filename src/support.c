@@ -265,6 +265,15 @@ int strcmpp(const void *a, const void *b) {
 	return strcmp(*(const char **)a, *(const char **)b);
 }
 
+/* Another comparison for qsort, this one does dictionary order. */
+
+int strdictcmp(const void *a, const void *b)	{
+	int ci;
+	
+	if ( ci = strcasecmp(*(char * const *)a, *(char * const *)b) ) return ci;
+	return strcmp(*(char * const *) a, * (char * const *) b);
+}
+                                                                       
 
 /* A filename comparison function for qsort(). It makes "../" the first string, "./" the second string
    and then orders lexicographically. */
@@ -275,7 +284,8 @@ int filenamecmpp(const void *a, const void *b) {
 	if (strcmp(t, "../")==0) return 1;
 	if (strcmp(s, "./")==0) return strcmp(t, "./") == 0 ? 0 : -1;
 	if (strcmp(t, "./")==0) return 1;
-	return strcmp(s, t);
+	/* return strcmp(s, t); */
+	return strdictcmp(a, b);
 }
 
 

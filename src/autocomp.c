@@ -57,12 +57,12 @@ static trie *new_trie(void) {
 	trie *nt;
 	trie_pool *tp;
 
-   if (!ac_pool || ac_pool->used >= TRIE_NODE_POOL_SIZE) {
+	if (!ac_pool || ac_pool->used >= TRIE_NODE_POOL_SIZE) {
 		if (tp = calloc(sizeof(trie_pool), 1)) {
 				tp->next = ac_pool;
 				ac_pool = tp;
 		} else return NULL;
-   }
+	}
 	D(alloced_trie_nodes++;)
 	return &ac_pool->trie_node[ac_pool->used++];
 }
@@ -125,13 +125,6 @@ static void search_buff(const buffer *b, const unsigned char *p, int *max_len, i
 	}
 }
 
-static int strdictcmp(const void *p1, const void *p2)	{
-	int ci;
-	
-	if ( ci = strcasecmp(*(char * const *)p1, *(char * const *)p2) ) return ci;
-	return strcmp(*(char * const *) p1, * (char * const *) p2);
-}
-                                                                       
 unsigned char *autocomplete(unsigned char *p) {
 	unsigned char *char_store, *c, *scratch;
 	unsigned char **entries, **e;
@@ -156,7 +149,7 @@ unsigned char *autocomplete(unsigned char *p) {
 	                --------x                
 	    scratch   " . . . . . . . . . "      
 	                                         
-	      tries (   _     _         _  )    |
+	         dd (   _     _         _  )    |
 	            (       _       _      )    |
 	            (     _       _        )    y
 	            (           _     _    )             */
@@ -202,10 +195,10 @@ unsigned char *autocomplete(unsigned char *p) {
 	}
 	assert(e==entries+cum_entries);
 	assert(c==char_store+cum_len);
-   if (dd) free(dd);
-   if (tries) free(tries);
-   if (scratch) free(scratch);
-   delete_trie();
+	if (dd) free(dd);
+	if (tries) free(tries);
+	if (scratch) free(scratch);
+	delete_trie();
 	free(p);
 	p = NULL;
 	
