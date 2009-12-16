@@ -645,7 +645,10 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		reset_window();
 
 	case OPEN_A:
-		if ((b->is_modified) && !request_response(b, "This document is not saved; are you sure?", FALSE)) return ERROR;
+		if ((b->is_modified) && !request_response(b, "This document is not saved; are you sure?", FALSE)) {
+			if (a == OPENNEW_A) do_action(b, CLOSEDOC_A, 1, NULL);
+			return ERROR;
+		}
 
 		if (p || (p = request_file(b, "Filename", b->filename))) {
 			static int dprompt = 0; /* Set to true if we ever respond 'yes' to the prompt. */
@@ -664,6 +667,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			}
 			free(p);
 		}
+		if (a == OPENNEW_A) do_action(b, CLOSEDOC_A, 1, NULL);
 		return ERROR;
 
 	case ABOUT_A:

@@ -20,7 +20,7 @@ Changes from version 2.0.3
 
   * Enter in Help places you on the right command in the command list.
 
-  * Only prompt once about identical basenamed parameters.
+  * Only prompt once about identical filenames on startup.
 
   * Consider "_" as a word character for word-oriented commands.
 
@@ -28,6 +28,8 @@ Changes from version 2.0.3
     dtx -> tex, latex -> tex,  sage -> python.
 
   * Replace reports the number of replacements (again).
+  
+  * Aborting an OpenNew doesn't leave you in a new blank document.
 
 Changes from version 2.0.2
 
