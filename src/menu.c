@@ -170,6 +170,7 @@ static const menu_item extras_item[] =
 		{ "ToUpper     [V", TOUPPER_ABBREV },
 		{ "ToLower     [L", TOLOWER_ABBREV },
 		{ "Capitalize    ", CAPITALIZE_ABBREV },
+		{ "AutoComplete  ", AUTOCOMPLETE_ABBREV },
 		{ "UTF-8         ", UTF8_ABBREV }
 	};
 
