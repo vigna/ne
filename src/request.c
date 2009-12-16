@@ -94,7 +94,7 @@ static const char * const *entries;
 /*
     This Perl snippet is useful for tweaking the NAMES_PER_LINE and NAMES_PER_COL macros. The point of
     the complexity on the last page is to use a rectangle in the upper-left part of the window that's
-    roughly porportional to the window itself. (Prior pages use the entire window of course.)
+    roughly proportional to the window itself. (Prior pages use the entire window of course.)
     Calculating $x first gives slight priority to taller columns rather than wider lines.
     
     Translating the Perl "$x =" and "$y =" to the C macros NAMES_PER_LINE and NAMES_PER_COL,
