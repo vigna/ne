@@ -22,6 +22,8 @@
 
 /* actions.c */
 int do_action(buffer *b, action a, int c, unsigned char *p);
+
+/* autocomp.c */
 unsigned char *autocomplete(unsigned char *p);
 
 /* ansi.c */
@@ -219,7 +221,7 @@ char *request_string(const char *prompt, const char *default_string, int accept_
 char *request(const char *prompt, const char *default_string, int alpha_allowed, int completion_allowed, int prefer_utf8);
 
 /* request.c */
-int   request_strings(const char * const * const entries, int num_entries, int default_entry, int max_name_len, int mark_dirs);
+int   request_strings(const char * const * const entries, int num_entries, int default_entry, int max_name_len, int mark_char);
 char *request_files(const char *filename, int use_prefix);
 char *request_file(const buffer *b, const char *prompt, const char *default_name);
 int   request_document(void);

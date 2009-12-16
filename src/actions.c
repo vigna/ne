@@ -724,6 +724,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			}
 
 			if (p || (p = request_string(b->last_was_regexp ? "Replace RegExp" : "Replace", b->replace_string, TRUE, FALSE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
+			   char *msg;
 				const encoding_type replace_encoding = detect_encoding(p, strlen(p));
 				int dir = b->opt.search_back ? -1 : 1, first_search = TRUE, num_replace = 0;
 
@@ -784,6 +785,11 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 
 				if (a == REPLACEALL_A || c == 'A') end_undo_chain(b);
 
+				if (num_replace && (msg = malloc( 48 ))) {
+					snprintf(msg,48,"%d replacement%s made.", num_replace, num_replace > 1 ? "s" : "");
+					print_message(msg);
+					free(msg);
+				}
 				if (stop) return STOPPED;
 
 				if ((c != 'A' && a != REPLACEALL_A || first_search) && error || error != NOT_FOUND) {

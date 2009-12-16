@@ -2,7 +2,7 @@ Changes from version 2.0.3
 
 ---- Improvements ----
 
-  * New KC, DNW, AC etc.
+  * New commands: KeyCode, DeleteNextWord, DeletePrevWord, AutoComplete.
 
   * Now we set the syntax when a file is saved with a (different) name.
 
@@ -13,11 +13,22 @@ Changes from version 2.0.3
   * Now we highlight correctly control characters in the command line.
 
   * Display request lists by columns instead of rows.
-  
+
   * Allow window resizing during requests.
-  
+
+  * Sort filenames in dictionary order ("aa", "Ab", "ac", ...).
+
   * Enter in Help places you on the right command in the command list.
-	
+
+  * Only prompt once about identical basenamed parameters.
+
+  * Consider "_" as a word character for word-oriented commands.
+
+  * Built-in filename extension to syntax mapping updates:
+    dtx -> tex, latex -> tex,  sage -> python.
+
+  * Replace reports the number of replacements (again).
+
 Changes from version 2.0.2
 
 ---- Bug fixes ----
@@ -232,7 +243,7 @@ Changes from version 1.20
   * The command line history now does not accumulate identical lines.
 
   * The undo/redo system now updates correctly the modified flag.
- 
+
   * Much more navigation keys do work on the input line; buffer-wide
     movement (page, top/bottom, etc.) moves through the history.
 
@@ -348,7 +359,7 @@ Changes from version 1.17
   * Fixed a small bug when recording find operations: quotes
     around arguments would have been lost.
 
-  * Fixed a small problem with terminal database: we have to 
+  * Fixed a small problem with terminal database: we have to
     use key_end, not key_ll for the end key.
 
   * Since completion had been introduced, you couldn't type a TAB into the
@@ -405,7 +416,7 @@ Changes from version 1.14d to 1.17
 
   * The Turbo command now operates differently: there is no more displayed `t'
     flag, the turbo parameter is global, and the value 0 of the parameter means
-    using twice the number of visible rows (which is however now adjusted 
+    using twice the number of visible rows (which is however now adjusted
     dynamically). If you do not want delayed updates, use a very large number.
 
 ---- Navigation ----
@@ -435,7 +446,7 @@ Changes from version 1.14d to 1.17
   * Fixed a small bug in word_wrap() that would cause leading space to diminish
     and spurious new lines to be inserted if the offending line had leading
     space but was otherwise unbreakable (like a long URL for example).
-    
+
 ---- Miscellaneous ----
 
   * New command line history. Cursor up and down let you select previously
@@ -449,7 +460,7 @@ Changes from version 1.14d to 1.17
 
   * Status line optionally (via the HEXCODE command) displays the two-digit
     hex code of the current character between the flags and the file name.
-    
+
   * Status line shows the right-most part of the file name if it won't all fit
     on the screen.
 
