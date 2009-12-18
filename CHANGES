@@ -31,6 +31,10 @@ Changes from version 2.0.3
   
   * Aborting an OpenNew doesn't leave you in a new blank document.
 
+---- Bug fixes ----
+
+  * Fix rx detection in perl.jsf.
+
 Changes from version 2.0.2
 
 ---- Bug fixes ----

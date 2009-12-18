@@ -79,6 +79,7 @@
 	"&%"		perl_maybe_done buffer
 	"a-zA-Z_@"	maybe_string	buffer
 .else
+	"/"		regex		recolor=-1
 	"a-zA-Z_@%&"	maybe_string	buffer
 .endif
 
