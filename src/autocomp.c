@@ -24,6 +24,7 @@
 
 #define SONS 256
 #define TRIE_NODE_POOL_SIZE 128
+#define FLAG_CHAR '*'
 
 typedef struct trie_node {
 	int flag; /* 0: not a terminator; 1: cur_buffer string; 2: other buffer string; */
@@ -176,7 +177,7 @@ unsigned char *autocomplete(unsigned char *p) {
 					assert(e<entries+cum_entries);
 					*e++ = c;
 					for (i=0; i<x; i++) *c++ = scratch[i];
-					if (tries[x]->flag == 2) *c++ = '*';
+					if (tries[x]->flag == 2) *c++ = FLAG_CHAR;
 					*c++ = '\0';
 					assert(c<=char_store+cum_len);
 				}
@@ -206,11 +207,11 @@ unsigned char *autocomplete(unsigned char *p) {
 	qsort(entries, cum_entries, sizeof(char *), strdictcmp);  
 	
 	if (entries && char_store) {
-		if ((i = request_strings((const char * const *)entries, cum_entries, 0, max_len, '*')) != ERROR) {
+		if ((i = request_strings((const char * const *)entries, cum_entries, 0, max_len, FLAG_CHAR)) != ERROR) {
 			unsigned char *cp = entries[i >= 0 ? i : -i - 2];
 			if (p = malloc(strlen(cp) + 1)) {
 				strncpy(p,cp,strlen(cp) + 1);
-				if (p[strlen(p) - 1 ] == '*') p[strlen(p) - 1] = '\0';
+				if (p[strlen(p) - 1 ] == FLAG_CHAR) p[strlen(p) - 1] = '\0';
 			}
 		}
 	}
