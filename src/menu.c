@@ -578,6 +578,7 @@ char *gen_flag_string(const buffer * const b) {
 	string[i++] = b->opt.verbose_macros ? 'v' : '-';
 	string[i++] = b->opt.do_undo        ? 'u' : '-';
 	string[i++] = b->opt.read_only      ? 'r' : '-';
+	string[i++] = b->opt.tabs           ? 't' : '-';
 	string[i++] = b->opt.binary         ? 'B' : '-';
 	string[i++] = b->marking            ? (b->mark_is_vertical ? 'V' :'M') : '-';
 	string[i++] = b->recording          ? 'R' : '-';

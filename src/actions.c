@@ -336,7 +336,28 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		b->recording = recording;
 		return error;	
 	}
-		
+
+	case TABS_A:
+		SET_USER_FLAG(b, c, opt.tabs);
+		return OK;
+
+	case INSERTTAB_A:
+		start_undo_chain(b);
+		if ( b->opt.tabs ) {
+			while (c-- > 0) {
+				error = do_action(b, INSERTCHAR_A, '\t', NULL);
+			}
+		}
+		else {
+			while (c-- > 0) {
+				do {
+					error = do_action(b, INSERTCHAR_A, ' ', NULL);
+				} while (b->opt.tab_size && b->cur_pos % b->opt.tab_size);
+			}
+		}
+		end_undo_chain(b);
+		return error;
+
 	case INSERTCHAR_A: {
 
 		static int last_inserted_char = ' ';

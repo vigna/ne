@@ -55,10 +55,9 @@ typedef struct {
 #define NAHL(x) x ## _NAME, x ##_ABBREV, x ## _HELP, HELP_LEN(x)
 
 /* This is the command vector. Note that the command names come from names.h,
-   and the help names come from help.h. */
+   and the help names come from help.h. This must be kept sorted. */
 
 static const command commands[ACTION_COUNT] = {
-
 	{ NAHL(ABOUT         ), NO_ARGS                                                               },
 	{ NAHL(ADJUSTVIEW    ),           ARG_IS_STRING                                               },
 	{ NAHL(ALERT         ), NO_ARGS                                                               },
@@ -100,10 +99,11 @@ static const command commands[ACTION_COUNT] = {
 	{ NAHL(GOTOMARK      ), NO_ARGS                                                               },
 	{ NAHL(HELP          ),           ARG_IS_STRING |             DO_NOT_RECORD                   },
 	{ NAHL(HEXCODE       ),                           IS_OPTION                                   },
-	{ NAHL(INSERT        ),                           IS_OPTION                                   },
 	{ NAHL(INSERTCHAR    ),0                                                                      },
+	{ NAHL(INSERT        ),                           IS_OPTION                                   },
 	{ NAHL(INSERTLINE    ),0                                                                      },
 	{ NAHL(INSERTSTRING  ),           ARG_IS_STRING                                               },
+	{ NAHL(INSERTTAB     ),0                                                                      },
 	{ NAHL(KEYCODE       ),                                       DO_NOT_RECORD                   },
 	{ NAHL(LINEDOWN      ),0                                                                      },
 	{ NAHL(LINEUP        ),0                                                                      },
@@ -153,16 +153,16 @@ static const command commands[ACTION_COUNT] = {
 	{ NAHL(REDO          ),0                                                                      },
 	{ NAHL(REFRESH       ), NO_ARGS                                                               },
 	{ NAHL(REPEATLAST    ),0                                                                      },
-	{ NAHL(REPLACE       ),           ARG_IS_STRING |                             EMPTY_STRING_OK },
 	{ NAHL(REPLACEALL    ),           ARG_IS_STRING |                             EMPTY_STRING_OK },
+	{ NAHL(REPLACE       ),           ARG_IS_STRING |                             EMPTY_STRING_OK },
 	{ NAHL(REPLACEONCE   ),           ARG_IS_STRING |                             EMPTY_STRING_OK },
 	{ NAHL(RIGHTMARGIN   ),                           IS_OPTION                                   },
-	{ NAHL(SAVE          ), NO_ARGS                                                               },
 	{ NAHL(SAVEAS        ),           ARG_IS_STRING                                               },
 	{ NAHL(SAVEAUTOPREFS ), NO_ARGS                                                               },
 	{ NAHL(SAVECLIP      ),           ARG_IS_STRING                                               },
 	{ NAHL(SAVEDEFPREFS  ), NO_ARGS                                                               },
 	{ NAHL(SAVEMACRO     ),           ARG_IS_STRING                                               },
+	{ NAHL(SAVE          ), NO_ARGS                                                               },
 	{ NAHL(SAVEPREFS     ),           ARG_IS_STRING                                               },
 	{ NAHL(SEARCHBACK    ),                           IS_OPTION                                   },
 	{ NAHL(SELECTDOC     ),0                                                                      },
@@ -171,6 +171,7 @@ static const command commands[ACTION_COUNT] = {
 	{ NAHL(SUSPEND       ), NO_ARGS                                                               },
 	{ NAHL(SYNTAX        ),           ARG_IS_STRING | IS_OPTION                                   },
 	{ NAHL(SYSTEM        ),           ARG_IS_STRING                                               },
+	{ NAHL(TABS          ),                           IS_OPTION                                   },
 	{ NAHL(TABSIZE       ),                           IS_OPTION                                   },
 	{ NAHL(THROUGH       ),           ARG_IS_STRING                                               },
 	{ NAHL(TOGGLESEOF    ), NO_ARGS                                                               },
@@ -182,9 +183,9 @@ static const command commands[ACTION_COUNT] = {
 	{ NAHL(UNDO          ),0                                                                      },
 	{ NAHL(UNLOADMACROS  ), NO_ARGS                                                               },
 	{ NAHL(UNSETBOOKMARK ),           ARG_IS_STRING |                             EMPTY_STRING_OK },
-	{ NAHL(UTF8          ),                           IS_OPTION                                   },
 	{ NAHL(UTF8AUTO      ),                           IS_OPTION                                   },
 	{ NAHL(UTF8IO        ),                           IS_OPTION                                   },
+	{ NAHL(UTF8          ),                           IS_OPTION                                   },
 	{ NAHL(VERBOSEMACROS ),                           IS_OPTION                                   },
 	{ NAHL(VISUALBELL    ),                           IS_OPTION                                   },
 	{ NAHL(WORDWRAP      ),                           IS_OPTION                                   },

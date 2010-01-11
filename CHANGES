@@ -2,7 +2,8 @@ Changes from version 2.0.3
 
 ---- Improvements ----
 
-  * New commands: KeyCode, DeleteNextWord, DeletePrevWord, AutoComplete.
+  * New commands: KeyCode, DeleteNextWord, DeletePrevWord, AutoComplete,
+    InsertTab, Tabs.
 
   * Now we set the syntax when a file is saved with a (different) name.
 
@@ -14,7 +15,7 @@ Changes from version 2.0.3
 
   * Display request lists by columns instead of rows.
 
-  * Allow window resizing during requests.
+  * Allow window resizing during requests (file selection, help).
 
   * Sort filenames in dictionary order ("aa", "Ab", "ac", ...).
 

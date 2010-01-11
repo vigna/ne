@@ -839,7 +839,7 @@ stealing precious editing space.
 The status bar looks more or less like this:
 
 @example
-L:      31  C:      25   12% iabcwfpvurBMRPC*@@8       20 /foo/bar
+L:      31  C:      25   12% iabcwfpvurtBMRPC*@@8       20 /foo/bar
 @end example
 
 The numbers after @samp{L:} and @samp{C:} are the line and column of the
@@ -912,6 +912,9 @@ appears if the undo flag is true. @xref{DoUndo}.
 
 @item r
 appears if the read only flag is true. @xref{ReadOnly}.
+
+@item t
+appears if the tab type flag is true. @xref{Tabs}.
 
 @item B
 appears if the binary flag is true. @xref{Binary}.
@@ -3150,6 +3153,7 @@ FLAG COMMAND      ABBR  DESCRIPTION
   v   VerboseMacros VM   record macros using use long command names
   u   DoUndo        DU   record edits for later undoing
   r   ReadOnly      RO   changes are not allowed
+  t   Tabs          TAB  TAB key inserts TABs instead of spaces
   B   Binary        B    affects file loading/saving
   M   Mark          M    mark set for line-oriented block operations
   V   MarkVert      MV   like mark, but block is rectangle
@@ -4141,6 +4145,8 @@ These commands allow modifying a document directly.
 @menu
 * InsertChar::
 * InsertString::
+* InsertTab::
+* Tabs::
 * DeleteChar::
 * DeletePrevWord::
 * DeleteNextWord::
@@ -4191,6 +4197,40 @@ on the command line.  All the currently active preferences options
 Note that @code{SaveMacro} converts @code{InsertChar} commands into a
 possibly smaller number of @code{InsertString} commands.
 This makes macros easier to read and edit. See @ref{SaveMacro}.
+
+
+@node InsertTab
+@subsection InsertTab
+@cmindex InsertTab
+
+@noindent Syntax: @code{InsertTab [@var{n}]}@*
+@noindent Abbreviation: @code{IT}
+
+@noindent inserts either @var{n} literal @var{TAB} characters or one or more
+spaces sufficient to advance the current cursor position @var{n}
+tab stops depending on the @code{Tabs} flag. See @ref{Tabs}, @ref{TabSize}.
+
+
+@node Tabs
+@subsection Tabs
+@cmindex Tabs
+
+@noindent Syntax: @code{Tabs [0|1]}@*
+@noindent Abbreviation: @code{TAB}
+
+@noindent sets the @code{Tabs} flag. When this flag is true, in
+normal editing the @code{InsertTab} command will insert literal
+@var{TAB} characters. Otherwise it will insert enough spaces to
+have the same visual effect.
+
+In normal editing, the @key{Tab} key invokes the command
+"@code{InsertTab} 1". Unlike most others, the @key{Tab} key cannot
+be mapped to other commands. Thus the @code{Tabs} flag provides the
+only customization @code{ne} offers for the @key{Tab} key.
+
+If you invoke @code{Tabs} with no arguments, it will toggle the flag. If you
+specify 0 or 1, the flag will be set to false or true, respectively. A lower
+case @samp{t} will appear on the status bar if the flag is true.
 
 
 @node DeleteChar

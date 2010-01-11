@@ -384,8 +384,11 @@ int main(int argc, char **argv) {
 			break;
 			
 		case ALPHA:
-		case TAB:
 			print_error(do_action(cur_buffer, INSERTCHAR_A, c, NULL));
+			break;
+
+		case TAB:
+			print_error(do_action(cur_buffer, INSERTTAB_A, 1, NULL));
 			break;
 			
 		case RETURN:
