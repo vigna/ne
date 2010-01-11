@@ -186,23 +186,28 @@ int save_prefs(buffer * const b, const char * const name) {
 
 		if (b->syn) record_action(cs, SYNTAX_A, -1, b->syn->name, b->opt.verbose_macros);
 
+		record_action(cs, TABSIZE_A,       b->opt.tab_size,       NULL, b->opt.verbose_macros);
+		record_action(cs, CLIPNUMBER_A,    b->opt.cur_clip,       NULL, b->opt.verbose_macros);
+		record_action(cs, RIGHTMARGIN_A,   b->opt.right_margin,   NULL, b->opt.verbose_macros);
+
 		record_action(cs, FREEFORM_A,      b->opt.free_form,      NULL, b->opt.verbose_macros);
 		record_action(cs, STATUSBAR_A,     b->opt.status_bar,     NULL, b->opt.verbose_macros);
 		record_action(cs, HEXCODE_A,       b->opt.hex_code,       NULL, b->opt.verbose_macros);
 		record_action(cs, FASTGUI_A,       b->opt.fast_gui,       NULL, b->opt.verbose_macros);
 		record_action(cs, WORDWRAP_A,      b->opt.word_wrap,      NULL, b->opt.verbose_macros);
 		record_action(cs, AUTOINDENT_A,    b->opt.auto_indent,    NULL, b->opt.verbose_macros);
+		record_action(cs, PRESERVECR_A,    b->opt.preserve_cr,    NULL, b->opt.verbose_macros);
 		record_action(cs, INSERT_A,        b->opt.insert,         NULL, b->opt.verbose_macros);
 		record_action(cs, VERBOSEMACROS_A, b->opt.verbose_macros, NULL, b->opt.verbose_macros);
 		record_action(cs, DOUNDO_A,        b->opt.do_undo,        NULL, b->opt.verbose_macros);
 		record_action(cs, AUTOPREFS_A,     b->opt.auto_prefs,     NULL, b->opt.verbose_macros);
 		record_action(cs, NOFILEREQ_A,     b->opt.no_file_req,    NULL, b->opt.verbose_macros);
+      /* Skip read_only */
+      /* Skip search_back */
 		record_action(cs, CASESEARCH_A,    b->opt.case_search,    NULL, b->opt.verbose_macros);
+		record_action(cs, TABS_A,          b->opt.tabs,           NULL, b->opt.verbose_macros);
 		record_action(cs, BINARY_A,        b->opt.binary,         NULL, b->opt.verbose_macros);
-		record_action(cs, TABSIZE_A,       b->opt.tab_size,       NULL, b->opt.verbose_macros);
-		record_action(cs, RIGHTMARGIN_A,   b->opt.right_margin,   NULL, b->opt.verbose_macros);
-		record_action(cs, CLIPNUMBER_A,    b->opt.cur_clip,       NULL, b->opt.verbose_macros);
-		record_action(cs, PRESERVECR_A,    b->opt.preserve_cr,    NULL, b->opt.verbose_macros);
+		record_action(cs, UTF8AUTO_A,      b->opt.utf8auto,       NULL, b->opt.verbose_macros);
 		record_action(cs, VISUALBELL_A,    b->opt.visual_bell,    NULL, b->opt.verbose_macros);
 
 		error = save_stream(cs, name, b->is_CRLF, FALSE);
@@ -218,7 +223,7 @@ int save_prefs(buffer * const b, const char * const name) {
 
 
 /* Loads the given preferences file. The file is just executed, but with the
-   exec_oxnly_options flag set. If b or name are NULL, ERROR is returned. */
+   exec_only_options flag set. If b or name are NULL, ERROR is returned. */
 
 int load_prefs(buffer * const b, const char * const name) {
 

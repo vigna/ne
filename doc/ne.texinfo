@@ -22,7 +22,7 @@ Conventions:
 @end ignore
 
 @ifinfo
-This file documents ne 2.0.3, a free text editor for @sc{un*x}.
+This file documents ne 2.0.4, a free text editor for @sc{un*x}.
 
 Copyright (C) 1993-1998 Sebastiano Vigna.
 Copyright (C) 1999-2009 Todd M. Lewis and Sebastiano Vigna.
@@ -55,7 +55,7 @@ by the Free Software Foundation.
 @titlepage
 @title ne
 @subtitle A nice editor
-@subtitle Version 2.0.3
+@subtitle Version 2.0.4
 @author by Sebastiano Vigna and Todd M. Lewis
 
 @page
@@ -84,7 +84,7 @@ by the Free Software Foundation.
 @node Top
 @top
 
-This file describes @code{ne} version 2.0.3, a free text editor that runs
+This file describes @code{ne} version 2.0.4, a free text editor that runs
 (we hope) on almost any @sc{un*x} machine. @code{ne} is easy to use for
 the beginner, but powerful and fully configurable for the wizard, and
 most sparing in its resource use.
@@ -1084,7 +1084,7 @@ displays the strings in as many columns as possible and lets you move
 with the cursor from one string to another. The strings can fill many
 screens, which are handled as consecutive pages. Most navigation keys
 work exactly as in normal editing. This is true even of custom key
-bindings. Thus, for instance, you can page up and down through the 
+bindings. Thus, for instance, you can page up and down through the
 list with @kbd{@key{Control}-P} and @kbd{@key{Control}-N} (in the standard keyboard
 configuration).
 
@@ -2036,10 +2036,10 @@ after the command and last character of the command line are double
 quotes, the quotes will be removed and whatever is left will be used as
 the string argument. For example, the @code{Find} command to find a
 space could be entered on the command line or in a macro as
-@code{Find " "}. The only case needing special treatment is 
+@code{Find " "}. The only case needing special treatment is
 when a string starts and ends with double quotes. The command
 @code{Find ""quote""} would locate the next occurrence of the string
-@samp{"quote"} (including the double quotes). However, 
+@samp{"quote"} (including the double quotes). However,
 @code{Find onequote"} wouldn't require special treatment because the
 command argument doesn't both start and end with a double quote.
 
@@ -3039,7 +3039,7 @@ the current screen width as right margin.
 @noindent Abbreviation: @code{WW}
 
 @noindent sets the word wrap flag. When this flag is true, @code{ne} will automatically
-break lines of text longer than the current right margin 
+break lines of text longer than the current right margin
 while you type them. See @ref{RightMargin}.
 
 If you invoke @code{WordWrap} with no arguments, it will toggle the flag. If you
@@ -3378,7 +3378,7 @@ strictly between 0 and half the width of the screen.
 @noindent Abbreviation: @code{TUR}
 
 @noindent sets the turbo parameter. Iterated actions and
-global replaces will update at most @var{steps} line of the screen (or
+global replaces will update at most @var{steps} lines of the screen (or
 at most twice the number of visible rows if @var{steps} is zero); then,
 update will be delayed to the end of the action.
 
@@ -3502,12 +3502,13 @@ restore the users previous preferences settings.
 
 @noindent @code{PushPrefs} saves the following values on the preferences stack:
 
-@example                   
-   AutoIndent   DoUndo    NoFileReq    StatusBar     
-   AutoPrefs    FastGUI   PreserveCR   TabSize       
-   Binary       FreeForm  ReadOnly     Turbo         
-   CaseSearch   HexCode   RightMargin  VerboseMacros 
-   ClipNumber   Insert    SearchBack   WordWrap     
+@example
+  AutoIndent  FastGUI     ReadOnly     UTF8Auto
+  AutoPrefs   FreeForm    RightMargin  VerboseMacros
+  Binary      HexCode     SearchBack   VisualBell
+  CaseSearch  Insert      StatusBar    WordWrap
+  ClipNumber  NoFileReq   Tabs
+  DoUndo      PreserveCR  TabSize
 @end example
 
 @node PopPrefs
@@ -3532,12 +3533,13 @@ restore the users previous preferences settings.
 
 @noindent PopPrefs restores the following values from the preferences stack:
 
-@example                   
-   AutoIndent   DoUndo    NoFileReq    StatusBar     
-   AutoPrefs    FastGUI   PreserveCR   TabSize       
-   Binary       FreeForm  ReadOnly     Turbo         
-   CaseSearch   HexCode   RightMargin  VerboseMacros 
-   ClipNumber   Insert    SearchBack   WordWrap     
+@example
+  AutoIndent  FastGUI     ReadOnly     UTF8Auto
+  AutoPrefs   FreeForm    RightMargin  VerboseMacros
+  Binary      HexCode     SearchBack   VisualBell
+  CaseSearch  Insert      StatusBar    WordWrap
+  ClipNumber  NoFileReq   Tabs
+  DoUndo      PreserveCR  TabSize
 @end example
 
 
@@ -3891,7 +3893,7 @@ not specified, it is assumed to be one.
 @noindent Syntax: @code{PageUp [@var{n}]}@*
 @noindent Abbreviation: @code{PUP}
 
-@noindent pages the screen backward by @var{n} screens.  
+@noindent pages the screen backward by @var{n} screens.
 If @var{n} is not specified, it is assumed to be one.
 
 
@@ -4165,7 +4167,7 @@ These commands allow modifying a document directly.
 @noindent Abbreviation: @code{IC}
 
 @noindent inserts a character whose @sc{ascii} code is @var{code} at the current
-cursor position. 
+cursor position.
 @var{code} must always be different from 0. All the
 currently active preferences options (insert, word wrapping, auto
 indent, @i{et cetera}) are applied.
@@ -4593,7 +4595,7 @@ allows binding complex sequences of actions to a single keystroke. The binding
 of a macro is very fast because on the first call the macro is cached in memory.
 @xref{Macro}.
 
-Note that you cannot @emph{ever} redefine @key{Return} and @key{Escape}. This
+Note that you cannot @emph{ever} redefine @key{Return} or @key{Escape}. This
 is a basic issue---however brain damaged is the current configuration, you will
 always be able to exploit fully the menus and the command line.
 
@@ -4629,7 +4631,7 @@ disabled because it prefixes several built-in keyboard sequences).
 As a final note, we remark that typing @kbd{@key{Meta}-a} on
 @code{gnome-terminal} will produce an ESC followed by @samp{a}. Since it
 is obviously easier to press just @key{Meta} rather than @key{Meta} and
-@key{Control} at the same time, it is a good idea to associated the same
+@key{Control} at the same time, it is a good idea to associate the same
 sequence also to this combination, using
 
 @example
@@ -4719,7 +4721,7 @@ terminal, it is not possible to ``decide'' that the user pressed the
 (@pxref{EscapeTime}). This means that you will experience annoying delays when
 using menus. If you have no @key{f1} key, use @key{Escape}-@key{Escape}, or
 redefine a keystroke assigning the command @code{Escape}, and you will be
-able to use that keystroke instead of @key{Escape}. Unfortunately, 
+able to use that keystroke instead of @key{Escape}. Unfortunately,
 some GUI-based terminals (most notably, @code{gnome-terminal}) use @key{f1}
 for their own purposes; in that case, you can assign the @code{Escape}
 command to another key (@pxref{Configuration}).
@@ -4731,7 +4733,7 @@ good chance that you have several other shortcuts. If the built-in
 of the @key{Meta} in your terminal emulator. Indeed, it is possible in
 theory to configure about 150 shortcuts. @xref{Configuration}. In any
 case, prefixing a key with @key{Escape} has the same effect as holding
-down @key{Meta}, so with the standard key bindings 
+down @key{Meta}, so with the standard key bindings
 you can, for instance, advance by word with @kbd{@key{Escape}} followed by @kbd{F}.
 
 @item Mac users should turn on ``Delete sends CTRL-H'' in the @command{Terminal} settings.
@@ -4915,8 +4917,8 @@ available, @code{ne} can use a @code{termcap} database, or, as a last
 resort, a built-in set of ANSI control sequences. Some details about
 this can be found in @ref{Portability Problems}.
 
-@code{ne} does not allow redefinition of the @key{Escape}, @key{Tab} and
-@key{Return} keys, and of the interrupt character
+@code{ne} does not allow redefinition of the @key{Escape}, @key{Tab} or
+@key{Return} keys, nor of the interrupt character
 @kbd{@key{Control}-\}. This decision has been made mainly for two
 reasons. First of all, it is necessary to keep a user from transforming
 @code{ne}'s bindings to such a point that another unaware user cannot
@@ -4981,7 +4983,7 @@ single block with an insertion gap (a la @code{emacs}) allows you to
 gain some memory. However, the management of the text as a linked list
 requires much less @sc{cpu} time, and the tradeoff seems to be
 particularly favorable on virtual memory systems, where moving the
-insertion gap can require a lot of accesses to different pages. 
+insertion gap can require a lot of accesses to different pages.
 
 In practice, @code{ne} occupies less memory than any memory-based editor
 we are aware of. (Of course, this does not take into account some
@@ -4989,7 +4991,7 @@ sophisticated features of @code{ne}, such as unlimited undo/redo, which
 can cause major memory consumption.)
 
 @node The Encoding Mess
-@chapter The Encoding Mess 
+@chapter The Encoding Mess
 @cindex UTF-8
 @cindex ISO-8859 family
 @cindex ISO-8859-1
@@ -5103,7 +5105,7 @@ switching to the lower-level @code{terminfo} library, the development
 continued under @sc{un*x}. Finally, I ported @code{terminfo} to the
 Amiga, thus making it possible to develop on that platform again. For
 @code{ne} 1.0, an effort has been made to provide a @code{terminfo}
-emulation using GNU's @code{termcap}. 
+emulation using GNU's @code{termcap}.
 The development eventually moved to Linux.
 
 Todd Lewis got involved with @code{ne} when the University of North
@@ -5187,9 +5189,9 @@ and Tricks}.
 @node Acknowledgments
 @chapter Acknowledgments
 
-A lot of people contributed to this project. Part of the code comes from 
+A lot of people contributed to this project. Part of the code comes from
 @code{emacs} and @code{joe}. Many people, in particular at the silab (the Milan
-University Computer Science Department Laboratory), helped in beta testing the 
+University Computer Science Department Laboratory), helped in beta testing the
 first versions. Daniele Filaretti worked at the integration of syntax-highlighting
 code from @code{joe}.
 
