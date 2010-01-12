@@ -342,6 +342,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		return OK;
 
 	case INSERTTAB_A:
+		NORMALIZE(c);
 		start_undo_chain(b);
 		if ( b->opt.tabs ) {
 			while (c-- > 0) {
