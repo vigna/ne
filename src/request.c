@@ -158,7 +158,17 @@ static void print_strings() {
 	}
 }
 
+static void normalize(int n) {
+	int p = page;
 
+	if (n < 0 ) n = 0;
+	if (n >= num_entries ) n = num_entries - 1;
+	x = N2X(n);
+	y = N2Y(n);
+	page = N2P(n);
+	if ( p != page ) print_strings();
+}
+	
 static void request_move_to_sol(void) {
 	x = 0;
 }
@@ -170,24 +180,12 @@ static void request_move_to_eol(void) {
 	}
 }
 
-
 static void request_move_to_sof(void) {
-
-	int i = page;
-
-	x = y = page = 0;
-	if (i != page) print_strings(FALSE);
+	normalize(0);
 }
 
-
 static void request_move_to_eof() {
-
-	int i = page;
-
-	page = N2P(num_entries - 1);
-	x = N2X(num_entries - 1);
-	y = N2Y(num_entries - 1);
-	if (i != page) print_strings();
+   normalize(num_entries - 1);
 }
 
 
@@ -196,72 +194,37 @@ static void request_toggle_seof(void) {
 	else request_move_to_sof();
 }
 
-
-
-static void request_prev_page(int force) {
-	if (!force && y > 0) y = 0;
-	else if (page) {
-		page--;
-		print_strings();
-	}
+static void request_prev_page(void) {
+	if (page == 0 ) normalize(PXY2N(page,0,0));
+	else normalize(PXY2N(page-1,x,y));
 }
 
 
-static void request_next_page(int force) {
-	if (!force && y < NAMES_PER_COL(page) - 1) y = NAMES_PER_COL(page) - 1;
-	else if ((page + 1) * names_per_page < num_entries) {
-		page++;
-		print_strings();
-	}
-	if (PXY2N(page,x,y) >= num_entries) request_move_to_eof();
+static void request_next_page(void) {
+	normalize(PXY2N(page+1,x,y));
 }
 
 
 static void request_move_up(void) {
-	
-	int p = page;
-	int n = PXY2N(page,x,y);
-	
-	n -= DY;
-	if (n > -1) {
-		x = N2X(n);
-		y = N2Y(n);
-		page = N2P(n);
-		if ( p != page ) print_strings();
-	}
+	normalize(PXY2N(page,x,y) - DY);
 }
-
-
 
 static void request_move_inc_up(void) {
 	if (x == 0) {
 		if (y == 0) request_move_to_sof();
-		else request_prev_page(FALSE);
+		else request_prev_page();
 	}
 	else request_move_to_sol();
 }
 
-
 static void request_move_down(void) {
-	
-	int p = page;
-	int n = PXY2N(page,x,y);
-	
-	n += DY;
-	if (n < num_entries) {
-		x = N2X(n);
-		y = N2Y(n);
-		page = N2P(n);
-		if ( p != page ) print_strings();
-	}
+	normalize(PXY2N(page,x,y) + DY);
 }
-
-
 
 void request_move_inc_down(void) {
 	if (x == NAMES_PER_LINE(page) - 1) {
-		if (y == NAMES_PER_COL(page)) request_move_to_eof();
-		else request_next_page(FALSE);
+		if (y == NAMES_PER_COL(page) - 1) request_move_to_eof();
+		else request_next_page();
 	}
 	else request_move_to_eol();
 }
@@ -277,13 +240,7 @@ static void request_move_left(void) {
 		request_move_to_eol();
 	}
 	else {
-		n -= DX(page);
-		if ( n > -1 ) {
-			page = N2P(n);
-			x = N2X(n);
-			y = N2Y(n);
-			if ( p != page ) print_strings();
-		}
+		normalize(PXY2N(page,x,y) - DX(page));
 	}
 }
 
@@ -298,19 +255,11 @@ static void request_move_right(void) {
 		request_move_to_sol();
 		request_move_down();
 	}
-	else if ( y == NAMES_PER_COL(page) - 1 && x == NAMES_PER_LINE(page) - 1 && PXY2N(page+1,0,0) < num_entries) {
-		page++;
-		x = y = 0;
-		print_strings();
+	else if (y == NAMES_PER_COL(page) - 1 && x == NAMES_PER_LINE(page) - 1 && PXY2N(page+1,0,0) < num_entries) {
+		normalize(PXY2N(page+1,0,0));
 	}
-	else  {
-		n += DX(page);
-		if ( n < num_entries) {
-			page = N2P(n);
-			x = N2X(n);
-			y = N2Y(n);
-			if ( p != page ) print_strings();
-		}
+	else if (PXY2N(page,x,y) + DX(page) < num_entries ) {
+		normalize(PXY2N(page,x,y) + DX(page));
 	}
 }
 			
@@ -359,14 +308,7 @@ int request_strings(const char * const * const _entries, const int _num_entries,
 
 				for(i = 1; i < num_entries; i++)
 					if (localised_up_case[(unsigned char)entries[(n + i) % num_entries][0]] == c) {
-
-						n = (n + i) % num_entries;
-						x = N2X(n);
-						y = N2Y(n);
-						if (N2P(n) != page) {
-							page = N2P(n);
-							print_strings();
-						}
+						normalize((n + i) % num_entries);
 						break;
 					}
 				break;
@@ -422,12 +364,12 @@ int request_strings(const char * const * const _entries, const int _num_entries,
 
 					case PAGEUP_A:
 					case PREVPAGE_A:
-						request_prev_page(FALSE);
+						request_prev_page();
 						break;
 
 					case PAGEDOWN_A:
 					case NEXTPAGE_A:
-						request_next_page(FALSE);
+						request_next_page();
 						break;
 
 					case MOVESOF_A:
