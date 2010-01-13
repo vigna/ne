@@ -1,6 +1,6 @@
 /* AutoComplete
 
-   Copyright (C) 1999-2009 Todd M. Lewis and Sebastiano Vigna
+   Copyright (C) 1999-2010 Todd M. Lewis and Sebastiano Vigna
 
    This file is part of ne, the nice editor.
 

@@ -1,7 +1,7 @@
 /* main(), global initialization and global buffer functions.
 
 	Copyright (C) 1993-1998 Sebastiano Vigna 
-	Copyright (C) 1999-2009 Todd M. Lewis and Sebastiano Vigna
+	Copyright (C) 1999-2010 Todd M. Lewis and Sebastiano Vigna
 
 	This file is part of ne, the nice editor.
 
@@ -37,7 +37,7 @@ message disappears as soon as any key is typed. */
 
 char *NO_WARRANTY_msg[] = {	PROGRAM_NAME " " VERSION ".",
 										"Copyright (C) 1993-1998 Sebastiano Vigna",
-										"Copyright (C) 1999-2009 Todd M. Lewis and Sebastiano Vigna",
+										"Copyright (C) 1999-2010 Todd M. Lewis and Sebastiano Vigna",
 										"",
 										"This program is free software; you can redistribute it and/or modify",
 										"it under the terms of the GNU General Public License as published by",
