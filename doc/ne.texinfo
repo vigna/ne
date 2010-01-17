@@ -6,6 +6,7 @@
 * ne: (ne).                     The nice editor
 @end direntry
 @defindex cm
+@include version.texinfo
 
 @ignore
 
@@ -22,10 +23,10 @@ Conventions:
 @end ignore
 
 @ifinfo
-This file documents ne 2.0.4, a free text editor for @sc{un*x}.
+This file documents ne @value{VERSION}, a free text editor for @sc{un*x}.
 
 Copyright (C) 1993-1998 Sebastiano Vigna.
-Copyright (C) 1999-2010 Todd M. Lewis and Sebastiano Vigna.
+Copyright (C) 1999-@value{RELEASE_YEAR} Todd M. Lewis and Sebastiano Vigna.
 
 Permission is granted to make and distribute verbatim copies of this
 manual provided the copyright notice and this permission notice are
@@ -55,13 +56,13 @@ by the Free Software Foundation.
 @titlepage
 @title ne
 @subtitle A nice editor
-@subtitle Version 2.0.4
+@subtitle Version @value{VERSION}
 @author by Sebastiano Vigna and Todd M. Lewis
 
 @page
 @vskip 0pt plus 1filll
 Copyright @copyright{} 1993-1998 Sebastiano Vigna@*
-Copyright @copyright{} 1999-2010 Todd M. Lewis and Sebastiano Vigna
+Copyright @copyright{} 1999-@value{RELEASE_YEAR} Todd M. Lewis and Sebastiano Vigna
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -84,13 +85,13 @@ by the Free Software Foundation.
 @node Top
 @top
 
-This file describes @code{ne} version 2.0.4, a free text editor that runs
+This file describes @code{ne} version @value{VERSION}, a free text editor that runs
 (we hope) on almost any @sc{un*x} machine. @code{ne} is easy to use for
 the beginner, but powerful and fully configurable for the wizard, and
 most sparing in its resource use.
 
 @noindent Copyright (C) 1993-1998 Sebastiano Vigna@*
-@noindent Copyright (C) 1999-2010 Todd M. Lewis and Sebastiano Vigna
+@noindent Copyright (C) 1999-@value{RELEASE_YEAR} Todd M. Lewis and Sebastiano Vigna
 
 @end ifnottex
 
@@ -5207,7 +5208,6 @@ Comments, complaints, desiderata are welcome.
 
 
     Todd M. Lewis
-    ATN Computing Systems
     CB 1150 G309 ITS Franklin
     University of North Carolina
     Chapel Hill, NC 27599-1150

@@ -14,25 +14,25 @@ all: $(DOCS)
 install: all
 	cp * ../../../doc
 
-ne.txt: ne.texinfo
+ne.txt: ne.texinfo version.texinfo
 	makeinfo --plaintext --no-headers ne.texinfo -o ne.txt
 	sed -i -e "s/\`/'/g" ne.txt
 	sed -i -e "s/'ne'/ne/g" ne.txt
 
-$(INFODOCS): ne.texinfo
+$(INFODOCS): ne.texinfo version.texinfo
 	makeinfo ne.texinfo
 	sed -i -e "s/\`/'/g" ne.info
 	sed -i -e "s/'ne'/ne/g" ne.info
 	rm -f ne.info*gz
 	gzip -9 ne.info*
 
-ne.dvi: ne.texinfo
+ne.dvi: ne.texinfo version.texinfo
 	texi2dvi --clean ne.texinfo
 
 ne.pdf: ne.dvi
 	dvipdf ne.dvi
 
-ne.html: ne.texinfo
+ne.html: ne.texinfo version.texinfo
 	makeinfo --html ne.texinfo
 	for i in ne/*html; do sed -i -e "s/\`/'/g" $$i; done
 	for i in ne/*html; do sed -i -e "s/'ne'/ne/g" $$i; done

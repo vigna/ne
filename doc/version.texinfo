@@ -1,0 +1,8 @@
+
+@set VERSION 2.0.4-pre4
+@set RELEASE_YEAR 2010
+@set RELEASE_MONTH 01
+@set RELEASE_DATE 17
+@set DATE (@value{RELEASE_DATE}.@value{RELEASE_MONTH}.@value{RELEASE_YEAR})
+@set PROGRAM_NAME ne, the nice editor
+@set ABOUT_MSG @value{PROGRAM_NAME} @value{VERSION}. @value{DATE}
