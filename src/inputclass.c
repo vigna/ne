@@ -33,7 +33,7 @@ const char *input_class_names[INPUT_CLASS_COUNT] = {
 	special keys. Note that it is nonsense to specify a binding for a key whose
 	class is not COMMAND. */
 
-#ifndef SHELLKEYS
+#ifndef ALTPAGING
   #define PICK(A,B) A
 #else
   #define PICK(A,B) B
@@ -47,7 +47,7 @@ const char *key_binding[NUM_KEYS] = {
 	/* ^a */      MOVESOL_ABBREV,
 	/* ^b */      MARK_ABBREV,
 	/* ^c */      COPY_ABBREV,
-	/* ^d */ PICK(NEWDOC_ABBREV,       NULL),
+	/* ^d */      NEWDOC_ABBREV,
 	/* ^e */      MOVEEOL_ABBREV,
 	/* ^f */      FIND_ABBREV,
 	/* ^g */      REPEATLAST_ABBREV,

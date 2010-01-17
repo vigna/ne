@@ -80,7 +80,7 @@ typedef struct {
 	const menu_item *items;
 } menu;
 
-#ifndef SHELLKEYS
+#ifndef ALTPAGING
   #define PICK(A,B,C,D) {A,B},
 #else
   #define PICK(A,B,C,D) {C,D},
