@@ -10,8 +10,8 @@ PREFIX=/usr/local
 
 PROGRAM       = ne
 
-clean:
-	-rm ne-*.tar*
+build:
+	(cd src; make NE_GLOBAL_DIR=$(PREFIX)/share/ne)
 
 source:
 	( cd doc; ./version.pl VERSION=$(VERSION); make )
@@ -50,4 +50,7 @@ install:
 	cp -pr doc/ne.pdf doc/ne doc/ne.txt doc/default.* README COPYING CHANGES $(DESTDIR)$(PREFIX)/share/doc/ne
 	cp -p doc/ne.info.gz $(DESTDIR)$(PREFIX)/share/info
 	-install-info --dir-file=$(DESTDIR)$(PREFIX)/share/info/dir $(DESTDIR)$(PREFIX)/share/info/ne.info.gz
+
+clean:
+	-rm ne-*.tar*
 
