@@ -1,22 +1,40 @@
 #
 # This is the makefile for ne. 
-#
-# The default build relies on terminfo, but you can specify NE_TERMCAP=1 to rely on
-# termcap, or even NE_ANSI=1 to rely on termcap and to use by 
-# default the built-in ANSI terminal description. In the
-# latter two cases, no external library is needed. You can also add the
-# definition NE_POSIX=1 if you get errors. Specifying NE_DEBUG=1 will enable
-# debugging info and will compile in a number of assertions. Moreover,
-# specifying NE_NOWCHAR=1 will remove the calls to wide character versions
-# of toupper(), tolower(), isspace(), etc., and also calls to wcwidth().
-# Another good idea if you are using gcc is to try OPTS=-ansi.
-#
+# 
+# The default build relies on terminfo, but you can specify NE_TERMCAP=1 to
+# rely on termcap, or even NE_ANSI=1 to rely on termcap and to use by default
+# the built-in ANSI terminal description. For example:
+# 
+#     make
+#     make NE_ANSI=1
+#     make NE_TERMCAP=1
+# 
+# If you use NE_ANSI=1 or NE_TERMCAP=1, no external library is needed. You
+# can also add the definition NE_POSIX=1 if you get errors, like this:
+# 
+#     make NE_POSIX=1 NE_TERMCAP=1
+# 
+# Specifying NE_DEBUG=1 will enable debugging info and will compile in a
+# number of assertions. Moreover, specifying NE_NOWCHAR=1 will remove the
+# calls to wide character versions of toupper(), tolower(), isspace(), etc.,
+# and also calls to wcwidth(). Another good idea if you are using gcc is to
+# try OPTS=-ansi like so:
+# 
+#     make OPTS=-ansi
+# 
+# Defining ALTPAGING will create an ne which by default will bind the PageUp
+# and PageDown commands to the ^p and ^n keys as well as the PgUp and PgDn
+# keys. Some users may prefer this to the PrevPage and NextPage command
+# behavior. N.B.: This will cause ne's operation to differ slightly from the
+# documentation.
+# 
+#     make OPT=-DALTPAGING
+# 
 # By changing the value of NE_GLOBAL_DIR, you can change the directory
 # where ne tries to read system-wide information (configuration
-# files, ,etc.).
-#
+# files, etc.).
 
-NE_GLOBAL_DIR     = /usr/local/share/ne
+NE_GLOBAL_DIR = /usr/local/share/ne
 
 PROGRAM       = ne
 
@@ -74,7 +92,14 @@ ifeq ($(CC),gcc)
 NO_SIGN=-Wno-pointer-sign
 endif
 
-CFLAGS=$(OPTS) $(NO_SIGN) $(if $(NE_POSIX),-D_POSIX_C_SOURCE=199506L,) $(if $(NE_NOWCHAR),-DNOWCHAR,) $(if $(NE_TEST),-DNE_TEST,) $(if $(NE_DEBUG),-g,-O3 -DNODEBUG) $(if $(NE_TERMCAP),-DTERMCAP,) $(if $(NE_ANSI),-DTERMCAP -DANSI,)
+CFLAGS=$(OPTS) $(NO_SIGN) \
+	$(if $(NE_POSIX),   -D_POSIX_C_SOURCE=199506L,) \
+	$(if $(NE_NOWCHAR), -DNOWCHAR,) \
+	$(if $(NE_TEST),    -DNE_TEST,) \
+	$(if $(NE_DEBUG),   -g,-O3 -DNODEBUG) \
+	$(if $(NE_TERMCAP), -DTERMCAP,) \
+	$(if $(NE_ANSI),    -DTERMCAP -DANSI,)
+
 LIBS=$(if $(NE_TERMCAP)$(NE_ANSI),,-lcurses)
 
 ne:	$(OBJS) $(if $(NE_TERMCAP)$(NE_ANSI),$(TERMCAPOBJS),)
