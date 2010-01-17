@@ -7,7 +7,7 @@ VERSION = 2.0.4-pre2
 # to install ne locally into the directory <dir>.
 
 PREFIX=/usr/local
-  
+
 PROGRAM       = ne
 
 source:
