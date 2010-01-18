@@ -82,6 +82,7 @@ by the Free Software Foundation.
 
 @ifnottex
 
+
 @node Top
 @top
 
@@ -178,6 +179,7 @@ editing of binary files.
 
 @end itemize
 
+
 @node Basics
 @chapter Basics
 
@@ -215,6 +217,7 @@ In the following sections we shall take a quick tour of @code{ne}'s features.
 * More Advanced Features::
 @end menu
 
+
 @node Terminology
 @section Terminology
 @cindex File
@@ -246,6 +249,7 @@ For example, each document is held in its own buffer, as are any loaded
 or recorded macros, undo records, a copy of your last deleted line of
 text, a copy of all your previous responses to long input, and several
 other things.
+
 
 @node Starting
 @section Starting
@@ -346,6 +350,7 @@ In the sections that follow, when explaining how to use a command we
 shall usually describe the corresponding menu item. The related shortcut
 and command can be found on the menu item itself, and in @ref{Menus}.
 
+
 @node Loading and Saving
 @section Loading and Saving
 @cindex Loading a file
@@ -409,6 +414,7 @@ terminal crashes), it will try to save your work in some emergency files.
 These files will have names similar to your current files, but they will
 have a pound sign @samp{#} prefixed to their names.
 @xref{Emergency Save}.
+
 
 @node Editing
 @section Editing
@@ -480,6 +486,7 @@ documents, the @samp{Select...} menu item (@key{f4}) prompts you with
 the list of names of currently loaded documents and allows you to
 choose directly what to edit.
 
+
 @node Basic Preferences
 @section Basic Preferences
 @cindex Preferences
@@ -536,6 +543,7 @@ how you set up the preferences you always want to be set.
 
 Note also that a preferences file is just a macro (as described in the
 following section). Thus, it can be edited manually if necessary.
+
 
 @node Basic Macros
 @section Basic Macros
@@ -656,6 +664,7 @@ restores the preferences (either by the user pressing
 @kbd{@key{Control}-\} or by a command failing) then that responsibility
 falls on the user.
 
+
 @node More Advanced Features
 @section More Advanced Features
 @cindex UTF-8 support
@@ -752,6 +761,7 @@ and features are not available through menus.
 * UTF-8 Support::
 @end menu
 
+
 @node Arguments
 @section Arguments
 @cindex Arguments
@@ -824,6 +834,7 @@ invoking @code{ne}. If you load no files when you start @code{ne}, it
 will display a splash screen. The last line on that screen shows the
 global directory @code{ne} is using, if it exists, or an error message,
 otherwise.
+
 
 @node The Status Bar
 @section The Status Bar
@@ -1071,6 +1082,7 @@ executed.
 If the command you specify does not appear in @code{ne}'s internal tables,
 it is considered to be the name of a macro. @xref{Basic Macros}, for details.
 
+
 @node The Requester
 @section The Requester
 @cindex Requester
@@ -1095,14 +1107,15 @@ input with @key{Return} or escape the requester with @key{f1} or the
 command). Moreover, if you are selecting a file name there is a third
 possibility: by escaping with the @key{Tab} key, the file or directory
 name that the cursor is currently on will be copied on the input
-line. This allows to choose an existing name and modify it.
+line. This allows you to choose an existing name and modify it.
 
 A special feature is bound to alphabetic characters: they move you to the next
 entry starting with the letter you typed. The search is case insensitive, and
 it continues on to the first string after having passed the last one.
 
 An example of a requester is the list of commands appearing when you use
-the @code{Help} command. Another example is the file requester that
+the @code{Help} command. Another is the list of document words matching
+a prefix given to the @code{AutoComplete} command. A third example is the file requester that
 @code{ne} issues whenever a file operation is going to take place. In
 this case, pressing @key{Return} while on a directory name will enter
 the directory. Note also that, should the requester take too long to
@@ -1113,6 +1126,7 @@ Note that there are two items that always appear in the file requester:
 @file{./} and @file{../}. The first one represents the current directory
 and can be used to force a reread of the directory. The second one represents the
 parent directory and can be used to move up by one directory level.
+
 
 @node Syntax Highlighting
 @section Syntax Highlighting
@@ -1213,6 +1227,7 @@ one.
 * Prefs::
 @end menu
 
+
 @node File
 @subsection File
 
@@ -1245,6 +1260,8 @@ files. Quitting @code{ne} (which doesn't save changes) or exiting
 
 @end table
 
+
+
 @node Documents
 @subsection Documents
 
@@ -1272,6 +1289,8 @@ them, and browse through them.
 @xref{SelectDoc}.
 
 @end table
+
+
 
 @node Edit
 @subsection Edit
@@ -1317,6 +1336,8 @@ The Edit menu contains commands related to cutting and pasting text.
 @xref{SaveClip}.
 
 @end table
+
+
 
 @node Search
 @subsection Search
@@ -1367,6 +1388,8 @@ contents or locations within a document.
 
 @end table
 
+
+
 @node Macros
 @subsection Macros
 
@@ -1397,6 +1420,8 @@ The Macros menu contains commands related to creating and using macros.
 @xref{SaveMacro}.
 
 @end table
+
+
 
 @node Extras
 @subsection Extras
@@ -1513,6 +1538,8 @@ document.
 
 @end table
 
+
+
 @node Prefs
 @subsection Prefs
 
@@ -1573,6 +1600,8 @@ your preferred document flags.
 @xref{SaveDefPrefs}.
 
 @end table
+
+
 
 @node Regular Expressions
 @section Regular Expressions
@@ -1826,6 +1855,7 @@ Note that the backslash character can escape itself. Thus, to put a
 backslash in the replacement string, you have to use @samp{\\}.
 
 
+
 @node Automatic Preferences
 @section Automatic Preferences
 @cindex Automatic preferences
@@ -1855,6 +1885,7 @@ insert commands, but any command that does something other than setting a flag
 will be rejected, and an error message will be issued.
 
 
+
 @node Emergency Save
 @section Emergency Save
 @cindex Emergency Save
@@ -1865,6 +1896,8 @@ documents in its current directory. Named documents will have their
 names prefixed with a @samp{#}. Unnamed documents will be given names
 made up of hexadecimal numbers obtained by some addresses in memory
 that will make them unique.
+
+
 
 @node UTF-8 Support
 @section UTF-8 Support
@@ -1923,6 +1956,8 @@ course, partially emulate a full UTF-8 character set implementation
 specifying the possible alternatives using @samp{|} (but you have no
 ranges).
 
+
+
 @node Commands
 @chapter Commands
 @cindex Commands
@@ -1947,6 +1982,8 @@ using commands directly.
 * Editing Commands::
 * Support Commands::
 @end menu
+
+
 
 @node General Guidelines
 @section General Guidelines
@@ -2055,6 +2092,8 @@ can be automagically extracted for the on-line help with makeinfo.
 
 @end ignore
 
+
+
 @node File Commands
 @section File Commands
 
@@ -2069,6 +2108,8 @@ command is issued).
 * Save::
 * SaveAs::
 @end menu
+
+
 
 @node Open
 @subsection Open
@@ -2092,6 +2133,8 @@ If the current document is marked as modified at the time the command is
 issued, you have to confirm the action.
 
 
+
+
 @node OpenNew
 @subsection OpenNew
 @cmindex OpenNew
@@ -2101,6 +2144,8 @@ issued, you have to confirm the action.
 
 @noindent is the same as @code{Open}, but loads the file specified by the
 @var{filename} string into a new document. See @ref{Open}.
+
+
 
 
 @node Save
@@ -2120,6 +2165,8 @@ If you escape from the file requester, you can input the file name on the
 command line.
 
 
+
+
 @node SaveAs
 @subsection SaveAs
 @cmindex SaveAs
@@ -2137,6 +2184,8 @@ command; see @ref{NoFileReq}.)
 If you escape from the file requester, you can enter the file name on the
 input line, the default being the current document name, if available.
 
+
+
 @node Document Commands
 @section Document Commands
 
@@ -2153,6 +2202,8 @@ These commands allow manipulation of the circular list of documents in @code{ne}
 * SelectDoc::
 @end menu
 
+
+
 @node Quit
 @subsection Quit
 @cmindex Quit
@@ -2162,6 +2213,8 @@ These commands allow manipulation of the circular list of documents in @code{ne}
 
 @noindent closes all documents and exits. If any documents are modified, you
 have to confirm the action.
+
+
 
 
 @node Exit
@@ -2176,6 +2229,8 @@ any documents cannot be saved, the action is suspended and an error message
 is issued.
 
 
+
+
 @node NewDoc
 @subsection NewDoc
 @cmindex NewDoc
@@ -2188,6 +2243,8 @@ The position of the document in the document list is just after the current
 document. The preferences of the new document are a copy of the
 preferences of the current document.
 
+
+
 @node Clear
 @subsection Clear
 @cmindex Clear
@@ -2198,6 +2255,8 @@ preferences of the current document.
 @noindent destroys the contents of the current document and of its undo
 buffer. Moreover, the document becomes unnamed. If your current document is
 marked as modified, you have to confirm the action.
+
+
 
 @node CloseDoc
 @subsection CloseDoc
@@ -2211,6 +2270,8 @@ marked as modified, you have to confirm the action.
 exits. If the document was modified since it was last saved, you have to
 confirm the action.
 
+
+
 @node NextDoc
 @subsection NextDoc
 @cmindex NextDoc
@@ -2221,6 +2282,8 @@ confirm the action.
 @noindent sets as current document the next document in the document list.
 
 
+
+
 @node PrevDoc
 @subsection PrevDoc
 @cmindex PrevDoc
@@ -2229,6 +2292,8 @@ confirm the action.
 @noindent Abbreviation: @code{PD}
 
 @noindent sets as current document the previous document in the document list.
+
+
 
 @node SelectDoc
 @subsection SelectDoc
@@ -2247,6 +2312,8 @@ returned to your original current document.
 @code{SelectDoc} is especially useful if you have a large number of
 documents open (say, more than 10). Otherwise, @code{NextDoc} and
 @code{PrevDoc} should be enough. See @ref{NextDoc}, and @ref{PrevDoc}.
+
+
 
 
 @node Clip Commands
@@ -2280,6 +2347,8 @@ Note that by using the @code{Through} command you can automatically pass a
 * Through::
 @end menu
 
+
+
 @node Mark
 @subsection Mark
 @cmindex Mark
@@ -2298,6 +2367,8 @@ active.
 
 See @ref{Record}, for the reason the mark is implemented as a flag.
 
+
+
 @node MarkVert
 @subsection MarkVert
 @cmindex MarkVert
@@ -2311,6 +2382,8 @@ cut/paste commands is the rectangle having as vertices the cursor and the mark.
 Moreover, a capital @samp{V}, rather than a capital @samp{M}, will appear on
 the status bar. Vertical cut/paste operations are useful for handling
 structured program indentation.
+
+
 
 @node Copy
 @subsection Copy
@@ -2327,6 +2400,7 @@ vertical, the rectangle of characters defined by the cursor and the mark is
 copied instead.
 
 
+
 @node Cut
 @subsection Cut
 @cmindex Cut
@@ -2335,6 +2409,7 @@ copied instead.
 @noindent Abbreviation: @code{CU}
 
 @noindent acts just like @code{Copy}, but also deletes the block being copied.
+
 
 
 @node Paste
@@ -2349,6 +2424,7 @@ document at the cursor position. If you don't specify the clip number,
 the current clip is used; Specify which clip is current with @ref{ClipNumber}.
 
 
+
 @node PasteVert
 @subsection PasteVert
 @cmindex PasteVert
@@ -2361,6 +2437,7 @@ being the current clip. Each line of the clip is inserted on consecutive
 lines at the horizontal cursor position.
 
 
+
 @node Erase
 @subsection Erase
 @cmindex Erase
@@ -2370,6 +2447,7 @@ lines at the horizontal cursor position.
 
 @noindent acts like @code{Cut}, but the block is just deleted and not
 copied into any clip.
+
 
 
 @node OpenClip
@@ -2390,6 +2468,8 @@ command; see @ref{NoFileReq}.)
 If you escape from the file requester, you can enter the file name on the
 input line.
 
+
+
 @node SaveClip
 @subsection SaveClip
 @cmindex SaveClip
@@ -2407,6 +2487,8 @@ command; see @ref{NoFileReq}.)
 If you escape from the file requester, you can enter the file name on the
 input line.
 
+
+
 @node ClipNumber
 @subsection ClipNumber
 @cmindex ClipNumber
@@ -2422,6 +2504,8 @@ is running on.
 
 If the optional argument @var{n} is not specified, you can enter it on the
 input line, the default being the current clip number.
+
+
 
 @node Through
 @subsection Through
@@ -2442,6 +2526,8 @@ command in your file.
 If the optional argument @var{command} is not specified, you can enter it on
 the input line.
 
+
+
 @node Search Commands
 @section Search Commands
 
@@ -2461,7 +2547,10 @@ optionally case insensitive).
 * MatchBracket::
 * SearchBack::
 * CaseSearch::
+* AutoComplete::
 @end menu
+
+
 
 @node Find
 @subsection Find
@@ -2478,6 +2567,7 @@ back search and case sensitive search flags. See @ref{SearchBack}, and
 
 If the optional argument @var{pattern} is not specified, you can enter it on
 the input line, the default being the last pattern used.
+
 
 
 @node FindRegExp
@@ -2498,6 +2588,8 @@ by the value of the back search and case sensitive search flags. See
 
 If the optional argument @var{pattern} is not specified, you can enter it on
 the input line, the default being the last pattern used.
+
+
 
 @node Replace
 @subsection Replace
@@ -2560,6 +2652,8 @@ which actions to perform. If you want to apply automatic replacement of
 strings for a certain number of times, you should look at @ref{ReplaceOnce},
 @ref{ReplaceAll}, and @ref{RepeatLast}.
 
+
+
 @node ReplaceOnce
 @subsection ReplaceOnce
 @cmindex ReplaceOnce
@@ -2573,6 +2667,8 @@ pattern, if it exists, is replaced by the given replacement string.
 
 If the optional argument @var{string} is not specified, you can enter it on
 the input line, the default being the last string used.
+
+
 
 @node ReplaceAll
 @subsection ReplaceAll
@@ -2590,6 +2686,7 @@ the input line, the default being the last string used.
 
 Note that @code{Undo} will restore @emph{all} the occurrences of the search
 pattern replaced by @code{ReplaceAll}. See @ref{Undo}.
+
 
 
 @node RepeatLast
@@ -2630,6 +2727,7 @@ reason the commands @code{ReplaceAll} and @code{ReplaceOnce} are
 provided.
 
 
+
 @node MatchBracket
 @subsection MatchBracket
 @cmindex MatchBracket
@@ -2641,6 +2739,8 @@ provided.
 cursor is on. If the cursor is not on a bracket, or there is no bracket
 associated with the current one, an error message is issued. Recognized
 brackets are @samp{@{@}}, @samp{()}, @samp{[]} and @samp{<>}.
+
+
 
 @node SearchBack
 @subsection SearchBack
@@ -2659,6 +2759,8 @@ case @samp{b} will appear on the status bar if the flag is true.
 Note that this flag also can be set through interactions with the
 @code{Replace} command. See @ref{Replace}.
 
+
+
 @node CaseSearch
 @subsection CaseSearch
 @cmindex CaseSearch
@@ -2673,6 +2775,28 @@ default the flag is false.
 If you invoke @code{CaseSearch} with no arguments, it will toggle the flag. If you
 specify 0 or 1, the flag will be set to false or true, respectively. A lower
 case @samp{c} will appear on the status bar if the flag is true.
+
+
+
+
+@node AutoComplete
+@subsection AutoComplete
+@cmindex AutoComplete
+
+@noindent Syntax: @code{AutoComplete [@var{prefix}]}@*
+@noindent Abbreviation: @code{AC}
+
+@noindent displays a selection of all words in open documents which match
+@var{prefix}, and inserts the selected word into the current document. Use
+the cursor keys to select the desired word and press @key{Return}, or escape
+with @key{f1}, @key{Escape} or @key{Escape}-@key{Escape} to abort the
+operation. Matching words from the current document display normally; those
+which only exist in other open documents are shown bold and are followed by
+an asterisk. If no @var{prefix} is given, the word characters to the
+immediate left of the cursor are used. Prefix matches may be case sensitive
+or not depending on the @code{CaseSearch} flag state. See @ref{CaseSearch}.
+
+
 
 @node Macros Commands
 @section Macros Commands
@@ -2699,6 +2823,7 @@ or recorded).
 * UnloadMacros::
 @end menu
 
+
 @node Record
 @subsection Record
 @cmindex Record
@@ -2724,6 +2849,8 @@ able to specify ``absolute'' menu items (by using @code{Record 0} and
 shortcut can be used both for initiating and for terminating a macro
 recording.
 
+
+
 @node Play
 @subsection Play
 @cmindex Play
@@ -2743,6 +2870,8 @@ and performs the operation, and then playing it a preposterously huge number of
 times.
 
 Execution of a macro can be interrupted by @kbd{@key{Control}-\}.
+
+
 
 @node Macro
 @subsection Macro
@@ -2781,6 +2910,7 @@ Note that the cache table is global to @code{ne} and not specific to any single
 document. This greatly improves efficiency when macros are used repeatedly.
 
 
+
 @node OpenMacro
 @subsection OpenMacro
 @cmindex OpenMacro
@@ -2798,6 +2928,8 @@ command; see @ref{NoFileReq}.)
 
 If you escape from the file requester, you can input the file name on the
 command line.
+
+
 
 @node SaveMacro
 @subsection SaveMacro
@@ -2824,6 +2956,8 @@ further editing, if necessary. Note that @code{SaveMacro} converts
 read and edit. See @ref{InsertChar}, and @ref{InsertString}.
 
 
+
+
 @node UnloadMacros
 @subsection UnloadMacros
 @cmindex UnloadMacros
@@ -2840,6 +2974,8 @@ bound to some keystroke, and you are interactively modifying it and playing it.
 @code{UnloadMacros} forces @code{ne} to look for the newer version available.
 
 
+
+
 @node Undo Commands
 @section Undo Commands
 
@@ -2851,6 +2987,8 @@ The following commands control the undo system.
 * UndelLine::
 * DoUndo::
 @end menu
+
+
 
 @node Undo
 @subsection Undo
@@ -2880,6 +3018,8 @@ as you don't take any actions that change the text between the
 is assumed to be one. You can only @code{Redo} actions that have been
 @code{Undo}ne. See @ref{Undo}.
 
+
+
 @node UndelLine
 @subsection UndelLine
 @cmindex UndelLine
@@ -2897,6 +3037,8 @@ also an easy way to replicate a line without getting involved with clips.
 
 Note that @code{UndelLine} works independently of the status of the
 undo flag. See @ref{DoUndo}.
+
+
 
 @node DoUndo
 @subsection DoUndo
@@ -2921,6 +3063,7 @@ this, on a virtual memory system we see no reason to not keep the undo flag
 always true, and this is indeed the default.
 
 
+
 @node Formatting Commands
 @section Formatting Commands
 
@@ -2938,6 +3081,8 @@ that for @code{ne} a paragraph is delimited by an empty line.
 * AutoIndent::
 @end menu
 
+
+
 @node Center
 @subsection Center
 @cmindex Center
@@ -2949,6 +3094,8 @@ that for @code{ne} a paragraph is delimited by an empty line.
 is not specified, it is assumed to be one. The lines are centered with
 spaces, relatively to the value of the right margin as set by the
 @code{RightMargin} command. See @ref{RightMargin}.
+
+
 
 @node Paragraph
 @subsection Paragraph
@@ -2977,6 +3124,7 @@ and colons, and do other ``smart'' things such as justification, you should
 consider using a text formatter. @TeX{} is usually the best choice.
 
 
+
 @node ToUpper
 @subsection ToUpper
 @cmindex ToUpper
@@ -2996,6 +3144,8 @@ argument.
 If you apply @code{ToUpper} on the first character of a word, it will
 just upper case @var{n} words.
 
+
+
 @node ToLower
 @subsection ToLower
 @cmindex ToLower
@@ -3004,6 +3154,8 @@ just upper case @var{n} words.
 @noindent Abbreviation: @code{TL}
 
 @noindent acts exactly like @code{ToUpper}, but lowers the case. See @ref{ToUpper}.
+
+
 
 @node Capitalize
 @subsection Capitalize
@@ -3014,6 +3166,8 @@ just upper case @var{n} words.
 
 @noindent acts exactly like @code{ToUpper}, but capitalizes, that is, makes the first
 letter upper case and the other ones lower case. See @ref{ToUpper}.
+
+
 
 @node RightMargin
 @subsection RightMargin
@@ -3032,6 +3186,8 @@ A value of zero for @var{n} will force @code{ne} to use (what it thinks it is)
 the current screen width as right margin.
 
 
+
+
 @node WordWrap
 @subsection WordWrap
 @cmindex WordWrap
@@ -3046,6 +3202,8 @@ while you type them. See @ref{RightMargin}.
 If you invoke @code{WordWrap} with no arguments, it will toggle the flag. If you
 specify 0 or 1, the flag will be set to false or true, respectively. A lower
 case @samp{w} will appear on the status bar if the flag is true.
+
+
 
 
 @node AutoIndent
@@ -3071,6 +3229,8 @@ action in the undo buffer (with respect to the line creation). If you are
 not satisfied with the indentation, just give the @code{Undo} command and
 the indentation will disappear (but the new line will remain in place, since
 its creation has been recorded as a separate action). See @ref{Undo}.
+
+
 
 
 @node Preferences Commands
@@ -3132,6 +3292,7 @@ process, you can clear the automatic preferences flag. See @ref{AutoPrefs}.
 @end menu
 
 
+
 @node Flags
 @subsection Flags
 @cmindex Flags
@@ -3166,6 +3327,8 @@ FLAG COMMAND      ABBR  DESCRIPTION
 A/8/U UTF8          U8   the document encoding (ASCII, 8-bit or UTF-8)
 @end example
 
+
+
 @node AutoPrefs
 @subsection AutoPrefs
 @cmindex AutoPrefs
@@ -3186,6 +3349,8 @@ postfixed with @samp{#ap}. Thus, for instance, C sources have an associated
 If you invoke @code{AutoPrefs} with no arguments, it will toggle the flag. If you
 specify 0 or 1, the flag will be set to false or true, respectively. A lower
 case @samp{p} will appear on the status bar if the flag is true.
+
+
 
 @node Binary
 @subsection Binary
@@ -3213,6 +3378,8 @@ If you invoke @code{Binary} with no arguments, it will toggle the flag. If you
 specify 0 or 1, the flag will be set to false or true, respectively. An upper
 case @samp{B} will appear on the status bar if the flag is true.
 
+
+
 @node Insert
 @subsection Insert
 @cmindex Insert
@@ -3228,6 +3395,8 @@ commands.
 If you invoke @code{Insert} with no arguments, it will toggle the flag. If you
 specify 0 or 1, the flag will be set to false or true, respectively. A lower
 case @samp{i} will appear on the status bar if the flag is true.
+
+
 
 @node FastGUI
 @subsection FastGUI
@@ -3246,6 +3415,8 @@ displayed. This option is only (but very) useful if you are using
 
 If you invoke @code{FastGUI} with no arguments, it will toggle the flag. If you
 specify 0 or 1, the flag will be set to false or true, respectively.
+
+
 
 @node FreeForm
 @subsection FreeForm
@@ -3267,6 +3438,8 @@ has engaged users from day one. The due of the implementor is to allow
 both choices, and to set as default the correct one (in his humble
 opinion). In this case, non-free-form.
 
+
+
 @node NoFileReq
 @subsection NoFileReq
 @cmindex NoFileReq
@@ -3279,6 +3452,8 @@ the file requester is never opened, under any circumstances.
 
 If you invoke @code{NoFileReq} with no arguments, it will toggle the flag. If you
 specify 0 or 1, the flag will be set to false or true, respectively.
+
+
 
 @node StatusBar
 @subsection StatusBar
@@ -3307,6 +3482,8 @@ If you invoke @code{StatusBar} with no arguments, it will toggle the flag. If yo
 specify 0 or 1, the flag will be set to false or true, respectively.
 
 
+
+
 @node HexCode
 @subsection HexCode
 @cmindex HexCode
@@ -3317,6 +3494,8 @@ specify 0 or 1, the flag will be set to false or true, respectively.
 @noindent sets the hex code flag. When this flag is true, the
 hexadecimal code of the character currently under the cursor is
 displayed on the status line.
+
+
 
 
 @node ReadOnly
@@ -3334,6 +3513,8 @@ See @ref{Open}.
 If you invoke @code{ReadOnly} with no arguments, it will toggle the flag. If you
 specify 0 or 1, the flag will be set to false or true, respectively. A lower
 case @samp{r} will appear on the status bar if the flag is true.
+
+
 
 @node EscapeTime
 @subsection EscapeTime
@@ -3357,6 +3538,8 @@ key by hitting it twice in a row.
 Note that the escape time is global to @code{ne}, and it is not saved. However,
 you can add an @code{EscapeTime} command manually to a preferences file.
 
+
+
 @node TabSize
 @subsection TabSize
 @cmindex TabSize
@@ -3370,6 +3553,8 @@ you can add an @code{EscapeTime} command manually to a preferences file.
 If the optional argument @var{size} is not specified, you can enter it on the
 input line, the default being the current @sc{tab} size. Allowed values are
 strictly between 0 and half the width of the screen.
+
+
 
 @node Turbo
 @subsection Turbo
@@ -3405,6 +3590,7 @@ of lines of the screen; for several reasons this does seem to be a good
 value.
 
 
+
 @node VerboseMacros
 @subsection VerboseMacros
 @cmindex VerboseMacros
@@ -3426,6 +3612,7 @@ played a great number of times. Automatic preferences files are too short to
 be an issue with respect to execution timing.
 
 
+
 @node PreserveCR
 @subsection PreserveCR
 @cmindex PreserveCR
@@ -3444,6 +3631,7 @@ If you invoke @code{PreserveCR} with no arguments, it will toggle the flag.
 If you specify 0 or 1, the flag will be set to false or true,
 respectively. An upper case @samp{P} will appear on the status bar if the
 flag is true.
+
 
 
 @node CRLF
@@ -3467,6 +3655,7 @@ respectively. An upper case @samp{C} will appear on the status bar if the
 flag is true.
 
 
+
 @node VisualBell
 @subsection VisualBell
 @cmindex VisualBell
@@ -3479,6 +3668,7 @@ flash (if possible) instead of beeping.
 
 If you invoke @code{VisualBell} with no arguments, it will toggle the flag. If
 you specify 0 or 1, the flag will be set to false or true, respectively.
+
 
 
 @node PushPrefs
@@ -3512,6 +3702,8 @@ restore the users previous preferences settings.
   DoUndo      PreserveCR  TabSize
 @end example
 
+
+
 @node PopPrefs
 @subsection PopPrefs
 @cmindex PopPrefs
@@ -3544,6 +3736,7 @@ restore the users previous preferences settings.
 @end example
 
 
+
 @node LoadPrefs
 @subsection LoadPrefs
 @cmindex LoadPrefs
@@ -3567,6 +3760,8 @@ purposes, such as filtering out specific settings.
 @xref{Hints and Tricks}.
 @end ifclear
 
+
+
 @node SavePrefs
 @subsection SavePrefs
 @cmindex SavePrefs
@@ -3582,6 +3777,8 @@ inhibit the file requester opening by using the @code{NoFileReq}
 command; see @ref{NoFileReq}.) If you escape from the file requester, you
 can input the file name on the command line.
 
+
+
 @node LoadAutoPrefs
 @subsection LoadAutoPrefs
 @cmindex LoadAutoPrefs
@@ -3593,6 +3790,8 @@ can input the file name on the command line.
 with the current document's file name extension. If the current file
 name has no extension, the default preferences are loaded.
 See @ref{AutoPrefs}.
+
+
 
 @node SaveAutoPrefs
 @subsection SaveAutoPrefs
@@ -3606,6 +3805,8 @@ associated with the current document's file name extension. If the
 current file name has no extension, an error message is issued.
 See @ref{AutoPrefs}.
 
+
+
 @node SaveDefPrefs
 @subsection SaveDefPrefs
 @cmindex SaveDefPrefs
@@ -3615,6 +3816,8 @@ See @ref{AutoPrefs}.
 
 @noindent saves the current preferences on the @file{~/.ne/.default#ap} file.
 This file is always loaded by @code{ne} at startup.
+
+
 
 @node Modified
 @subsection Modified
@@ -3634,6 +3837,8 @@ If you invoke @code{Modified} with no arguments, it will toggle the flag.
 If you specify 0 or 1, the flag will be set to false or true,
 respectively. An asterisk (@samp{*}) will appear on the status bar if the
 flag is true.
+
+
 
 @node Syntax
 @subsection Syntax
@@ -3683,6 +3888,8 @@ is the name of the syntax file):
    xml: xsd
 @end example
 
+
+
 @node UTF8
 @subsection UTF8
 @cmindex UTF8
@@ -3707,6 +3914,8 @@ exclusively by US-ASCII characters, or also by other 8-bit characters
 (which are likely to be ISO-8859 encoded). Note that each time this
 command modifies the buffer encoding, it also resets the undo buffer.
 
+
+
 @node UTF8Auto
 @subsection UTF8Auto
 @cmindex UTF8Auto
@@ -3725,6 +3934,8 @@ If you invoke @code{UTF8Auto} with no arguments, it will toggle the flag.
 If you specify 0 or 1, the flag will be set to false or true,
 respectively.
 
+
+
 @node UTF8IO
 @subsection UTF8IO
 @cmindex UTF8IO
@@ -3742,6 +3953,8 @@ If you invoke @code{UTF8IO} with no arguments, it will toggle the flag.
 If you specify 0 or 1, the flag will be set to false or true,
 respectively. An @samp{@@} will appear on the status bar if the flag is
 true.
+
+
 
 @node Navigation Commands
 @section Navigation Commands
@@ -3782,6 +3995,8 @@ to the same position later.
 * UnsetBookmark::
 @end menu
 
+
+
 @node MoveLeft
 @subsection MoveLeft
 @cmindex MoveLeft
@@ -3791,6 +4006,8 @@ to the same position later.
 
 @noindent moves the cursor to the left by one character @var{n} times. If
 the optional @var{n} argument is not specified, it is assumed to be one.
+
+
 
 @node MoveRight
 @subsection MoveRight
@@ -3802,6 +4019,8 @@ the optional @var{n} argument is not specified, it is assumed to be one.
 @noindent moves the cursor to the right by one character @var{n} times. If
 the optional @var{n} argument is not specified, it is assumed to be one.
 
+
+
 @node LineUp
 @subsection LineUp
 @cmindex LineUp
@@ -3812,6 +4031,8 @@ the optional @var{n} argument is not specified, it is assumed to be one.
 @noindent moves the cursor up by one line @var{n} times. If the optional
 @var{n} argument is not specified, it is assumed to be one.
 
+
+
 @node LineDown
 @subsection LineDown
 @cmindex LineDown
@@ -3821,6 +4042,8 @@ the optional @var{n} argument is not specified, it is assumed to be one.
 
 @noindent moves the cursor down by one line @var{n} times. If the optional
 @var{n} argument is not specified, it is assumed to be one.
+
+
 
 @node GotoLine
 @subsection GotoLine
@@ -3836,6 +4059,8 @@ moved to the last line.
 If the optional argument @var{line} is not specified, you can enter it on
 the input line; the default input response is the current line number.
 
+
+
 @node GotoColumn
 @subsection GotoColumn
 @cmindex GotoColumn
@@ -3847,6 +4072,8 @@ the input line; the default input response is the current line number.
 
 If the optional argument @var{line} is not specified, you can enter it on
 the input line; the default input response is the current column number.
+
+
 
 @node GotoMark
 @subsection GotoMark
@@ -3861,6 +4088,8 @@ the input line; the default input response is the current column number.
 If you want to record a position in a file and jump to it later, you
 may want to use a bookmark. See @ref{SetBookmark}.
 
+
+
 @node PrevPage
 @subsection PrevPage
 @cmindex PrevPage
@@ -3872,6 +4101,8 @@ may want to use a bookmark. See @ref{SetBookmark}.
 first line of the screen; otherwise moves the cursor to the first line of
 the screen, and moves by @var{n}-1 pages. If the optional @var{n} argument
 is not specified, it is assumed to be one.
+
+
 
 
 @node NextPage
@@ -3887,6 +4118,8 @@ screen, and moves by @var{n}-1 pages. If the optional @var{n} argument is
 not specified, it is assumed to be one.
 
 
+
+
 @node PageUp
 @subsection PageUp
 @cmindex PageUp
@@ -3896,6 +4129,8 @@ not specified, it is assumed to be one.
 
 @noindent pages the screen backward by @var{n} screens.
 If @var{n} is not specified, it is assumed to be one.
+
+
 
 
 
@@ -3910,6 +4145,8 @@ If @var{n} is not specified, it is assumed to be one.
 assumed to be one.
 
 
+
+
 @node PrevWord
 @subsection PrevWord
 @cmindex PrevWord
@@ -3922,6 +4159,8 @@ assumed to be one.
 assumed to be one (in which case, if the cursor is in the middle of a
 word the effect is just to move it to the start of that word).
 
+
+
 @node NextWord
 @subsection NextWord
 @cmindex NextWord
@@ -3932,6 +4171,8 @@ word the effect is just to move it to the start of that word).
 @noindent moves the cursor to the next word @var{n} times. If the optional
 @var{n} argument is not specified, it is assumed to be one.
 
+
+
 @node MoveEOL
 @subsection MoveEOL
 @cmindex MoveEOL
@@ -3941,6 +4182,8 @@ word the effect is just to move it to the start of that word).
 
 @noindent moves the cursor to the end of the current line  (@code{EOL} = end of
 line).
+
+
 
 
 @node MoveSOL
@@ -3954,6 +4197,8 @@ line).
 line).
 
 
+
+
 @node MoveTOS
 @subsection MoveTOS
 @cmindex MoveTOS
@@ -3963,6 +4208,8 @@ line).
 
 @noindent moves the cursor to the top line of the screen (@code{TOS} = top of
 screen).
+
+
 
 
 @node MoveBOS
@@ -3977,6 +4224,7 @@ screen).
 
 
 
+
 @node MoveEOF
 @subsection MoveEOF
 @cmindex MoveEOF
@@ -3987,6 +4235,9 @@ screen).
 @noindent moves the cursor to the end of the document (@code{EOF} = end of
 file).
 
+
+
+
 @node MoveSOF
 @subsection MoveSOF
 @cmindex MoveSOF
@@ -3996,6 +4247,9 @@ file).
 
 @noindent moves the cursor to the start of the document (@code{SOF} = start
 of file).
+
+
+
 
 @node MoveEOW
 @subsection MoveEOW
@@ -4013,6 +4267,8 @@ precisely the word the cursor is on.
 @end ifclear
 
 
+
+
 @node MoveIncUp
 @subsection MoveIncUp
 @cmindex MoveIncUp
@@ -4026,6 +4282,9 @@ it lies on, then it is moved to the start of that line. Otherwise, if it
 is on the first line of the screen, then it is moved to the start of the
 document; otherwise, it is moved to the first line of the screen.
 
+
+
+
 @node MoveIncDown
 @subsection MoveIncDown
 @cmindex MoveIncDown
@@ -4038,6 +4297,7 @@ document.  More precisely, if the cursor is not on the end of the line
 it lies on, then it is moved to the end of that line. Otherwise, if it is
 on the last line of the screen, then it is moved to the end of the
 document; otherwise, it is moved to the last line of the screen.
+
 
 
 
@@ -4067,6 +4327,8 @@ that the current position becomes the top left-most character on
 screen (within the limits of the current @sc{tab} size).
 
 
+
+
 @node ToggleSEOF
 @subsection ToggleSEOF
 @cmindex ToggleSEOF
@@ -4080,6 +4342,8 @@ there; otherwise, moves it to the end of the document.
 This kind of toggling command is very useful in
 order to gain some keystrokes on systems with very few keys. See also
 @ref{ToggleSEOL}, @ref{MoveSOF}, and @ref{MoveEOF}.
+
+
 
 @node ToggleSEOL
 @subsection ToggleSEOL
@@ -4095,6 +4359,9 @@ This kind of toggling command is very useful in
 order to gain some keystrokes on systems with very few keys. See also
 @ref{ToggleSEOF}, @ref{MoveSOL}, and @ref{MoveEOL}.
 
+
+
+
 @node SetBookmark
 @subsection SetBookmark
 @cmindex SetBookmark
@@ -4108,6 +4375,8 @@ also unset the @samp{-} automatic bookmark, but it will be reset automatically t
 the current position whenever a @code{GotoBookmark} command is issued. Each
 document's valid bookmark designations are 0 to 9, and the @samp{-} automatic
 bookmark.
+
+
 
 @node GotoBookmark
 @subsection GotoBookmark
@@ -4126,6 +4395,8 @@ from which you last issued a @code{GotoBookmark} command. Subsequent repeated
 document's valid bookmark designations are 0 to 9, and the @samp{-} automatic
 bookmark.
 
+
+
 @node UnsetBookmark
 @subsection UnsetBookmark
 @cmindex UnsetBookmark
@@ -4139,6 +4410,8 @@ it is assumed to be zero. You can also unset the @samp{-} automatic bookmark, bu
 it will be reset automatically to the current position whenever a @code{GotoBookmark}
 command is issued. Each document's valid bookmark designations are 0 to 9, and
 the  @samp{-} automatic bookmark.
+
+
 
 @node Editing Commands
 @section Editing Commands
@@ -4157,8 +4430,9 @@ These commands allow modifying a document directly.
 * InsertLine::
 * DeleteLine::
 * DeleteEOL::
-* AutoComplete::
 @end menu
+
+
 
 @node InsertChar
 @subsection InsertChar
@@ -4185,6 +4459,8 @@ Note also that @code{SaveMacro} converts @code{InsertChar} commands into
 a possibly smaller number of @code{InsertString} commands.
 This makes macros easier to read and edit. See @ref{SaveMacro}.
 
+
+
 @node InsertString
 @subsection InsertString
 @cmindex InsertString
@@ -4202,6 +4478,8 @@ possibly smaller number of @code{InsertString} commands.
 This makes macros easier to read and edit. See @ref{SaveMacro}.
 
 
+
+
 @node InsertTab
 @subsection InsertTab
 @cmindex InsertTab
@@ -4212,6 +4490,8 @@ This makes macros easier to read and edit. See @ref{SaveMacro}.
 @noindent inserts either @var{n} literal @var{TAB} characters or one or more
 spaces sufficient to advance the current cursor position @var{n}
 tab stops depending on the @code{Tabs} flag. See @ref{Tabs}, @ref{TabSize}.
+
+
 
 
 @node Tabs
@@ -4236,6 +4516,8 @@ specify 0 or 1, the flag will be set to false or true, respectively. A lower
 case @samp{t} will appear on the status bar if the flag is true.
 
 
+
+
 @node DeleteChar
 @subsection DeleteChar
 @cmindex DeleteChar
@@ -4250,6 +4532,9 @@ the following one; in other words, the carriage return between the two lines
 will be deleted. Note that if the cursor is past the end of the current line,
 no action will be performed.
 
+
+
+
 @node DeletePrevWord
 @subsection DeletePrevWord
 @cmindex DeletePrevWord
@@ -4261,6 +4546,9 @@ no action will be performed.
 previous word @var{n} times. If the optional @var{n} argument is not specified,
 it is assumed to be one (in which case, if the cursor is in the middle of a
 word the effect is just to delete to the start of that word).
+
+
+
 
 @node DeleteNextWord
 @subsection DeleteNextWord
@@ -4274,6 +4562,8 @@ times. If the optional @var{n} argument is not specified, it is assumed to be
 one.
 
 
+
+
 @node Backspace
 @subsection Backspace
 @cmindex Backspace
@@ -4283,6 +4573,9 @@ one.
 
 @noindent acts like @code{DeleteChar}, but moves the cursor to the left
 before deleting each character.
+
+
+
 
 @node InsertLine
 @subsection InsertLine
@@ -4294,6 +4587,8 @@ before deleting each character.
 @noindent inserts @var{n} lines at the current cursor position, breaking the
 current line. If the optional @var{n} argument is not specified, it is
 assumed to be one.
+
+
 
 @node DeleteLine
 @subsection DeleteLine
@@ -4308,6 +4603,8 @@ can be undeleted. See @ref{UndelLine}. If the optional @var{n} argument is
 not specified, it is assumed to be one. Note that this action is in no
 way inverse with respect to @code{InsertLine}.
 
+
+
 @node DeleteEOL
 @subsection DeleteEOL
 @cmindex DeleteEOL
@@ -4321,22 +4618,6 @@ of the line.
 @code{DeleteEOL} could be easily implemented with a macro, but it is such a
 common, basic editing feature that it seemed worth a separate implementation.
 
-@node AutoComplete
-@subsection AutoComplete
-@cmindex AutoComplete
-
-@noindent Syntax: @code{AutoComplete [@var{prefix}]}@*
-@noindent Abbreviation: @code{AC}
-
-@noindent displays a selection of all words in open documents which match
-@var{prefix}, and inserts the selected word into the current document. Use
-the cursor keys to select the desired word and press @key{Return}, or escape
-with @key{f1}, @key{Escape} or @key{Escape}-@key{Escape} to abort the
-operation. Matching words from the current document display normally; those
-which only exist in other open documents are shown bold and are followed by
-an asterisk. If no @var{prefix} is given, the word characters to the
-immediate left of the cursor are used. Prefix matches may be case sensitive
-or not depending on the @code{CaseSearch} flag state. See @ref{CaseSearch}.
 
 
 
@@ -4362,6 +4643,8 @@ provide access to the shell and a way to assign the functionality of
 * KeyCode::
 @end menu
 
+
+
 @node About
 @subsection About
 @cmindex About
@@ -4370,6 +4653,8 @@ provide access to the shell and a way to assign the functionality of
 @noindent Abbreviation: @code{About}
 
 @noindent displays a simple information line about @code{ne} on the status bar.
+
+
 
 @node Alert
 @subsection Alert
@@ -4380,6 +4665,8 @@ provide access to the shell and a way to assign the functionality of
 
 @noindent beeps or flashes, depending on the value of the visual bell flag.
 
+
+
 @node Beep
 @subsection Beep
 @cmindex Beep
@@ -4389,6 +4676,8 @@ provide access to the shell and a way to assign the functionality of
 
 @noindent beeps. If your terminal cannot beep, it flashes. If it cannot
 flash, nothing happens (but you have a very bad terminal).
+
+
 
 @node Exec
 @subsection Exec
@@ -4407,6 +4696,8 @@ manually programmed macros.
 Note that if the command you specify does not appear in @code{ne}'s internal
 tables, it is considered to be a macro name. See @ref{Macro}.
 
+
+
 @node Flash
 @subsection Flash
 @cmindex Flash
@@ -4416,6 +4707,8 @@ tables, it is considered to be a macro name. See @ref{Macro}.
 
 @noindent acts as @code{Beep}, but interchanging the words ``beep'' and ``flash''.
 Same comments apply. See @ref{Beep}.
+
+
 
 @node Help
 @subsection Help
@@ -4436,6 +4729,8 @@ Invocations of the @code{Help} command are never registered while
 recording macros so that you can safely access the help system while
 recording. See @ref{Record}.
 
+
+
 @node NOP
 @subsection NOP
 @cmindex NOP
@@ -4444,6 +4739,8 @@ recording. See @ref{Record}.
 @noindent Abbreviation: @code{NOP}
 
 @noindent does nothing. Mainly useful for inhibiting standard key bindings.
+
+
 
 @node Refresh
 @subsection Refresh
@@ -4461,6 +4758,8 @@ terminal corrupts the display. This command restores it from scratch.
 size has changed, and will modify the display to take that into
 account.
 
+
+
 @node Suspend
 @subsection Suspend
 @cmindex Suspend
@@ -4470,6 +4769,8 @@ account.
 
 @noindent suspends @code{ne} and returns you to a shell prompt; usually,
 the shell command @code{fg} is used to resume @code{ne}.
+
+
 
 @node System
 @subsection System
@@ -4494,6 +4795,8 @@ to refer to parts of the internal state of @code{ne}.
 
 @end ignore
 
+
+
 @node Escape
 @subsection Escape
 @cmindex Escape
@@ -4504,6 +4807,8 @@ to refer to parts of the internal state of @code{ne}.
 @noindent toggles the menus on and off, or escapes from the input line. This
 command is mainly useful for reprogramming the menu activator, and it is
 never registered while recording a macro. See @ref{Record}.
+
+
 
 @node KeyCode
 @subsection KeyCode
@@ -4517,6 +4822,8 @@ the key code @code{ne} associates with that key. This can be useful
 while configuring your @file{~/.ne/.keys} file. It also reports the
 input class for that key. Input class codes are: ALPHA, COMMAND,
 RETURN, TAB, IGNORE, and INVALID.
+
+
 
 
 @node Configuration
@@ -4543,6 +4850,8 @@ ASCII characters between 128 and 159, and will be parsed as shortcuts by
 * Key Bindings::
 * Changing Menus::
 @end menu
+
+
 
 @node Key Bindings
 @section Key Bindings
@@ -4653,6 +4962,8 @@ The key binding file is parsed at startup. If something does not work,
 parsing the key binding file (for instance, to correct the broken
 file), just give @code{ne} the @code{--no-config} argument. @xref{Arguments}.
 
+
+
 @node Changing Menus
 @section Changing Menus
 @cindex Configuring the menus
@@ -4703,6 +5014,7 @@ work, @code{ne} exits displaying an error message. If you want @code{ne} to
 skip the menu configuration phase (for instance, to correct the
 broken file), just give @code{ne} the @code{--no-config} argument.
 @xref{Arguments}.
+
 
 
 @node Hints and Tricks
@@ -4833,6 +5145,8 @@ standard, and thus cannot be disabled by @code{ne}. On @sc{hp-ux}, the command
 sequence previously assigned to it to run up to @code{ne}.
 
 @end table
+
+
 
 @node Motivations and Design
 @chapter Motivations and Design
@@ -4991,6 +5305,8 @@ we are aware of. (Of course, this does not take into account some
 sophisticated features of @code{ne}, such as unlimited undo/redo, which
 can cause major memory consumption.)
 
+
+
 @node The Encoding Mess
 @chapter The Encoding Mess
 @cindex UTF-8
@@ -5053,6 +5369,7 @@ the cases there is no need to think of encodings. In any case, should
 time the level of UTF-8 support.
 
 
+
 @node Some Notes for the Amiga User
 @chapter Some Notes for the Amiga User
 @cindex Amiga
@@ -5091,6 +5408,7 @@ The @file{$HOME} (a.k.a @file{~}) directory has no meaning on the Amiga: rather,
 is really @file{PROGDIR:.ne}.
 
 
+
 @node History
 @chapter History
 @cindex TurboText
@@ -5127,6 +5445,8 @@ which was written by Joseph H. Allen. Much of the work to incorporate
 this code into @code{ne} was undertaken by Daniele Filaretti, an
 undergraduate student working under the direction of Sebastiano at the
 Universit@`a degli Studi di Milano.
+
+
 
 
 @node Portability Problems
