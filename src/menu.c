@@ -889,7 +889,7 @@ static void error_in_menu_configuration(const int line, const char * const s) {
 }
 
 
-void get_menu_configuration(const char * menu_conf_name) {
+static void get_menu_conf(const char * menu_conf_name, char * (exists_prefs_func)()) {
 
 	char  *prefs_dir, *menu_conf;
 	char_stream *cs;
@@ -900,7 +900,7 @@ void get_menu_configuration(const char * menu_conf_name) {
 
 	if (!menu_conf_name) menu_conf_name = MENU_CONF_NAME;
 
-	if (prefs_dir = exists_prefs_dir()) {
+	if (prefs_dir = exists_prefs_func()) {
 		if (menu_conf = malloc(strlen(prefs_dir) + strlen(menu_conf_name) + 1)) {
 			strcat(strcpy(menu_conf, prefs_dir), menu_conf_name);
 
@@ -997,6 +997,13 @@ void get_menu_configuration(const char * menu_conf_name) {
 	}
 }
 
+/* Menu configs are all or nothing, so if the user has one,
+   skip any global one. */
+void get_menu_configuration(const char * menu_conf_name) {
+	get_menu_conf(menu_conf_name, exists_prefs_dir);
+	if (menus == def_menus) get_menu_conf(menu_conf_name, exists_gprefs_dir);
+}
+
 
 static void error_in_key_bindings(const int line, const char * const s) {
 
@@ -1004,7 +1011,7 @@ static void error_in_key_bindings(const int line, const char * const s) {
 	exit(0);
 }
 
-void get_key_bindings(const char * key_bindings_name) {
+static void get_key_bind(const char * key_bindings_name, char * (exists_prefs_func)()) {
 	char *prefs_dir, *key_bindings;
 	char_stream *cs;
 	unsigned char *p;
@@ -1012,7 +1019,7 @@ void get_key_bindings(const char * key_bindings_name) {
 
 	if (!key_bindings_name) key_bindings_name = KEY_BINDINGS_NAME;
 
-	if (prefs_dir = exists_prefs_dir()) {
+	if (prefs_dir = exists_prefs_func()) {
 		if (key_bindings = malloc(strlen(prefs_dir) + strlen(key_bindings_name) + 1)) {
 			strcat(strcpy(key_bindings, prefs_dir), key_bindings_name);
 
@@ -1050,3 +1057,11 @@ void get_key_bindings(const char * key_bindings_name) {
 		}
 	}
 }
+
+/* Key bindings override easily, so pull in any global bindings
+   first, then override with the users bindings. */
+void get_key_bindings(const char * key_bindings_name) {
+	get_key_bind(key_bindings_name, exists_gprefs_dir);
+	get_key_bind(key_bindings_name, exists_prefs_dir);
+}
+
