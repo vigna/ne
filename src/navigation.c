@@ -581,7 +581,8 @@ int move_bos(buffer * const b) {
    of the file is visible in the terminal window. */
 
 int adjust_view(buffer * const b, const unsigned char *p) {
-	int i, disp, rc = OK;
+	int i, disp, mag, rc = OK;
+	char *q;
 
 	b->y_wanted = 0;
 
@@ -589,11 +590,12 @@ int adjust_view(buffer * const b, const unsigned char *p) {
 	  
 	while(*p) {
 		disp = 0;
+		mag = max(0,strtol(p+1, &q, 0));
 		switch (*p) {
 			case 't' :
 			case 'T' :
 				/* Shift the view so that the current line is displayed at the top. */
-				disp = -b->cur_y;
+				disp = mag ? -min(mag,b->cur_y) : -b->cur_y;
 				break;
 
 			case 'c' :
@@ -605,15 +607,17 @@ int adjust_view(buffer * const b, const unsigned char *p) {
 			case 'b' :
 			case 'B' :
 				/* Shift the view so that the current line is displayed at the bottom. */
-				disp = (ne_lines - 2) - b->cur_y;
+				disp = mag ? min(mag,(ne_lines -2) - b->cur_y) : (ne_lines - 2) - b->cur_y;
 				break;
 
 			case 'l' :
 			case 'L' :
-				/* Shift the view as far left as possible. */
-				while (b->cur_x >= b->opt.tab_size) {
+				/* Shift the view as far left as possible, or mag columns. */
+				if (mag == 0) mag = b->cur_x;
+				while (b->cur_x >= b->opt.tab_size && mag > 0) {
 					b->win_x += b->opt.tab_size;
 					b->cur_x -= b->opt.tab_size;
+					mag      -= b->opt.tab_size;
 				}
 				break;
 
@@ -636,8 +640,10 @@ int adjust_view(buffer * const b, const unsigned char *p) {
 
 			case 'r' :
 			case 'R' :
-				/* Shift the view as far right as possible. */
-				while (b->cur_x < ne_columns - ne_columns % b->opt.tab_size && b->win_x >= b->opt.tab_size) {
+				/* Shift the view as far right as possible, or mag columns. */
+				if (mag == 0) mag = b->win_x;
+				while (b->cur_x < ne_columns - ne_columns % b->opt.tab_size && b->win_x >= b->opt.tab_size && mag > 0) {
+					mag      -= b->opt.tab_size;
 					b->win_x -= b->opt.tab_size;
 					b->cur_x += b->opt.tab_size;
 				}
@@ -663,7 +669,7 @@ int adjust_view(buffer * const b, const unsigned char *p) {
 				b->top_line_desc = (line_desc *)b->top_line_desc->ld_node.next;
 			}
 		}
-		p++;
+		p = q;
 	}
 
 	if (b == cur_buffer) update_window(b);

@@ -31,6 +31,8 @@ Changes from version 2.0.3
   * Replace reports the number of replacements (again).
   
   * Aborting an OpenNew doesn't leave you in a new blank document.
+  
+  * AdjustView now takes optional number of lines or columns to adjust by.
 
 ---- Bug fixes ----
 
