@@ -286,12 +286,12 @@ your system administrator.
 At startup, the status bar has the following form:
 
 @example
- L:       1 C:       1  12% ia----pvu-------@@A <unnamed>
+ L:       1 C:       1  12% ia----pvu-t------@@A <unnamed>
 @end example
 
 @noindent (the numbers could be different, and a file name could be shown as
 last item instead of @samp{<unnamed>}). You probably already guessed
-that the numbers after @samp{L:} and @samp{C:} are the line and column
+that the numbers after @samp{L:} and @samp{C:} are your cursor's line and column
 numbers, respectively, whereas the percentage indicates approximately
 your position in the file. The small letters represent user flags that
 you can turn on and off. In particular, @samp{i} tells you that insert
@@ -302,10 +302,10 @@ the status line, see @ref{The Status Bar}.
 Once you are accustomed to cursor movement and line editing, it is time to
 press @key{f1} (the first function key), or in case your keyboard does not
 have such a key, @key{Escape}. Immediately, the @dfn{menu bar} will appear,
-and the first menu will be drawn (if you find yourself waiting for the menu
-to appear, you can press @key{Escape} twice in a row). You can now move
+and the first menu will be drawn. (If you find yourself waiting for the menu
+to appear, you can press @key{Escape} twice in a row.) You can now move
 around menus and menu items by pressing the cursor keys. Moreover, a lower
-case alphabetic key will move to the first item whose name starts with that
+case alphabetic key will move to the first item in the current menu whose name starts with that
 letter, and an upper case alphabetic key will move to the first menu whose
 name starts with that letter.
 
@@ -313,7 +313,7 @@ Moving around the menus should give you an idea of the capabilities of
 @code{ne}. If you want to save your work, you should use the @samp{Save As...}
 item from the @samp{File} menu. Menus are fully discussed in @ref{Menus}.
 When you want to exit from the menu system, press @key{f1} (or @key{Escape})
-again. If you instead prefer to choose a command and execute it, move
+again. If instead you prefer to choose a command and execute it, move
 to the respective menu item and press @key{Return}.
 
 At the end of several menu items you will find strange symbols like
