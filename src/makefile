@@ -114,8 +114,15 @@ really-clean: clean
 
 ###
 
-ne.texinfo: ../doc/ne.texinfo
-	-ln -s ../doc/ne.texinfo
+../doc/version.texinfo:
+	(cd ../doc; make version.texinfo)
+
+ne.texinfo: ../doc/ne.texinfo ../doc/version.texinfo
+	-ln -sf ../doc/ne.texinfo
+	-ln -sf ../doc/version.texinfo
+
+version.h:
+	./version.pl VERSION="`date +%F`@`hostname`"
 
 ne.h: enums.h utf8.h
 

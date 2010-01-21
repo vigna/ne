@@ -14,6 +14,9 @@ all: $(DOCS)
 install: all
 	cp * ../../../doc
 
+version.texinfo:
+	./version.pl VERSION="`date +%F`@@`hostname`"
+
 ne.txt: ne.texinfo version.texinfo
 	makeinfo --plaintext --no-headers ne.texinfo -o ne.txt
 	sed -i -e "s/\`/'/g" ne.txt
