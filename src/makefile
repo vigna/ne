@@ -35,6 +35,7 @@
 # files, etc.).
 
 NE_GLOBAL_DIR = /usr/local/share/ne
+VERSION       = 2.0.4-pre4
 
 PROGRAM       = ne
 
@@ -115,14 +116,14 @@ really-clean: clean
 ###
 
 ../doc/version.texinfo:
-	(cd ../doc; make version.texinfo)
+	(cd ../doc; make VERSION=$(VERSON) version.texinfo)
 
 ne.texinfo: ../doc/ne.texinfo ../doc/version.texinfo
 	-ln -sf ../doc/ne.texinfo
 	-ln -sf ../doc/version.texinfo
 
 version.h:
-	./version.pl VERSION="`date +%F`@`hostname`"
+	./version.pl VERSION=$(VERSION)
 
 ne.h: enums.h utf8.h
 
