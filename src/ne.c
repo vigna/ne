@@ -21,11 +21,12 @@
 	02111-1307, USA.  */
 
 
+#include "regex.h"
+
 #include "ne.h"
 
 #include "version.h"
 #include "termchar.h"
-#include "regex.h"
 
 #include <signal.h>
 #include <limits.h>

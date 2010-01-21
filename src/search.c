@@ -284,8 +284,8 @@ int find_regexp(buffer * const b, const unsigned char *regex, int dir, int skip_
 		re_pb.translate = 0;
 	}
 	else {
-		if (re_pb.translate != (char *)up_case) recompile_string = TRUE;
-		re_pb.translate = (char *)up_case;
+		if (re_pb.translate != up_case) recompile_string = TRUE;
+		re_pb.translate = (unsigned char *)up_case;
 	}
 
 	if (recompile_string) {

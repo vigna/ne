@@ -74,7 +74,7 @@ static const char * const *entries;
    versions of ne. If false, the second set of macros are used, and these implement
    the by-column request display. For now, this may be considered experimental. */
 
-#define DISPLAYBYROW 0
+#define DISPLAYBYROW 1
 
 #if DISPLAYBYROW
 
