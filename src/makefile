@@ -116,10 +116,13 @@ really-clean: clean
 ###
 
 ../doc/version.texinfo:
-	(cd ../doc; make VERSION=$(VERSON) version.texinfo)
+	(cd ../doc; make VERSION=$(VERSION) version.texinfo)
+	-ln -sf ../doc/version.texinfo
 
-ne.texinfo: ../doc/ne.texinfo ../doc/version.texinfo
+ne.texinfo:
 	-ln -sf ../doc/ne.texinfo
+
+version.texinfo: ../doc/version.texinfo
 	-ln -sf ../doc/version.texinfo
 
 version.h:
@@ -129,7 +132,7 @@ ne.h: enums.h utf8.h
 
 ext.c: ext.c.in
 
-enums.h names.c names.h hash.c hash.h help.c help.h ext.c: ne.texinfo info2src.pl
+enums.h names.c names.h hash.c hash.h help.c help.h ext.c: ne.texinfo version.texinfo info2src.pl
 	makeinfo -D autohelp ne.texinfo
 	perl info2src.pl
 	rm -f ne.info*
