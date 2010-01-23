@@ -13,9 +13,13 @@ PROGRAM       = ne
 build:
 	(cd src; make NE_GLOBAL_DIR=$(PREFIX)/share/ne)
 
+version:
+	./version.pl VERSION=$(VERSION)
+
 source:
-	( cd doc; ./version.pl VERSION=$(VERSION); make )
-	( cd src; ./version.pl VERSION=$(VERSION); make clean; make )
+	./version.pl VERSION=$(VERSION)
+	( cd doc; make )
+	( cd src; make clean; make )
 	-rm -f ne-$(VERSION)
 	ln -s . ne-$(VERSION)
 	tar cvf ne-$(VERSION).tar ne-$(VERSION)/makefile ne-$(VERSION)/COPYING ne-$(VERSION)/README ne-$(VERSION)/CHANGES \
@@ -30,6 +34,7 @@ source:
 	-rm -f ne-$(VERSION)
 
 cygwin:
+	./version.pl VERSION=$(VERSION)
 	( cd doc; make )
 	( cd src; make clean; make NE_GLOBAL_DIR=/usr/lib/ne )
 	make install PREFIX=/usr
@@ -52,5 +57,8 @@ install:
 	-install-info --dir-file=$(DESTDIR)$(PREFIX)/share/info/dir $(DESTDIR)$(PREFIX)/share/info/ne.info.gz
 
 clean:
-	-rm ne-*.tar*
+	-rm -f ne-*.tar*
 
+really-clean: clean
+	(cd src; make clean)
+	(cd doc; make clean)

@@ -9,15 +9,13 @@ INFODOCS=ne.info.gz ne.info-1.gz ne.info-2.gz ne.info-3.gz ne.info-4.gz
 
 DOCS=ne.txt $(INFODOCS) ne.html ne.dvi ne.pdf
 
-VERSION = 2.0.4-pre4
-
 all: $(DOCS)
 
 install: all
 	cp * ../../../doc
 
 version.texinfo:
-	./version.pl VERSION=$(VERSION)
+	( cd .. ; make version )
 
 ne.txt: ne.texinfo version.texinfo
 	makeinfo --plaintext --no-headers ne.texinfo -o ne.txt
