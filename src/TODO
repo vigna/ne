@@ -8,8 +8,6 @@ for enlightenment, but nothing happened. Just thought I'd mention it...
 
 Fix the DNW/DPW stuff
 
-- Control chars are displayed incorrectly on the command line
-- Check resize on a Mac
 - Open files > 2G.
 
 - Large line numbers create overflows in the computatio of the percentage

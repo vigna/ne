@@ -538,7 +538,7 @@ int get_key_code(void) {
 		clearerr(stdin);
 		if (c == EOF && (!partial_match || e) && e != EINTR) kill(getpid(), SIGTERM);
 
-		if (c == EOF && e == EINTR) return -NE_KEY_IGNORE - 1;
+		if (c == EOF && (e == 0 || e == EINTR)) return -NE_KEY_IGNORE - 1;
 
 		if (partial_match) set_termios_timeout(0);
 

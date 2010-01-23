@@ -370,6 +370,7 @@ void set_interactive_mode(void) {
 	signal(SIGTSTP, SIG_IGN);
 
 #ifdef SIGWINCH
+	siginterrupt(SIGWINCH, true);
 	signal(SIGWINCH, handle_winch);
 #endif
 

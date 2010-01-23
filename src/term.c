@@ -1027,7 +1027,7 @@ void copy_caps(void) {
 	ne_generic_type = generic_type;
 
 	ne_lines = lines > 0 ? lines : 25;
-	ne_columns = columns > 0 ? columns 80;
+	ne_columns = columns > 0 ? columns : 80;
 	ne_no_color_video = no_color_video == -1 ? 0 : no_color_video;
 
 	ne_column_address = column_address;

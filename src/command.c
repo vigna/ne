@@ -639,11 +639,11 @@ void help(char *p) {
 
 	action a;
 	int j, i = 0;
-	D(fprintf(stderr,"Help Called with parm %ld.\n",p);)
+	D(fprintf(stderr,"Help Called with parm %p.\n",p);)
 	do {
 		print_message("Help: select Command and press Enter, or F1 or Escape or Escape-Escape");
 		if (p || (i = request_strings(command_names, ACTION_COUNT, i, MAX_COMMAND_WIDTH, FALSE)) >= 0) {
-         D(fprintf(stderr,"Help check #2: p=%lx, i=%d\n",p,i);)
+         D(fprintf(stderr,"Help check #2: p=%p, i=%d\n",p,i);)
 			if (p) {
 				for(i = 0; i < strlen(p); i++) if (isasciispace((unsigned char)p[i])) break;
 
