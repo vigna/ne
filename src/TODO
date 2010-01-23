@@ -11,7 +11,3 @@ Fix the DNW/DPW stuff
 - Open files > 2G.
 
 - Large line numbers create overflows in the computatio of the percentage
-
-- Konsole bug
-
-- Sul mac, F1 lascia giù il primo menu
