@@ -630,8 +630,9 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			error = save_buffer_to_file(b, p);
 
 			if (!print_error(error)) {
+				const int load_syntax = b->filename == NULL || b->syn != NULL;
 				change_filename(b, p);
-				if (extension(p) && load_syntax_by_name(b, extension(p)) == OK) reset_window();
+				if (load_syntax && extension(p) && load_syntax_by_name(b, extension(p)) == OK) reset_window();
 				print_info(SAVED);
 			}
 			else {
