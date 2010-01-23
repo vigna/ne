@@ -93,7 +93,7 @@ NO_SIGN=-Wno-pointer-sign
 endif
 
 CFLAGS=$(OPTS) $(NO_SIGN) \
-	-D__USE_GNU \
+	-D_GNU_SOURCE -D__USE_GNU \
 	$(if $(NE_POSIX),   -D_POSIX_C_SOURCE=199506L,) \
 	$(if $(NE_NOWCHAR), -DNOWCHAR,) \
 	$(if $(NE_TEST),    -DNE_TEST,) \
