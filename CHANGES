@@ -30,11 +30,18 @@ Changes from version 2.0.3
 
   * Replace reports the number of replacements (again).
   
+  * Enter in Help places you on the right command in the command list.
+
+  * Now the global directory is displayed even if it is not found.
+	
   * Aborting an OpenNew doesn't leave you in a new blank document.
   
   * AdjustView now takes optional number of lines or columns to adjust by.
   
   * Read .keys and possibly .menus files from NE_GLOBAL_DIR on startup.
+
+  * More defensive reading of lines/columns from terminfo to avoid crashes
+    with XTerm on Mac OS X.
 
 ---- Bug fixes ----
 

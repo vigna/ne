@@ -251,8 +251,8 @@ int setupterm(const char * const dummy1, const int dunmmy2, const int * const du
 
 	ne_generic_type = tgetflag("gn");
 
-	if ((ne_lines = tgetnum("li")) < 0) ne_lines = 25;
-	if ((ne_columns = tgetnum("co")) < 0) ne_columns = 80;
+	if ((ne_lines = tgetnum("li")) <= 0) ne_lines = 25;
+	if ((ne_columns = tgetnum("co")) <= 0) ne_columns = 80;
 
 	l = c = 0;
 	if (s = getenv("LINES")) l = atoi(s);
