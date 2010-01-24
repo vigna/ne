@@ -1002,7 +1002,7 @@ int ttysize(void) {
 	
 	if (ioctl(0, TIOCGWINSZ, &size) >= 0) {
 		D(fprintf(stderr,"ttysize:...size is (%d,%d)\n",size.ws_row,size.ws_col);)
-		if ((ne_lines != size.ws_row) || (ne_columns != size.ws_col)) {
+		if (((ne_lines != size.ws_row) || (ne_columns != size.ws_col)) && size.ws_row > 0 && size.ws_col > 0) {
 			ScreenRows = ne_lines    = size.ws_row;
 			ScreenCols = ne_columns  = size.ws_col;
 			set_terminal_window(ne_lines - 1);
@@ -1026,8 +1026,8 @@ void copy_caps(void) {
 
 	ne_generic_type = generic_type;
 
-	ne_lines = lines > 0 ? lines : 25;
-	ne_columns = columns > 0 ? columns : 80;
+	ne_lines = lines;
+	ne_columns = columns;
 	ne_no_color_video = no_color_video == -1 ? 0 : no_color_video;
 
 	ne_column_address = column_address;
@@ -1174,8 +1174,6 @@ void term_init (void) {
 	MagicWrap = ne_eat_newline_glitch;
 	ScreenRows = ne_lines;
 	ScreenCols = ne_columns;
-
-	ttysize();
 
 	if (!ne_bell) ne_bell = "\07";
 

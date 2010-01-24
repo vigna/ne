@@ -11,3 +11,5 @@ Fix the DNW/DPW stuff
 - Open files > 2G.
 
 - Large line numbers create overflows in the computatio of the percentage
+
+- Understand why it doesn't work with a non-resized xterm. Also under Linux? Check!
