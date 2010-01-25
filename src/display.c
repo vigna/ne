@@ -681,8 +681,8 @@ void refresh_window(buffer * const b) {
 
 
 
-/* Scrolls a region starting at a given line upward (n == -1) or downward (n ==
-	-1). TURBO is checked. */
+/* Scrolls a region starting at a given line upward (n == -1) or downward
+(n == 1). TURBO is checked. */
 
 void scroll_window(buffer * const b, const int line, const int n) {
 	assert(n == -1 || n == 1);
