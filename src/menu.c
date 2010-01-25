@@ -644,9 +644,9 @@ void draw_status_bar(void) {
 	set_attr(0);
 
 	if (!bar_gone && cur_buffer->opt.status_bar) {
+		const int new_percent = (int)floor(((cur_buffer->cur_line + 1) * 10000.0) / cur_buffer->num_lines);
 		/* This is the space occupied up to "L:", included. */
 		const int offset = cur_buffer->opt.fast_gui || !standout_ok ? 5: 3;
-		const int new_percent = (int)floor(((cur_buffer->cur_line + 1) * 100.0) / cur_buffer->num_lines);
 		const int update_linecols =	y != cur_buffer->cur_line || 
 												x != cur_buffer->win_x + cur_buffer->cur_x ||
 												percent != new_percent;
@@ -675,6 +675,7 @@ void draw_status_bar(void) {
 
 
 	if (cur_buffer->opt.status_bar) {
+		percent = (int)floor(((cur_buffer->cur_line + 1) * 100.0) / cur_buffer->num_lines);
 		move_cursor(ne_lines - 1, 0);
 		if (!cur_buffer->opt.fast_gui && standout_ok) standout_on();
 
