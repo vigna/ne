@@ -276,7 +276,7 @@ void read_key_capabilities(void) {
 
 	assert(num_keys < MAX_TERM_KEY - 1);
 
-	D(fprintf(stderr,"Got %d keys from terminfo\n\r", num_keys);)
+	D(fprintf(stderr,"Got %d keys from terminfo\n", num_keys);)
 
 	qsort(key, num_keys, sizeof(term_key), keycmp);
 
