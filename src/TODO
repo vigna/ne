@@ -1,15 +1,7 @@
 - Senza status bar errori di aggiornamento video
 
-I've noticed a difference (yet another difference) between xterm and gnome
-terminal. If you cursor down to the bottom of the screen so that the page
-starts to scroll up, the status bar updates in xterm as the page scrolls,
-but not in gnome terminal. Again, I stared at some source files waiting
-for enlightenment, but nothing happened. Just thought I'd mention it...
-
-Fix the DNW/DPW stuff
+- Fix the DNW/DPW stuff
 
 - Open files > 2G.
 
 - Large line numbers create overflows in the computatio of the percentage
-
-- Understand why it doesn't work with a non-resized xterm. Also under Linux? Check!
