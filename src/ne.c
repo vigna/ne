@@ -334,18 +334,21 @@ int main(int argc, char **argv) {
 		displaying_info = TRUE;
 
 		for(i = 0; NO_WARRANTY_msg[i]; i++) {
+			if (i == ne_lines - 1) break;
 			move_cursor(i, 0);
 			output_string(NO_WARRANTY_msg[i], FALSE);
 		}
-		move_cursor(++i,0);
-		if (exists_gprefs_dir()) {
-			output_string("Global Directory: ", FALSE);
-			output_string(exists_gprefs_dir(), FALSE);
-		}
-		else {
-			output_string("Global directory \"", FALSE);
-			output_string(get_global_dir(), FALSE);
-			output_string("\" not found!", FALSE);
+		if (++i < ne_lines - 1) {
+			move_cursor(i, 0);
+			if (exists_gprefs_dir()) {
+				output_string("Global Directory: ", FALSE);
+				output_string(exists_gprefs_dir(), FALSE);
+			}
+			else {
+				output_string("Global directory \"", FALSE);
+				output_string(get_global_dir(), FALSE);
+				output_string("\" not found!", FALSE);
+			}
 		}
 	}
 
@@ -372,6 +375,7 @@ int main(int argc, char **argv) {
 			displaying_info = FALSE;
 
 			for(i = 0; i < sizeof NO_WARRANTY_msg / sizeof *NO_WARRANTY_msg + 2; i++) {
+				if (i == ne_lines - 1) break;
 				move_cursor(i, 0);
 				clear_to_eol();
 			}
