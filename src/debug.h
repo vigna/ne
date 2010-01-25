@@ -22,26 +22,10 @@
 
 
 #include <stdlib.h>
-
-#ifndef NODEBUG
-
-void __assert(int x, char *expr, char *file, int line);
-
-#define assert(x) { __assert((x), #x, __FILE__, __LINE__); if(!(x)) abort();}
-
-#else
-
-#define assert(ignore)  ((void) 0)
-
-#endif
-
+#include <assert.h>
 
 #ifdef DEBUGPRINTF
-
 #define D(x) x
-
 #else
-
 #define D(x) ;
-
 #endif

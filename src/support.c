@@ -37,19 +37,6 @@
 #define _POSIX_VDISABLE 0
 #endif
 
-
-/* This is the assert function. It appears that its number of arguments is
-different on different ANSI C compilers. Better to redefine it. */
-
-#ifndef NODEBUG
-
-void __assert(int x, char *expr, char *file, int line) {
-	if (!x) fprintf(stderr, "%s can't be false at line %d of %s!\n", expr, line, file);
-}
-
-#endif
-
-
 /* Returns a pointer to the global ne directory if the environment variable
 	NE_GLOBAL_DIR is set.  If it isn't set, then GLOBALDIR is returned. */
 

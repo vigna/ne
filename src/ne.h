@@ -179,12 +179,15 @@ typedef struct {
 } char_stream;
 
 
+#ifndef NDEBUG
 #define assert_char_stream(cs) {if ((cs)) {\
 	assert((cs)->len<=(cs)->size);\
 	assert((cs)->len >= 0);\
 	assert(((cs)->size == 0) == ((cs)->stream == NULL));\
 }}
-
+#else
+#define assert_char_stream(cs) ;
+#endif
 
 
 /* This structure defines a line descriptor; it is a node containing a pointer
@@ -210,6 +213,7 @@ typedef struct {
 	int line_len;
 } no_syntax_line_desc;
 
+#ifndef NDEBUG
 #define assert_line_desc(ld, encoding) {if ((ld)) {		\
 	assert((ld)->line_len >= 0);\
 	assert(((ld)->line == NULL) == ((ld)->line_len == 0));\
@@ -217,7 +221,9 @@ typedef struct {
 	assert(((ld)->line_len == 0) || ((ld)->line[0] != 0 && (ld)->line[(ld)->line_len - 1] != 0)); \
 	if (encoding == ENC_UTF8) { int i = 0; while(i < (ld)->line_len) { assert(utf8len((ld)->line[i]) > 0); i = next_pos((ld)->line, i, encoding);} } \
 }}
-
+#else
+#define assert_line_desc(ld, encoding) ;
+#endif
 
 
 /* This structure defines a pool of line descriptors. pool points to an
@@ -233,13 +239,16 @@ typedef struct {
 	line_desc *pool;
 } line_desc_pool;
 
+#ifndef NDEBUG
 #define assert_line_desc_pool(ldp) {if ((ldp)) {\
 	assert((ldp)->allocated_items <= (ldp)->size);\
 	assert((ldp)->allocated_items == (ldp)->size || (ldp)->free_list.head->next);\
 	assert((ldp)->pool != NULL);\
 	assert((ldp)->size != 0);\
 }}
-
+#else
+#define assert_line_desc_pool(ldp) ;
+#endif
 
 
 
@@ -256,6 +265,7 @@ typedef struct {
 	unsigned char *pool;
 } char_pool;
 
+#ifndef NDEBUG
 #define assert_char_pool(cp) {if ((cp)) {\
 	assert((cp)->first_used<=(cp)->first_used);\
 	assert((cp)->pool[(cp)->first_used] != 0);\
@@ -267,7 +277,9 @@ typedef struct {
 	assert((cp)->pool != NULL);\
 	assert((cp)->size != 0);\
 }}
-
+#else
+#define assert_char_pool(cp) ;
+#endif
 
 
 /* This structure defines a macro. A macro is just a stream plus a node, a
@@ -280,8 +292,11 @@ typedef struct struct_macro_desc {
 	char_stream *cs;
 } macro_desc;
 
+#ifndef NDEBUG
 #define assert_macro_desc(md) if (md) assert_char_stream((md)->cs);
-
+#else
+#define assert_macro_desc(md) ;
+#endif
 
 
 /* This structure defines a clip. Clip are numbered from 0 onwards, and
@@ -293,11 +308,14 @@ typedef struct {
 	char_stream *cs;
 } clip_desc;
 
+#ifndef NDEBUG
 #define assert_clip_desc(cd) {if ((cd)) {\
 	assert((cd)->n >= 0);\
 	assert_char_stream((cd)->cs);\
 }}
-
+#else
+#define assert_clip_desc(cd) ;
+#endif
 
 /* An undo step is given by a position, a transformation which can be
 INSERT_CHAR or DELETE_CHAR and the length of the stream to which the
@@ -339,6 +357,7 @@ typedef struct {
 	int last_save_step;
 } undo_buffer;
 
+#ifndef NDEBUG
 #define assert_undo_buffer(ub) {if ((ub)) {\
 	assert((ub)->cur_step<=(ub)->last_step);\
 	assert((ub)->cur_stream<=(ub)->last_stream);\
@@ -348,7 +367,9 @@ typedef struct {
 	assert((ub)->last_stream<=(ub)->streams_size);\
 	assert_char_stream(&(ub)->redo);\
 }}
-
+#else
+#define assert_undo_buffer(ub) ;
+#endif
 
 /* This structure defines all the per document options which can be
 used with PushPrefs and PopPrefs. */
@@ -379,10 +400,14 @@ typedef struct {
 		visual_bell:1;     /* Prefer visible bell to audible */
   } options_t;
 
+#ifndef NDEBUG
 #define assert_options(o) {if ((o)) {\
 	assert((o)->tab_size > 0);\
 	assert_undo_buffer(&(b)->undo);\
 }}
+#else
+#define assert_options(o) ;
+#endif
 
 /* This structure defines a buffer node; a buffer is composed by two lists,
 the list of line descriptor pools and the list of character pools, plus some
@@ -455,6 +480,7 @@ typedef struct {
 } buffer;
 
 
+#ifndef NDEBUG
 #define assert_buffer(b) {if ((b)) {\
 	assert((b)->line_desc_list.head->next == NULL || (b)->cur_line_desc != NULL);\
 	assert((b)->line_desc_list.head->next == NULL || (b)->top_line_desc != NULL);\
@@ -481,6 +507,10 @@ typedef struct {
 	}\
 	assert(b->attr_len < 0 || b->attr_len == calc_char_len(b->cur_line_desc, b->encoding));\
 }}
+#else
+#define assert_buffer(b) ;
+#define assert_buffer_content(b);
+#endif
 
 #include "syntax.h"
 

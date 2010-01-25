@@ -97,7 +97,7 @@ CFLAGS=$(OPTS) $(NO_SIGN) \
 	$(if $(NE_POSIX),   -D_POSIX_C_SOURCE=199506L,) \
 	$(if $(NE_NOWCHAR), -DNOWCHAR,) \
 	$(if $(NE_TEST),    -DNE_TEST,) \
-	$(if $(NE_DEBUG),   -g,-O3 -DNODEBUG) \
+	$(if $(NE_DEBUG),   -g,-O3 -DNDEBUG) \
 	$(if $(NE_TERMCAP), -DTERMCAP,) \
 	$(if $(NE_ANSI),    -DTERMCAP -DANSI,)
 
