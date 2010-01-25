@@ -646,15 +646,16 @@ void draw_status_bar(void) {
 	if (!bar_gone && cur_buffer->opt.status_bar) {
 		/* This is the space occupied up to "L:", included. */
 		const int offset = cur_buffer->opt.fast_gui || !standout_ok ? 5: 3;
+		const int new_percent = (int)floor(((cur_buffer->cur_line + 1) * 100.0) / cur_buffer->num_lines);
 		const int update_linecols =	y != cur_buffer->cur_line || 
 												x != cur_buffer->win_x + cur_buffer->cur_x ||
-												percent != ((cur_buffer->cur_line + 1) * 100) / cur_buffer->num_lines;
+												percent != new_percent;
 
 		if (!cur_buffer->opt.fast_gui && standout_ok) standout_on();
 		
 		x = cur_buffer->win_x + cur_buffer->cur_x;
 		y = cur_buffer->cur_line;
-		percent = ((y + 1) * 100) / cur_buffer->num_lines;
+		percent = new_percent;
 		i = sprintf(bar_buffer, "%8d C:%8d %3d", y + 1, x + 1, percent);
 
 		if (update_linecols) {
@@ -682,7 +683,7 @@ void draw_status_bar(void) {
 		x = cur_buffer->win_x + cur_buffer->cur_x;
 		y = cur_buffer->cur_line;
 
-		len = sprintf(bar_buffer, cur_buffer->opt.fast_gui || !standout_ok ? ">> L:%8d C:%8d %3d%% %s " : " L:%8d C:%8d %3d%% %s ", y + 1, x + 1, (int)floor(((y + 1) * 100.0) / cur_buffer->num_lines), flag_string);
+		len = sprintf(bar_buffer, cur_buffer->opt.fast_gui || !standout_ok ? ">> L:%8d C:%8d %3d%% %s " : " L:%8d C:%8d %3d%% %s ", y + 1, x + 1, percent, flag_string);
 
 		move_cursor(ne_lines - 1, 0);
 		output_chars(bar_buffer, NULL, len, TRUE);
