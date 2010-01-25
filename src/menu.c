@@ -644,7 +644,7 @@ void draw_status_bar(void) {
 	set_attr(0);
 
 	if (!bar_gone && cur_buffer->opt.status_bar) {
-		const int new_percent = (int)floor(((cur_buffer->cur_line + 1) * 10000.0) / cur_buffer->num_lines);
+		const int new_percent = (int)floor(((cur_buffer->cur_line + 1) * 100.0) / cur_buffer->num_lines);
 		/* This is the space occupied up to "L:", included. */
 		const int offset = cur_buffer->opt.fast_gui || !standout_ok ? 5: 3;
 		const int update_linecols =	y != cur_buffer->cur_line || 
