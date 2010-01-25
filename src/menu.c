@@ -682,7 +682,7 @@ void draw_status_bar(void) {
 		x = cur_buffer->win_x + cur_buffer->cur_x;
 		y = cur_buffer->cur_line;
 
-		len = sprintf(bar_buffer, cur_buffer->opt.fast_gui || !standout_ok ? ">> L:%8d C:%8d %3d%% %s " : " L:%8d C:%8d %3d%% %s ", y + 1, x + 1, ((y + 1) * 100) / cur_buffer->num_lines, flag_string);
+		len = sprintf(bar_buffer, cur_buffer->opt.fast_gui || !standout_ok ? ">> L:%8d C:%8d %3d%% %s " : " L:%8d C:%8d %3d%% %s ", y + 1, x + 1, (int)floor(((y + 1) * 100.0) / cur_buffer->num_lines), flag_string);
 
 		move_cursor(ne_lines - 1, 0);
 		output_chars(bar_buffer, NULL, len, TRUE);
