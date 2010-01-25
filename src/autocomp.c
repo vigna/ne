@@ -1,6 +1,6 @@
 /* AutoComplete
 
-   Copyright (C) 1999-2010 Todd M. Lewis and Sebastiano Vigna
+   Copyright (C) 2010 Todd M. Lewis and Sebastiano Vigna
 
    This file is part of ne, the nice editor.
 
@@ -22,13 +22,13 @@
 
 #include "ne.h"
 
-#define SONS 256
+#define CHILDREN 256
 #define TRIE_NODE_POOL_SIZE 128
 #define FLAG_CHAR '*'
 
 typedef struct trie_node {
 	int flag; /* 0: not a terminator; 1: cur_buffer string; 2: other buffer string; */
-	struct trie_node *sons[SONS];
+	struct trie_node *children[CHILDREN];
 	} trie;
 
 typedef struct trie_node_pool {
@@ -49,8 +49,8 @@ static void init_trie(void) {
 	int i;
 	ac_root.flag = 0;
 	D(alloced_trie_nodes = freed_trie_pools = 0;)
-	for (i = 0; i < SONS; i++) {
-		ac_root.sons[i] = NULL;
+	for (i = 0; i < CHILDREN; i++) {
+		ac_root.children[i] = NULL;
 	}
 }
 
@@ -85,10 +85,10 @@ static void add_to_trie(const unsigned char * const str, const int len, int *cum
 	if (!str || !*str) return;
 	assert(flag);
 	for (i=0,c=str[i]; i<len; i++,c=str[i]) {
-		if (!trie->sons[c]) {
-			if (!(trie->sons[c] = new_trie())) return; /* Epic fail. Figure out how to abort this eventually. */
+		if (!trie->children[c]) {
+			if (!(trie->children[c] = new_trie())) return; /* Epic fail. Figure out how to abort this eventually. */
 		}
-		trie = trie->sons[c];
+		trie = trie->children[c];
 	}
 	assert(trie != NULL);
 	if (!trie->flag) {
@@ -182,12 +182,12 @@ unsigned char *autocomplete(unsigned char *p) {
 					assert(c<=char_store+cum_len);
 				}
 			}
-			if (tries[x]->sons[y]) {
+			if (tries[x]->children[y]) {
 				scratch[x] = y;
-				tries[x+1] = tries[x]->sons[y];
+				tries[x+1] = tries[x]->children[y];
 				x++;
 				y = 0;
-			} else if (++y == SONS) {
+			} else if (++y == CHILDREN) {
 				y = 0;
 				x--;
 				if (x >= 0) y++;
