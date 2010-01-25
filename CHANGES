@@ -43,6 +43,8 @@ Changes from version 2.0.3
   * More defensive reading of lines/columns from terminfo to avoid crashes
     with XTerm on Mac OS X.
 
+  * More portable and robust window-size change detection.
+
 ---- Bug fixes ----
 
   * Fix rx detection in perl.jsf.

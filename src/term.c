@@ -989,30 +989,42 @@ static void calculate_costs (void) {
 
 
 
-/* Gets the window size using TIOCGWINSZ, or does nothing if TIOCGWINSZ is not
-	available. It is called by the signal handler for SIGWINCH on systems that
-	support it. Return 1 if the window size has changed. */
+/* Gets the window size using TIOCGSIZE, TIOCGWINSZ, or LINES/COLUMNS as a
+	last resort. It is called by the signal handler for SIGWINCH on systems
+	that support it. Return 1 if the window size has changed. */
 
 int ttysize(void) {
-#ifdef TIOCGWINSZ
-	struct winsize size;
-	
-	/* try using the TIOCGWINSZ call, if defined */
+	int l, c;	
+#ifdef TIOCGSIZE
+	/* try using the TIOCGSIZE call, if defined */
+	struct ttysize size;
 	D(fprintf(stderr,"ttysize: CHECKING...\n");)
-	
-	if (ioctl(0, TIOCGWINSZ, &size) >= 0) {
-		D(fprintf(stderr,"ttysize:...size is (%d,%d)\n",size.ws_row,size.ws_col);)
-		if (((ne_lines != size.ws_row) || (ne_columns != size.ws_col)) && size.ws_row > 0 && size.ws_col > 0) {
-			ScreenRows = ne_lines    = size.ws_row;
-			ScreenCols = ne_columns  = size.ws_col;
-			set_terminal_window(ne_lines - 1);
-			if (scroll_region_ok) set_scroll_region(0, ne_lines - 1);
-			D(fprintf(stderr,"ttysize: size changed.\n");)
-			return 1;
-		}
-	}
+	if (ioctl(0, TIOCGSIZE, &size)) return 0;
+	l = size.ts_lines;
+	c = size.ts_cols;
+#elif defined(TIOCGWINSZ)
+	/* try using the TIOCGWINSZ call, if defined */
+	struct winsize size;
+	D(fprintf(stderr,"ttysize: CHECKING...\n");)
+	if (ioctl(0, TIOCGWINSZ, &size)) return 0;
+	l = size.ws_row;
+	c = size.ws_col;
+#else
+	/* As a last resort, we try to read LINES and COLUMNS, falling back to the terminal-specified size. */
+	if (! getenv("LINES") || ! getenv("COLUMNS")) return 0;
+	l = strtol(getenv("LINES"), NULL, 10);
+	c = strtol(getenv("COLUMNS"), NULL, 10);
 #endif
-	/* no special way to detect screen size */
+	D(fprintf(stderr,"ttysize:...size is (%d,%d)\n", l, c);)
+	if (((ne_lines != l) || (ne_columns != c)) && l > 0 && c > 0) {
+		ScreenRows = ne_lines    = l;
+		ScreenCols = ne_columns  = c;
+		set_terminal_window(ne_lines - 1);
+		if (scroll_region_ok) set_scroll_region(0, ne_lines - 1);
+		D(fprintf(stderr,"ttysize: size changed.\n");)
+		return 1;
+	}
+	
 	return 0;
 }
 
