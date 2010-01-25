@@ -171,7 +171,6 @@ ne.o: ne.h keycodes.h names.h errors.h protos.h version.h regex.h
 prefs.o: ne.h keycodes.h names.h errors.h protos.h
 
 regex.o: regex.h regex.c
-	$(CC) $(CFLAGS) -DREGEX_MALLOC -c regex.c
 
 request.o: ne.h keycodes.h names.h errors.h protos.h
 
