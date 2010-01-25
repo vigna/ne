@@ -633,7 +633,6 @@ void draw_status_bar(void) {
 
 	char *p;
 	int len;
-	int i;
 
 	if (showing_msg) {
 		showing_msg = FALSE;
@@ -647,25 +646,41 @@ void draw_status_bar(void) {
 		const int new_percent = (int)floor(((cur_buffer->cur_line + 1) * 100.0) / cur_buffer->num_lines);
 		/* This is the space occupied up to "L:", included. */
 		const int offset = cur_buffer->opt.fast_gui || !standout_ok ? 5: 3;
-		const int update_linecols =	y != cur_buffer->cur_line || 
-												x != cur_buffer->win_x + cur_buffer->cur_x ||
-												percent != new_percent;
+		const int update_x = x != cur_buffer->win_x + cur_buffer->cur_x;
+		const int update_y = y != cur_buffer->cur_line;
+		const int update_percent = percent != new_percent;
+		const int update_flags = strcmp(flag_string, p = gen_flag_string(cur_buffer));
+		const int update = update_x || update_y || update_percent || update_flags;
+
+		if (!update) return;
 
 		if (!cur_buffer->opt.fast_gui && standout_ok) standout_on();
 		
 		x = cur_buffer->win_x + cur_buffer->cur_x;
 		y = cur_buffer->cur_line;
 		percent = new_percent;
-		i = sprintf(bar_buffer, "%8d C:%8d %3d", y + 1, x + 1, percent);
 
-		if (update_linecols) {
+		if (update_y) {
 			move_cursor(ne_lines - 1, offset);
-			output_chars(bar_buffer, NULL, i, TRUE);
+			len = sprintf(bar_buffer, "%9d", y + 1);
+			output_chars(bar_buffer, NULL, len, TRUE);
 		}
 
-		if (strcmp(flag_string, p = gen_flag_string(cur_buffer))) {
+		if (update_x) {
+			move_cursor(ne_lines - 1, offset + 12);
+			len = sprintf(bar_buffer, "%9d", x + 1);
+			output_chars(bar_buffer, NULL, len, TRUE);
+		}
+
+		if (update_percent) {
+			move_cursor(ne_lines - 1, offset + 22);
+			len = sprintf(bar_buffer, "%3d", percent);
+			output_chars(bar_buffer, NULL, len, TRUE);
+		}
+
+		if (update_flags) {
 			strcpy(flag_string, p);
-			move_cursor(ne_lines - 1, i + offset + 2);
+			move_cursor(ne_lines - 1, offset + 27);
 			output_string(flag_string, TRUE);
 		}
 
@@ -684,7 +699,7 @@ void draw_status_bar(void) {
 		x = cur_buffer->win_x + cur_buffer->cur_x;
 		y = cur_buffer->cur_line;
 
-		len = sprintf(bar_buffer, cur_buffer->opt.fast_gui || !standout_ok ? ">> L:%8d C:%8d %3d%% %s " : " L:%8d C:%8d %3d%% %s ", y + 1, x + 1, percent, flag_string);
+		len = sprintf(bar_buffer, cur_buffer->opt.fast_gui || !standout_ok ? ">> L:%9d C:%9d %3d%% %s " : " L:%9d C:%9d %3d%% %s ", y + 1, x + 1, percent, flag_string);
 
 		move_cursor(ne_lines - 1, 0);
 		output_chars(bar_buffer, NULL, len, TRUE);
