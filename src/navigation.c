@@ -962,7 +962,7 @@ int search_word(buffer * const b, const int dir) {
 					else if (pos == 0) {
 						goto_line(b, y);
 						goto_pos(b, 0);
-						return 0;
+						return OK;
 					}
 				}
 			}
