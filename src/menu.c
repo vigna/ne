@@ -646,9 +646,9 @@ void draw_status_bar(void) {
 	if (!bar_gone && cur_buffer->opt.status_bar) {
 		/* This is the space occupied up to "L:", included. */
 		const int offset = cur_buffer->opt.fast_gui || !standout_ok ? 5: 3;
-		const int update_linecols = y != cur_buffer->cur_line || 
-		                            x != cur_buffer->win_x + cur_buffer->cur_x ||
-		                            percent != ((cur_buffer->cur_line + 1) * 100) / cur_buffer->num_lines;
+		const int update_linecols =	y != cur_buffer->cur_line || 
+												x != cur_buffer->win_x + cur_buffer->cur_x ||
+												percent != ((cur_buffer->cur_line + 1) * 100) / cur_buffer->num_lines;
 
 		if (!cur_buffer->opt.fast_gui && standout_ok) standout_on();
 		
