@@ -1,0 +1,194 @@
+# JOE syntax highlight file for Txt2Tags by Stefano D'Archino
+# http://txt2tags.sourceforge.net/
+
+#### Problems ##############################################
+# Numbered title only without space after +
+# Blocks comment and Verbatim block only first and last line
+# No color for Line
+# Syntax for List only for the first level
+
+=Idle
+=Comment 	green
+=Raw		cyan
+=List 		yellow bold
+=Bold		bold
+=Italics	magenta
+=Underline	underline
+=Code		inverse
+=Title		red bold
+=Table_h	cyan bold
+=Table		cyan
+=Link		magenta
+=Verbatim	magenta
+
+:idle Idle
+	*		idle
+	"\n"		maybe 
+	"*"		bol_1 		
+	"/"		ita_1			
+	"_"		und_1
+	"\`"		cod_1
+	"["		link		recolor=-1
+	"@"		link_e		recolor=-1
+
+
+:maybe	Idle
+	*	idle
+	"\n"	maybe
+	"%"	comment		recolor=-1
+	"*"	bol_1 
+	"/"	ita_1
+	"_"	und_1
+	"["	link		recolor=-1
+	"="	title 		 
+	"|"	table_h
+	"\""	raw_1		recolor=-1
+	"\:\-"	list	 #!!! \- at the end of string!
+	"\+"	list_n
+	"\`"	ver_1
+	"@"		link_e		recolor=-1 # only for lout
+
+#### Comments
+:comment Comment
+	*		comment
+	"\n"		maybe
+
+#### Beautifiers
+:bol_1 Bold
+	*		idle	noeat
+	"*"		bol_2	recolor=-2
+:bol_2 Bold
+	*		bol_2
+	"*"		bol_3 
+:bol_3 Bold
+	*		idle 	noeat
+	"*"		bol_4 
+:bol_4 Bold
+	*		idle	noeat
+
+:ita_1 Italics
+	*		idle	noeat
+	"/"		ita_2	recolor=-2
+:ita_2 Italics
+	*		ita_2
+	"/"		ita_3 
+:ita_3 Italics
+	*		idle 	noeat
+	"/"		ita_4 
+:ita_4 Italics
+	*		idle	noeat
+
+:und_1 Underline
+	*		idle	noeat
+	"_"		und_2	recolor=-2
+:und_2 Underline
+	*		und_2
+	"_"		und_3 
+:und_3 Underline
+	*		idle 	noeat
+	"_"		und_4 
+:und_4 Underline
+	*		idle	noeat
+
+:cod_1 Code     
+	*		idle	noeat
+	"\`"		cod_2	recolor=-2
+:cod_2 Code
+	*		cod_2	recolor=-3 ####
+	"\`"		cod_3 
+:cod_3 Code
+	*		idle 	noeat
+	"\`"		cod_4 
+:cod_4 Code
+	*		idle	noeat
+	
+############# Table
+:table_h	Table_h
+	*	table		recolor=-2
+	"|"	table_h_1 	recolor=-2
+
+:table_h_1	Table_h
+	*	table_h_1
+	"\n"	table
+
+:table		Table
+	*	table		recolor=-2
+	"\n"	maybe
+
+######### Blocks
+
+:raw_1 Raw
+	*		idle	noeat
+	"\""		raw_2
+:raw_2 Raw
+	*		idle	noeat
+	"\""		raw_3
+:raw_3 Raw
+	*		raw_3
+	"\""		raw_4
+:raw_4 Raw
+	*		idle	noeat
+	"\""		raw_4
+:raw_5 Raw
+	*		idle	noeat
+	"\""		raw_5
+:raw_6 Raw
+	*		raw_6
+	"\n"		maybe
+#### List 	
+:list List
+	* 		idle 	noeat	 
+	" "		list_2  recolor=-2
+:list_2 List
+	* idle 		noeat
+
+:list_n List
+	* 		title_n 	noeat	 
+	" "		list_2  	recolor=-2
+	"+"		title_n_2 	noeat
+
+:link Link
+	*	link
+	"["	link_2
+	"]"	idle 
+:link_2 Link
+	*	link_2
+	"]"	link
+:link_e	Link
+	*	idle	noeat
+
+:ver_1 Verbatim
+	*		idle	noeat
+	"\`"		ver_2
+:ver_2 Verbatim
+	*		cod_2	noeat
+	"\`"		ver_3	recolor=-3
+:ver_3 Verbatim
+	*		ver_3    
+	"\n"		maybe
+
+#### Title
+:title Title
+	* 	title
+	"="  	title_2		noeat
+	"\n"	maybe
+:title_2 Title
+	* 	title_2 
+	"="  	title_3		noeat
+	"\n"	maybe
+:title_3 Title 
+	*	title_3
+	"="	maybe		noeat
+	"\n"	maybe
+:title_n Title
+	* 	title_n
+	"+"  	title_n_2		noeat
+	"\n"	maybe
+:title_n_2 Title
+	* 	title_n_2 
+	"+"  	title_n_3		noeat
+	"\n"	maybe
+:title_n_3 Title 
+	*	title_n_3
+	"+"	maybe			noeat
+	"\n"	maybe
