@@ -3,5 +3,3 @@
 - Improve the DNW/DPW stuff
 
 - Open files > 2G.
-
-- Large line numbers create overflows in the computatio of the percentage
