@@ -156,6 +156,7 @@ static const command commands[ACTION_COUNT] = {
 	{ NAHL(REPLACE       ),           ARG_IS_STRING |                             EMPTY_STRING_OK },
 	{ NAHL(REPLACEALL    ),           ARG_IS_STRING |                             EMPTY_STRING_OK },
 	{ NAHL(REPLACEONCE   ),           ARG_IS_STRING |                             EMPTY_STRING_OK },
+	{ NAHL(REQUESTORDER  ),                           IS_OPTION                                   },
 	{ NAHL(RIGHTMARGIN   ),                           IS_OPTION                                   },
 	{ NAHL(SAVE          ), NO_ARGS                                                               },
 	{ NAHL(SAVEAS        ),           ARG_IS_STRING                                               },

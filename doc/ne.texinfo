@@ -3267,6 +3267,7 @@ process, you can clear the automatic preferences flag. See @ref{AutoPrefs}.
 * FastGUI::
 * FreeForm::
 * NoFileReq::
+* RequestOrder::
 * StatusBar::
 * HexCode::
 * ReadOnly::
@@ -3451,6 +3452,22 @@ opinion). In this case, non-free-form.
 the file requester is never opened, under any circumstances.
 
 If you invoke @code{NoFileReq} with no arguments, it will toggle the flag. If you
+specify 0 or 1, the flag will be set to false or true, respectively.
+
+
+
+@node RequestOrder
+@subsection RequestOrder
+@cmindex RequestOrder
+
+@noindent Syntax: @code{RequestOrder [0|1]}@*
+@noindent Abbreviation: @code{RQO}
+
+@noindent sets the request order flag. When this flag is true,
+the requester displays entries in column order. Otherwise entries
+are displayed by rows.
+
+If you invoke @code{RequestOrder} with no arguments, it will toggle the flag. If you
 specify 0 or 1, the flag will be set to false or true, respectively.
 
 

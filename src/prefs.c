@@ -48,7 +48,11 @@ bigger just causes a reallocation. */
 
 #define PREF_FILE_SIZE_GUESS 256
 
+/* If we're saving default prefs, we include global prefs
+	that are not buffer specific. Likewise, if we're saving
+	auto prefs, we don't want to include global prefs. */
 
+static int saving_global;
 
 /* Returns a pointer to the extension of a filename, or NULL if there is no
    extension. Note that filename has to be non NULL. */
@@ -184,7 +188,7 @@ int save_prefs(buffer * const b, const char * const name) {
 	if (cs = alloc_char_stream(PREF_FILE_SIZE_GUESS)) {
 		/* We create a macro by recording an action for each kind of flag. */
 
-		if (b->syn) record_action(cs, SYNTAX_A, -1, b->syn->name, b->opt.verbose_macros);
+		if (!saving_global && b->syn) record_action(cs, SYNTAX_A, -1, b->syn->name, b->opt.verbose_macros);
 
 		record_action(cs, TABSIZE_A,       b->opt.tab_size,       NULL, b->opt.verbose_macros);
 		record_action(cs, CLIPNUMBER_A,    b->opt.cur_clip,       NULL, b->opt.verbose_macros);
@@ -209,6 +213,11 @@ int save_prefs(buffer * const b, const char * const name) {
 		record_action(cs, BINARY_A,        b->opt.binary,         NULL, b->opt.verbose_macros);
 		record_action(cs, UTF8AUTO_A,      b->opt.utf8auto,       NULL, b->opt.verbose_macros);
 		record_action(cs, VISUALBELL_A,    b->opt.visual_bell,    NULL, b->opt.verbose_macros);
+		
+		if (saving_global) {
+			if (req_order) record_action(cs, REQUESTORDER_A, req_order, NULL, b->opt.verbose_macros);
+			/* Some others should move here: FASTGUI, VERBOSEMACROS perhaps. */
+		}
 
 		error = save_stream(cs, name, b->is_CRLF, FALSE);
 
@@ -317,6 +326,7 @@ int load_auto_prefs(buffer * const b, const char *name) {
 
 
 int save_auto_prefs(buffer * const b, const char *name) {
+	saving_global = name ? 1 : 0;
 	return do_auto_prefs(b, name, save_prefs);
 }
 

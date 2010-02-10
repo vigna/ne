@@ -49,7 +49,7 @@ reasonable number of retries. */
 
 We rely on a series of auxiliary functions. */
 
-
+int req_order;
 static int x, y, page, max_names_per_line, max_names_per_col, names_per_page, num_entries, max_name_len, mark_char;
 
 static const char * const *entries;
@@ -74,23 +74,15 @@ static const char * const *entries;
    versions of ne. If false, the second set of macros are used, and these implement
    the by-column request display. For now, this may be considered experimental. */
 
-#define DISPLAYBYROW 1
+#define BR_NAMES_PER_LINE(p) max_names_per_line
+#define BR_NAMES_PER_COL(p) max_names_per_col
+#define BR_PXY2N(p,x,y)  (((y) + (p) * max_names_per_col) * max_names_per_line + (x))
+#define BR_N2P(n)        ((n) / names_per_page)
+#define BR_N2X(n)        (((n) % names_per_page) % max_names_per_line)
+#define BR_N2Y(n)        (((n) % names_per_page) / max_names_per_line)
+#define BR_DX(p)         1
+#define BR_DY            max_names_per_line
 
-#if DISPLAYBYROW
-
-#define NAMES_PER_LINE(p) max_names_per_line
-#define NAMES_PER_COL(p) max_names_per_col
-#define PXY2N(p,x,y)  (((y) + (p) * max_names_per_col) * max_names_per_line + (x))
-#define N2P(n)        ((n) / names_per_page)
-#define N2X(n)        (((n) % names_per_page) % max_names_per_line)
-#define N2Y(n)        (((n) % names_per_page) / max_names_per_line)
-#define DX(p)         1
-#define DY            max_names_per_line
-
-#else
-/* #define NAMES_PER_COL(p) (LASTPAGE(p) ? (((num_entries % names_per_page) / max_names_per_line) + 1: max_names_per_col) */
-
-#define LASTPAGE(p)      ((num_entries / names_per_page) > p ? 0 : 1 )
 /*
     This Perl snippet is useful for tweaking the NAMES_PER_LINE and NAMES_PER_COL macros. The point of
     the complexity on the last page is to use a rectangle in the upper-left part of the window that's
@@ -121,16 +113,26 @@ for $n ( 1 .. $M ) {
 }
 
 */
-#define NAMES_PER_LINE(p) (LASTPAGE(p) ? (max_names_per_line - (max_names_per_line*((names_per_page - (num_entries % names_per_page))-1)*((names_per_page - (num_entries % names_per_page))-1)-names_per_page)/(names_per_page*names_per_page)) : max_names_per_line )
-#define NAMES_PER_COL(p)  (LASTPAGE(p) ? (((num_entries % names_per_page)+NAMES_PER_LINE(p)-1) / NAMES_PER_LINE(p)) : max_names_per_col)
-#define PXY2N(p,x,y)   ((p) * names_per_page + (x) * NAMES_PER_COL(p) + (y))
-#define N2P(n)         ((n) / names_per_page)
-#define N2X(n)        (((n) % names_per_page) / NAMES_PER_COL(N2P(n))) 
-#define N2Y(n)        (((n) % names_per_page) % NAMES_PER_COL(N2P(n)))
-#define DX(p)         NAMES_PER_COL(p)
-#define DY            1
+#define LASTPAGE(p)      ((num_entries / names_per_page) > p ? 0 : 1 )
 
-#endif
+#define BC_NAMES_PER_LINE(p) (LASTPAGE(p) ? (max_names_per_line - (max_names_per_line*((names_per_page - (num_entries % names_per_page))-1)*((names_per_page - (num_entries % names_per_page))-1)-names_per_page)/(names_per_page*names_per_page)) : max_names_per_line )
+#define BC_NAMES_PER_COL(p)  (LASTPAGE(p) ? (((num_entries % names_per_page)+NAMES_PER_LINE(p)-1) / NAMES_PER_LINE(p)) : max_names_per_col)
+#define BC_PXY2N(p,x,y)   ((p) * names_per_page + (x) * NAMES_PER_COL(p) + (y))
+#define BC_N2P(n)         ((n) / names_per_page)
+#define BC_N2X(n)        (((n) % names_per_page) / NAMES_PER_COL(N2P(n))) 
+#define BC_N2Y(n)        (((n) % names_per_page) % NAMES_PER_COL(N2P(n)))
+#define BC_DX(p)         NAMES_PER_COL(p)
+#define BC_DY            1
+
+
+#define NAMES_PER_LINE(p) (req_order ? BC_NAMES_PER_LINE(p) : BR_NAMES_PER_LINE(p))
+#define NAMES_PER_COL(p)  (req_order ? BC_NAMES_PER_COL(p)  : BR_NAMES_PER_COL(p) )
+#define PXY2N(p,x,y)      (req_order ? BC_PXY2N(p,x,y)      : BR_PXY2N(p,x,y)     )
+#define N2P(n)            (req_order ? BC_N2P(n)            : BR_N2P(n)           )
+#define N2X(n)            (req_order ? BC_N2X(n)            : BR_N2X(n)           )
+#define N2Y(n)            (req_order ? BC_N2Y(n)            : BR_N2Y(n)           )
+#define DX(p)             (req_order ? BC_DX(p)             : BR_DX(p)            )
+#define DY                (req_order ? BC_DY                : BR_DY               )
 
 /* This is the printing function used by the requester. It prints the
 strings from the entries array existing in a certain page (a page contains

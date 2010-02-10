@@ -975,6 +975,11 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		SET_USER_FLAG(b, c, opt.no_file_req);
 		return OK;
 
+	case REQUESTORDER_A:
+		if ((c)<0) req_order = !req_order;
+		else req_order = ((c) != 0);\
+		return OK;
+
 	case UTF8AUTO_A:
 		SET_USER_FLAG(b, c, opt.utf8auto);
 		return OK;

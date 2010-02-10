@@ -534,6 +534,10 @@ extern int need_attr_update;
 
 extern int ansi;
 
+/* If true, we want requests by column, otherwise by row. */
+
+extern int req_order;
+
 /* If true, we want syntax highlighting. */
 
 extern int do_syntax;

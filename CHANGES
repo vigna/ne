@@ -3,7 +3,7 @@ Changes from version 2.0.3
 ---- Improvements ----
 
   * New commands: KeyCode, DeleteNextWord, DeletePrevWord, AutoComplete,
-    InsertTab, Tabs.
+    InsertTab, Tabs, RequestOrder.
 
   * Now we set the syntax when a file is saved with a (different) name.
 
@@ -13,7 +13,7 @@ Changes from version 2.0.3
 
   * Now we highlight correctly control characters in the command line.
 
-  * Display request lists by columns instead of rows.
+  * Display request lists by columns ("RequestOrder 1") or rows ("RequestOrder 0").
 
   * Allow window resizing during requests (file selection, help).
 
@@ -44,10 +44,6 @@ Changes from version 2.0.3
     with XTerm on Mac OS X.
 
   * More portable and robust window-size change detection.
-
----- Bug fixes ----
-
-  * Fix rx detection in perl.jsf.
 
 Changes from version 2.0.2
 
