@@ -598,8 +598,8 @@ int adjust_view(buffer * const b, const unsigned char *p) {
 				disp = mag ? -min(mag,b->cur_y) : -b->cur_y;
 				break;
 
-			case 'c' :
-			case 'C' :
+			case 'm' :
+			case 'M' :
 				/* Shift the view so that the current line is displayed at the center. */
 				disp = (ne_lines - 2) / 2 - b->cur_y;
 				break;
@@ -621,8 +621,8 @@ int adjust_view(buffer * const b, const unsigned char *p) {
 				}
 				break;
 
-			case 'm' :
-			case 'M' :
+			case 'c' :
+			case 'C' :
 			   /* Shift the view as far left as possible. This way we don't have to
 			      deal with figuring out which side of Middle the view started on. */
 				while (b->cur_x >= b->opt.tab_size) {

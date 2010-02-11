@@ -4330,7 +4330,7 @@ document; otherwise, it is moved to the last line of the screen.
 @subsection AdjustView
 @cmindex AdjustView
 
-@noindent Syntax: @code{AdjustView [T|C|B|L|M|R] [@var{n}]}@*
+@noindent Syntax: @code{AdjustView [T|M|B|L|C|R] [@var{n}]}@*
 @noindent Abbreviation: @code{AV}
 
 @noindent shifts the view (text visible in the terminal window)
@@ -4339,12 +4339,12 @@ the document. View adjustments are constrained by the current @sc{tab}
 size and the length and width of the current document. If called with
 no arguments @samp{T} is assumed.
 
-@samp{T}, @samp{C}, and @samp{B} cause vertical shifts so that the
-current line becomes the top, center, or bottom-most visible line
+@samp{T}, @samp{M}, and @samp{B} cause vertical shifts so that the
+current line becomes the top, middle, or bottom-most visible line
 respectively.
 
-@samp{L}, @samp{M}, and @samp{R} cause horizontal shifts, making the
-current column the left-most, middle, or right-most visible positions.
+@samp{L}, @samp{C}, and @samp{R} cause horizontal shifts, making the
+current column the left-most, center, or right-most visible positions.
 
 A optional number @var{n} immediately after @samp{T}, @samp{B},
 @samp{L}, or @samp{R} indicate the number or rows or columns to shift

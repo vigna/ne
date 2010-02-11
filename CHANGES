@@ -36,7 +36,8 @@ Changes from version 2.0.3
 	
   * Aborting an OpenNew doesn't leave you in a new blank document.
   
-  * AdjustView now takes optional number of lines or columns to adjust by.
+  * AdjustView now takes optional number of lines or columns to
+    adjust by; swapped meaning of AdjustView 'C' and 'M' parameters.
   
   * Read .keys and possibly .menus files from NE_GLOBAL_DIR on startup.
 
