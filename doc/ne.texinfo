@@ -268,10 +268,6 @@ line just after the command name, as for any @sc{un*x} command. The
 screen of your terminal will be cleared (or filled with text loaded
 from the first file you specified). See @ref{Arguments} for other command line options.
 
-At the bottom of the screen, you will see a line containing some numbers and
-letters. This is called the @dfn{status bar} because it reports to you part of
-the internal state of the editor.
-
 Writing text is pretty straightforward: if your terminal is properly
 configured, every key will (should) do what you expect. Alphabetic
 characters insert text, cursor keys move the cursor, and so on. You can
@@ -279,11 +275,13 @@ use the @key{Delete} and @key{Backspace} key to perform corrections. If
 your keyboard has an @key{Insert} key, you can use it to @dfn{toggle}
 (switch from on to off, or vice versa) insert mode. In general,
 @code{ne} tries to squeeze everything it can from your
-keyboard. Functions keys and special movement keys should work
+keyboard. Function keys and special movement keys should work
 flawlessly if your terminal is properly configured. If not, complain to
-your system administrator.
+your system administrator. If that doesn't help, see @ref{Key Bindings}.
 
-At startup, the status bar has the following form:
+At the bottom of the screen, you will see a line containing some numbers and
+letters. This is called the @dfn{status bar} because it reports to you part of
+the internal state of the editor. At startup, the status bar has the following form:
 
 @example
  L:       1 C:       1  12% ia----pvu-t------@@A <unnamed>
@@ -297,7 +295,7 @@ your position in the file. The small letters represent user flags that
 you can turn on and off. In particular, @samp{i} tells you that insert
 mode is on, while @samp{p} tells that the automatic preferences system
 is activated. For a thorough explanation of the meaning of the flags on
-the status line, see @ref{The Status Bar}.
+the status bar, see @ref{The Status Bar}.
 
 Once you are accustomed to cursor movement and line editing, it is time to
 press @key{f1} (the first function key), or in case your keyboard does not
@@ -1126,6 +1124,16 @@ Note that there are two items that always appear in the file requester:
 @file{./} and @file{../}. The first one represents the current directory
 and can be used to force a reread of the directory. The second one represents the
 parent directory and can be used to move up by one directory level.
+
+The requester presents the strings by default in ``row major order,''
+which means the second string is on the same row as the first but to
+its right, at the top of the second column, and so on across each row
+before filling in the next row down. If you prefer your lists displayed in
+``column major order''---the first, second, and third strings are in
+the same column and each column is filled before starting on the next
+column to the right---then use the @code{RequestOrder} command to
+switch that preference. The setting will be stored in your default
+preferences the next time you save them. See @ref{Preferences Commands}.
 
 
 @node Syntax Highlighting
