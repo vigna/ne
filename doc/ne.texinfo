@@ -539,6 +539,18 @@ preferences file named @file{.default#ap} is saved. These preferences
 are loaded whenever @code{ne} is run before loading any file. This is
 how you set up the preferences you always want to be set.
 
+A small set of preferences are global to @code{ne} rather than specific
+to particular document types. Thus they are saved in the @file{.default#ap}
+file by the @code{SaveDefPrefs} command or the @samp{Save Def Prefs} menu.
+They are not saved by the @code{SaveAutoPrefs} command. These preferences are:
+@code{FastGUI}, @code{RequestOrder}, and @code{VerboseMacros};
+@pxref{FastGUI}, @xref{RequestOrder}, and @xref{VerboseMacros}.
+
+Similarly, the current syntax definition is specific to the current
+document type, so it is saved only in autoprefs files by the
+@code{SaveAutoPrefs} command or @samp{Save AutoPrefs} menu; it is not
+saved in the @file{.default#ap} file.
+
 Note also that a preferences file is just a macro (as described in the
 following section). Thus, it can be edited manually if necessary.
 
@@ -3719,12 +3731,12 @@ restore the users previous preferences settings.
 @noindent @code{PushPrefs} saves the following values on the preferences stack:
 
 @example
-  AutoIndent  FastGUI     ReadOnly     UTF8Auto
-  AutoPrefs   FreeForm    RightMargin  VerboseMacros
-  Binary      HexCode     SearchBack   VisualBell
-  CaseSearch  Insert      StatusBar    WordWrap
-  ClipNumber  NoFileReq   Tabs
-  DoUndo      PreserveCR  TabSize
+  AutoIndent   FreeForm    RightMargin  VisualBell
+  AutoPrefs    HexCode     SearchBack   WordWrap
+  Binary       Insert      StatusBar
+  CaseSearch   NoFileReq   Tabs
+  ClipNumber   PreserveCR  TabSize
+  DoUndo       ReadOnly    UTF8Auto
 @end example
 
 
@@ -3752,12 +3764,12 @@ restore the users previous preferences settings.
 @noindent PopPrefs restores the following values from the preferences stack:
 
 @example
-  AutoIndent  FastGUI     ReadOnly     UTF8Auto
-  AutoPrefs   FreeForm    RightMargin  VerboseMacros
-  Binary      HexCode     SearchBack   VisualBell
-  CaseSearch  Insert      StatusBar    WordWrap
-  ClipNumber  NoFileReq   Tabs
-  DoUndo      PreserveCR  TabSize
+  AutoIndent   FreeForm    RightMargin  VisualBell
+  AutoPrefs    HexCode     SearchBack   WordWrap
+  Binary       Insert      StatusBar
+  CaseSearch   NoFileReq   Tabs
+  ClipNumber   PreserveCR  TabSize
+  DoUndo       ReadOnly    UTF8Auto
 @end example
 
 

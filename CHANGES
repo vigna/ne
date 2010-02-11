@@ -28,23 +28,30 @@ Changes from version 2.0.3
   * Built-in filename extension to syntax mapping updates:
     dtx -> tex, latex -> tex,  sage -> python.
 
+  * Include new txt2tags syntax file from http://txt2tags.sourceforge.net/
+
   * Replace reports the number of replacements (again).
-  
+
   * Enter in Help places you on the right command in the command list.
 
   * Now the global directory is displayed even if it is not found.
 	
   * Aborting an OpenNew doesn't leave you in a new blank document.
-  
+
   * AdjustView now takes optional number of lines or columns to
     adjust by; swapped meaning of AdjustView 'C' and 'M' parameters.
-  
+
   * Read .keys and possibly .menus files from NE_GLOBAL_DIR on startup.
 
   * More defensive reading of lines/columns from terminfo to avoid crashes
     with XTerm on Mac OS X.
 
   * More portable and robust window-size change detection.
+
+  * FastGUI, VerboseMacros, and RequestOrder are not buffer specific, are
+    only saved in ~/.ne/.default#ap.
+
+  * Current syntax name is buffer specific; only saved in autoprefs, not ~/.ne/.default#ap.
 
 Changes from version 2.0.2
 

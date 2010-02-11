@@ -44,6 +44,10 @@ is what most commands require. */
 	if ((i)<0) (b)->x = !(b)->x;\
 	else (b)->x = ((i) != 0);\
 }
+#define SET_GLOBAL_FLAG(c,f) {\
+	if ((c)<0) (f) = !(f);\
+	else (f) = ((c) != 0);\
+}
 
 
 /* Converts a non-positive result from request_number() to OK if the
@@ -82,7 +86,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 
 	stop = FALSE;
 
-	if (b->recording) record_action(b->cur_macro, a, c, p, b->opt.verbose_macros);
+	if (b->recording) record_action(b->cur_macro, a, c, p, verbose_macros);
 
 	switch(a) {
 		
@@ -943,7 +947,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		return OK;
 
 	case FASTGUI_A:
-		SET_USER_FLAG(b, c, opt.fast_gui);
+		SET_GLOBAL_FLAG(c, fast_gui);
 		reset_status_bar();
 		return OK;
 
@@ -960,7 +964,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		return OK;
 
 	case VERBOSEMACROS_A:
-		SET_USER_FLAG(b, c, opt.verbose_macros);
+		SET_GLOBAL_FLAG(c, verbose_macros);
 		return OK;
 
 	case AUTOPREFS_A:
@@ -976,8 +980,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		return OK;
 
 	case REQUESTORDER_A:
-		if ((c)<0) req_order = !req_order;
-		else req_order = ((c) != 0);\
+		SET_GLOBAL_FLAG(c, req_order);
 		return OK;
 
 	case UTF8AUTO_A:
@@ -1055,7 +1058,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 	case SAVEMACRO_A:
 		if (p || (p = request_file(b, "Macro Name", NULL))) {
 			print_info(SAVING);
-			optimize_macro(b->cur_macro, b->opt.verbose_macros);
+			optimize_macro(b->cur_macro, verbose_macros);
 			if ((error = print_error(save_stream(b->cur_macro, p, b->is_CRLF, FALSE))) == OK) print_info(SAVED);
 			free(p);
 			return error ? ERROR : 0;

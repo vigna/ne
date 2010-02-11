@@ -334,12 +334,12 @@ int dump_config(void)
   
 static void draw_cur_item(const int n) {
 	move_cursor(menus[n].cur_item + 1, menus[n].xpos);
-	if (!cur_buffer->opt.fast_gui && standout_ok) output_chars(menus[n].items[menus[n].cur_item].text, NULL, menus[n].width - (cursor_on_off_ok ? 0 : 1), TRUE);
+	if (!fast_gui && standout_ok) output_chars(menus[n].items[menus[n].cur_item].text, NULL, menus[n].width - (cursor_on_off_ok ? 0 : 1), TRUE);
 }
 
 
 static void undraw_cur_item(const int n) {
-	if (!cur_buffer->opt.fast_gui && standout_ok)  {
+	if (!fast_gui && standout_ok)  {
 		set_attr(0);
 		standout_on();
 		move_cursor(1 + menus[n].cur_item, menus[n].xpos);
@@ -503,7 +503,7 @@ static void draw_first_menu(void) {
 
 	set_attr(0);
 	standout_on();
-	if (!cur_buffer->opt.fast_gui && standout_ok) cursor_off();
+	if (!fast_gui && standout_ok) cursor_off();
 
 	while(i < ne_columns) {
 		output_string(" ", FALSE);
@@ -575,7 +575,7 @@ char *gen_flag_string(const buffer * const b) {
 	string[i++] = b->opt.word_wrap      ? 'w' : '-';
 	string[i++] = b->opt.free_form      ? 'f' : '-';
 	string[i++] = b->opt.auto_prefs     ? 'p' : '-';
-	string[i++] = b->opt.verbose_macros ? 'v' : '-';
+	string[i++] = verbose_macros        ? 'v' : '-';
 	string[i++] = b->opt.do_undo        ? 'u' : '-';
 	string[i++] = b->opt.read_only      ? 'r' : '-';
 	string[i++] = b->opt.tabs           ? 't' : '-';
@@ -588,7 +588,7 @@ char *gen_flag_string(const buffer * const b) {
 	string[i++] = io_utf8               ? '@' : '-';
 	string[i++] = b->encoding != ENC_8_BIT? (b->encoding == ENC_UTF8 ? 'U' : 'A') : '8';
 
-	if (b->opt.hex_code && !b->opt.fast_gui) {
+	if (b->opt.hex_code && !fast_gui) {
 		string[i++] = ' ';
 		if (ch > 0xFFFF) {
 			string[i++] = "0123456789abcdef"[(ch >> 28) & 0x0f];
@@ -645,7 +645,7 @@ void draw_status_bar(void) {
 	if (!bar_gone && cur_buffer->opt.status_bar) {
 		const int new_percent = (int)floor(((cur_buffer->cur_line + 1) * 100.0) / cur_buffer->num_lines);
 		/* This is the space occupied up to "L:", included. */
-		const int offset = cur_buffer->opt.fast_gui || !standout_ok ? 5: 3;
+		const int offset = fast_gui || !standout_ok ? 5: 3;
 		const int update_x = x != cur_buffer->win_x + cur_buffer->cur_x;
 		const int update_y = y != cur_buffer->cur_line;
 		const int update_percent = percent != new_percent;
@@ -654,7 +654,7 @@ void draw_status_bar(void) {
 
 		if (!update) return;
 
-		if (!cur_buffer->opt.fast_gui && standout_ok) standout_on();
+		if (!fast_gui && standout_ok) standout_on();
 		
 		x = cur_buffer->win_x + cur_buffer->cur_x;
 		y = cur_buffer->cur_line;
@@ -684,7 +684,7 @@ void draw_status_bar(void) {
 			output_string(flag_string, TRUE);
 		}
 
-		if (!cur_buffer->opt.fast_gui && standout_ok) standout_off();
+		if (!fast_gui && standout_ok) standout_off();
 		return;
 	}
 
@@ -692,14 +692,14 @@ void draw_status_bar(void) {
 	if (cur_buffer->opt.status_bar) {
 		percent = (int)floor(((cur_buffer->cur_line + 1) * 100.0) / cur_buffer->num_lines);
 		move_cursor(ne_lines - 1, 0);
-		if (!cur_buffer->opt.fast_gui && standout_ok) standout_on();
+		if (!fast_gui && standout_ok) standout_on();
 
 		strcpy(flag_string, gen_flag_string(cur_buffer));
 
 		x = cur_buffer->win_x + cur_buffer->cur_x;
 		y = cur_buffer->cur_line;
 
-		len = sprintf(bar_buffer, cur_buffer->opt.fast_gui || !standout_ok ? ">> L:%9d C:%9d %3d%% %s " : " L:%9d C:%9d %3d%% %s ", y + 1, x + 1, percent, flag_string);
+		len = sprintf(bar_buffer, fast_gui || !standout_ok ? ">> L:%9d C:%9d %3d%% %s " : " L:%9d C:%9d %3d%% %s ", y + 1, x + 1, percent, flag_string);
 
 		move_cursor(ne_lines - 1, 0);
 		output_chars(bar_buffer, NULL, len, TRUE);
@@ -722,7 +722,7 @@ void draw_status_bar(void) {
 			else output_string(UNNAMED_NAME, FALSE);
 		}
 
-		if (!cur_buffer->opt.fast_gui && standout_ok) {
+		if (!fast_gui && standout_ok) {
 			output_spaces(ne_columns, NULL);
 			standout_off();
 		}
@@ -757,7 +757,7 @@ void print_message(const char * const message) {
 
 		set_attr(0);
 
-		if (cur_buffer->opt.fast_gui || !standout_ok || !cur_buffer->opt.status_bar) {
+		if (fast_gui || !standout_ok || !cur_buffer->opt.status_bar) {
 			clear_to_eol();
 			output_string(msg_cache, TRUE);
 		}

@@ -382,12 +382,10 @@ typedef struct {
 		free_form:1,       /* Editing is free form (cursor can be anywhere) */
 		status_bar:1,      /* The status bar is displayed */
 		hex_code:1,        /* Show hexadecimal code under the cursor */
-		fast_gui:1,        /* GUI should be as fast as possible (phone lines, etc.) */
 		word_wrap:1,       /* Word wrap is on */
 		auto_indent:1,     /* Replicate indentation when creating a new line */
 		preserve_cr:1,     /* Preserve Carriage Returns, don't treat as line terminators. */
 		insert:1,          /* Insert mode */
-		verbose_macros:1,  /* Macro learned are verbose */
 		do_undo:1,         /* Record each action and allow undoing it */
 		auto_prefs:1,      /* Use autoprefs */
 		no_file_req:1,     /* Do not display the file requester */
@@ -537,6 +535,14 @@ extern int ansi;
 /* If true, we want requests by column, otherwise by row. */
 
 extern int req_order;
+
+/* If true, we want abbreviated screen updates. */
+
+extern int fast_gui;
+
+/* Recorded macros use long command names */
+
+extern int verbose_macros;
 
 /* If true, we want syntax highlighting. */
 

@@ -188,7 +188,6 @@ buffer *alloc_buffer(const buffer * const cur_b) {
 		b->opt.status_bar     =
 		b->opt.insert         =
 		b->opt.tabs           =
-		b->opt.verbose_macros =
 		b->opt.do_undo        =
 		b->opt.auto_prefs     = 1;
 
@@ -206,12 +205,10 @@ buffer *alloc_buffer(const buffer * const cur_b) {
 			b->opt.free_form      = cur_b->opt.free_form;
 			b->opt.status_bar     = cur_b->opt.status_bar;
 			b->opt.hex_code       = cur_b->opt.hex_code;
-			b->opt.fast_gui       = cur_b->opt.fast_gui;
 			b->opt.word_wrap      = cur_b->opt.word_wrap;
 			b->opt.auto_indent    = cur_b->opt.auto_indent;
 			b->opt.preserve_cr    = cur_b->opt.preserve_cr;
 
-			b->opt.verbose_macros = cur_b->opt.verbose_macros;
 			b->opt.do_undo        = cur_b->opt.do_undo;
 			b->opt.auto_prefs     = cur_b->opt.auto_prefs;
 			b->opt.no_file_req    = cur_b->opt.no_file_req;

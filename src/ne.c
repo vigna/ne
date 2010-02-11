@@ -85,6 +85,12 @@ list buffers = { (node *)&buffers.tail, NULL, (node *)&buffers.head };
 list clips = { (node *)&clips.tail, NULL, (node *)&clips.head };
 list macros = { (node *)&macros.tail, NULL, (node *)&macros.head };
 
+/* global prefs, only saved in ~/.ne/.default#ap and only if set */
+int req_order;
+int fast_gui;
+int verbose_macros = TRUE;
+/* end of global prefs */
+
 buffer *cur_buffer;
 int turbo;
 int do_syntax = TRUE;

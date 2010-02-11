@@ -49,7 +49,6 @@ reasonable number of retries. */
 
 We rely on a series of auxiliary functions. */
 
-int req_order;
 static int x, y, page, max_names_per_line, max_names_per_col, names_per_page, num_entries, max_name_len, mark_char;
 
 static const char * const *entries;
