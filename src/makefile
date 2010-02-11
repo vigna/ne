@@ -28,7 +28,7 @@
 # behavior. N.B.: This will cause ne's operation to differ slightly from the
 # documentation.
 # 
-#     make OPT=-DALTPAGING
+#     make OPTS=-DALTPAGING
 # 
 # By changing the value of NE_GLOBAL_DIR, you can change the directory
 # where ne tries to read system-wide information (configuration
