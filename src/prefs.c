@@ -217,6 +217,7 @@ int save_prefs(buffer * const b, const char * const name) {
 		if (saving_global) {
 			if (req_order) record_action(cs, REQUESTORDER_A, req_order, NULL, b->opt.verbose_macros);
 			/* Some others should move here: FASTGUI, VERBOSEMACROS perhaps. */
+			saving_global = 0;
 		}
 
 		error = save_stream(cs, name, b->is_CRLF, FALSE);
@@ -326,6 +327,9 @@ int load_auto_prefs(buffer * const b, const char *name) {
 
 
 int save_auto_prefs(buffer * const b, const char *name) {
+	/* In practice, the only time we call save_auto_prefs with a name is
+	   when we save the default prefs. If that changes, so too must this
+	   method of setting this static flag used by save_prefs. */
 	saving_global = name ? 1 : 0;
 	return do_auto_prefs(b, name, save_prefs);
 }
