@@ -531,7 +531,6 @@ int replace_regexp(buffer * const b, const char * const string) {
 
 			if (q - p > len) break;
 
-			assert(*q >= 0);
 			assert(*q < RE_NREGS);
 
 			if (re_reg.end[*q] - re_reg.start[*q]) {

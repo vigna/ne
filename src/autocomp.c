@@ -22,86 +22,81 @@
 
 #include "ne.h"
 
-#define CHILDREN 256
-#define TRIE_NODE_POOL_SIZE 128
-#define FLAG_CHAR '*'
+#define INITIAL_HASH_TABLE_SIZE (1024)
+#define INITIAL_BUFFER_SIZE (16*1024)
 
-typedef struct trie_node {
-	int flag; /* 0: not a terminator; 1: cur_buffer string; 2: other buffer string; */
-	struct trie_node *children[CHILDREN];
-	} trie;
+/* The string buffer. Contains all strings found so far, concatenated. */
+static unsigned char *strings;
 
-typedef struct trie_node_pool {
-	struct trie_node_pool *next;
-	int                    used;
-	trie trie_node[TRIE_NODE_POOL_SIZE];
-} trie_pool;
+/* The size of the string buffer, and the first free location. */
+static int strings_size, strings_first_free;
 
-static trie ac_root;
-static trie_pool *ac_pool = NULL;
+/* The hash table. Entries are offsets into strings. */
+static int *hash_table;
 
-D(
-static int alloced_trie_nodes;
-static int freed_trie_pools;
-)
+/* The allocated size of the table, the mask to compute the modulo (i.e., size - 1) and the number of entries in the table. */
+static int size, mask, n;
 
-static void init_trie(void) {
-	int i;
-	ac_root.flag = 0;
-	D(alloced_trie_nodes = freed_trie_pools = 0;)
-	for (i = 0; i < CHILDREN; i++) {
-		ac_root.children[i] = NULL;
-	}
+static int hash2(unsigned char *s, int len) {
+		unsigned long h = 42;
+		while(len-- != 0) h ^= ( h << 5 ) + s[len] + ( h >> 2 );
+		return h & mask;
 }
 
-static trie *new_trie(void) {
-	trie *nt;
-	trie_pool *tp;
-
-	if (!ac_pool || ac_pool->used >= TRIE_NODE_POOL_SIZE) {
-		if (tp = calloc(sizeof(trie_pool), 1)) {
-				tp->next = ac_pool;
-				ac_pool = tp;
-		} else return NULL;
-	}
-	D(alloced_trie_nodes++;)
-	return &ac_pool->trie_node[ac_pool->used++];
+static void init_hash_table(void) {
+	hash_table = calloc(size = INITIAL_HASH_TABLE_SIZE, sizeof *hash_table);
+	mask = size - 1;
+	strings = malloc(strings_size = INITIAL_BUFFER_SIZE);
+	strings_first_free = 1; /* We want to use 0 to denote empty slots. */
 }
 
-static void delete_trie(void) {
-	trie_pool *tp;
-	while (ac_pool) {
-		tp = ac_pool->next;
-		free(ac_pool);
-	   D(freed_trie_pools++;)
-		ac_pool = tp;
-	}
+static void delete_hash_table(void) {
+	free(strings);
+	free(hash_table);
 }
 
-static void add_to_trie(const unsigned char * const str, const int len, int *cum_len, int *cum_entries, int flag) {
-	int l, r, m, t, minlen, c, i;
-	trie *trie =  &ac_root;
+/* Add a given string, with specified length, to the string buffer, returning a pointer to the copy. */
+static unsigned char *add_to_strings(const unsigned char * const s, int len) {
+	if (strings_size - strings_first_free < len + 1) {
+		if ( (strings_size *= 2) - strings_first_free < len + 1 ) strings_size += len + 1;
+		strings = realloc(strings, strings_size);
+	}
+	strncpy(strings + strings_first_free, s, len);
+	strings[strings_first_free + len] = 0;
+	strings_first_free += len + 1;
+	return strings + strings_first_free - len - 1;
+}
 
-	if (!str || !*str) return;
-	assert(flag);
-	for (i=0,c=str[i]; i<len; i++,c=str[i]) {
-		if (!trie->children[c]) {
-			if (!(trie->children[c] = new_trie())) return; /* Epic fail. Figure out how to abort this eventually. */
+static void add_string(unsigned char * const s, const int len) {
+	int hash = hash2(s, len);
+	
+	while(hash_table[hash] && strncmp(&strings[hash_table[hash]], s, len)) hash = ( hash + 1 ) & mask;
+	if (hash_table[hash]) return;
+	n++;
+	hash_table[hash] = add_to_strings(s, len) - strings;
+	if ( size < ( ( n * 4 ) / 3 ) ) {
+		int i, l;
+		unsigned char *p;
+		free(hash_table);
+		hash_table = calloc(size *= 2, sizeof *hash_table);
+		mask = size - 1;
+		p = strings + 1;
+		for(i = 0; i < n; i++) {
+			l = strlen(p);
+			hash = hash2(p, l);
+			while(hash_table[hash] && strncmp(&strings[hash_table[hash]], p, l)) hash = ( hash + 1 ) & mask;
+			hash_table[hash] = p - strings;
+			p += l + 1;
 		}
-		trie = trie->children[c];
-	}
-	assert(trie != NULL);
-	if (!trie->flag) {
-		trie->flag = flag;
-		(*cum_len) += len + 1 + (flag == 2 ? 1 : 0);
-		(*cum_entries)++;
+		
+		assert(p == strings + strings_first_free);
 	}
 }
 
-static void search_buff(const buffer *b, const unsigned char *p, int *max_len, int *cum_len, int *cum_entries, int case_search, int flag) {
+static int search_buff(const buffer *b, const unsigned char *p, int case_search) {
 	line_desc *ld = (line_desc *)b->line_desc_list.head, *next;
 	int p_len = strlen(p);
-	int l, r;
+	int l, r, max_len = 0;
 	
 	assert(p != NULL);
 	while (next = (line_desc *)ld->ld_node.next) {
@@ -114,8 +109,8 @@ static void search_buff(const buffer *b, const unsigned char *p, int *max_len, i
 				r = l + get_char_width(&ld->line[l], b->encoding);
 				while (r < ld->line_len && ne_isword(get_char(&ld->line[r], b->encoding), b->encoding)) r += get_char_width(&ld->line[r], b->encoding);
 				if (r - l >= p_len && p_len == 0 || !(case_search ? strncmp : strncasecmp)(p, &ld->line[l], p_len)) {
-					add_to_trie(&ld->line[l], r - l, cum_len, cum_entries, flag);
-					if ( *max_len < r - l ) *max_len = r - l;
+					add_string(&ld->line[l], r - l);
+					if (max_len < r - l) max_len = r - l;
 				}
 				l = r;
 			}
@@ -124,99 +119,30 @@ static void search_buff(const buffer *b, const unsigned char *p, int *max_len, i
 		
 		ld = next;
 	}
+	
+	return max_len;
 }
 
 unsigned char *autocomplete(unsigned char *p) {
-	unsigned char *char_store, *c, *scratch;
-	unsigned char **entries, **e;
-	line_desc *ld;
-	buffer *b = (buffer *)buffers.head;
-	int max_len = 0, cum_entries = 0, cum_len = 0, x, i, *dd;
-	trie **tries;
-	
-	init_trie();
+	int i, j, max_len;
+	const char **entries;
+			
+	init_hash_table();
 
-	search_buff(cur_buffer, p, &max_len, &cum_len, &cum_entries, cur_buffer->opt.case_search, 1);
-	while (b->b_node.next) {
-		if (b != cur_buffer)
-			search_buff(b, p, &max_len, &cum_len, &cum_entries, cur_buffer->opt.case_search, 2);
-		b = (buffer *)b->b_node.next;
-	}
-	max_len++;
+	max_len = search_buff(cur_buffer, p, cur_buffer->opt.case_search);
+	/** We compact the table into a vector of char pointers. */
+	entries = malloc(n * sizeof *entries);
+	for(i = j = 0; i < size; i++) if (hash_table[i]) entries[j++] = &strings[hash_table[i]];
+	assert(j == n);
 
-
-
-	/* traverse the trie and produce our strings; itterative rather than recursive
-	                --------x                
-	    scratch   " . . . . . . . . . "      
-	                                         
-	         dd (   _     _         _  )    |
-	            (       _       _      )    |
-	            (     _       _        )    y
-	            (           _     _    )             */
-
-	/* fprintf(stderr,"cum_entries: %d, cum_len: %d, max_len: %d\n", cum_entries, cum_len, max_len); */
-	if (cum_entries &&
-	    (scratch = calloc(sizeof(char),   max_len)) &&
-	    (tries   = calloc(sizeof(trie *), max_len)) &&
-	    (dd      = calloc(sizeof(int),    max_len)) &&
-	    (e = entries = calloc(sizeof(char *), cum_entries)) &&
-	    (c = char_store = malloc(cum_len))) {
-		tries[0] = &ac_root;
-		x = 0;
-		#define y (dd[x])
-		while (x >= 0) {
-			/* fprintf(stderr,"LOOP-TOP: x: %3d, y: %3d (", x, y); 
-			for (i=0; i<max_len; i++) {
-				fprintf(stderr,"%3d ",dd[i]);
-				fflush(NULL);
-			}                                                      
-			fprintf(stderr,")\n"); fflush(NULL);                   */
-			if (!y) {
-				if (tries[x]->flag) {
-					assert(e<entries+cum_entries);
-					*e++ = c;
-					for (i=0; i<x; i++) *c++ = scratch[i];
-					if (tries[x]->flag == 2) *c++ = FLAG_CHAR;
-					*c++ = '\0';
-					assert(c<=char_store+cum_len);
-				}
-			}
-			if (tries[x]->children[y]) {
-				scratch[x] = y;
-				tries[x+1] = tries[x]->children[y];
-				x++;
-				y = 0;
-			} else if (++y == CHILDREN) {
-				y = 0;
-				x--;
-				if (x >= 0) y++;
-			}
-		}
-	}
-	assert(e==entries+cum_entries);
-	assert(c==char_store+cum_len);
-	if (dd) free(dd);
-	if (tries) free(tries);
-	if (scratch) free(scratch);
-	delete_trie();
 	free(p);
 	p = NULL;
 	
-	/* Although the trie traversal produces sorted entries, they aren't in dictionary order. */
-	qsort(entries, cum_entries, sizeof(char *), strdictcmp);  
-	
-	if (entries && char_store) {
-		if ((i = request_strings((const char * const *)entries, cum_entries, 0, max_len, FLAG_CHAR)) != ERROR) {
-			unsigned char *cp = entries[i >= 0 ? i : -i - 2];
-			if (p = malloc(strlen(cp) + 1)) {
-				strncpy(p,cp,strlen(cp) + 1);
-				if (p[strlen(p) - 1 ] == FLAG_CHAR) p[strlen(p) - 1] = '\0';
-			}
-		}
-	}
-	if (entries) free(entries);
-	if (char_store) free(char_store);
-	D(fprintf(stderr,"autocomp returning '%s', entries: %d, cum_len %d, trie nodes: %d, trie pools: %d.\n", p, cum_entries, cum_len, alloced_trie_nodes, freed_trie_pools);)
+	qsort(entries, n, sizeof *entries, strdictcmp);  
+
+	if ((i = request_strings(entries, n, 0, max_len, 0)) != ERROR) p = str_dup(entries[i >= 0 ? i : -i - 2]);
+	free(entries);
+	delete_hash_table();
+	D(fprintf(stderr,"autocomp returning '%s', entries: %d\n", p, n);)
 	return p;
 }

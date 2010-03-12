@@ -68,7 +68,7 @@ function was aborted or not-a-number error if an invalid number was read. */
 	zero means off, no argument means toggle.
 
 	If there is a string argument (i.e. p != NULL), it is assumed that the
-	action will consume *p -- it ends up being free()d or stored
+	action will consume p -- it ends up being free()d or stored
 	somewhere. Though efficient, this has lead to some memory leaks (can you
 	find them?). */
 
