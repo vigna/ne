@@ -7,10 +7,6 @@ Changes from version 2.0.3
 
   * Now we set the syntax when a file is saved with a (different) name.
 
-  * Fixed small mistakes in the keyboard sequences displayed in the menus,
-    and small discrepancies between default.keys/default.menus and reality
-    (thanks to John Gabriele for having pointed out this).
-
   * Now we highlight correctly control characters in the command line.
 
   * Display request lists by columns ("RequestOrder 1") or rows ("RequestOrder 0").
@@ -48,10 +44,22 @@ Changes from version 2.0.3
 
   * More portable and robust window-size change detection.
 
+  * More parsimonious status-bar updates.
+
   * FastGUI, VerboseMacros, and RequestOrder are not buffer specific, are
     only saved in ~/.ne/.default#ap.
 
   * Current syntax name is buffer specific; only saved in autoprefs, not ~/.ne/.default#ap.
+
+---- Bug fixes ----
+
+  * Fixed old, bad, shameful bug: complex assertions were compiled into
+    the code even for the non-debug version. As a result, ne was deadly
+    slow on large files.
+
+  * Fixed small mistakes in the keyboard sequences displayed in the menus,
+    and small discrepancies between default.keys/default.menus and reality
+    (thanks to John Gabriele for having pointed out this).
 
 Changes from version 2.0.2
 
