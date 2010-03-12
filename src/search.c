@@ -509,7 +509,7 @@ int replace_regexp(buffer * const b, const char * const string) {
 			}
 		}
 
-		for(i = RE_NREGS - 1; i >= 0; i--) {
+		for(i = re_reg.num_regs; i-- != 0;) {
 			re_reg.end[i] -= re_reg.start[0];
 			re_reg.start[i] -= re_reg.start[0];
 		}
@@ -530,6 +530,9 @@ int replace_regexp(buffer * const b, const char * const string) {
 			q += strlen(q) + 1;
 
 			if (q - p > len) break;
+
+			assert(*q >= 0);
+			assert(*q < RE_NREGS);
 
 			if (re_reg.end[*q] - re_reg.start[*q]) {
 
