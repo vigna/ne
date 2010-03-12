@@ -46,6 +46,7 @@ static int hash2(unsigned char *s, int len) {
 static void init_hash_table(void) {
 	hash_table = calloc(size = INITIAL_HASH_TABLE_SIZE, sizeof *hash_table);
 	mask = size - 1;
+	n = 0;
 	strings = malloc(strings_size = INITIAL_BUFFER_SIZE);
 	strings_first_free = 1; /* We want to use 0 to denote empty slots. */
 }
