@@ -6,5 +6,7 @@
 
 - Decide whether to implement bash-like semantics for autocompletion
 
+- UNDO stopped working.
+
 - Open files > 2G.
 
