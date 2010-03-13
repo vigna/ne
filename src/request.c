@@ -638,7 +638,6 @@ int request_document(void) {
 				}
 
 				i = request_strings((const char * const *)entries, num_entries, 0, max_name_len, '\0');
-
 				reset_window();
 
 				free(names);

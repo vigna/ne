@@ -113,7 +113,8 @@ static int search_buff(const buffer *b, const unsigned char *p, int case_search,
 	int p_len = strlen(p);
 	int l, r, max_len = 0;
 	
-	assert(p != NULL);
+	assert(p);
+	
 	while (next = (line_desc *)ld->ld_node.next) {
 		l = r = 0;
 		do {
@@ -130,6 +131,7 @@ static int search_buff(const buffer *b, const unsigned char *p, int case_search,
 				l = r;
 			}
 			assert(l <= ld->line_len);
+			if (stop) return -1;
 		} while (l < ld->line_len - p_len);
 		
 		ld = next;
@@ -142,14 +144,26 @@ unsigned char *autocomplete(unsigned char *p, const int ext) {
 	int i, j, m, max_len = 0;
 	char **entries;
 			
+	assert(p);
+	
 	init_hash_table();
 
 	max_len = search_buff(cur_buffer, p, cur_buffer->opt.case_search, FALSE);
+	if (stop) {
+		delete_hash_table();
+		free(p);
+		return NULL;
+	}
 
 	if (ext) {
 		buffer *b = (buffer *)buffers.head;
 		while (b->b_node.next) {
 			if (b != cur_buffer) m = search_buff(b, p, cur_buffer->opt.case_search, TRUE);
+			if (stop) {
+				delete_hash_table();
+				free(p);
+				return NULL;
+			}
 			if (max_len < m) max_len = m;
 			b = (buffer *)b->b_node.next;
 		}
@@ -183,13 +197,13 @@ unsigned char *autocomplete(unsigned char *p, const int ext) {
 	if (n == 1) p = str_dup(entries[0]);
 	else {
 		qsort(entries, n, sizeof *entries, strdictcmp);  
-
 		if ((i = request_strings((const char * const *)entries, n, 0, max_len, EXTERNAL_FLAG_CHAR)) != ERROR) {
 			i = i >= 0 ? i : -i - 2;
 			p = str_dup(entries[i]);
 			/* Delete EXTERNAL_FLAG_CHAR at the end of the strings if necessary. */
 			if (hash_table[i] < 0) p[strlen(p) - 1] = 0;
 		}
+		reset_window();
 	}
 	
 	free(entries);

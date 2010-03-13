@@ -1440,7 +1440,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		int recording = b->recording;
 		unsigned char *msg = malloc( 256 );
 
-		if ( !p ) { /* no prefix give; find one left of the cursor. */
+		if ( !p ) { /* no prefix given; find one left of the cursor. */
 			i = b->cur_pos;
 			if (i && i <= b->cur_line_desc->line_len) {
 				i = prev_pos(b->cur_line_desc->line, i, b->encoding);
@@ -1464,6 +1464,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 					error = do_action(b, INSERTSTRING_A, 0, p);
 				end_undo_chain(b);
 			}
+			else if (stop) error = STOPPED;
 		} else {
 			if (msg) {
 				snprintf(msg, 256, "AutoComplete: prefix '%s'",(p != NULL ? p : (unsigned char *)""));
@@ -1473,11 +1474,10 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 				b->recording = 0;
 				error = do_action(b, INSERTSTRING_A, 0, p);
 			}
+			else if (stop) error = STOPPED;
 		}
 		if (msg) free(msg);
 		b->recording = recording;
-		draw_status_bar();
-		reset_window();
 		return print_error(error) ? ERROR : 0;
 	}
 
