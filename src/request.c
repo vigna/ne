@@ -232,10 +232,6 @@ void request_move_inc_down(void) {
 
 
 static void request_move_left(void) {
-
-	int p = page;
-	int n = PXY2N(page,x,y);
-	
 	if ( x == 0 && y + page > 0 ) {
 		request_move_up();
 		request_move_to_eol();
@@ -247,10 +243,6 @@ static void request_move_left(void) {
 
 
 static void request_move_right(void) {
-
-	int p = page;
-	int n = PXY2N(page,x,y);
-	
 	if (y < NAMES_PER_COL(page) - 1 && PXY2N(page,0,y+1) < num_entries && 
 	    (x == NAMES_PER_LINE(page) - 1 || PXY2N(page,x+1,y) > num_entries -1)  ) {
 		request_move_to_sol();

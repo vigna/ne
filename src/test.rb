@@ -140,7 +140,7 @@ ARGV[0].to_i.times do |i|
 	
 
   elsif r < 50 # Editing
-    case rand(9)
+    case rand(10)
     when 0
       puts("CAPITALIZE " + (rand(10)).to_s)
     when 1
@@ -183,6 +183,8 @@ ARGV[0].to_i.times do |i|
       puts("TOUPPER " + rand(10).to_s)
     when 8
       puts("UNDELLINE " + (rand(10)).to_s)
+    when 9
+      puts("AUTOCOMPLETE")
     end
 
   else # Generate text

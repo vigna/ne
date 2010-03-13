@@ -39,6 +39,7 @@
 #include <sys/ioctl.h>
 #endif
 
+#include "ansi.h"
 #include "termchar.h"
 #include "cm.h"
 #include "utf8.h"

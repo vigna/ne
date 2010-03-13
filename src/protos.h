@@ -24,10 +24,7 @@
 int do_action(buffer *b, action a, int c, unsigned char *p);
 
 /* autocomp.c */
-unsigned char *autocomplete(unsigned char *p);
-
-/* ansi.c */
-void setup_ansi_term(void);
+unsigned char *autocomplete(unsigned char *p, const int ext);
 
 /* buffer.c */
 encoding_type detect_buffer_encoding(const buffer *b);

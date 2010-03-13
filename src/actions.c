@@ -1457,7 +1457,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 				snprintf(msg, 256, "AutoComplete: prefix '%s'",(p != NULL ? p : (unsigned char *)""));
 				print_message(msg);
 			}
-			if (p = autocomplete(p) ) {
+			if (p = autocomplete(p, TRUE) ) {
 				b->recording = 0;
 				start_undo_chain(b);
 				if (i >= b->cur_pos || (error = do_action(b, DELETEPREVWORD_A, 1, NULL)) == OK)
@@ -1469,7 +1469,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 				snprintf(msg, 256, "AutoComplete: prefix '%s'",(p != NULL ? p : (unsigned char *)""));
 				print_message(msg);
 			}
-			if (p = autocomplete(p) ) {
+			if (p = autocomplete(p, TRUE) ) {
 				b->recording = 0;
 				error = do_action(b, INSERTSTRING_A, 0, p);
 			}
