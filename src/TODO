@@ -1,5 +1,10 @@
 - Without status bar there are video rendering errors
 
-- Improve the DNW/DPW stuff
+- Fix lack of record stopping in DNW/DPW
+
+- Fix 256-byte fixed-size buffer in AUTOCOMPLETE_A
+
+- Decide whether to implement bash-like semantics for autocompletion
 
 - Open files > 2G.
+
