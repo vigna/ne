@@ -211,7 +211,9 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		for(i = 0; i < c && !(error = search_word(b, -1)) && !stop; i++);
 		return stop ? STOPPED : error;
 
-   case DELETEPREVWORD_A:
+   case DELETEPREVWORD_A: {
+		int recording = b->recording;
+		b->recording = 0;
 		NORMALIZE(c);
 		delay_update();
 		start_undo_chain(b);
@@ -221,7 +223,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 				if(!(error = do_action(b, PREVWORD_A, 1, NULL))) {
 					int left_line = b->cur_line;
 					int left_pos  = b->cur_pos;
-					goto_line(b, right_line);
+						goto_line(b, right_line);
 					goto_pos(b, right_pos);
 					while(!error && !stop && (b->cur_line > left_line || b->cur_pos > left_pos)) {
 						error = do_action(b, BACKSPACE_A, 1, NULL);
@@ -229,9 +231,13 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 				}
 			}
 		end_undo_chain(b);
-      return stop ? STOPPED : error;
-      
-   case DELETENEXTWORD_A:
+		b->recording = recording;
+		return stop ? STOPPED : error;
+	}
+
+   case DELETENEXTWORD_A: {
+		int recording = b->recording;
+		b->recording = 0;
 		NORMALIZE(c);
 		delay_update();
 		start_undo_chain(b);
@@ -245,8 +251,10 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 				}
 			}
 		end_undo_chain(b);
-      return stop ? STOPPED : error;
-      
+		b->recording = recording;
+		return stop ? STOPPED : error;
+	}
+
 	case MOVEEOW_A:
 		move_to_eow(b);
 		return OK;
@@ -345,7 +353,9 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		SET_USER_FLAG(b, c, opt.tabs);
 		return OK;
 
-	case INSERTTAB_A:
+	case INSERTTAB_A: {
+		int recording= b->recording;
+		b->recording = 0;
 		NORMALIZE(c);
 		start_undo_chain(b);
 		if ( b->opt.tabs ) {
@@ -361,8 +371,9 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			}
 		}
 		end_undo_chain(b);
+		b->recording = recording;
 		return error;
-
+	}
 	case INSERTCHAR_A: {
 
 		static int last_inserted_char = ' ';
