@@ -107,7 +107,6 @@ static void add_string(unsigned char * const s, const int len, const int ext) {
 		
 		free(hash_table);
 		hash_table = new_hash_table;
-		assert(p == strings + strings_first_free);
 	}
 }
 
