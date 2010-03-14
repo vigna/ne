@@ -85,7 +85,7 @@ ARGV[0].to_i.times do |i|
     when 4
       puts("WORDWRAP")
     when 5
-      puts("TABS")
+      #puts("TABS")
     when 6
       puts("TABSIZE " + (rand(20) + 1).to_s)
     end
