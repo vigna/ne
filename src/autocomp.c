@@ -110,7 +110,7 @@ static void add_string(unsigned char * const s, const int len, const int ext) {
 	}
 }
 
-static int search_buff(const buffer *b, const unsigned char *p, int case_search, const int ext) {
+static int search_buff(const buffer *b, const unsigned char *p, const int encoding, const int case_search, const int ext) {
 	line_desc *ld = (line_desc *)b->line_desc_list.head, *next;
 	int p_len = strlen(p);
 	int l, r, max_len = 0;
@@ -127,7 +127,7 @@ static int search_buff(const buffer *b, const unsigned char *p, int case_search,
 				r = l + get_char_width(&ld->line[l], b->encoding);
 				while (r < ld->line_len && ne_isword(get_char(&ld->line[r], b->encoding), b->encoding)) r += get_char_width(&ld->line[r], b->encoding);
 				if (r - l >= p_len && p_len == 0 || !(case_search ? strncmp : strncasecmp)(p, &ld->line[l], p_len)) {
-					add_string(&ld->line[l], r - l, ext);
+					if (b->encoding == encoding || is_ascii(&ld->line[l], r - l)) add_string(&ld->line[l], r - l, ext);
 					if (max_len < r - l) max_len = r - l;
 				}
 				l = r;
@@ -150,7 +150,7 @@ unsigned char *autocomplete(unsigned char *p, const int ext) {
 	
 	init_hash_table();
 
-	max_len = search_buff(cur_buffer, p, cur_buffer->opt.case_search, FALSE);
+	max_len = search_buff(cur_buffer, p, cur_buffer->encoding, cur_buffer->opt.case_search, FALSE);
 	if (stop) {
 		delete_hash_table();
 		free(p);
@@ -161,7 +161,7 @@ unsigned char *autocomplete(unsigned char *p, const int ext) {
 		buffer *b = (buffer *)buffers.head;
 		while (b->b_node.next) {
 			if (b != cur_buffer) {
-				m = search_buff(b, p, cur_buffer->opt.case_search, TRUE);
+				m = search_buff(b, p, cur_buffer->encoding, cur_buffer->opt.case_search, TRUE);
 				if (stop) {
 					delete_hash_table();
 					free(p);
@@ -198,10 +198,13 @@ unsigned char *autocomplete(unsigned char *p, const int ext) {
 	return p;
 #endif
 
-	if (n == 1) p = str_dup(entries[0]);
+	if (n == 1) {
+		p = str_dup(entries[0]);
+		if (hash_table[0] < 0) p[strlen(p) - 1] = 0;
+	}
 	else {
 		qsort(entries, n, sizeof *entries, strdictcmp);  
-		if ((i = request_strings((const char * const *)entries, n, 0, max_len, EXTERNAL_FLAG_CHAR)) != ERROR) {
+		if ((i = request_strings((const char * const *)entries, n, 0, max_len + 1, EXTERNAL_FLAG_CHAR)) != ERROR) {
 			i = i >= 0 ? i : -i - 2;
 			p = str_dup(entries[i]);
 			/* Delete EXTERNAL_FLAG_CHAR at the end of the strings if necessary. */
