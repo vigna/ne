@@ -92,18 +92,21 @@ static void add_string(unsigned char * const s, const int len, const int ext) {
 	if ( size < ( ( n * 4 ) / 3 ) ) {
 		int i, l;
 		unsigned char *p;
-		free(hash_table);
-		hash_table = calloc(size *= 2, sizeof *hash_table);
+		int *new_hash_table = calloc(size *= 2, sizeof *hash_table);
 		mask = size - 1;
-		p = strings + 1;
-		for(i = 0; i < n; i++) {
-			l = strlen(p);
-			hash = hash2(p, l);
-			while(hash_table[hash] && strncmp(&strings[decode(hash_table[hash])], p, l)) hash = ( hash + 1 ) & mask;
-			hash_table[hash] = code(p - strings, ext);
-			p += l + 2;
+		for(i = 0; i < size / 2; i++) {
+			if (hash_table[i]) {
+				p = &strings[decode(hash_table[i])];
+				l = strlen(p);
+				hash = hash2(p, l);
+				while(new_hash_table[hash] && strncmp(&strings[decode(new_hash_table[hash])], p, l)) hash = ( hash + 1 ) & mask;
+				new_hash_table[hash] = code(p - strings, hash_table[i] < 0);
+				p += l + 2;
+			}
 		}
 		
+		free(hash_table);
+		hash_table = new_hash_table;
 		assert(p == strings + strings_first_free);
 	}
 }
