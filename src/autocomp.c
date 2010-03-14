@@ -161,13 +161,15 @@ unsigned char *autocomplete(unsigned char *p, const int ext) {
 	if (ext) {
 		buffer *b = (buffer *)buffers.head;
 		while (b->b_node.next) {
-			if (b != cur_buffer) m = search_buff(b, p, cur_buffer->opt.case_search, TRUE);
-			if (stop) {
-				delete_hash_table();
-				free(p);
-				return NULL;
+			if (b != cur_buffer) {
+				m = search_buff(b, p, cur_buffer->opt.case_search, TRUE);
+				if (stop) {
+					delete_hash_table();
+					free(p);
+					return NULL;
+				}
+				if (max_len < m) max_len = m;
 			}
-			if (max_len < m) max_len = m;
 			b = (buffer *)b->b_node.next;
 		}
  	}
@@ -196,7 +198,7 @@ unsigned char *autocomplete(unsigned char *p, const int ext) {
 	delete_hash_table();
 	return p;
 #endif
-	
+
 	if (n == 1) p = str_dup(entries[0]);
 	else {
 		qsort(entries, n, sizeof *entries, strdictcmp);  
