@@ -1465,7 +1465,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			} else p = malloc(1); /* no prefix left of the cursor; we'll find _all_ word strings! */
 			p[b->cur_pos - i] = 0;
 			if (msg) {
-				snprintf(msg, 256, "AutoComplete: prefix '%s'",(p != NULL ? p : (unsigned char *)""));
+				snprintf(msg, 256, "AutoComplete: prefix \"%s\"",(p != NULL ? p : (unsigned char *)""));
 				print_message(msg);
 			}
 			if (p = autocomplete(p, TRUE) ) {
