@@ -77,7 +77,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 	
 	line_desc *next_ld;
 	HIGHLIGHT_STATE next_line_state;
-	int i, error = OK, col;
+	int i, error = OK, recording, col;
 	char *q;
 
 	assert_buffer(b);
@@ -211,8 +211,8 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		for(i = 0; i < c && !(error = search_word(b, -1)) && !stop; i++);
 		return stop ? STOPPED : error;
 
-   case DELETEPREVWORD_A: {
-		int recording = b->recording;
+   case DELETEPREVWORD_A:
+		recording = b->recording;
 		b->recording = 0;
 		NORMALIZE(c);
 		delay_update();
@@ -233,10 +233,9 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		end_undo_chain(b);
 		b->recording = recording;
 		return stop ? STOPPED : error;
-	}
 
-   case DELETENEXTWORD_A: {
-		int recording = b->recording;
+   case DELETENEXTWORD_A:
+		recording = b->recording;
 		b->recording = 0;
 		NORMALIZE(c);
 		delay_update();
@@ -253,7 +252,6 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		end_undo_chain(b);
 		b->recording = recording;
 		return stop ? STOPPED : error;
-	}
 
 	case MOVEEOW_A:
 		move_to_eow(b);
@@ -324,9 +322,9 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		goto_column(b, c ? --c : 0);
 		return OK;
 	
-	case INSERTSTRING_A: {
+	case INSERTSTRING_A:
 		/* Since we are going to call another action, we do not want to record this insertion twice. */
-		int recording= b->recording;
+		recording= b->recording;
 		b->recording = 0;
 		error = ERROR;
 		if (p || (p = request_string("String", NULL, FALSE, FALSE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
@@ -347,14 +345,13 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		}
 		b->recording = recording;
 		return error;	
-	}
 
 	case TABS_A:
 		SET_USER_FLAG(b, c, opt.tabs);
 		return OK;
 
-	case INSERTTAB_A: {
-		int recording= b->recording;
+	case INSERTTAB_A:
+		recording = b->recording;
 		b->recording = 0;
 		NORMALIZE(c);
 		start_undo_chain(b);
@@ -373,7 +370,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		end_undo_chain(b);
 		b->recording = recording;
 		return error;
-	}
+
 	case INSERTCHAR_A: {
 
 		static int last_inserted_char = ' ';
@@ -1047,13 +1044,13 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		return OK;
 
 	case RECORD_A:
-		i = b->recording;
+		recording = b->recording;
 		SET_USER_FLAG(b, c, recording);
-		if (b->recording && !i) {
+		if (b->recording && !recording) {
 			b->cur_macro = reset_stream(b->cur_macro);
 			print_message(info_msg[STARTING_MACRO_RECORDING]);
 		}
-		else if (!b->recording && i) print_message(info_msg[MACRO_RECORDING_COMPLETED]);
+		else if (!b->recording && recording) print_message(info_msg[MACRO_RECORDING_COMPLETED]);
 		return OK;
 
 	case PLAY_A:
@@ -1445,14 +1442,14 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		return OK;
 
 	case AUTOCOMPLETE_A: {
-		/* Since we are going to call other actions (INSERTSTRING_A and DELETEPREVWORD_A),
-		     we do not want to record this insertion twice.
-	     Also, we are counting on INSERTSTRING_A to handle character encoding issues. */
-		int recording = b->recording;
 		unsigned char *msg = malloc( 1024 );
-
+		/* Since we are going to call other actions (INSERTSTRING_A and DELETEPREVWORD_A),
+			we do not want to record this insertion twice. Also, we are counting on 
+			INSERTSTRING_A to handle character encoding issues. */
+		recording = b->recording;
+		i = b->cur_pos;
+		
 		if ( !p ) { /* no prefix given; find one left of the cursor. */
-			i = b->cur_pos;
 			if (i && i <= b->cur_line_desc->line_len) {
 				i = prev_pos(b->cur_line_desc->line, i, b->encoding);
 				while (i && ne_isword(c = get_char(&b->cur_line_desc->line[i], b->encoding), b->encoding))
@@ -1466,32 +1463,21 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			else p = malloc(1); /* no prefix left of the cursor; we'll find _all_ word strings! */
 			
 			p[b->cur_pos - i] = 0;
-			
-			if (msg) {
-				snprintf(msg, 1024, "AutoComplete: prefix \"%s\"", (p != NULL ? p : (unsigned char *)""));
-				print_message(msg);
-			}
-			
-			if (p = autocomplete(p, TRUE) ) {
-				b->recording = 0;
-				start_undo_chain(b);
-				if (i >= b->cur_pos || (error = do_action(b, DELETEPREVWORD_A, 1, NULL)) == OK)
-					error = do_action(b, INSERTSTRING_A, 0, p);
-				end_undo_chain(b);
-			}
-			else if (stop) error = STOPPED;
-		} 
-		else {
-			if (msg) {
-				snprintf(msg, 1024, "AutoComplete: prefix \"%s\"", (p != NULL ? p : (unsigned char *)""));
-				print_message(msg);
-			}
-			if (p = autocomplete(p, TRUE) ) {
-				b->recording = 0;
-				error = do_action(b, INSERTSTRING_A, 0, p);
-			}
-			else if (stop) error = STOPPED;
+		}	
+
+		if (msg) {
+			snprintf(msg, 1024, "AutoComplete: prefix \"%s\"", p);
+			print_message(msg);
 		}
+			
+		if (p = autocomplete(p, TRUE) ) {
+			b->recording = 0;
+			start_undo_chain(b);
+			if (i >= b->cur_pos || (error = do_action(b, DELETEPREVWORD_A, 1, NULL)) == OK) error = do_action(b, INSERTSTRING_A, 0, p);
+			end_undo_chain(b);
+		}
+		else if (stop) error = STOPPED;
+		
 		if (msg) free(msg);
 		b->recording = recording;
 		return print_error(error) ? ERROR : 0;
@@ -1502,4 +1488,3 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		return OK;
 	}
 }
-
