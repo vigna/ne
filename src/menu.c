@@ -269,7 +269,7 @@ static menu def_menus[DEF_MENU_NUM] = {
 	{
 		sizeof(extras_item) / sizeof(menu_item),
 		35,
-		14,
+		15,
 		0,
 		"Extras",
 		extras_item
