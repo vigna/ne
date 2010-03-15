@@ -41,6 +41,10 @@
 
 #define MAX_FLAG_STRING_SIZE 32
 
+/* The maximum length of a message. */
+
+#define MAX_MESSAGE_LENGTH 1024
+
 /* The name of the menu configuration file. */
 
 #define MENU_CONF_NAME ".menus"
@@ -745,11 +749,11 @@ void draw_status_bar(void) {
 
 void print_message(const char * const message) {
 
-	static char msg_cache[MAX_BAR_BUFFER_SIZE];
+	static char msg_cache[MAX_MESSAGE_LENGTH];
 	
 	if (message) {
-		strncpy(msg_cache, message, MAX_BAR_BUFFER_SIZE);
-		msg_cache[MAX_BAR_BUFFER_SIZE - 1] = '\0';
+		strncpy(msg_cache, message, MAX_MESSAGE_LENGTH);
+		msg_cache[MAX_MESSAGE_LENGTH - 1] = '\0';
 	}
 	
    if (message || showing_msg) {
