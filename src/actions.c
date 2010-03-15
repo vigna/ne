@@ -1449,7 +1449,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		     we do not want to record this insertion twice.
 	     Also, we are counting on INSERTSTRING_A to handle character encoding issues. */
 		int recording = b->recording;
-		unsigned char *msg = malloc( 256 );
+		unsigned char *msg = malloc( 1024 );
 
 		if ( !p ) { /* no prefix given; find one left of the cursor. */
 			i = b->cur_pos;
@@ -1462,12 +1462,16 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 				p = malloc(b->cur_pos - i + 1);
 				if (!p) return OUT_OF_MEMORY;
 				strncpy(p, &b->cur_line_desc->line[i], b->cur_pos - i);
-			} else p = malloc(1); /* no prefix left of the cursor; we'll find _all_ word strings! */
+			} 
+			else p = malloc(1); /* no prefix left of the cursor; we'll find _all_ word strings! */
+			
 			p[b->cur_pos - i] = 0;
+			
 			if (msg) {
-				snprintf(msg, 256, "AutoComplete: prefix \"%s\"",(p != NULL ? p : (unsigned char *)""));
+				snprintf(msg, 1024, "AutoComplete: prefix \"%s\"", (p != NULL ? p : (unsigned char *)""));
 				print_message(msg);
 			}
+			
 			if (p = autocomplete(p, TRUE) ) {
 				b->recording = 0;
 				start_undo_chain(b);
@@ -1476,9 +1480,10 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 				end_undo_chain(b);
 			}
 			else if (stop) error = STOPPED;
-		} else {
+		} 
+		else {
 			if (msg) {
-				snprintf(msg, 256, "AutoComplete: prefix '%s'",(p != NULL ? p : (unsigned char *)""));
+				snprintf(msg, 1024, "AutoComplete: prefix \"%s\"", (p != NULL ? p : (unsigned char *)""));
 				print_message(msg);
 			}
 			if (p = autocomplete(p, TRUE) ) {
