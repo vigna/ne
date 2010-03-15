@@ -177,7 +177,6 @@ unsigned char *autocomplete(unsigned char *p, const int ext) {
 	entries = malloc(n * sizeof *entries);
 	for(i = j = 0; i < size; i++) 
 		if (hash_table[i]) {
-			hash_table[j] = hash_table[i];
 			entries[j] = &strings[decode(hash_table[i])];
 			if (hash_table[i] < 0) entries[j][strlen(entries[j])] = EXTERNAL_FLAG_CHAR;
 			j++;
@@ -190,8 +189,8 @@ unsigned char *autocomplete(unsigned char *p, const int ext) {
 #ifdef NE_TEST
 	/* During tests, we always output the middle entry. */
 	if (n) {
+		if (entries[n/2][strlen(entries[n/2]) - 1] == EXTERNAL_FLAG_CHAR) entries[n/2][strlen(entries[n/2]) - 1] = 0;
 		p = str_dup(entries[n/2]);
-		if (hash_table[n/2] < 0) p[strlen(p) - 1] = 0;
 	}
 	free(entries);
 	delete_hash_table();
@@ -200,15 +199,15 @@ unsigned char *autocomplete(unsigned char *p, const int ext) {
 
 	if (n == 1) {
 		p = str_dup(entries[0]);
-		if (hash_table[0] < 0) p[strlen(p) - 1] = 0;
+		if (p[strlen(p) - 1] == EXTERNAL_FLAG_CHAR) p[strlen(p) - 1] = 0;
 	}
 	else {
 		qsort(entries, n, sizeof *entries, strdictcmp);  
 		if ((i = request_strings((const char * const *)entries, n, 0, max_len + 1, EXTERNAL_FLAG_CHAR)) != ERROR) {
 			i = i >= 0 ? i : -i - 2;
-			p = str_dup(entries[i]);
 			/* Delete EXTERNAL_FLAG_CHAR at the end of the strings if necessary. */
-			if (hash_table[i] < 0) p[strlen(p) - 1] = 0;
+			if (entries[i][strlen(entries[i]) - 1] == EXTERNAL_FLAG_CHAR) entries[i][strlen(entries[i]) - 1] = 0;
+			p = str_dup(entries[i]);
 		}
 		reset_window();
 	}
