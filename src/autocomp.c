@@ -142,6 +142,14 @@ static int search_buff(const buffer *b, const unsigned char *p, const int encodi
 	return max_len;
 }
 
+/* Returns a completion for the (non-NULL) prefix p, showing suffixes from
+   all buffers if ext is true. Note that p is free()'d by this function,
+   and that, in turn, the returned string must be free()'d by the caller
+   if it is non-NULL (a returned NULL means that no completion is available).
+   
+   If there is more than one completion, this function will invoke request_strings()
+   (and subsequently reset_window()). */
+
 unsigned char *autocomplete(unsigned char *p, const int ext) {
 	int i, j, m, max_len = 0;
 	char **entries;
@@ -173,7 +181,7 @@ unsigned char *autocomplete(unsigned char *p, const int ext) {
 		}
  	}
 
-	/** We compact the table into a vector of char pointers. */
+	/* We compact the table into a vector of char pointers. */
 	entries = malloc(n * sizeof *entries);
 	for(i = j = 0; i < size; i++) 
 		if (hash_table[i]) {
@@ -201,7 +209,7 @@ unsigned char *autocomplete(unsigned char *p, const int ext) {
 		p = str_dup(entries[0]);
 		if (p[strlen(p) - 1] == EXTERNAL_FLAG_CHAR) p[strlen(p) - 1] = 0;
 	}
-	else {
+	else if (n != 0) {
 		qsort(entries, n, sizeof *entries, strdictcmp);  
 		if ((i = request_strings((const char * const *)entries, n, 0, max_len + 1, EXTERNAL_FLAG_CHAR)) != ERROR) {
 			i = i >= 0 ? i : -i - 2;

@@ -160,22 +160,22 @@ static const menu_item macros_item[] =
 
 static const menu_item extras_item[] =
 	{
-		{ "Exec...     ^K", EXEC_ABBREV },
-		{ "Suspend     ^Z", SUSPEND_ABBREV },
-		{ "Help...    f10", HELP_ABBREV },                     
-		{ "Refresh     ^L", REFRESH_ABBREV },
-		{ "Undo     f5/[U", UNDO_ABBREV },
-		{ "Redo     f6/[R", REDO_ABBREV },
-		{ "Undel Line  ^U", UNDELLINE_ABBREV },
-		{ "Center        ", CENTER_ABBREV },
-		{ "Paragraph   [P", PARAGRAPH_ABBREV },
-		{ "Adjust View ^^", ADJUSTVIEW_ABBREV },
-		{ "Center View [C", CENTERVIEW_ABBREV },
-		{ "ToUpper     [V", TOUPPER_ABBREV },
-		{ "ToLower     [L", TOLOWER_ABBREV },
-		{ "Capitalize    ", CAPITALIZE_ABBREV },
-		{ "AutoComplete  ", AUTOCOMPLETE_ABBREV },
-		{ "UTF-8         ", UTF8_ABBREV }
+		{ "Exec...      ^K", EXEC_ABBREV },
+		{ "Suspend      ^Z", SUSPEND_ABBREV },
+		{ "Help...     f10", HELP_ABBREV },                     
+		{ "Refresh      ^L", REFRESH_ABBREV },
+		{ "Undo      f5/[U", UNDO_ABBREV },
+		{ "Redo      f6/[R", REDO_ABBREV },
+		{ "Undel Line   ^U", UNDELLINE_ABBREV },
+		{ "Center         ", CENTER_ABBREV },
+		{ "Paragraph    [P", PARAGRAPH_ABBREV },
+		{ "Adjust View  ^^", ADJUSTVIEW_ABBREV },
+		{ "Center View  [C", CENTERVIEW_ABBREV },
+		{ "ToUpper      [V", TOUPPER_ABBREV },
+		{ "ToLower      [L", TOLOWER_ABBREV },
+		{ "Capitalize     ", CAPITALIZE_ABBREV },
+		{ "AutoComplete [I", AUTOCOMPLETE_ABBREV },
+		{ "UTF-8          ", UTF8_ABBREV }
 	};
 
 
@@ -207,6 +207,7 @@ PICK(   "Page Down       ", PAGEDOWN_ABBREV    , "Next Page       ", NEXTPAGE_AB
 static const menu_item prefs_item[] =
 	{
 		{ "Tab Size...     ", TABSIZE_ABBREV },
+		{ "Tabs/Spaces     ", TABS_ABBREV },
 		{ "Insert/Over  Ins", INSERT_ABBREV },
 		{ "Free Form       ", FREEFORM_ABBREV },
 		{ "Status Bar      ", STATUSBAR_ABBREV },
@@ -214,7 +215,7 @@ static const menu_item prefs_item[] =
 		{ "Fast GUI        ", FASTGUI_ABBREV },
 		{ "Word Wrap     [W", WORDWRAP_ABBREV },
 		{ "Right Margin    ", RIGHTMARGIN_ABBREV },
-		{ "Auto Indent   [I", AUTOINDENT_ABBREV },
+		{ "Auto Indent     ", AUTOINDENT_ABBREV },
 		{ "Preserve CR     ", PRESERVECR_ABBREV },
 		{ "Save CR/LF    [Z", CRLF_ABBREV },
 		{ "Load Prefs...   ", LOADPREFS_ABBREV },

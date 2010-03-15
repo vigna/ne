@@ -100,7 +100,7 @@ const char *key_binding[NUM_KEYS] = {
 	/* Ctrl-Alt-f */ NEXTWORD_ABBREV, 
 	/* Ctrl-Alt-g */ GOTOBOOKMARK_ABBREV, 
 	/* Ctrl-Alt-h */ NULL, 
-	/* Ctrl-Alt-i */ AUTOINDENT_ABBREV, 
+	/* Ctrl-Alt-i */ AUTOCOMPLETE_ABBREV, 
 	/* Ctrl-Alt-j */ GOTOCOLUMN_ABBREV, 
 	/* Ctrl-Alt-k */ SETBOOKMARK_ABBREV, 
 	/* Ctrl-Alt-l */ TOLOWER_ABBREV, 
