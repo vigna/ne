@@ -647,7 +647,7 @@ void draw_status_bar(void) {
 
 	set_attr(0);
 
-	if (!bar_gone && cur_buffer->opt.status_bar) {
+	if (!bar_gone && status_bar) {
 		const int new_percent = (int)floor(((cur_buffer->cur_line + 1) * 100.0) / cur_buffer->num_lines);
 		/* This is the space occupied up to "L:", included. */
 		const int offset = fast_gui || !standout_ok ? 5: 3;
@@ -694,7 +694,7 @@ void draw_status_bar(void) {
 	}
 
 
-	if (cur_buffer->opt.status_bar) {
+	if (status_bar) {
 		percent = (int)floor(((cur_buffer->cur_line + 1) * 100.0) / cur_buffer->num_lines);
 		move_cursor(ne_lines - 1, 0);
 		if (!fast_gui && standout_ok) standout_on();
@@ -762,7 +762,7 @@ void print_message(const char * const message) {
 
 		set_attr(0);
 
-		if (fast_gui || !standout_ok || !cur_buffer->opt.status_bar) {
+		if (fast_gui || !standout_ok || !status_bar) {
 			clear_to_eol();
 			output_string(msg_cache, TRUE);
 		}

@@ -185,7 +185,6 @@ buffer *alloc_buffer(const buffer * const cur_b) {
 		b->cur_macro = alloc_char_stream(0);
 		b->opt.tab_size = 8;
 
-		b->opt.status_bar     =
 		b->opt.insert         =
 		b->opt.tabs           =
 		b->opt.do_undo        =
@@ -203,7 +202,6 @@ buffer *alloc_buffer(const buffer * const cur_b) {
 			b->opt.right_margin   = cur_b->opt.right_margin;
 
 			b->opt.free_form      = cur_b->opt.free_form;
-			b->opt.status_bar     = cur_b->opt.status_bar;
 			b->opt.hex_code       = cur_b->opt.hex_code;
 			b->opt.word_wrap      = cur_b->opt.word_wrap;
 			b->opt.auto_indent    = cur_b->opt.auto_indent;

@@ -194,7 +194,6 @@ int save_prefs(buffer * const b, const char * const name) {
 		record_action(cs, CLIPNUMBER_A,    b->opt.cur_clip,       NULL, verbose_macros);
 		record_action(cs, RIGHTMARGIN_A,   b->opt.right_margin,   NULL, verbose_macros);
 		record_action(cs, FREEFORM_A,      b->opt.free_form,      NULL, verbose_macros);
-		record_action(cs, STATUSBAR_A,     b->opt.status_bar,     NULL, verbose_macros);
 		record_action(cs, HEXCODE_A,       b->opt.hex_code,       NULL, verbose_macros);
 		record_action(cs, WORDWRAP_A,      b->opt.word_wrap,      NULL, verbose_macros);
 		record_action(cs, AUTOINDENT_A,    b->opt.auto_indent,    NULL, verbose_macros);
@@ -212,10 +211,12 @@ int save_prefs(buffer * const b, const char * const name) {
 		record_action(cs, VISUALBELL_A,    b->opt.visual_bell,    NULL, verbose_macros);
 		
 		if (saving_global) {
-			if (req_order) record_action(cs, REQUESTORDER_A, req_order, NULL, verbose_macros);
-			if (fast_gui)  record_action(cs, FASTGUI_A,      fast_gui,  NULL, verbose_macros);
-			
-			record_action(cs, VERBOSEMACROS_A, verbose_macros, NULL, verbose_macros);
+			/* We only save the global flags that differ from their defaults. */
+			/* Make sure these are in sync with the defaults near the top of ne.c. */
+			if (req_order)       record_action(cs, REQUESTORDER_A,  req_order,      NULL, verbose_macros);
+			if (fast_gui)        record_action(cs, FASTGUI_A,       fast_gui,       NULL, verbose_macros);
+			if (!status_bar)     record_action(cs, STATUSBAR_A,     status_bar,     NULL, verbose_macros);
+			if (!verbose_macros) record_action(cs, VERBOSEMACROS_A, verbose_macros, NULL, verbose_macros);
 			saving_global = 0;
 		}
 

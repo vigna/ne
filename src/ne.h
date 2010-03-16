@@ -380,7 +380,6 @@ typedef struct {
 	int right_margin;
 	unsigned int
 		free_form:1,       /* Editing is free form (cursor can be anywhere) */
-		status_bar:1,      /* The status bar is displayed */
 		hex_code:1,        /* Show hexadecimal code under the cursor */
 		word_wrap:1,       /* Word wrap is on */
 		auto_indent:1,     /* Replicate indentation when creating a new line */
@@ -524,29 +523,41 @@ extern list buffers, clips, macros;
 
 extern int turbo;
 
+
 /* If true, the current line has changed and care must be taken to update the initial state of the following lines. */
 
 extern int need_attr_update;
+
 
 /* If true, we want the hardwired ANSI terminal, not a real one. */
 
 extern int ansi;
 
+
 /* If true, we want requests by column, otherwise by row. */
 
 extern int req_order;
+
+
+/* The status bar is displayed */
+
+extern int status_bar;
+
 
 /* If true, we want abbreviated screen updates. */
 
 extern int fast_gui;
 
+
 /* Recorded macros use long command names */
 
 extern int verbose_macros;
 
+
 /* If true, we want syntax highlighting. */
 
 extern int do_syntax;
+
 
 /* This flag can be set anywhere to FALSE, and will become TRUE if the user
 hits the interrupt key (usually CTRL-'\'). It is handled through SIGQUIT and
@@ -554,19 +565,23 @@ SIGINT. */
 
 extern unsigned int stop;
 
+
 /* This is set by the signal handler whenever a SIGWINCH happens. */
 
 extern unsigned int window_changed_size;
+
 
 /* This vector associates to an extended key code (as returned by
 get_key_code()) its input class. */
 
 extern const input_class char_class[];
 
+
 /* This number defines the macro hash table size. This table can have
 conflicts. */
 
 #define MACRO_HASH_TABLE_SIZE (101)
+
 
 /* Upcasing vectors for the regex library. */
 extern unsigned char localised_up_case[];

@@ -85,9 +85,12 @@ list buffers = { (node *)&buffers.tail, NULL, (node *)&buffers.head };
 list clips = { (node *)&clips.tail, NULL, (node *)&clips.head };
 list macros = { (node *)&macros.tail, NULL, (node *)&macros.head };
 
-/* global prefs, only saved in ~/.ne/.default#ap and only if set */
+/* global prefs, only saved in ~/.ne/.default#ap if their
+   current setting differs from these defaults. Make sure these
+   defaults match the conditionals in prefs.c:save_prefs(). */
 int req_order;
 int fast_gui;
+int status_bar = TRUE;
 int verbose_macros = TRUE;
 /* end of global prefs */
 

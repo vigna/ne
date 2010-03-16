@@ -546,8 +546,8 @@ A small set of preferences are global to @code{ne} rather than specific
 to particular document types. Thus they are saved in the @file{.default#ap}
 file by the @code{SaveDefPrefs} command or the @samp{Save Def Prefs} menu.
 They are not saved by the @code{SaveAutoPrefs} command. These preferences are:
-@code{FastGUI}, @code{RequestOrder}, and @code{VerboseMacros};
-@pxref{FastGUI}, @xref{RequestOrder}, and @xref{VerboseMacros}.
+@code{FastGUI}, @code{RequestOrder}, @code{StatusBar} and @code{VerboseMacros};
+@pxref{FastGUI}, @xref{RequestOrder}, @xref{StatusBar}, and @xref{VerboseMacros}.
 
 Similarly, the current syntax definition is specific to the current
 document type, so it is saved only in autoprefs files by the
@@ -3461,6 +3461,10 @@ displayed. This option is only (but very) useful if you are using
 If you invoke @code{FastGUI} with no arguments, it will toggle the flag. If you
 specify 0 or 1, the flag will be set to false or true, respectively.
 
+The @code{FastGUI} setting is saved in your @file{~/.ne/.default#ap} file
+when you use the @code{SaveDefPrefs} command or the @samp{Save Def Prefs} menu.
+It is not saved by the @code{SaveAutoPrefs} command.
+
 
 
 @node FreeForm
@@ -3514,6 +3518,10 @@ are displayed by rows.
 If you invoke @code{RequestOrder} with no arguments, it will toggle the flag. If you
 specify 0 or 1, the flag will be set to false or true, respectively.
 
+The @code{RequestOrder} setting is saved in your @file{~/.ne/.default#ap} file
+when you use the @code{SaveDefPrefs} command or the @samp{Save Def Prefs} menu.
+It is not saved by the @code{SaveAutoPrefs} command.
+
 
 
 @node StatusBar
@@ -3541,6 +3549,10 @@ scrolling region can produce annoying flashes at the bottom of the screen.
 
 If you invoke @code{StatusBar} with no arguments, it will toggle the flag. If you
 specify 0 or 1, the flag will be set to false or true, respectively.
+
+The @code{StatusBar} setting is saved in your @file{~/.ne/.default#ap} file
+when you use the @code{SaveDefPrefs} command or the @samp{Save Def Prefs} menu.
+It is not saved by the @code{SaveAutoPrefs} command.
 
 
 
@@ -3672,6 +3684,9 @@ The only reason to use this flag is when recording a macro that will be
 played a great number of times. Automatic preferences files are too short to
 be an issue with respect to execution timing.
 
+The @code{VerboseMacros} setting is saved in your @file{~/.ne/.default#ap} file
+when you use the @code{SaveDefPrefs} command or the @samp{Save Def Prefs} menu.
+It is not saved by the @code{SaveAutoPrefs} command.
 
 
 @node PreserveCR

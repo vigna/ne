@@ -942,7 +942,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		return OK;
 
 	case STATUSBAR_A:
-		SET_USER_FLAG(b, c, opt.status_bar);
+		SET_GLOBAL_FLAG(c, status_bar);
 		reset_status_bar();
 		return OK;
 
