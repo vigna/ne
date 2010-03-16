@@ -2,7 +2,7 @@
 
 - Open files > 2G.
 
-- STATUSBAR_A must be global
+- STATUSBAR_A must be global; update manual correspondingly
 
 - Modify manual in case we keep Bash-like completion
 
