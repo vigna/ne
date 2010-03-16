@@ -540,8 +540,6 @@ int get_key_code(void) {
 		clearerr(stdin);
 
 		if (c == EOF && (!partial_match || e) && e != EINTR) kill(getpid(), SIGTERM);
-
-//		if (c == EOF && (e == 0 || e == EINTR)) return -NE_KEY_IGNORE - 1;
 #endif
 
 		partial_match = FALSE;
@@ -553,9 +551,8 @@ int get_key_code(void) {
 			if (cur_len) {
 
 				/* We ran out of time. If our match was not UTF-8, then the current
-					partial match is discarded, and the first character of the
-					keyboard buffer is returned. Otherwise, we reject the partially
-					received UTF-8 sequence. */
+					we return the first character of the keyboard buffer is returned. 
+					Otherwise, we discard the partially received UTF-8 sequence. */
 
 				if (partial_is_utf8) cur_len = last_match = partial_is_utf8 = 0;
 				else {
