@@ -24,7 +24,7 @@
 int do_action(buffer *b, action a, int c, unsigned char *p);
 
 /* autocomp.c */
-unsigned char *autocomplete(unsigned char *p, const int ext);
+unsigned char *autocomplete(unsigned char *p, char *req_msg, const int ext, int * const error);
 
 /* buffer.c */
 encoding_type detect_buffer_encoding(const buffer *b);

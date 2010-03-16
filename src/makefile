@@ -132,7 +132,7 @@ enums.h names.c names.h hash.c hash.h help.c help.h ext.c: ne.texinfo version.te
 	perl info2src.pl
 	rm -f ne.info*
 
-actions.o: ne.h	keycodes.h names.h errors.h protos.h version.h
+actions.o: ne.h	keycodes.h names.h names.c errors.h errors.c protos.h version.h
 
 autocomp.o: ne.h protos.h
 
@@ -154,7 +154,7 @@ exec.o: ne.h keycodes.h names.h errors.h protos.h
 
 hash.o: hash.h
 
-info2cap.o: info2cap.c info2cap.h
+info2cap.o: info2cap.h
 
 input.o: ne.h keycodes.h names.h errors.h protos.h
 
@@ -170,7 +170,7 @@ ne.o: ne.h keycodes.h names.h errors.h protos.h version.h regex.h
 
 prefs.o: ne.h keycodes.h names.h errors.h protos.h
 
-regex.o: regex.h regex.c
+regex.o: regex.h
 
 request.o: ne.h keycodes.h names.h errors.h protos.h
 
@@ -180,14 +180,14 @@ signals.o: ne.h keycodes.h names.h errors.h protos.h
 
 streams.o: ne.h keycodes.h names.h errors.h protos.h
 
-support.o: ne.h keycodes.h names.h errors.h protos.h support.c
+support.o: ne.h keycodes.h names.h errors.h protos.h
 	$(CC) $(CFLAGS) -DGLOBALDIR=\"$(NE_GLOBAL_DIR)\" -c support.c
 
 term.o: termchar.h cm.h ansi.h
 
-termcap.o: termcap.c termcap.h
+termcap.o: termcap.h
 
-tparam.o: tparam.c termcap.h
+tparam.o: termcap.h
 
 undo.o: ne.h keycodes.h names.h errors.h protos.h
 

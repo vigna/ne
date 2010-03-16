@@ -110,10 +110,10 @@ static void add_string(unsigned char * const s, const int len, const int ext) {
 	}
 }
 
-static int search_buff(const buffer *b, const unsigned char *p, const int encoding, const int case_search, const int ext) {
+static void search_buff(const buffer *b, const unsigned char *p, const int encoding, const int case_search, const int ext) {
 	line_desc *ld = (line_desc *)b->line_desc_list.head, *next;
 	int p_len = strlen(p);
-	int l, r, max_len = 0;
+	int l, r;
 	
 	assert(p);
 	
@@ -128,18 +128,15 @@ static int search_buff(const buffer *b, const unsigned char *p, const int encodi
 				while (r < ld->line_len && ne_isword(get_char(&ld->line[r], b->encoding), b->encoding)) r += get_char_width(&ld->line[r], b->encoding);
 				if (r - l > p_len && !(case_search ? strncmp : strncasecmp)(p, &ld->line[l], p_len)) {
 					if (b->encoding == encoding || is_ascii(&ld->line[l], r - l)) add_string(&ld->line[l], r - l, ext);
-					if (max_len < r - l) max_len = r - l;
 				}
 				l = r;
 			}
 			assert(l <= ld->line_len);
-			if (stop) return -1;
+			if (stop) return;
 		} while (l < ld->line_len - p_len);
 		
 		ld = next;
 	}
-	
-	return max_len;
 }
 
 /* Returns a completion for the (non-NULL) prefix p, showing suffixes from
@@ -148,17 +145,18 @@ static int search_buff(const buffer *b, const unsigned char *p, const int encodi
    if it is non-NULL (a returned NULL means that no completion is available).
    
    If there is more than one completion, this function will invoke request_strings()
-   (and subsequently reset_window()). */
+   (and subsequently reset_window()) after displaying req_msg. In any case, error 
+   will contain a value out of those in the enum info that start with AUTOCOMPLETE_. */
 
-unsigned char *autocomplete(unsigned char *p, const int ext) {
-	int i, j, m, max_len = 0, prefix_len = strlen(p);
+unsigned char *autocomplete(unsigned char *p, char *req_msg, const int ext, int * const error) {
+	int i, j, l, m, max_len = 0, min_len = INT_MAX, prefix_len = strlen(p);
 	char **entries;
 			
 	assert(p);
 	
 	init_hash_table();
 
-	max_len = search_buff(cur_buffer, p, cur_buffer->encoding, cur_buffer->opt.case_search, FALSE);
+	search_buff(cur_buffer, p, cur_buffer->encoding, cur_buffer->opt.case_search, FALSE);
 	if (stop) {
 		delete_hash_table();
 		free(p);
@@ -169,13 +167,12 @@ unsigned char *autocomplete(unsigned char *p, const int ext) {
 		buffer *b = (buffer *)buffers.head;
 		while (b->b_node.next) {
 			if (b != cur_buffer) {
-				m = search_buff(b, p, cur_buffer->encoding, cur_buffer->opt.case_search, TRUE);
+				search_buff(b, p, cur_buffer->encoding, cur_buffer->opt.case_search, TRUE);
 				if (stop) {
 					delete_hash_table();
 					free(p);
 					return NULL;
 				}
-				if (max_len < m) max_len = m;
 			}
 			b = (buffer *)b->b_node.next;
 		}
@@ -186,6 +183,9 @@ unsigned char *autocomplete(unsigned char *p, const int ext) {
 	for(i = j = 0; i < size; i++) 
 		if (hash_table[i]) {
 			entries[j] = &strings[decode(hash_table[i])];
+			l = strlen(entries[j]);
+			if (max_len < l) max_len = l;
+			if (min_len > l) min_len = l;
 			if (hash_table[i] < 0) entries[j][strlen(entries[j])] = EXTERNAL_FLAG_CHAR;
 			j++;
 		}
@@ -193,13 +193,14 @@ unsigned char *autocomplete(unsigned char *p, const int ext) {
 
 	free(p);
 	p = NULL;
-
+	
 #ifdef NE_TEST
 	/* During tests, we always output the middle entry. */
 	if (n) {
 		if (entries[n/2][strlen(entries[n/2]) - 1] == EXTERNAL_FLAG_CHAR) entries[n/2][strlen(entries[n/2]) - 1] = 0;
 		p = str_dup(entries[n/2]);
 	}
+	*error = AUTOCOMPLETE_COMPLETED;
 	free(entries);
 	delete_hash_table();
 	return p;
@@ -221,17 +222,22 @@ unsigned char *autocomplete(unsigned char *p, const int ext) {
 			p = malloc(m + 1);
 			strncpy(p, entries[0], m);
 			p[m] = 0;
+			*error = min_len == m ? AUTOCOMPLETE_COMPLETED : AUTOCOMPLETE_PARTIAL;
 		}
 		else {
+			print_message(req_msg);
 			if ((i = request_strings((const char * const *)entries, n, 0, max_len + 1, EXTERNAL_FLAG_CHAR)) != ERROR) {
 				i = i >= 0 ? i : -i - 2;
 				/* Delete EXTERNAL_FLAG_CHAR at the end of the strings if necessary. */
 				if (entries[i][strlen(entries[i]) - 1] == EXTERNAL_FLAG_CHAR) entries[i][strlen(entries[i]) - 1] = 0;
 				p = str_dup(entries[i]);
+				*error = AUTOCOMPLETE_COMPLETED;
 			}
+			else *error = AUTOCOMPLETE_CANCELLED;
 			reset_window();
 		}
 	}
+	else *error = AUTOCOMPLETE_NO_MATCH;
 
 	free(entries);
 	delete_hash_table();

@@ -94,5 +94,8 @@ char *info_msg[INFO_COUNT] = {
 	"Press a key to see ne's corresponding key code:",
 	"This document is not saved; are you sure?",
 	"There is another document with the same name; are you sure?",
-	"AutoComplete: no matching words found."
+	"No matching words found.",
+	"Completed.",
+	"Partially completed.",
+	"Cancelled."
 };

@@ -1,5 +1,5 @@
 /* Main command processing loop.
-
+Mai
 	Copyright (C) 1993-1998 Sebastiano Vigna 
 	Copyright (C) 1999-2010 Todd M. Lewis and Sebastiano Vigna
 
@@ -1462,17 +1462,17 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		}	
 
 		snprintf(msg, MAX_MESSAGE_SIZE, "AutoComplete: prefix \"%s\"", p);
-		print_message(msg);
 			
-		if (p = autocomplete(p, TRUE)) {
+		if (p = autocomplete(p, msg, TRUE, &col)) {
 			b->recording = 0;
 			start_undo_chain(b);
 			if (i >= b->cur_pos || (error = do_action(b, DELETEPREVWORD_A, 1, NULL)) == OK) error = do_action(b, INSERTSTRING_A, 0, p);
 			end_undo_chain(b);
 			b->recording = recording;
+			print_message(info_msg[col]);
 		}
 		else if (stop) error = STOPPED;
-		else print_message(info_msg[AUTOCOMPLETE_NO_MATCH]);
+		else if (col == AUTOCOMPLETE_NO_MATCH) print_message(info_msg[AUTOCOMPLETE_NO_MATCH]);
 		
 		return print_error(error) ? ERROR : 0;
 
