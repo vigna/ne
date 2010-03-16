@@ -351,7 +351,7 @@ const input_class char_class[256] = {
 	/* Control-meta-letter classes
 	PORTABILITY PROBLEM: on some systems, these characters are printable. In this case,
 	it is a good idea to define their type as ALPHA, so that you can type them in the
-	text. They are COMMAND by default because this is what happens in ISO Latin 1. */
+	text. They are COMMAND by default because this is what happens in the ISO-8859 family. */
 
 	/* @ a b c d e f g h i j k l m n o */
 	COMMAND, COMMAND, COMMAND, COMMAND, COMMAND, COMMAND, COMMAND, COMMAND, COMMAND, COMMAND, COMMAND, COMMAND, COMMAND, COMMAND, COMMAND, COMMAND,
