@@ -1477,6 +1477,10 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			end_undo_chain(b);
 		}
 		else if (stop) error = STOPPED;
+		else {
+			snprintf(msg, 1024, "AutoComplete: no matching words found.");
+			print_message(msg);
+		}
 		
 		if (msg) free(msg);
 		b->recording = recording;
