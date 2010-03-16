@@ -679,6 +679,7 @@ falls on the user.
 @section More Advanced Features
 @cindex UTF-8 support
 @cindex Bookmarks
+@cindex Automatic Completion
 @cindex MS-DOS files
 @cindex File requester
 @cindex Binary files
@@ -705,6 +706,25 @@ commands will switch between those two locations. @xref{SetBookmark},
 @ref{GotoBookmark}, and @ref{UnsetBookmark}. Note that in the default
 configuration no key binding is assigned to these commands. If you use them
 frequently, you may want to change the key bindings. @xref{Key Bindings}.
+
+@subsection Automatic Completion
+The @code{AutoComplete} command shows you all the words in your open documents
+which start with a given prefix. You can specify the @code{AutoCompete} command
+and prefix on the command line, or you can enter the prefix directly into your
+document and active the @code{AutoComplete} command. With the cursor at the
+right end of your prefix, activate the @code{AutoComplete} command by entering
+either the @key{Escape}-@key{Tab} or the @key{Escape}-@key{I} key sequence, or
+the @kbd{@key{Control}-@key{META}-@key{I}} key combination. If only one word
+matches the prefix, it will be inserted into your document. If more than one
+word matches, then @code{ne} presents you with a list of all matching words;
+select the one you want and press @key{Enter}, or use @key{Escape} to cancel
+the operation. The current state of the @code{CaseSearch} flag determines
+whether the prefix match is case sensitive. Any matching words which only exist
+in other open documents but not the current one are displayed in bold with an
+asterisk; think of that as a warning that if you select one of these bold words
+you will introduce a new word into your current document. Plain words already
+exist somewhere in your current document. @xref{AutoComplete}, and
+@ref{CaseSearch}.
 
 @subsection MS-DOS files
 @code{ne} will detect automagically the presence of MS-DOS line terminators
@@ -2807,9 +2827,10 @@ case @samp{c} will appear on the status bar if the flag is true.
 @noindent Abbreviation: @code{AC}
 
 @noindent displays a selection of all words in open documents which match
-@var{prefix}, and inserts the selected word into the current document. Use
-the cursor keys to select the desired word and press @key{Return}, or escape
-with @key{f1}, @key{Escape} or @key{Escape}-@key{Escape} to abort the
+@var{prefix}, and inserts the selected word into the current document. (If
+only one word matches the @var{prefix}, that word is inserted immediately.)
+Use the cursor keys to select the desired word and press @key{Return}, or
+escape with @key{f1}, @key{Escape} or @key{Escape}-@key{Escape} to abort the
 operation. Matching words from the current document display normally; those
 which only exist in other open documents are shown bold and are followed by
 an asterisk. If no @var{prefix} is given, the word characters to the
