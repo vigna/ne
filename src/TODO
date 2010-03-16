@@ -2,3 +2,8 @@
 
 - Open files > 2G.
 
+- STATUSBAR_A must be global
+
+- Modify manual in case we keep Bash-like completion
+
+- Update site to reflect new autocomplete features

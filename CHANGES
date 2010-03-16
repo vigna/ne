@@ -46,7 +46,7 @@ Changes from version 2.0.3
 
   * More parsimonious status-bar updates.
 
-  * FastGUI, VerboseMacros, and RequestOrder are not buffer specific, are
+  * StatusBar, FastGUI, VerboseMacros, and RequestOrder are not buffer specific, are
     only saved in ~/.ne/.default#ap.
 
   * Current syntax name is buffer specific; only saved in autoprefs, not ~/.ne/.default#ap.

@@ -165,10 +165,13 @@ automatic preferences system based on the extension of the file name being
 edited;
 
 @item
+automatic completion of prefixes using words in your documents as dictionary;
+
+@item
 a file requester with completion features for easy file retrieval;
 
 @item
-extended regular expression search and replace a la @code{emacs} and
+extended regular expression search and replace @`a la @code{emacs} and
 @code{vi};
 
 @item
