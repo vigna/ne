@@ -3965,12 +3965,13 @@ If you specify 0 or 1, the flag will be set to false or true,
 respectively. When you try to set this flag, the buffer will be checked
 for UTF-8 compliance, and you will get an error message in case of
 failure. When you try to reset it, the buffer is set to ASCII or
-ISO8859, depending on its content.  A @samp{U} will appear on the
+8-bit, depending on its content.  A @samp{U} will appear on the
 status bar if the flag is true. Alternatively, an @samp{A} or an
 @samp{8} will be displayed to denote whether the buffer is composed
 exclusively by US-ASCII characters, or also by other 8-bit characters
-(which are likely to be ISO-8859 encoded). Note that each time this
-command modifies the buffer encoding, it also resets the undo buffer.
+(whose encoding is likely to be part of the ISO-8859 family). Note that
+each time this command modifies the buffer encoding, it also resets the
+undo buffer.
 
 
 

@@ -57,21 +57,22 @@ ITEM "Open Macro...    " OpenMacro
 ITEM "Save Macro...    " SaveMacro
 
 MENU "Extras"
-ITEM "Exec...     ^K" Exec
-ITEM "Suspend     ^Z" Suspend
-ITEM "Help...    f10" Help
-ITEM "Refresh     ^L" Refresh
-ITEM "Undo     f5/[U" Undo
-ITEM "Redo     f6/[R" Redo
-ITEM "Undel Line  ^U" UndelLine
-ITEM "Center        " Center
-ITEM "Paragraph   [P" Paragraph
-ITEM "Adjust View ^^" AdjustView
-ITEM "Center View [C" AdjustView
-ITEM "ToUpper     [V" ToUpper
-ITEM "ToLower     [L" ToLower
-ITEM "Capitalize    " Capitalize
-ITEM "UTF-8         " UTF8
+ITEM "Exec...      ^K" Exec
+ITEM "Suspend      ^Z" Suspend
+ITEM "Help...     f10" Help
+ITEM "Refresh      ^L" Refresh
+ITEM "Undo      f5/[U" Undo
+ITEM "Redo      f6/[R" Redo
+ITEM "Undel Line   ^U" UndelLine
+ITEM "Center         " Center
+ITEM "Paragraph    [P" Paragraph
+ITEM "Adjust View  ^^" AdjustView
+ITEM "Center View  [C" AdjustView
+ITEM "ToUpper      [V" ToUpper
+ITEM "ToLower      [L" ToLower
+ITEM "Capitalize     " Capitalize
+ITEM "AutoComplete [I" AutoComplete
+ITEM "UTF-8          " UTF8
 
 MENU "Navigation"
 ITEM "Move Left       " MoveLeft
@@ -95,6 +96,7 @@ ITEM "Next Word  f8/[F" NextWord
 
 MENU "Prefs"
 ITEM "Tab Size...     " TABSize
+ITEM "Tabs/Spaces     " Tabs
 ITEM "Insert/Over  Ins" Insert
 ITEM "Free Form       " FreeForm
 ITEM "Status Bar      " StatusBar
@@ -102,7 +104,7 @@ ITEM "Hex Code        " HexCode
 ITEM "Fast GUI        " FastGUI
 ITEM "Word Wrap     [W" WordWrap
 ITEM "Right Margin    " RightMargin
-ITEM "Auto Indent   [I" AutoIndent
+ITEM "Auto Indent     " AutoIndent
 ITEM "Preserve CR     " PreserveCR
 ITEM "Save CR/LF    [Z" CRLF
 ITEM "Load Prefs...   " LoadPrefs
