@@ -1,6 +1,6 @@
 Summary: ne, the nice editor
 Name: ne
-Version: 2.0.3
+Version: 2.0.4
 Release: 1
 License: GPL
 Group: Applications/Editors
@@ -27,7 +27,7 @@ files.
 
 %build
 
-cd src; make NE_GLOBAL_DIR=/usr/lib/ne; strip ne
+cd src; make NE_GLOBAL_DIR=/usr/share/ne; strip ne
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -43,7 +43,7 @@ install -m 644 ./doc/ne.info* $RPM_BUILD_ROOT/%{_infodir}
 %files
 %defattr(-,root,root)
 /usr/bin/ne
-/usr/lib/ne/syntax/*.jsf
+/usr/share/ne/syntax/*.jsf
 %{_mandir}/man1/ne.1*
 %{_infodir}/ne.info*
 %doc ./doc/ne/*.html
