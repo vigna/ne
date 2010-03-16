@@ -29,6 +29,10 @@
 
 #define START_BUFFER_SIZE 4096
 
+/* A boolean recording whether the last replace was for an empty string 
+	(of course, this can happen only with regular expressions). */
+
+int last_replace_empty_match;
 
 /* This array is used both by the Boyer-Moore algorithm and by the regex
 library. It is updated if b->find_string_changed is TRUE (it should always
@@ -74,15 +78,15 @@ const unsigned char ascii_up_case[256] = {
 
 /* Performs a search for the given pattern with a simplified Boyer-Moore
    algorithm starting at the given position, in the given direction, skipping a
-   possible match at the current cursor position if skip_first is TRUE. If dir
-   is 0, it is fetched from b->opt.search_back. If pattern is NULL, it is
+   possible match at the current cursor position if skip_first is TRUE. The 
+   search direction depends on b->opt.search_back. If pattern is NULL, it is
    fetched from b->find_string. In this case, b->find_string_changed is
    checked, and, if it is FALSE, the string is not recompiled. Please check to
    set b->find_string_changed whenever a new string is set in
    b->find_string. The cursor is moved on the occurrence position if a match is
    found. */
 
-int find(buffer * const b, const unsigned char *pattern, int dir, int skip_first) {
+int find(buffer * const b, const unsigned char *pattern, const int skip_first) {
 
 	const unsigned char * const up_case = b->encoding == ENC_UTF8 ? ascii_up_case : localised_up_case;
 	const int sense_case = (b->opt.case_search != 0);
@@ -99,8 +103,6 @@ int find(buffer * const b, const unsigned char *pattern, int dir, int skip_first
 	}
 	else recompile_string = TRUE;
 
-	if (!dir) dir = b->opt.search_back ? -1 : 1;
-
 	if (!pattern || !(m = strlen(pattern))) return ERROR;
 
 	if (recompile_string) for(i = 0; i < sizeof d / sizeof *d; i++) d[i] = m;
@@ -108,7 +110,7 @@ int find(buffer * const b, const unsigned char *pattern, int dir, int skip_first
 	ld = b->cur_line_desc;
 	y = b->cur_line;
 
-	if (dir > 0) {
+	if (! b->opt.search_back) {
 
 		if (recompile_string) {
 			for(i = 0; i < m - 1; i++) d[CONV(pattern[i])] = m - i-1;
@@ -201,6 +203,8 @@ int replace(buffer * const b, const int n, const char * const string) {
 
 	assert(string != NULL);
 
+	last_replace_empty_match = FALSE;
+	
 	len = strlen(string);
 
 	start_undo_chain(b);
@@ -211,7 +215,7 @@ int replace(buffer * const b, const int n, const char * const string) {
 
 	end_undo_chain(b);
 
-	goto_pos(b, b->cur_pos + len);
+	if (! b->opt.search_back) goto_pos(b, b->cur_pos + len);
 
 	return OK;
 }
@@ -252,7 +256,7 @@ static int map_group[RE_NREGS];
 
 /* Works exactly like find(), but uses the regex library instead. */
 
-int find_regexp(buffer * const b, const unsigned char *regex, int dir, int skip_first) {
+int find_regexp(buffer * const b, const unsigned char *regex, const int skip_first) {
 
 	const unsigned char * const up_case = b->encoding == ENC_UTF8 ? ascii_up_case : localised_up_case;
 	const unsigned char *p;
@@ -264,8 +268,6 @@ int find_regexp(buffer * const b, const unsigned char *regex, int dir, int skip_
 		recompile_string = b->find_string_changed || !b->last_was_regexp;
 	}
 	else recompile_string = TRUE;
-
-	if (!dir) dir = b->opt.search_back ? -1 : 1;
 
 	if (!regex || !strlen(regex)) return ERROR;
 
@@ -406,7 +408,7 @@ int find_regexp(buffer * const b, const unsigned char *regex, int dir, int skip_
 	ld = b->cur_line_desc;
 	y = b->cur_line;
 
-	if (dir > 0) {
+	if (! b->opt.search_back) {
 
 		start_pos = b->cur_pos + (skip_first ? 1 : 0);
 
@@ -550,13 +552,13 @@ int replace_regexp(buffer * const b, const char * const string) {
 
 		end_undo_chain(b);
 
-		goto_pos(b, b->cur_pos + pos);
-		if (pos == 0 && re_reg.end[0] == 0) char_right(b);
+		if (! b->opt.search_back) goto_pos(b, b->cur_pos + pos);
 
 		free(t);
 		free(p);
 	}
 	else return OUT_OF_MEMORY;
 
+	last_replace_empty_match = re_reg.start[0] == re_reg.end[0];
 	return OK;
 }

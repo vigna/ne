@@ -576,6 +576,11 @@ get_key_code()) its input class. */
 
 extern const input_class char_class[];
 
+/* A boolean recording whether the last replace was for an empty string 
+	(of course, this can happen only with regular expressions). */
+
+extern int last_replace_empty_match;
+
 
 /* This number defines the macro hash table size. This table can have
 conflicts. */

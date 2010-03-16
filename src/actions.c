@@ -729,7 +729,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			free(b->find_string);
 			b->find_string = p;
 			b->find_string_changed = 1;
-			print_error(error = (a == FIND_A ? find : find_regexp)(b, NULL, 0, FALSE));
+			print_error(error = (a == FIND_A ? find : find_regexp)(b, NULL, FALSE));
 		}
 
 		b->last_was_replace = 0;
@@ -763,7 +763,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 
 			if (p || (p = request_string(b->last_was_regexp ? "Replace RegExp" : "Replace", b->replace_string, TRUE, FALSE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
 				const encoding_type replace_encoding = detect_encoding(p, strlen(p));
-				int dir = b->opt.search_back ? -1 : 1, first_search = TRUE, num_replace = 0;
+				int first_search = TRUE, num_replace = 0;
 
 				if (replace_encoding != ENC_ASCII && b->encoding != ENC_ASCII && replace_encoding != b->encoding ||
 					 search_encoding != ENC_ASCII && replace_encoding != ENC_ASCII && search_encoding != replace_encoding) {
@@ -780,12 +780,11 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 				if (a == REPLACEALL_A) start_undo_chain(b);
 
 				while(!stop && 
-						!(error = (b->last_was_regexp ? find_regexp : find)(b, NULL, dir, !first_search && a != REPLACEALL_A && c != 'A' && c != 'Y')) &&
-						!((line_desc *)((line_desc *)b->cur_line_desc->ld_node.next)->ld_node.next == NULL && b->cur_pos == b->cur_line_desc->line_len)) {
+						!(error = (b->last_was_regexp ? find_regexp : find)(b, NULL, !first_search && a != REPLACEALL_A && c != 'A' && c != 'Y'))) {
 
 					if (c != 'A' && a != REPLACEALL_A && a != REPLACEONCE_A) {
 						refresh_window(b);
-						c = request_char(b, dir > 0 ? "Replace (Yes/No/Last/All/Quit/Backward)" : "Replace (Yes/No/Last/All/Quit/Forward)", 'n');
+						c = request_char(b, b->opt.search_back ? "Replace (Yes/No/Last/All/Quit/Forward)" : "Replace (Yes/No/Last/All/Quit/Backward)", 'n');
 						if (c == 'Q') break;
 						if (c == 'A') start_undo_chain(b);
 					}
@@ -796,21 +795,28 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 
 						if (b->last_was_regexp) error = replace_regexp(b, p);
 						else error = replace(b, strlen(b->find_string), p);
-						update_line(b, b->cur_y, FALSE);
-						if (b->syn) {
-							need_attr_update = TRUE;
-							update_syntax_states(b, b->cur_y, b->cur_line_desc, NULL);
-						}
 						
+						if (!error) {
+							update_line(b, b->cur_y, FALSE);
+							if (b->syn) {
+								need_attr_update = TRUE;
+								update_syntax_states(b, b->cur_y, b->cur_line_desc, NULL);
+							}
+						
+							num_replace++;
+
+							if (last_replace_empty_match)
+								if (b->opt.search_back) error = char_left(cur_buffer);
+								else error = char_right(cur_buffer);
+						}					
+	
 						if (print_error(error)) {
 							if (a == REPLACEALL_A || c == 'A') end_undo_chain(b);
 							return ERROR;
 						}
-						num_replace++;
 					}
 
 					if (c == 'B' && !(b->opt.search_back) || c == 'F' && (b->opt.search_back)) {
-						dir = -dir;
 						b->opt.search_back = !b->opt.search_back;
 						b->find_string_changed = 1;
 					}
@@ -856,11 +862,23 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			NORMALIZE(c);
 
 			for(i = 0; i < c; i++) {
-				if (!print_error((b->last_was_regexp ? find_regexp : find)(b, NULL, 0, !b->last_was_replace))) {
+				if (!print_error((b->last_was_regexp ? find_regexp : find)(b, NULL, !b->last_was_replace))) {
 					if (b->last_was_replace) {
 						if (b->last_was_regexp) error = replace_regexp(b, b->replace_string);
 						else error = replace(b, strlen(b->find_string), b->replace_string);
-						update_line(b, b->cur_y, FALSE);
+
+						if (! error) {
+							update_line(b, b->cur_y, FALSE);
+							if (b->syn) {
+								need_attr_update = TRUE;
+								update_syntax_states(b, b->cur_y, b->cur_line_desc, NULL);
+							}
+						
+							if (last_replace_empty_match)
+								if (b->opt.search_back) error = char_left(cur_buffer);
+								else error = char_right(cur_buffer);
+						}	
+
 						if (print_error(error)) {
 							return_code = ERROR;
 							break;
