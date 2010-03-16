@@ -151,7 +151,7 @@ static int search_buff(const buffer *b, const unsigned char *p, const int encodi
    (and subsequently reset_window()). */
 
 unsigned char *autocomplete(unsigned char *p, const int ext) {
-	int i, j, m, max_len = 0;
+	int i, j, m, max_len = 0, prefix_len = strlen(p);
 	char **entries;
 			
 	assert(p);
@@ -205,21 +205,34 @@ unsigned char *autocomplete(unsigned char *p, const int ext) {
 	return p;
 #endif
 
-	if (n == 1) {
-		p = str_dup(entries[0]);
-		if (p[strlen(p) - 1] == EXTERNAL_FLAG_CHAR) p[strlen(p) - 1] = 0;
-	}
-	else if (n != 0) {
+	if (n != 0) {
 		qsort(entries, n, sizeof *entries, strdictcmp);  
-		if ((i = request_strings((const char * const *)entries, n, 0, max_len + 1, EXTERNAL_FLAG_CHAR)) != ERROR) {
-			i = i >= 0 ? i : -i - 2;
-			/* Delete EXTERNAL_FLAG_CHAR at the end of the strings if necessary. */
-			if (entries[i][strlen(entries[i]) - 1] == EXTERNAL_FLAG_CHAR) entries[i][strlen(entries[i]) - 1] = 0;
-			p = str_dup(entries[i]);
+		/* Find maximum common prefix. */
+		m = strlen(entries[0]);
+		for(i = 1; i < n; i++) {
+			for(j = 0; j < m; j++) 
+				if (entries[i][j] != entries[0][j]) break;
+			m = j;
 		}
-		reset_window();
+
+		/* If we can output more character than the prefix len, we do so without
+			starting the requester. */
+		if (m > prefix_len) {
+			p = malloc(m + 1);
+			strncpy(p, entries[0], m);
+			p[m] = 0;
+		}
+		else {
+			if ((i = request_strings((const char * const *)entries, n, 0, max_len + 1, EXTERNAL_FLAG_CHAR)) != ERROR) {
+				i = i >= 0 ? i : -i - 2;
+				/* Delete EXTERNAL_FLAG_CHAR at the end of the strings if necessary. */
+				if (entries[i][strlen(entries[i]) - 1] == EXTERNAL_FLAG_CHAR) entries[i][strlen(entries[i]) - 1] = 0;
+				p = str_dup(entries[i]);
+			}
+			reset_window();
+		}
 	}
-	
+
 	free(entries);
 	delete_hash_table();
 	D(fprintf(stderr,"autocomp returning '%s', entries: %d\n", p, n);)
