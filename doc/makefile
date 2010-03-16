@@ -36,7 +36,7 @@ ne.pdf: ne.dvi
 	dvipdf ne.dvi
 
 ne.html: ne.texinfo version.texinfo
-	makeinfo --html ne.texinfo
+	makeinfo --html -o html ne.texinfo
 	for i in ne/*html; do sed -i -e "s/\`/'/g" $$i; done
 	for i in ne/*html; do sed -i -e "s/'ne'/ne/g" $$i; done
 
