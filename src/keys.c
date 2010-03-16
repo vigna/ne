@@ -532,16 +532,19 @@ int get_key_code(void) {
 
 		errno = 0;
 		c = getchar();
-
 		e = errno;
-		/* This is necessary to circumvent the slightly different behaviour of getc() in Linux and BSD. */
-		clearerr(stdin);
-		if (c == EOF && (!partial_match || e) && e != EINTR) kill(getpid(), SIGTERM);
-
-		if (c == EOF && (e == 0 || e == EINTR)) return -NE_KEY_IGNORE - 1;
-
+		
 		if (partial_match) set_termios_timeout(0);
 
+		/* This is necessary to circumvent the slightly different behaviour of getc() in Linux and BSD. */
+		clearerr(stdin);
+
+		if (c == EOF && (!partial_match || e) && e != EINTR) kill(getpid(), SIGTERM);
+
+		if (c == EOF && (e == 0 || e == EINTR)) {
+			cur_len = 0;
+			return -NE_KEY_IGNORE - 1;
+		}
 #endif
 
 		partial_match = FALSE;
