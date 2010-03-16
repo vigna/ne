@@ -61,6 +61,9 @@ Changes from version 2.0.3
     and small discrepancies between default.keys/default.menus and reality
     (thanks to John Gabriele for having pointed out this).
 
+  * In some cases after a keyboard timeout an ESC character was left in
+    the keyboard buffer, causing weird behaviours.
+
 Changes from version 2.0.2
 
 ---- Bug fixes ----
