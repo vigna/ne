@@ -89,5 +89,10 @@ char *info_msg[INFO_COUNT] = {
 	"Select file or press F1, Escape or Escape-Escape to enter a file name.",
 	"Start of block marked. Move to the end of block and request actions.",
 	"Starting macro recording...",
-	"Macro recording completed."
+	"Macro recording completed.",
+	"Some documents have not been saved; are you sure?",
+	"Press a key to see ne's corresponding key code:",
+	"This document is not saved; are you sure?",
+	"There is another document with the same name; are you sure?",
+	"AutoComplete: no matching words found."
 };

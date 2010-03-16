@@ -33,6 +33,11 @@ is what most commands require. */
 
 #define NORMALIZE(x)  { x = (x)<0 ? 1 : (x); }
 
+/* The length of the static message buffer. It must be larger by a factor
+	of about three of the maximum screen width as UTF-8 encoded characters
+	might take several characters per screen position. */
+
+#define MAX_MESSAGE_SIZE (1024)
 
 /* Here, given a mask represent a user flag and an integer i, we do as follows:
 	i < 0 : toggle flag;
@@ -74,7 +79,7 @@ function was aborted or not-a-number error if an invalid number was read. */
 
 
 int do_action(buffer *b, action a, int c, unsigned char *p) {
-	
+	static char msg[MAX_MESSAGE_SIZE];
 	line_desc *next_ld;
 	HIGHLIGHT_STATE next_line_state;
 	int i, error = OK, recording, col;
@@ -113,7 +118,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		return stop ? STOPPED : error ;
 
 	case QUIT_A:
-		if (modified_buffers() && !request_response(b, "Some documents have not been saved; are you sure?", FALSE)) return ERROR;
+		if (modified_buffers() && !request_response(b, info_msg[SOME_DOCUMENTS_ARE_NOT_SAVED], FALSE)) return ERROR;
 		close_history();
 		unset_interactive_mode();
 		exit(0);
@@ -656,21 +661,15 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		return OK;
 
    case KEYCODE_A:
-   	print_message("Press a key to see ne's corresponding key code:");
+   	print_message(info_msg[PRESS_A_KEY]);
    	c = get_key_code();
-   	{	char *key_code_buffer = malloc( 48 );
-   	   int ic = CHAR_CLASS(c);
-
-   		if ( key_code_buffer ) {
-   			snprintf(key_code_buffer, 48, "Key Code was: %0x, Class: %s", (c < 0) ? -c-1 : c, input_class_names[ic] );
-   			print_message(key_code_buffer);
-   			free(key_code_buffer);
-   		}
-   	}
+ 		i = CHAR_CLASS(c);
+ 		snprintf(msg, MAX_MESSAGE_SIZE, "Key Code was: 0x%02x, Class: %s", (c < 0) ? -c-1 : c, input_class_names[i] );
+  		print_message(msg);
    	return OK;
 
 	case CLEAR_A:
-		if ((b->is_modified) && !request_response(b, "This document is not saved; are you sure?", FALSE)) return ERROR;
+		if ((b->is_modified) && !request_response(b, info_msg[THIS_DOCUMENT_NOT_SAVED], FALSE)) return ERROR;
 		clear_buffer(b);
 		reset_window();
 		return OK;
@@ -680,7 +679,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		reset_window();
 
 	case OPEN_A:
-		if ((b->is_modified) && !request_response(b, "This document is not saved; are you sure?", FALSE)) {
+		if ((b->is_modified) && !request_response(b, info_msg[THIS_DOCUMENT_NOT_SAVED], FALSE)) {
 			if (a == OPENNEW_A) do_action(b, CLOSEDOC_A, 1, NULL);
 			return ERROR;
 		}
@@ -691,7 +690,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			buffer *dup = get_buffer_named(p);
 
 			/* 'c' -- flag meaning "Don't prompt if we've ever responded 'yes'." */
-			if (!dup || dup == b || (dprompt && !c ) || (dprompt = request_response(b, "There is another document with the same name; are you sure?", FALSE))) {
+			if (!dup || dup == b || (dprompt && !c ) || (dprompt = request_response(b, info_msg[SAME_NAME], FALSE))) {
 				b->syn = NULL; /* So that autoprefs will load the right syntax. */
 				if (b->opt.auto_prefs && extension(p)) load_auto_prefs(b, extension(p));
 				error = load_file_in_buffer(b, p);
@@ -763,7 +762,6 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			}
 
 			if (p || (p = request_string(b->last_was_regexp ? "Replace RegExp" : "Replace", b->replace_string, TRUE, FALSE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
-			   char *msg;
 				const encoding_type replace_encoding = detect_encoding(p, strlen(p));
 				int dir = b->opt.search_back ? -1 : 1, first_search = TRUE, num_replace = 0;
 
@@ -824,10 +822,9 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 
 				if (a == REPLACEALL_A || c == 'A') end_undo_chain(b);
 
-				if (num_replace && (msg = malloc( 48 ))) {
-					snprintf(msg,48,"%d replacement%s made.", num_replace, num_replace > 1 ? "s" : "");
+				if (num_replace) {
+					snprintf(msg, MAX_MESSAGE_SIZE, "%d replacement%s made.", num_replace, num_replace > 1 ? "s" : "");
 					print_message(msg);
-					free(msg);
 				}
 				if (stop) return STOPPED;
 
@@ -1101,7 +1098,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		return OK;
 
 	case CLOSEDOC_A: 
-		if ((b->is_modified) && !request_response(b, "This document is not saved; are you sure?", FALSE)) return ERROR;
+		if ((b->is_modified) && !request_response(b, info_msg[THIS_DOCUMENT_NOT_SAVED], FALSE)) return ERROR;
 		if (!delete_buffer()) {
 			close_history();
 			unset_interactive_mode();
@@ -1441,8 +1438,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		keep_cursor_on_screen(cur_buffer);
 		return OK;
 
-	case AUTOCOMPLETE_A: {
-		unsigned char *msg = malloc( 1024 );
+	case AUTOCOMPLETE_A:
 		/* Since we are going to call other actions (INSERTSTRING_A and DELETEPREVWORD_A),
 			we do not want to record this insertion twice. Also, we are counting on 
 			INSERTSTRING_A to handle character encoding issues. */
@@ -1465,27 +1461,20 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			p[b->cur_pos - i] = 0;
 		}	
 
-		if (msg) {
-			snprintf(msg, 1024, "AutoComplete: prefix \"%s\"", p);
-			print_message(msg);
-		}
+		snprintf(msg, MAX_MESSAGE_SIZE, "AutoComplete: prefix \"%s\"", p);
+		print_message(msg);
 			
-		if (p = autocomplete(p, TRUE) ) {
+		if (p = autocomplete(p, TRUE)) {
 			b->recording = 0;
 			start_undo_chain(b);
 			if (i >= b->cur_pos || (error = do_action(b, DELETEPREVWORD_A, 1, NULL)) == OK) error = do_action(b, INSERTSTRING_A, 0, p);
 			end_undo_chain(b);
+			b->recording = recording;
 		}
 		else if (stop) error = STOPPED;
-		else {
-			snprintf(msg, 1024, "AutoComplete: no matching words found.");
-			print_message(msg);
-		}
+		else print_message(info_msg[AUTOCOMPLETE_NO_MATCH]);
 		
-		if (msg) free(msg);
-		b->recording = recording;
 		return print_error(error) ? ERROR : 0;
-	}
 
 	default:
 		if (p) free(p);
