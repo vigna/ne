@@ -35,11 +35,12 @@ mkdir -p $RPM_BUILD_ROOT/usr/bin
 mkdir -p $RPM_BUILD_ROOT/usr/share/ne/syntax
 mkdir -p $RPM_BUILD_ROOT/%{_infodir}
 mkdir -p $RPM_BUILD_ROOT/%{_mandir}/man1
+mkdir -p $RPM_BUILD_ROOT/%{_docdir}/ne-%{version}/html
 install -m 755 ./src/ne $RPM_BUILD_ROOT/usr/bin/ne
 install -m 644 ./syntax/*.jsf $RPM_BUILD_ROOT/usr/share/ne/syntax
 install -m 644 ./doc/ne.1 $RPM_BUILD_ROOT/%{_mandir}/man1
-install -m 644 ./doc/ne $RPM_BUILD_ROOT/usr/share/ne
 install -m 644 ./doc/ne.info* $RPM_BUILD_ROOT/%{_infodir}
+mv ./doc/ne html
 
 %files
 %defattr(-,root,root)
@@ -47,7 +48,7 @@ install -m 644 ./doc/ne.info* $RPM_BUILD_ROOT/%{_infodir}
 /usr/share/ne/syntax/*.jsf
 %{_mandir}/man1/ne.1*
 %{_infodir}/ne.info*
-%doc /usr/share/ne
+%doc html
 %doc ./doc/ne.texinfo
 %doc ./doc/ne.pdf
 %doc ./doc/ne.txt
