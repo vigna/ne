@@ -32,12 +32,13 @@ cd src; make NE_GLOBAL_DIR=/usr/share/ne; strip ne
 %install
 rm -rf $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT/usr/bin
-mkdir -p $RPM_BUILD_ROOT/usr/lib/ne/syntax
+mkdir -p $RPM_BUILD_ROOT/usr/share/ne/syntax
 mkdir -p $RPM_BUILD_ROOT/%{_infodir}
 mkdir -p $RPM_BUILD_ROOT/%{_mandir}/man1
 install -m 755 ./src/ne $RPM_BUILD_ROOT/usr/bin/ne
-install -m 644 ./syntax/*.jsf $RPM_BUILD_ROOT/usr/lib/ne/syntax
+install -m 644 ./syntax/*.jsf $RPM_BUILD_ROOT/usr/share/ne/syntax
 install -m 644 ./doc/ne.1 $RPM_BUILD_ROOT/%{_mandir}/man1
+install -m 644 ./doc/ne $RPM_BUILD_ROOT/usr/share/ne
 install -m 644 ./doc/ne.info* $RPM_BUILD_ROOT/%{_infodir}
 
 %files
@@ -46,13 +47,14 @@ install -m 644 ./doc/ne.info* $RPM_BUILD_ROOT/%{_infodir}
 /usr/share/ne/syntax/*.jsf
 %{_mandir}/man1/ne.1*
 %{_infodir}/ne.info*
-%doc ./doc/ne/*.html
+%doc /usr/share/ne
 %doc ./doc/ne.texinfo
 %doc ./doc/ne.pdf
 %doc ./doc/ne.txt
 %doc ./doc/default.*
 %doc ./README
 %doc ./CHANGES
+%doc ./COPYING
 
 %post
 /sbin/install-info %{_infodir}/ne.info.gz %{_infodir}/dir
