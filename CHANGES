@@ -64,6 +64,8 @@ Changes from version 2.0.3
   * In some cases after a keyboard timeout an ESC character was left in
     the keyboard buffer, causing weird behaviours.
 
+  * Probably really (this time) fixed problems with regexps matching empty strings.
+
 Changes from version 2.0.2
 
 ---- Bug fixes ----
