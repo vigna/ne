@@ -126,7 +126,7 @@ static int search_buff(const buffer *b, const unsigned char *p, const int encodi
 				/* find right edge of word */
 				r = l + get_char_width(&ld->line[l], b->encoding);
 				while (r < ld->line_len && ne_isword(get_char(&ld->line[r], b->encoding), b->encoding)) r += get_char_width(&ld->line[r], b->encoding);
-				if (r - l >= p_len && p_len == 0 || !(case_search ? strncmp : strncasecmp)(p, &ld->line[l], p_len)) {
+				if (r - l > p_len && !(case_search ? strncmp : strncasecmp)(p, &ld->line[l], p_len)) {
 					if (b->encoding == encoding || is_ascii(&ld->line[l], r - l)) add_string(&ld->line[l], r - l, ext);
 					if (max_len < r - l) max_len = r - l;
 				}
