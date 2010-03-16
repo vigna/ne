@@ -1,5 +1,5 @@
 /* Main command processing loop.
-Mai
+
 	Copyright (C) 1993-1998 Sebastiano Vigna 
 	Copyright (C) 1999-2010 Todd M. Lewis and Sebastiano Vigna
 
