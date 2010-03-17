@@ -94,7 +94,7 @@ static int to_something(buffer *b, int (to_first)(int), int (to_rest)(int)) {
 	}
 
 	b->attr_len = -1;
-	update_line(b, b->cur_y, FALSE);
+	update_line(b, b->cur_y, FALSE, FALSE);
 	if (b->syn) {
 		need_attr_update = TRUE;
 		update_syntax_states(b, b->cur_y, b->cur_line_desc, NULL);

@@ -873,6 +873,7 @@ void delete_chars (int n) {
 
 	if (n == 0) return;
 
+	standout_if_wanted();
 	if (delete_in_insert_mode) turn_on_insert();
 	else {
 		turn_off_insert();

@@ -102,7 +102,7 @@ int highlight_cmp(HIGHLIGHT_STATE *x, HIGHLIGHT_STATE *y);
 void delay_update();
 void output_line_desc(int row, int col, line_desc *ld, int start, int len, int tab_size, int cleared_at_end, int utf8, const int * const attr, const int * const diff, const int diff_size);
 line_desc *update_partial_line(buffer *b, int n, int start_x, int cleared_at_end, const int differential);
-void update_line(buffer *b, int n, const int differential);
+void update_line(buffer *b, int n, const int cleared_at_end, const int differential);
 void update_window_lines(buffer *b, int start_line, int end_line, int doit);
 void update_syntax_and_lines(buffer *b, line_desc *start_ld, line_desc *end_ld);
 void update_window(buffer *b);

@@ -137,6 +137,15 @@ void update_syntax_states(buffer *b, int row, line_desc *ld, line_desc *end_ld) 
 	}
 }
 
+static int cursor_moved;
+
+static void lazy_move_cursor(const int row, const int col) {
+	if (!cursor_moved) {
+		cursor_moved = TRUE;
+		move_cursor(row, col);
+	}
+}
+
 /* Outputs part of a line descriptor at the given row and column. The output
 	will start at the first character with a column position larger than or
 	equal to from_col, and will continue until num_cols have been filled
@@ -154,8 +163,10 @@ void update_syntax_states(buffer *b, int row, line_desc *ld, line_desc *end_ld) 
 
 void output_line_desc(const int row, const int col, line_desc *ld, const int from_col, const int num_cols, const int tab_size, const int cleared_at_end, const int utf8, const int * const attr, const int * const diff, const int diff_size) {
 	
-	int curr_col, pos, attr_pos, cursor_moved = FALSE, c, c_len;
+	int curr_col, pos, attr_pos, c, c_len;
 	const unsigned char *s = ld->line;
+	
+	cursor_moved = FALSE;
 	
 	assert(ld != NULL);
 	assert(row < ne_lines - 1 && col < ne_columns);
@@ -177,12 +188,8 @@ void output_line_desc(const int row, const int col, line_desc *ld, const int fro
 			int i;
 
 			for(i = 0; i < tab_width; i++)
-				if (curr_col + i >= from_col && 
-				curr_col + i < from_col + num_cols) {
-					if (!cursor_moved) {
-						cursor_moved = TRUE;
-						move_cursor(row, col);
-					}
+				if (curr_col + i >= from_col && curr_col + i < from_col + num_cols) {
+					lazy_move_cursor(row, col + curr_col + i - from_col);
 					output_char(' ', attr ? attr[attr_pos] : 0, FALSE);
 				}
 			curr_col += tab_width;
@@ -190,20 +197,24 @@ void output_line_desc(const int row, const int col, line_desc *ld, const int fro
 		else {
 			const int c_width = output_width(c);
 
-			if ((curr_col >= from_col || curr_col + c_width > from_col && col - (from_col - curr_col) >= 0) && curr_col < from_col + num_cols) {
-				if (!cursor_moved) {
-					cursor_moved = TRUE;
-					move_cursor(row, col - (curr_col < from_col ? from_col - curr_col : 0));
-					if (curr_col > from_col) output_spaces(curr_col - from_col, attr ? &attr[attr_pos] : NULL);
-				}
-				if (curX + c_width <= ne_columns) {
+			if (curr_col >= from_col || curr_col + c_width > from_col && col - (from_col - curr_col) >= 0) {
+				if (col + curr_col - from_col + c_width <= ne_columns) {
 					if (attr) {
-						if (!diff || diff && (attr_pos >= diff_size || diff[attr_pos] != attr[attr_pos])) output_char(c, attr[attr_pos], utf8);
-						else move_cursor(row, curX + c_width);
+						if (!diff || diff && (attr_pos >= diff_size || diff[attr_pos] != attr[attr_pos])) {
+							lazy_move_cursor(row, col + curr_col - from_col);
+							output_char(c, attr[attr_pos], utf8);
+						}
+						else cursor_moved = FALSE;
 					}
-					else output_char(c, 0, utf8);
+					else {
+						lazy_move_cursor(row, col + curr_col - from_col);
+						output_char(c, 0, utf8);
+					}
 				}
-				else output_spaces(ne_columns - curX, attr ? &attr[attr_pos] : NULL);
+				else {
+					lazy_move_cursor(row, col + curr_col - from_col);
+					output_spaces(ne_columns - curX, attr ? &attr[attr_pos] : NULL);
+				}
 			}
 			curr_col += c_width;
 		}
@@ -213,10 +224,7 @@ void output_line_desc(const int row, const int col, line_desc *ld, const int fro
 	}
 
 	if (curr_col < from_col + num_cols && ! cleared_at_end) {
-		if (! cursor_moved) {
-			cursor_moved = TRUE;
-			move_cursor(row, col);
-		}
+		lazy_move_cursor(row, col + (curr_col - from_col <= 0 ? 0 : curr_col - from_col));
 		clear_to_eol();
 	}
 }
@@ -274,8 +282,8 @@ line_desc *update_partial_line(buffer * const b, const int row, const int from_c
 /* Similar to the previous call, but updates the whole line. If the updated line is the current line,
 	we update the local attribute buffer. */
 
-void update_line(buffer * const b, const int n, const int differential) {
-	line_desc * const ld = update_partial_line(b, n, 0, FALSE, differential);
+void update_line(buffer * const b, const int n, const cleared_at_end, const int differential) {
+	line_desc * const ld = update_partial_line(b, n, 0, cleared_at_end, differential);
 	if (b->syn && ld == b->cur_line_desc) {
 		/* If we updated the entire current line, we update the local attribute buffer. */
 		b->next_state = parse(b->syn, ld, ld->highlight_state, b->encoding == ENC_UTF8);	
@@ -393,7 +401,7 @@ void update_deleted_char(buffer * const b, const int c, const line_desc * const 
 
 	if (!char_ins_del_ok) {
 		/* Argh! We can't insert or delete! Just update the rest of the line. */
-		if (b->syn) update_line(b, line, FALSE);
+		if (b->syn) update_line(b, line, FALSE, FALSE);
 		else update_partial_line(b, line, x, FALSE, FALSE);
 		return;
 	}
@@ -707,11 +715,11 @@ void scroll_window(buffer * const b, const int line, const int n) {
 
 	if (n > 0) {
 		ins_del_lines(line, 1);
-		update_line(b, line, FALSE);
+		update_line(b, line, TRUE, FALSE);
 	}
 	else {
 		ins_del_lines(line, -1);
-		update_line(b, ne_lines - 2, FALSE);
+		update_line(b, ne_lines - 2, TRUE, FALSE);
 	}
 }
 

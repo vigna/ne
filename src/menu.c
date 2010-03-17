@@ -528,7 +528,7 @@ static void draw_first_menu(void) {
 
 static void undraw_last_menu(void) {
 	undraw_menu(current_menu);
-	update_line(cur_buffer, 0, FALSE);
+	update_line(cur_buffer, 0, FALSE, FALSE);
 	cursor_on();
 }
 
