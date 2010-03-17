@@ -568,6 +568,7 @@ following section). Thus, it can be edited manually if necessary.
 @cindex Caching a macro
 @cindex Unloading macros
 @cindex Executing a macro
+@cindex Comments in a macro
 
 Very often, the programmer or the text writer has to repeat some complex
 editing action over a series of similar blocks of text. This is where
@@ -655,14 +656,13 @@ Since loading a macro each time it is invoked would be a rather slow and
 expensive process, once a macro has been executed it is cached internally.
 Subsequent invocations of the macro will used the cached version.
 
-@noindent @strong{Warning:} the macro names are @emph{not} case
+@noindent @strong{Warning:} macro names are @emph{not} case
 sensitive or path sensitive. @code{ne} only caches the file name of a
 macro, not the path name, and uses a case insensitive comparison. That
 is, if you invoke @file{~/foobar/macro}, a subsequent call for
 @file{/usr/MACRO} will use the cached version of @file{~/foobar/macro}.
 You can clear the cache by using the @code{UnloadMacros} command.
 @xref{UnloadMacros}.
-
 
 The behaviour of macros may vary with different preferences. If the user
 changes the AutoIndent and WordWrap flags, for example, new lines and new
@@ -677,6 +677,9 @@ restores the preferences (either by the user pressing
 @kbd{@key{Control}-\} or by a command failing) then that responsibility
 falls on the user.
 
+Finally, any line in a macro that starts with a non-alphabetical character
+is considered a comment, so you can add comments to a macro by starting
+a line with @samp{#}.
 
 @node More Advanced Features
 @section More Advanced Features
@@ -723,7 +726,7 @@ the @kbd{@key{Control}-@key{META}-@key{I}} key combination, or by selecting
 If the prefix can be extended 
 unambiguously, the extension will be immediately inserted into your
 document (this is the case, for instance, if only one word matches the
-prefix), and amessage will tell you whether the extension is an actual word
+prefix), and a message will tell you whether the extension is an actual word
 or just the longest possible extension (for instance, if you expand
 @samp{fo} and your document contains @samp{foobar} and @samp{foofoo} then the
 partial match will be @samp{foo}). Otherwise, @code{ne} presents you with
