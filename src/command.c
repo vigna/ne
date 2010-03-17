@@ -24,6 +24,8 @@
 #include "help.h"
 #include "hash.h"
 
+#undef TABSIZE
+
 /* The standard macro descriptor allocation dimension. */
 
 #define STD_MACRO_DESC_SIZE	1024
