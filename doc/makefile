@@ -42,3 +42,4 @@ ne.html: ne.texinfo version.texinfo
 
 clean:
 	rm -f ne.txt ne.info* ne.ps ne.pdf ne*.html
+	rm -rf ne/
