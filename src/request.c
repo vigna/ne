@@ -490,13 +490,6 @@ char *request_files(const char * const filename, int use_prefix) {
 
 					num_entries = max_name_len = total_len = 0;
 
-#ifdef _AMIGA
-					total_len = 2;
-					num_entries++;
-					strcpy(names, "/");
-					entries[0] = names;
-#endif
-
 					stop = FALSE;
 
 					while(!stop && (de = readdir(d))) {
@@ -536,9 +529,7 @@ char *request_files(const char * const filename, int use_prefix) {
 						if ((i = request_strings((const char * const *)entries, num_entries, 0, max_name_len, '/')) != ERROR) {
 							p = entries[i >= 0 ? i : -i - 2];
 							if (p[strlen(p) - 1] == '/' && i >= 0) {
-#ifndef _AMIGA
 								p[strlen(p) - 1] = 0;
-#endif
 								if (chdir(p)) alert();
 								else use_prefix = FALSE;
 								next_dir = TRUE;

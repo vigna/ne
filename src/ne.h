@@ -51,17 +51,8 @@
 #include "termchar.h"
 #include "utf8.h"
 
-#ifdef _AMIGA
-#define CURDIR ""
-#define _S_IFDIR S_IFDIR
-#define S_ISDIR(s) (s & _S_IFDIR)
-#ifdef strcmp
-#undef strcmp
-#endif
-#else
 #define CURDIR "."
 #include <unistd.h>
-#endif
 
 #ifndef min
 #define   min(a,b)    ((a)<(b)?(a):(b))
@@ -598,14 +589,6 @@ extern const unsigned char ascii_up_case[];
 #include "protos.h"
 #include "utf8.h"
 #include "debug.h"
-
-#ifdef _AMIGA
-#define set_fatal_code()
-#define block_signals()
-#define release_signals()
-#define set_stop()
-#define tilde_expand(x)	(x)
-#endif
 
 /* In the unfortunate case we are compiling in some known system
 	with a completely different handling of binary and ASCII files,

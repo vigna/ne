@@ -34,10 +34,8 @@
 #include "info2cap.h"
 #endif
 
-#ifndef _AMIGA
 #include <termios.h>
 #include <sys/ioctl.h>
-#endif
 
 #include "ansi.h"
 #include "termchar.h"

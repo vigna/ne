@@ -105,7 +105,6 @@ most sparing in its resource use.
 * Hints and Tricks::
 * Motivations and Design::
 * The Encoding Mess::
-* Some Notes for the Amiga User::
 * History::
 * Portability Problems::
 * Acknowledgments::
@@ -5474,44 +5473,6 @@ time the level of UTF-8 support.
 
 
 
-@node Some Notes for the Amiga User
-@chapter Some Notes for the Amiga User
-@cindex Amiga
-
-This section describes the differences between the Amiga and @sc{un*x} versions of
-@code{ne}, and some of the misfeatures inherited by its @sc{un*x}ish design.
-
-Of course, the Amiga user will find @code{ne} much less attractive than
-@sc{un*x} users will. There are several excellent editors for the Amiga,
-and @code{ne} lacks many powerful features that Amiga users are now
-accustomed to. However, for very special uses, such as editing through a
-serial terminal connected to the @code{AUX:} device, @code{ne} is the
-only choice, since it runs in any CLI (even in remote ones). Of course,
-a correct installation of @code{aterminfo} (the Amiga @code{terminfo}
-clone) is a basic requirement.
-
-To keep maintenance of the code simple, conditional code was avoided
-when possible. Thus, some features had to be dropped. First of all, there is no
-interrupt character. This happens because the Amiga handles signals in a way very
-different from @sc{un*x}, and it would have been very complex to reproduce the
-original behaviour.
-
-In the file requester, it is not possible to obtain a list of the
-available devices. Indeed, it is not even possible to pass from a device
-to another inside the requester. You have to escape, then input manually
-the device name as a file name (which will produce a spurious error) and
-open again: this time, the device scanned by the requester will be the
-new one. Another alternative, of course, is simply to input a complete
-pathname.
-
-@code{ne} will not behave particularly well under low memory conditions. It
-won't crash, but it could behave improperly.
-
-The @file{$HOME} (a.k.a @file{~}) directory has no meaning on the Amiga: rather, the
-@file{PROGDIR:} directory is used. For instance, the @file{~/.ne} directory
-is really @file{PROGDIR:.ne}.
-
-
 
 @node History
 @chapter History
@@ -5563,12 +5524,6 @@ Universit@`a degli Studi di Milano.
 
 This chapter is devoted to the description of the (hopefully very few) problems
 that could arise when porting @code{ne} to other flavors of @sc{un*x}.
-
-@ignore
-Compatibility within the Amiga family of computers is complete, so there are no
-problems in recompiling @code{ne} for a different processor or architecture in
-this case.
-@end ignore
 
 The fact that only @sc{posix} calls have been used (@pxref{Motivations
 and Design}) should guarantee that on @sc{posix}-compliant systems a

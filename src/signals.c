@@ -20,8 +20,6 @@
 	Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 	02111-1307, USA.  */
 
-#ifndef _AMIGA
-
 #include "ne.h"
 #include <signal.h>
 
@@ -165,8 +163,6 @@ void handle_winch (const int sig) {
 	window_changed_size = ttysize();
 	signal(sig, handle_winch);
 }
-#endif
-
 #endif
 
 unsigned int window_changed_size;

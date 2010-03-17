@@ -51,6 +51,9 @@ Changes from version 2.0.3
 
   * Current syntax name is buffer specific; only saved in autoprefs, not ~/.ne/.default#ap.
 
+  * The Amiga is officially no longer supported (well, not exactly an
+  improvement...).
+
 ---- Bug fixes ----
 
   * Fixed old, bad, shameful bug: complex assertions were compiled into

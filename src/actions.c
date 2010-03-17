@@ -1450,9 +1450,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		return OK;
 
 	case SUSPEND_A:
-#ifndef _AMIGA
 		stop_ne();
-#endif
 		keep_cursor_on_screen(cur_buffer);
 		return OK;
 

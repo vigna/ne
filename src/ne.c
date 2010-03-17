@@ -290,14 +290,10 @@ int main(int argc, char **argv) {
 	clear_entire_screen();
 
 
-#ifndef _AMIGA
-
 	/* This function sets fatal_code() as signal interrupt handler
 	for all the dangerous signals (SIGILL, SIGSEGV etc.). */
 
 	set_fatal_code();
-
-#endif
 
 	load_auto_prefs(cur_buffer, DEF_PREFS_NAME);
 

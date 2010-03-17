@@ -27,10 +27,6 @@
 #include <errno.h>
 #include <string.h>
 
-#ifdef _AMIGA
-#include <proto/dos.h>
-#endif
-
 
 /* Maximum number of key definitions from terminfo */
 
@@ -405,8 +401,6 @@ void set_escape_time(const int new_escape_time) {
 	timeout value (in tenth of a second) is positive, VMIN is set to 0,
 	otherwise to 1. */
 
-#ifndef _AMIGA
-
 static void set_termios_timeout(const int timeout) {
 	struct termios termios;
 
@@ -417,8 +411,6 @@ static void set_termios_timeout(const int timeout) {
 
 	tcsetattr(0, TCSANOW, &termios);
 }
-
-#endif
 
 
 /* Reads in characters, and tries to match them with the sequences
@@ -524,10 +516,6 @@ int get_key_code(void) {
 		
 		fflush(stdout);
 
-#ifdef _AMIGA
-		if (!partial_match || WaitForChar(Input(), 100000 * escape_time)) c = getchar();
-		else c = EOF;
-#else
 		if (partial_match) set_termios_timeout(escape_time);
 
 		errno = 0;
@@ -540,7 +528,6 @@ int get_key_code(void) {
 		clearerr(stdin);
 
 		if (c == EOF && (!partial_match || e) && e != EINTR) kill(getpid(), SIGTERM);
-#endif
 
 		partial_match = FALSE;
 

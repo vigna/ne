@@ -26,13 +26,7 @@
 
 /* These are the names of ne's autoprefs directory. */
 
-#ifdef _AMIGA
-#include <dos.h>
-#define PREFS_DIR "PROGDIR:.ne/"
-#else
 #define PREFS_DIR ".ne"
-#endif
-
 
 /* This string is appended to the filename extension. It tries to
 be enough strange to avoid clashes with macros. */
@@ -80,26 +74,13 @@ const char *extension(const char * const filename) {
 char *exists_prefs_dir(void) {
 
 	static char *prefs_dir;
-#ifndef _AMIGA
 	char *home_dir;
-#endif
 	struct stat s;
 
 	/* If we have been already called, we already computed the name. */
 
 	if (prefs_dir) return prefs_dir;
 
-#ifdef _AMIGA
-	/* The Amiga case is very easy, due to the presence of the PROGDIR: variable.
-	Everything can be handled statically. */
-
-	if (stat(PREFS_DIR, &s)) {
-		if (mkdir(PREFS_DIR)) return NULL;
-	}
-	else if (!(s.st_mode & _S_IFDIR)) return NULL;
-
-	return prefs_dir = PREFS_DIR;
-#else
 	/* In the UN*X case, we first get the home directory. Then
 	we allocate space for the directory name. */
 
@@ -123,7 +104,6 @@ char *exists_prefs_dir(void) {
 		return strcat(prefs_dir, "/");
 	}
 	else return NULL;
-#endif
 }
 
 
@@ -147,17 +127,6 @@ char *exists_gprefs_dir(void) {
 
 	if ((global_dir = get_global_dir()) && (gprefs_dir = malloc(strlen(global_dir) + 3 ))) {
 		strcpy(gprefs_dir, global_dir);
-#ifdef _AMIGA
-		if (stat(gprefs_dir, &s)) {
-			free(gprefs_dir);
-			return gprefs_dir = NULL;
-		}
-		else if (!(s.st_mode & _S_IFDIR)) {
-			free(gprefs_dir);
-			return gprefs_dir = NULL;
-		}
-		return strcat(gprefs_dir,"/");
-#else
 		if (stat(gprefs_dir, &s)) {
 			free(gprefs_dir);
 			return gprefs_dir = NULL;
@@ -167,7 +136,6 @@ char *exists_gprefs_dir(void) {
 			return gprefs_dir = NULL;
 		}
 		return strcat(gprefs_dir, "/");
-#endif
 	}
 	return NULL;
 }

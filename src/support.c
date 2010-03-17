@@ -24,12 +24,7 @@
 #include "ne.h"
 #include "cm.h"
 #include <signal.h>
-
-#ifdef _AMIGA
-#include <proto/dos.h>
-#else
 #include <pwd.h>
-#endif
 
 /* Some systems do not define _POSIX_VDISABLE. We try to establish a reasonable value. */
 
@@ -118,8 +113,6 @@ int is_directory(const char * const name) {
 	locally. Note that this function can return the same pointer which is
 	passed, in case no tilde expansion has to be performed. */
 
-#ifndef _AMIGA
-
 const char *tilde_expand(const char * filename) {
 
 	static char *expanded_filename;
@@ -169,33 +162,17 @@ const char *tilde_expand(const char * filename) {
 	return filename;
 }
 
-#endif
-
 
 
 /* Given a pathname, returns a pointer to the real file name (i.e., the pointer
 	points inside the string passed). */
 
 const char *file_part(const char * const pathname) {
-
 	const char *p;
-
 	if (!pathname) return NULL;
-
-#ifdef _AMIGA
-
-	return (const char *)FilePart((char *)pathname);
-
-#else
-
 	p = pathname + strlen(pathname);
-
 	while(p > pathname && *(p - 1) != '/') p--;
-
 	return p;
-
-#endif
-
 }
 
 
@@ -277,38 +254,15 @@ int filenamecmpp(const void *a, const void *b) {
 
 
 
-#ifdef _AMIGA
-
-/* Supplies a getenv() simulation on the Amiga. Unfortunately, the SAS/C
-	version of getenv() does not look at the local variables, which are the only
-	ones we are really interested in... */
-
-char *getenv(const char * const name) {
-
-	static char buffer[2048];
-
-	if (GetVar((char *)name, buffer, sizeof buffer, 0) > -1) return buffer;
-	else return NULL;
-}
-
-#endif
-
-
-
 /* Sets the "interactive I/O mode" of the terminal. It suitably sets the mode
 	bits of the termios structure, and then transmits various capability strings
 	by calling set_terminal_modes(). This function assumes that the terminfo
 	database has been properly initialized. The old_termios structure records
 	the original state of the terminal interface. */
 
-#ifndef _AMIGA
 static struct termios termios, old_termios;
-#endif
 
 void set_interactive_mode(void) {
-
-#ifndef _AMIGA
-
 	tcgetattr(0, &termios);
 
 	old_termios = termios;
@@ -360,13 +314,6 @@ void set_interactive_mode(void) {
 	siginterrupt(SIGWINCH, 1);
 	signal(SIGWINCH, handle_winch);
 #endif
-
-#else
-
-	SetMode(Input(), 1);
-
-#endif
-
 	/* This ensures that a physical read will be performed at each getchar(). */
 
 	setbuf(stdin, NULL);
@@ -404,11 +351,7 @@ void unset_interactive_mode(void) {
 	/* Now we restore all the flags in the termios structure to the state they
 		were before us. */
 
-#ifndef _AMIGA
 	tcsetattr(0, TCSADRAIN, &old_termios);
-#else
-	SetMode(Input(), 0);
-#endif
 
 #ifdef SIGWINCH
 	signal(SIGWINCH, SIG_IGN);

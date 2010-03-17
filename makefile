@@ -26,7 +26,7 @@ source:
 	tar cvf ne-$(VERSION).tar version.pl ne-$(VERSION)/makefile ne-$(VERSION)/COPYING ne-$(VERSION)/README ne-$(VERSION)/CHANGES \
 	ne-$(VERSION)/src/*.[hc] ne-$(VERSION)/src/*.c.in ne-$(VERSION)/src/*.pl \
 	ne-$(VERSION)/syntax/*.jsf \
-	ne-$(VERSION)/src/makefile ne-$(VERSION)/src/makefile.amiga ne-$(VERSION)/src/ne.texinfo ne-$(VERSION)/doc/ne.1 \
+	ne-$(VERSION)/src/makefile ne-$(VERSION)/src/ne.texinfo ne-$(VERSION)/doc/ne.1 \
 	ne-$(VERSION)/doc/makefile ne-$(VERSION)/doc/ne.texinfo ne-$(VERSION)/doc/ne.info* ne-$(VERSION)/doc/version.*  \
 	ne-$(VERSION)/doc/html/*.html \
 	ne-$(VERSION)/doc/ne.pdf ne-$(VERSION)/doc/ne.txt ne-$(VERSION)/doc/default*
