@@ -137,14 +137,6 @@ void update_syntax_states(buffer *b, int row, line_desc *ld, line_desc *end_ld) 
 	}
 }
 
-static int cursor_moved;
-
-static void lazy_move_cursor(const int row, const int col) {
-	if (!cursor_moved) {
-		cursor_moved = TRUE;
-		move_cursor(row, col);
-	}
-}
 
 /* Outputs part of a line descriptor at the given row and column. The output
 	will start at the first character with a column position larger than or
@@ -165,8 +157,6 @@ void output_line_desc(const int row, const int col, line_desc *ld, const int fro
 	
 	int curr_col, pos, attr_pos, c, c_len;
 	const unsigned char *s = ld->line;
-	
-	cursor_moved = FALSE;
 	
 	assert(ld != NULL);
 	assert(row < ne_lines - 1 && col < ne_columns);
@@ -189,9 +179,10 @@ void output_line_desc(const int row, const int col, line_desc *ld, const int fro
 
 			for(i = 0; i < tab_width; i++)
 				if (curr_col + i >= from_col && curr_col + i < from_col + num_cols) {
-					lazy_move_cursor(row, col + curr_col + i - from_col);
+					move_cursor(row, col + curr_col + i - from_col);
 					output_char(' ', attr ? attr[attr_pos] : 0, FALSE);
 				}
+	
 			curr_col += tab_width;
 		}
 		else {
@@ -201,18 +192,17 @@ void output_line_desc(const int row, const int col, line_desc *ld, const int fro
 				if (col + curr_col - from_col + c_width <= ne_columns) {
 					if (attr) {
 						if (!diff || diff && (attr_pos >= diff_size || diff[attr_pos] != attr[attr_pos])) {
-							lazy_move_cursor(row, col + curr_col - from_col);
+							move_cursor(row, col + curr_col - from_col);
 							output_char(c, attr[attr_pos], utf8);
 						}
-						else cursor_moved = FALSE;
 					}
 					else {
-						lazy_move_cursor(row, col + curr_col - from_col);
+						move_cursor(row, col + curr_col - from_col);
 						output_char(c, 0, utf8);
 					}
 				}
 				else {
-					lazy_move_cursor(row, col + curr_col - from_col);
+					move_cursor(row, col + curr_col - from_col);
 					output_spaces(ne_columns - curX, attr ? &attr[attr_pos] : NULL);
 				}
 			}
@@ -224,7 +214,7 @@ void output_line_desc(const int row, const int col, line_desc *ld, const int fro
 	}
 
 	if (curr_col < from_col + num_cols && ! cleared_at_end) {
-		lazy_move_cursor(row, col + (curr_col - from_col <= 0 ? 0 : curr_col - from_col));
+		move_cursor(row, col + (curr_col - from_col <= 0 ? 0 : curr_col - from_col));
 		clear_to_eol();
 	}
 }
