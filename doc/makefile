@@ -24,7 +24,6 @@ ne.txt: ne.texinfo version.texinfo
 
 $(INFODOCS): ne.texinfo version.texinfo
 	makeinfo ne.texinfo
-	ls -l
 	sed -i -e "s/\`/'/g" ne.info
 	sed -i -e "s/'ne'/ne/g" ne.info
 	rm -f ne.info*gz

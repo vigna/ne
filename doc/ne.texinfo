@@ -714,22 +714,31 @@ frequently, you may want to change the key bindings. @xref{Key Bindings}.
 The @code{AutoComplete} command helps you extend a given prefix with matching
 words from your open documents.  You can specify the @code{AutoCompete} command
 and prefix on the command line, or you can enter the prefix directly into your
-document and active the @code{AutoComplete} command. With the cursor at the
+document and activate the @code{AutoComplete} command. With the cursor at the
 right end of your prefix, activate the @code{AutoComplete} command by entering
 either the @key{Escape}-@key{Tab} or the @key{Escape}-@key{I} key sequence, or
 the @kbd{@key{Control}-@key{META}-@key{I}} key combination, or by selecting
-@code{AutoComplete} from the @code{Extras} menu. If only one word matches the
-prefix, or if the prefix can be extended unambiguously, that word or extension
-will be immediately inserted into your document. Otherwise if more than one
-word matches the prefix, @code{ne} presents you with a list of all matching
-words; select the one you want and press @key{Enter}, or use @key{Escape} to
-cancel the operation. The current state of the @code{CaseSearch} flag
-determines whether the prefix match is case sensitive. Any matching words which
-only exist in other open documents but not the current one are displayed in
-bold with an asterisk; think of that as a warning that if you select one of
-these bold words you will introduce a new word into your current document.
-Plain words already exist somewhere in your current document.
-@xref{AutoComplete}, and @ref{CaseSearch}.
+@code{AutoComplete} from the @code{Extras} menu. 
+
+If the prefix can be extended 
+unambiguously, the extension will be immediately inserted into your
+document (this is the case, for instance, if only one word matches the
+prefix), and amessage will tell you whether the extension is an actual word
+or just the longest possible extension (for instance, if you expand
+@samp{fo} and your document contains @samp{foobar} and @samp{foofoo} then the
+partial match will be @samp{foo}). Otherwise, @code{ne} presents you with
+a list of all matching words: choose the one you want and press
+@key{Return}, to select it; otherwise, press @key{f1}, @key{Escape} or
+@key{Escape}-@key{Escape} to cancel the completion operation. 
+
+The current
+state of the @code{CaseSearch} flag determines whether the prefix match is
+case sensitive. Any matching words which only exist in other open
+documents but not the current one are displayed in bold with an asterisk;
+think of that as a warning that if you select one of these bold words you
+will introduce a new word into your current document. Plain words already
+exist somewhere in your current document. @xref{AutoComplete}, and
+@ref{CaseSearch}.
 
 @subsection MS-DOS files
 @code{ne} will detect automagically the presence of MS-DOS line terminators
@@ -2834,11 +2843,9 @@ case @samp{c} will appear on the status bar if the flag is true.
 @noindent attempts to extend the @var{prefix} using matching words from your
 open documents, and inserts the extended text into your document. If the
 @var{prefix} can be extended unambiguously, the matching text is immediately
-inserted into your document. If multiple words match, @code{ne} displays a
-selection of all words in open documents which match @var{prefix}, and inserts
-the word you select into the current document. Use the cursor keys to indicate
-the desired word and press @key{Return} to select it; otherwise press @key{f1},
-@key{Escape} or @key{Escape}-@key{Escape} to cancel the completion operation.
+inserted into your document. Otherwise, @code{ne} displays a
+selection of all words in open documents that match @var{prefix}, and inserts
+the word you select into the current document.
 Matching words from the current document display normally; those which only
 exist in other open documents are bold and with a trailing asterisk. If no
 @var{prefix} is given on the command line, or if @code{AutoComplete} is
