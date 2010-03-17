@@ -9,6 +9,7 @@ Buildroot: /tmp/ne-%{version}
 AutoReqProv: no
 Prereq: /sbin/install-info
 Requires: ncurses >= 4.0
+BuildRequires: ncurses-devel >= 4.0, make, bash, perl, texinfo, sed
 
 %description 
 ne is a free (GPL'd) text editor based on the POSIX standard that runs (we
