@@ -7,7 +7,7 @@
 
 INFODOCS=ne.info.gz ne.info-1.gz ne.info-2.gz ne.info-3.gz ne.info-4.gz
 
-DOCS=ne.txt $(INFODOCS) ne.html ne.dvi ne.pdf
+DOCS=ne.txt $(INFODOCS) html/index.html ne.dvi ne.pdf
 
 all: $(DOCS)
 
@@ -24,6 +24,7 @@ ne.txt: ne.texinfo version.texinfo
 
 $(INFODOCS): ne.texinfo version.texinfo
 	makeinfo ne.texinfo
+	ls -l
 	sed -i -e "s/\`/'/g" ne.info
 	sed -i -e "s/'ne'/ne/g" ne.info
 	rm -f ne.info*gz
@@ -35,11 +36,11 @@ ne.dvi: ne.texinfo version.texinfo
 ne.pdf: ne.dvi
 	dvipdf ne.dvi
 
-ne.html: ne.texinfo version.texinfo
+html/index.html: ne.texinfo version.texinfo
 	makeinfo --html -o html ne.texinfo
 	for i in html/*html; do sed -i -e "s/\`/'/g" $$i; done
 	for i in html/*html; do sed -i -e "s/'ne'/ne/g" $$i; done
 
 clean:
-	rm -f ne.txt ne.info* ne.ps ne.pdf ne*.html
-	rm -rf ne/
+	rm -f ne.txt ne.info* ne.ps ne.pdf
+	rm -rf html/
