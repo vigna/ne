@@ -1,6 +1,6 @@
 Summary: ne, the nice editor
 Name: ne
-Version: 2.0.4
+Version: 2.1
 Release: 1
 License: GPL
 Group: Applications/Editors
@@ -68,6 +68,8 @@ fi
 
 
 %changelog
+* Wed Mar 17 2010 Sebastiano Vigna <vigna@dsi.unimi.it> 2.1
+- Upgraded to 2.1.
 * Fri Feb 20 2009 Sebastiano Vigna <vigna@dsi.unimi.it> 2.0.3
 - Upgraded to 2.0.3.
 * Wed Feb 18 2009 Sebastiano Vigna <vigna@dsi.unimi.it> 2.0.2
