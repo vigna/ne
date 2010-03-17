@@ -1,5 +1,3 @@
 - Open files > 2G.
 
-- Modify manual in case we keep Bash-like completion
-
 - Update site to reflect new autocomplete features
