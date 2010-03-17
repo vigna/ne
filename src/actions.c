@@ -1250,13 +1250,12 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 
 		if (p || (p = request_string("Filter", NULL, FALSE, TRUE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
 			int fin = -1, fout = -1;
-
-			char tmpnam1[strlen(P_tmpdir)+strlen(NE_TMP)+2], tmpnam2[strlen(P_tmpdir)+strlen(NE_TMP)+2], *command;
-
-			strcat(strcat(strcpy(tmpnam1, P_tmpdir), "/"), NE_TMP);
-			strcat(strcat(strcpy(tmpnam2, P_tmpdir), "/"), NE_TMP);
-			if ((fin = mkstemp(tmpnam1)) != -1) close(fin);
-			if ((fout = mkstemp(tmpnam2)) != -1) close(fout);
+			char tmpnam1[L_tmpnam], tmpnam2[L_tmpnam], *command;
+			tmpnam(tmpnam1);
+			tmpnam(tmpnam2);
+			
+			if ((fin = open(tmpnam1, WRITE_FLAGS | O_EXCL, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH)) != -1) close(fin);
+			if ((fout = open(tmpnam2, WRITE_FLAGS | O_EXCL, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH)) != -1) close(fout);
 			if (fin != -1 && fout != -1) {
 
 				realloc_clip_desc(get_nth_clip(INT_MAX), INT_MAX, 0);
