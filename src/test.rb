@@ -105,7 +105,7 @@ ARGV[0].to_i.times do |i|
 
   elsif r < 40 
     if block
-      case rand(3)
+      case rand(4)
 	when 0
 	puts("COPY")
 	clip = true
@@ -114,6 +114,8 @@ ARGV[0].to_i.times do |i|
 	clip = true
 	when 2
 	puts("ERASE")
+	when 3
+	puts("THROUGH sort")
       end
       block = false
     else
