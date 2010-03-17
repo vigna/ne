@@ -6,6 +6,7 @@ VERSION = 2.0.4
 # and installed under the $(PREFIX) hierarchy. You can even use "make install PREFIX=$HOME/<dir>"
 # to install ne locally into the directory <dir>.
 
+
 PREFIX=/usr/local
 
 PROGRAM       = ne
@@ -22,7 +23,7 @@ source:
 	( cd src; make clean; make )
 	-rm -f ne-$(VERSION)
 	ln -s . ne-$(VERSION)
-	tar cvf ne-$(VERSION).tar ne-$(VERSION)/version.pl ne-$(VERSION)/makefile ne-$(VERSION)/COPYING ne-$(VERSION)/README ne-$(VERSION)/CHANGES \
+	tar cvf ne-$(VERSION).tar version.pl ne-$(VERSION)/makefile ne-$(VERSION)/COPYING ne-$(VERSION)/README ne-$(VERSION)/CHANGES \
 	ne-$(VERSION)/src/*.[hc] ne-$(VERSION)/src/*.c.in ne-$(VERSION)/src/*.pl \
 	ne-$(VERSION)/syntax/*.jsf \
 	ne-$(VERSION)/src/makefile ne-$(VERSION)/src/makefile.amiga ne-$(VERSION)/src/ne.texinfo ne-$(VERSION)/doc/ne.1 \
@@ -34,13 +35,12 @@ source:
 	-rm -f ne-$(VERSION)
 
 cygwin:
-	./version.pl VERSION=$(VERSION)
-	( cd doc; make )
-	( cd src; make clean; make NE_GLOBAL_DIR=/usr/lib/ne )
-	make install PREFIX=/usr
-	tar zcvf ne-cygwin-$(VERSION).tar.gz /usr/lib/ne /usr/bin/ne.exe /usr/share/doc/html /usr/share/info/ne.info.gz /usr/share/man/man1/ne.1
-	( cd src; make clean; make NE_GLOBAL_DIR=/usr/lib/ne NE_TERMCAP=1 NE_ANSI=1 )
-	tar zcvf ne-cygwin-ansi-$(VERSION).tar.gz /usr/lib/ne /usr/bin/ne.exe /usr/share/doc/html /usr/share/info/ne.info.gz /usr/share/man/man1/ne.1
+	( cd src; make clean; make NE_GLOBAL_DIR=/usr/share/ne )
+	make install PREFIX=/usr CMDSUFFIX=.exe
+	tar zcvf ne-cygwin-$(VERSION).tar.gz /usr/share/ne /usr/bin/ne.exe /usr/share/doc/ne /usr/share/info/ne.info.gz /usr/share/man/man1/ne.1
+	( cd src; make clean; make NE_GLOBAL_DIR=/usr/share/ne NE_TERMCAP=1 NE_ANSI=1 )
+	make install PREFIX=/usr CMDSUFFIX=.exe
+	tar zcvf ne-cygwin-ansi-$(VERSION).tar.gz /usr/share/ne /usr/bin/ne.exe /usr/share/doc/ne /usr/share/info/ne.info.gz /usr/share/man/man1/ne.1
 
 install:
 	(cd src; make NE_GLOBAL_DIR=$(PREFIX)/share/ne)
@@ -49,7 +49,7 @@ install:
 	mkdir -p $(DESTDIR)$(PREFIX)/share/man/man1
 	mkdir -p $(DESTDIR)$(PREFIX)/share/doc/ne
 	mkdir -p $(DESTDIR)$(PREFIX)/share/info
-	cp -p src/ne $(DESTDIR)$(PREFIX)/bin
+	cp -pf src/ne$(CMDSUFFIX) $(DESTDIR)$(PREFIX)/bin
 	cp -p syntax/*.jsf $(DESTDIR)$(PREFIX)/share/ne/syntax
 	cp -p doc/ne.1 $(DESTDIR)$(PREFIX)/share/man/man1
 	cp -pr doc/ne.pdf doc/html doc/ne.txt doc/default.* README COPYING CHANGES $(DESTDIR)$(PREFIX)/share/doc/ne
