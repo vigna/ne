@@ -1,5 +1,21 @@
 #!/usr/bin/ruby
 
+# test.rb creates a roughly N step random macro for ne to
+# run on a text or binary file. Only an ne built with NE_TEST
+# defined will be able to run this macro; otherwise it will
+# stop on any command that can't succeed, like moving past
+# the end of the document. The macro makes arbitrary changes,
+# saves the document, undoes all the changes, saves again,
+# and finally redoes the changes and saves again, then exits.
+# You're supposed to compare the various saved files to see
+# if the undone file is byte-for-byte identical to the
+# original, and if the redone file is identical to the .test
+# version. If they are not, then ne is broken.
+# 
+# Do not let a "NE_TEST" version of the ne binary out into
+# the wild; it does not do the Right Thing for production
+# use.
+
 if ARGV.length == 0 
   puts "Args: N FILE [BINARY]"
   exit
