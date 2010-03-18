@@ -11,7 +11,7 @@ Changes from version 2.0.3
 
   * Display request lists by columns ("RequestOrder 1") or rows ("RequestOrder 0").
 
-  * Allow window resizing during requests (file selection, help).
+  * Allow window resizing during requests (file selection, help, AutoComplete).
 
   * Sort filenames in dictionary order ("aa", "Ab", "ac", ...).
 
@@ -28,9 +28,7 @@ Changes from version 2.0.3
 
   * Replace reports the number of replacements (again).
 
-  * Enter in Help places you on the right command in the command list.
-
-  * Now the global directory is displayed even if it is not found.
+  * Display the global directory on startup even if it is not found.
 	
   * Aborting an OpenNew doesn't leave you in a new blank document.
 
