@@ -139,7 +139,7 @@ static int calccost (int srcy, int srcx, int dsty, int dstx, int doit) {
 	}
 
 	totalcost = c * deltay;
-	if (doit) while (--deltay >= 0) tputs (p, 1, cmputc);
+	if (doit) while (deltay-- != 0) tputs (p, 1, cmputc);
 x: 
 	if ((deltax = dstx - srcx) == 0)	goto done;
 	if (deltax < 0) {
@@ -182,7 +182,7 @@ x:
 
 	if (tabcost < (deltax * Wcm.cc_right)) {
 		totalcost += tabcost;	/* use the tabs */
-		if (doit) while (--ntabs >= 0) tputs (Wcm.cm_tab, 1, cmputc);
+		if (doit) while (ntabs-- != 0) tputs (Wcm.cm_tab, 1, cmputc);
 		srcx = tabx;
 	}
 
@@ -202,7 +202,7 @@ x:
 		return BIG;
 	}
 	totalcost += c * deltax;
-	if (doit) while (--deltax >= 0) tputs (p, 1, cmputc);
+	if (doit) while (deltax-- != 0) tputs (p, 1, cmputc);
 done: 
 	return totalcost;
 }

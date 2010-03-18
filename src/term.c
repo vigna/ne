@@ -884,7 +884,7 @@ void delete_chars (int n) {
 		buf = tparm(ne_parm_dch, n);
 		OUTPUT1(buf);
 	}
-	else while(--n >= 0) OUTPUT1(ne_delete_character);
+	else while(n-- != 0) OUTPUT1(ne_delete_character);
 
 	if (!delete_in_insert_mode) OUTPUT_IF(ne_exit_delete_mode);
 }
@@ -900,7 +900,7 @@ static void do_multi_ins_del(char * const multi, const char * const single, int 
 		char *const buf = tparm(multi, n);
 		OUTPUT(buf);
 	}
-	else while(--n >= 0) OUTPUT(single);
+	else while(n-- != 0) OUTPUT(single);
 }
 
 
@@ -927,11 +927,11 @@ void ins_del_lines (const int vpos, const int n) {
 
 		if (n < 0) {
 			move_cursor(specified_window - 1, 0);
-			while (--i >= 0) OUTPUTL(ne_scroll_forward, specified_window - vpos + 1);
+			while (i-- != 0) OUTPUTL(ne_scroll_forward, specified_window - vpos + 1);
 		}
 		else {
 			move_cursor(vpos, 0);
-			while (--i >= 0) OUTPUTL(ne_scroll_reverse, specified_window - vpos + 1);
+			while (i-- != 0) OUTPUTL(ne_scroll_reverse, specified_window - vpos + 1);
 		}
 
 		if (specified_window != ne_lines) set_scroll_region(0, ne_lines - 1);
