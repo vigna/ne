@@ -56,6 +56,9 @@ Changes from version 2.0.3
 
 ---- Bug fixes ----
 
+  * Fixed efficiency bug introduced with syntax highlighting: ne should now
+    be much more responsive along slow connections.
+
   * Fixed old, bad, shameful bug: complex assertions were compiled into
     the code even for the non-debug version. As a result, ne was deadly
     slow on large files.
