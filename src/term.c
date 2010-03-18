@@ -612,7 +612,6 @@ void clear_end_of_line(const int first_unused_hpos) {
 	int i;
 
 	if (curX >= first_unused_hpos) return;
-	standout_if_wanted();
 
 	if (ne_clr_eol) OUTPUT1 (ne_clr_eol);
 	else {
