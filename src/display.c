@@ -138,36 +138,40 @@ void update_syntax_states(buffer *b, int row, line_desc *ld, line_desc *end_ld) 
 }
 
 
-/* Outputs part of a line descriptor at the given row and column. The output
-	will start at the first character with a column position larger than or
-	equal to from_col, and will continue until num_cols have been filled
-	(partially overflowing characters will *not* be output).  The TABs are
-	expanded and considered in the computation of the column position. from_col
-	and num_cols are not constrained by the length of the string (the string is
-	really considered as terminating with an infinite sequence of
-	spaces). cleared_at_end has the same meaning as in update_partial_line(). If
-	utf8 is TRUE, then the line content is considered to be UTF-8 encoded. 
+/* Outputs part of a line descriptor at the given screen row and column.
+	The output will start at the first character of the line with a column
+	position larger than or equal to from_col, and will continue until
+	num_cols have been filled (partially overflowing characters will *not*
+	be output). The TABs are expanded and considered in the computation of
+	the column position. from_col and num_cols are not constrained by the
+	length of the string (the string is really considered as terminating
+	with an infinite sequence of spaces). cleared_at_end has the same
+	meaning as in update_line() and update_partial_line(). If utf8 is TRUE,
+	then the line content is considered to be UTF-8 encoded.
 
-	If attr is not NULL, it contains a the list of attributes for the line descriptor;
-	if diff is not NULL, the update is differential: we assume that the line is
-   already correctly displayed with the attributes specified in diff. If diff_size is shorter
-   than the current line, all characters without differential information will be updated. */
+	If attr is not NULL, it contains a the list of attributes for the line
+	descriptor; if diff is not NULL, the update is differential: we assume
+	that the line is already correctly displayed with the attributes
+	specified in diff. If diff_size is shorter than the current line, all
+	characters without differential information will be updated. */
 
 void output_line_desc(const int row, const int col, line_desc *ld, const int from_col, const int num_cols, const int tab_size, const int cleared_at_end, const int utf8, const int * const attr, const int * const diff, const int diff_size) {
 	
-	int curr_col, pos, attr_pos, c, c_len;
+	int curr_col, output_col, pos, attr_pos, c, c_len;
 	const unsigned char *s = ld->line;
 	
 	assert(ld != NULL);
 	assert(row < ne_lines - 1 && col < ne_columns);
 
-	/* We scan the line descriptor, keeping track in i of the current column
-		(considering TABs) and in pos the current position in the line
-		(considering UTF-8 sequences, if necessary). s is always ld->line +
-		pos. */
-		
+	/* We scan the line descriptor, keeping track in curr_col of the
+		current column (considering TABs) and in pos the current position in
+		the line (considering UTF-8 sequences, if necessary). s is always
+		ld->line + pos. The actual output screen column at any time is
+		col + curr_col - from_col. */
+
 	curr_col = pos = attr_pos = 0;
-	while(curr_col < from_col + num_cols && pos < ld->line_len) {
+	while(curr_col - from_col < num_cols && pos < ld->line_len) {
+		output_col = col + curr_col - from_col;
 		c = utf8 ? get_char(s, ENC_UTF8) : *s;
 		c_len = utf8 ? utf8seqlen(c) : 1;
 
@@ -179,7 +183,7 @@ void output_line_desc(const int row, const int col, line_desc *ld, const int fro
 
 			for(i = 0; i < tab_width; i++)
 				if (curr_col + i >= from_col && curr_col + i < from_col + num_cols) {
-					move_cursor(row, col + curr_col + i - from_col);
+					move_cursor(row, output_col + i);
 					output_char(' ', attr ? attr[attr_pos] : 0, FALSE);
 				}
 	
@@ -188,22 +192,26 @@ void output_line_desc(const int row, const int col, line_desc *ld, const int fro
 		else {
 			const int c_width = output_width(c);
 
-			if (curr_col >= from_col || curr_col + c_width > from_col && col - (from_col - curr_col) >= 0) {
-				if (col + curr_col - from_col + c_width <= ne_columns) {
+			if (output_col >= col || output_col + c_width > col && output_col >= 0) {
+				if (output_col + c_width <= ne_columns) {
 					if (attr) {
+						/* In the case of a differential update, we output only
+							characters whose attributes have changed. */
 						if (!diff || diff && (attr_pos >= diff_size || diff[attr_pos] != attr[attr_pos])) {
-							move_cursor(row, col + curr_col - from_col);
+							move_cursor(row, output_col);
 							output_char(c, attr[attr_pos], utf8);
 						}
 					}
 					else {
-						move_cursor(row, col + curr_col - from_col);
+						move_cursor(row, output_col);
 						output_char(c, 0, utf8);
 					}
 				}
 				else {
-					move_cursor(row, col + curr_col - from_col);
-					output_spaces(ne_columns - curX, attr ? &attr[attr_pos] : NULL);
+					/* The current character is too wide: we can only output spaces
+						in place of its visible part. */
+					move_cursor(row, output_col);
+					output_spaces(ne_columns - output_col, attr ? &attr[attr_pos] : NULL);
 				}
 			}
 			curr_col += c_width;
@@ -213,6 +221,10 @@ void output_line_desc(const int row, const int col, line_desc *ld, const int fro
 		attr_pos++;
 	}
 
+	/* If we have exhausted the characters in the line, we haven't still
+		reached the final output column, and the line is not cleared at the
+		end, since we must assume an infinite number of spaces at the end we
+		must clear the line starting from the leftmost visible position. */
 	if (curr_col < from_col + num_cols && ! cleared_at_end) {
 		move_cursor(row, col + (curr_col - from_col <= 0 ? 0 : curr_col - from_col));
 		clear_to_eol();
