@@ -470,15 +470,35 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 
 		NORMALIZE(c);
 		
+		start_undo_chain(b);
 		for(i = 0; i < c && !stop; i++) {
 			if (a == BACKSPACE_A) {
-				if (b->win_x + b->cur_x == 0 && b->cur_line == 0) return ERROR;
-				else char_left(b);
+				if (b->win_x + b->cur_x == 0 && b->cur_line == 0) {
+					end_undo_chain(b);
+					return ERROR;
+				}
+				if (b->cur_pos == 0) a = DELETECHAR_A; /* BS at beginning of a line */
+				char_left(b);                          /* is like a Del at the end of the previous line. */
 			}	
-			/* TODO: Here an additional condition line_len > 0 was present. Is it useful? It's just for deleting outside of lines. */
 			if (b->cur_pos > b->cur_line_desc->line_len) {
-				/* We are not over text. */
-				continue;
+				col = b->win_x + b->cur_x;
+				/* We are not over text; we must be in FreeForm mode.
+				   We're deleting past the end of the line, so if we aren't on the last line
+				   we need to pad this line with space up to cur_pos, then fall through to the
+				   delete_one_char() below. */
+				if (a == BACKSPACE_A || b->cur_line_desc->ld_node.next->next == NULL) continue;
+				if (b->cur_line_desc->line_len == 0) {
+					auto_indent_line(b, b->cur_line, b->cur_line_desc);
+					goto_column(b,col);
+					/* We may now have space to our right. */
+					if (col < calc_width(b->cur_line_desc, b->cur_line_desc->line_len, b->opt.tab_size, b->encoding)) {
+						delete_to_eol(b, b->cur_line_desc, b->cur_line, calc_pos(b->cur_line_desc, col+1, b->opt.tab_size, b->encoding)-1);
+					}
+					goto_column(b,col);
+					/* N.B.: Our original col may have been in the middle of a tab, which we just deleted. */
+				}
+				insert_spaces(b, b->cur_line_desc, b->cur_line, b->cur_line_desc->line_len, b->win_x + b->cur_x - calc_width(b->cur_line_desc, b->cur_line_desc->line_len, b->opt.tab_size, b->encoding));
+				move_to_eol(b);
 			}
 
 			if (b->syn && b->attr_len < 0) freeze_attributes(b, b->cur_line_desc);
@@ -491,7 +511,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 				update_deleted_char(b, old_char, b->cur_line_desc, b->cur_pos, b->cur_char, b->cur_y, b->cur_x);	
 				if (b->syn) update_line(b, b->cur_y, TRUE, TRUE);
 			}
-			else {
+			else if (a == DELETECHAR_A ) {
 				/* Here we handle the case in which two lines are joined. Note that if the first line is empty,
 					it is just deleted by delete_one_char(), so we must store its initial state and restore
 					it after the deletion. */
@@ -509,6 +529,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			}			
 		}
 		need_attr_update = TRUE;
+		end_undo_chain(b);
 		return stop ? STOPPED : 0;
 
 	case INSERTLINE_A:
@@ -667,7 +688,9 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
    	print_message(info_msg[PRESS_A_KEY]);
    	c = get_key_code();
  		i = CHAR_CLASS(c);
- 		snprintf(msg, MAX_MESSAGE_SIZE, "Key Code was: 0x%02x, Class: %s", (c < 0) ? -c-1 : c, input_class_names[i] );
+ 		col = (c < 0) ? -c-1 : c;
+ 		snprintf(msg, MAX_MESSAGE_SIZE, "Key Code: 0x%02x,  Input Class: %s,  Assigned Command: %s", col, input_class_names[i],
+ 		              (key_binding[col] && key_binding[col][0]) ? key_binding[col] : "(none)" );
   		print_message(msg);
    	return OK;
 
