@@ -3,14 +3,14 @@
 # menus.
 #
 
-MENU "Project"
-ITEM "Open...    ^O" Open
-ITEM "Open New...[N" OpenNew
-ITEM "Save       ^S" Save
-ITEM "Save As...   " SaveAs
-ITEM "Quit Now   [Q" Quit
-ITEM "Save&Exit  [X" Exit
-ITEM "About        " About
+MENU "File"
+ITEM "Open...     ^O" Open
+ITEM "Open New... [N" OpenNew
+ITEM "Save        ^S" Save
+ITEM "Save As...    " SaveAs
+ITEM "Quit Now    [Q" Quit
+ITEM "Save&Exit   [X" Exit
+ITEM "About         " About
 
 MENU "Documents"
 ITEM "New       ^D" NewDoc
@@ -25,12 +25,15 @@ ITEM "Mark Block  ^B" Mark
 ITEM "Cut         ^X" Cut
 ITEM "Copy        ^C" Copy
 ITEM "Paste       ^V" Paste
-ITEM "Erase         " Erase
-ITEM "Through     [T" Through
-ITEM "Delete Line ^Y" DeleteLine
-ITEM "Delete EOL  [Y" DeleteEOL
 ITEM "Mark Vert   ^@" MarkVert
 ITEM "Paste Vert  ^W" PasteVert
+ITEM "Through     [T" Through
+ITEM "Erase         " Erase
+ITEM "Delete EOL  [Y" DeleteEOL
+ITEM "Delete Line ^Y" DeleteLine
+ITEM "Undel Line  ^U" UndelLine
+ITEM "Del Prev Word " DeletePrevWord
+ITEM "Del Next Word " DeleteNextWord
 ITEM "Open Clip   [O" OpenClip
 ITEM "Save Clip   [S" SaveClip
 
@@ -63,7 +66,6 @@ ITEM "Help...     f10" Help
 ITEM "Refresh      ^L" Refresh
 ITEM "Undo      f5/[U" Undo
 ITEM "Redo      f6/[R" Redo
-ITEM "Undel Line   ^U" UndelLine
 ITEM "Center         " Center
 ITEM "Paragraph    [P" Paragraph
 ITEM "Adjust View  ^^" AdjustView
@@ -83,8 +85,8 @@ ITEM "Prev Page     ^P" PrevPage
 ITEM "Next Page     ^N" NextPage
 ITEM "Page Up         " PageUp
 ITEM "Page Down       " PageDown
-ITEM "Start of file [A" MoveSOF
-ITEM "End of file   [E" MoveEOF
+ITEM "Start Of File [A" MoveSOF
+ITEM "End Of File   [E" MoveEOF
 ITEM "Start Of Line ^A" MoveSOL
 ITEM "End Of Line   ^E" MoveEOL
 ITEM "Top Of Screen   " MoveTOS
@@ -95,7 +97,7 @@ ITEM "Prev Word  f7/[B" PrevWord
 ITEM "Next Word  f8/[F" NextWord
 
 MENU "Prefs"
-ITEM "Tab Size...     " TABSize
+ITEM "Tab Size...     " TabSize
 ITEM "Tabs/Spaces     " Tabs
 ITEM "Insert/Over  Ins" Insert
 ITEM "Free Form       " FreeForm
@@ -105,6 +107,7 @@ ITEM "Fast GUI        " FastGUI
 ITEM "Word Wrap     [W" WordWrap
 ITEM "Right Margin    " RightMargin
 ITEM "Auto Indent     " AutoIndent
+ITEM "Request Order   " RequestOrder
 ITEM "Preserve CR     " PreserveCR
 ITEM "Save CR/LF    [Z" CRLF
 ITEM "Load Prefs...   " LoadPrefs

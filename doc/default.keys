@@ -103,6 +103,10 @@ KEY     123	MoveEOF
 
 KEY	124	NextPage
 
+#
+
+KEY 125 Exec
+
 # Clear all tabs
 
 KEY	128	NOP
@@ -165,7 +169,9 @@ KEY	149	PlayOnce
 
 KEY	14A	Help
 
+KEY 15F DeletePrevWord
 
+KEY 160 DeleteNextWord
 
 #
 # CONTROL-letter shortcuts
@@ -296,6 +302,18 @@ KEY     1F	FindRegExp
 
 KEY	7F	DeleteChar
 
+KEY	 1cf	OpenClip
+KEY	 1d0	Paragraph
+KEY	 1d1	Quit
+KEY	 1d2	Redo
+KEY	 1d3	SaveClip
+KEY	 1d4	Through
+KEY	 1d5	Undo
+KEY	 1d6	ToUpper
+KEY	 1d7	WordWrap
+KEY	 1d8	Exit
+KEY	 1d9	DeleteEOL
+KEY	 1da	CRLF
 
 #
 # The following bindings set up the same actions for a number of correlated
@@ -355,10 +373,10 @@ KEY	1E7	GotoBookMark
 
 # CONTROL-META-i, META-i, ESC I and ESC i
 
-KEY	89	AutoIndent
-KEY	189	AutoIndent
-KEY	1C9	AutoIndent
-KEY	1E9	AutoIndent
+KEY	89	AutoComplete
+KEY	189	AutoComplete
+KEY	1C9	AutoComplete
+KEY	1E9	AutoComplete
 
 # CONTROL-META-j, META-j, ESC J and ESC j
 

@@ -1,6 +1,6 @@
 /* Menu handling function. Includes also key and menu configuration parsing.
 
-	Copyright (C) 1993-1998 Sebastiano Vigna 
+	Copyright (C) 1993-1998 Sebastiano Vigna
 	Copyright (C) 1999-2010 Todd M. Lewis and Sebastiano Vigna
 
 	This file is part of ne, the nice editor.
@@ -85,9 +85,9 @@ typedef struct {
 } menu;
 
 #ifndef ALTPAGING
-  #define PICK(A,B,C,D) {A,B},
+	#define PICK(A,B,C,D) {A,B},
 #else
-  #define PICK(A,B,C,D) {C,D},
+	#define PICK(A,B,C,D) {C,D},
 #endif
 
 /* The following structures describe ne's standard menus. */
@@ -119,12 +119,15 @@ static const menu_item edit_item[] =
 		{ "Cut         ^X", CUT_ABBREV },
 		{ "Copy        ^C", COPY_ABBREV },
 		{ "Paste       ^V", PASTE_ABBREV },
-		{ "Erase         ", ERASE_ABBREV },
-		{ "Through     [T", THROUGH_ABBREV },
-		{ "Delete Line ^Y", DELETELINE_ABBREV },
-		{ "Delete EOL  [Y", DELETEEOL_ABBREV },
 		{ "Mark Vert   ^@", MARKVERT_ABBREV },
 		{ "Paste Vert  ^W", PASTEVERT_ABBREV },
+		{ "Through     [T", THROUGH_ABBREV },
+		{ "Erase         ", ERASE_ABBREV },
+		{ "Delete EOL  [Y", DELETEEOL_ABBREV },
+		{ "Delete Line ^Y", DELETELINE_ABBREV },
+		{ "Undel Line  ^U", UNDELLINE_ABBREV },
+		{ "Del Prev Word ", DELETEPREVWORD_ABBREV },
+		{ "Del Next Word ", DELETENEXTWORD_ABBREV },
 		{ "Open Clip   [O", OPENCLIP_ABBREV },
 		{ "Save Clip   [S", SAVECLIP_ABBREV }
 	};
@@ -162,11 +165,10 @@ static const menu_item extras_item[] =
 	{
 		{ "Exec...      ^K", EXEC_ABBREV },
 		{ "Suspend      ^Z", SUSPEND_ABBREV },
-		{ "Help...     f10", HELP_ABBREV },                     
+		{ "Help...     f10", HELP_ABBREV },
 		{ "Refresh      ^L", REFRESH_ABBREV },
 		{ "Undo      f5/[U", UNDO_ABBREV },
 		{ "Redo      f6/[R", REDO_ABBREV },
-		{ "Undel Line   ^U", UNDELLINE_ABBREV },
 		{ "Center         ", CENTER_ABBREV },
 		{ "Paragraph    [P", PARAGRAPH_ABBREV },
 		{ "Adjust View  ^^", ADJUSTVIEW_ABBREV },
@@ -186,10 +188,10 @@ static const menu_item navigation_item[] =
 		{ "Move Right      ", MOVERIGHT_ABBREV },
 		{ "Line Up         ", LINEUP_ABBREV },
 		{ "Line Down       ", LINEDOWN_ABBREV },
-PICK(   "Prev Page     ^P", PREVPAGE_ABBREV    , "Page Up       ^P", PAGEUP_ABBREV)
-PICK(   "Next Page     ^N", NEXTPAGE_ABBREV    , "Page Down     ^N", PAGEDOWN_ABBREV)
-PICK(   "Page Up         ", PAGEUP_ABBREV      , "Prev Page       ", PREVPAGE_ABBREV)
-PICK(   "Page Down       ", PAGEDOWN_ABBREV    , "Next Page       ", NEXTPAGE_ABBREV)
+PICK(   "Prev Page     ^P", PREVPAGE_ABBREV    , "Prev Page       ", PREVPAGE_ABBREV)
+PICK(   "Next Page     ^N", NEXTPAGE_ABBREV    , "Next Page       ", NEXTPAGE_ABBREV)
+PICK(   "Page Up         ", PAGEUP_ABBREV      , "Page Up       ^P", PAGEUP_ABBREV)
+PICK(   "Page Down       ", PAGEDOWN_ABBREV    , "Page Down     ^N", PAGEDOWN_ABBREV)
 		{ "Start Of File [A", MOVESOF_ABBREV },
 		{ "End Of File   [E", MOVEEOF_ABBREV },
 		{ "Start Of Line ^A", MOVESOL_ABBREV },
@@ -216,6 +218,7 @@ static const menu_item prefs_item[] =
 		{ "Word Wrap     [W", WORDWRAP_ABBREV },
 		{ "Right Margin    ", RIGHTMARGIN_ABBREV },
 		{ "Auto Indent     ", AUTOINDENT_ABBREV },
+		{ "Request Order   ", REQUESTORDER_ABBREV },
 		{ "Preserve CR     ", PRESERVECR_ABBREV },
 		{ "Save CR/LF    [Z", CRLF_ABBREV },
 		{ "Load Prefs...   ", LOADPREFS_ABBREV },
@@ -305,38 +308,32 @@ static int current_menu = 0, menu_num = DEF_MENU_NUM;
 static menu *menus = def_menus;
 
 
-#ifdef DONT_COMPILE_THIS_PART
-int dump_config(void)
-  {
-    int menu, item, key;
-    FILE *f;
-    
-    if (!(f = fopen("dump_config","w")) ) return ERROR;
-    
-    for (menu = 0; menu < menu_num; menu++)
-      {
-        fprintf(f,"%s      \"%s\"\n", MENU_KEYWORD, menus[menu].text );
-        for (item = 0; item < menus[menu].item_num; item++)
-          {
-            fprintf(f,"     %s \"%s\" \"%s\"\n", ITEM_KEYWORD,
-                                                menus[menu].items[item].text,
-                                                menus[menu].items[item].command_line);
-          }
-        fprintf(f,"\n");
-      }
-    
-    for (key = 0; key < NUM_KEYS; key++)
-      {
-        if (key_binding[key] && key_binding[key][0])
-          {
-            fprintf(f,"%s %4x %s\n",KEY_KEYWORD, key, key_binding[key] );
-          }
-      }
-    fclose(f);
-    return OK;
-  }
+#ifdef NE_TEST
+int dump_config(void) {
+	int menu, item, key;
+	FILE *f;
+
+	if (!(f = fopen("ne_test_dump_config","w")) ) return ERROR;
+
+	for (menu = 0; menu < menu_num; menu++) {
+		fprintf(f,"%s \"%s\"\n", MENU_KEYWORD, menus[menu].text );
+		for (item = 0; item < menus[menu].item_num; item++) {
+			fprintf(f,"%s \"%s\" \"%s\"\n", ITEM_KEYWORD,
+			                                    menus[menu].items[item].text,
+			                                    menus[menu].items[item].command_line);
+		}
+		fprintf(f,"\n");
+	}
+
+	for (key = 0; key < NUM_KEYS; key++) {
+		if (key_binding[key] && key_binding[key][0])
+			fprintf(f,"%s\t%4x\t%s\n",KEY_KEYWORD, key, key_binding[key] );
+	}
+	fclose(f);
+	return OK;
+}
 #endif
-  
+
 static void draw_cur_item(const int n) {
 	move_cursor(menus[n].cur_item + 1, menus[n].xpos);
 	if (!fast_gui && standout_ok) output_chars(menus[n].items[menus[n].cur_item].text, NULL, menus[n].width - (cursor_on_off_ok ? 0 : 1), TRUE);
@@ -711,7 +708,7 @@ void draw_status_bar(void) {
 
 		if (len < ne_columns - 1) {
 			if (cur_buffer->filename) {
-	 			/* This is a bit complicated because we have to compute the width of the filename first, and then 
+	 			/* This is a bit complicated because we have to compute the width of the filename first, and then
 				discard initial characters until the remaning part will fit. */
 
 				const int encoding = detect_encoding(cur_buffer->filename, strlen(cur_buffer->filename));

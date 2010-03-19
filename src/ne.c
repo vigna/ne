@@ -240,8 +240,14 @@ int main(int argc, char **argv) {
 		}
 	}
 
+#ifdef NE_TEST
+	/* Dump the builtin menu and key bindings to compare to
+	   doc/default.menus and doc/default.keys. */
+	dump_config();
+#endif
+
 	/* Unless --noconfig was specified, we try to configure the
-	menus and the keyboard. Note that these functions can exit() on error. */
+	   menus and the keyboard. Note that these functions can exit() on error. */
 
 	if (!no_config) {
 		get_menu_configuration(menu_conf_name);
