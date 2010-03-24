@@ -499,7 +499,10 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 				   we need to pad this line with space up to col, then fall through to the
 				   delete_one_char() below. */
 				if (b->cur_line_desc->ld_node.next->next == NULL) continue;
-				if (b->cur_line_desc->line_len == 0) auto_indent_line(b, b->cur_line, b->cur_line_desc, col);
+				if (b->cur_line_desc->line_len == 0) {
+					auto_indent_line(b, b->cur_line, b->cur_line_desc, col);
+					resync_pos(b);
+				}
 				/* We need spaces if the line was not empty, or if we were sitting in the middle of a TAB. */
 				insert_spaces(b, b->cur_line_desc, b->cur_line, b->cur_line_desc->line_len, col - calc_width(b->cur_line_desc, b->cur_line_desc->line_len, b->opt.tab_size, b->encoding));
 				freeze_attributes(b, b->cur_line_desc);
