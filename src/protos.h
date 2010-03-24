@@ -122,7 +122,7 @@ int match_bracket(buffer *b);
 int word_wrap(buffer *b);
 int paragraph(buffer *b);
 int center(buffer *b);
-int auto_indent_line(buffer * const b, const int line, line_desc * const ld);
+int auto_indent_line(buffer * const b, const int line, line_desc * const ld, const int up_to_col);
 
 /* errors.c */
 

@@ -360,7 +360,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		b->recording = 0;
 		NORMALIZE(c);
 		start_undo_chain(b);
-		if ( b->opt.tabs ) {
+		if (b->opt.tabs) {
 			while (c-- > 0) {
 				error = do_action(b, INSERTCHAR_A, '\t', NULL);
 			}
@@ -444,7 +444,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			/* Poke the correct state into the next line. */
 			if (b->syn) ((line_desc *)b->cur_line_desc->ld_node.next)->highlight_state = b->next_state;
 
-			if (b->opt.auto_indent) a = auto_indent_line(b, b->cur_line + 1, (line_desc *)b->cur_line_desc->ld_node.next);
+			if (b->opt.auto_indent) a = auto_indent_line(b, b->cur_line + 1, (line_desc *)b->cur_line_desc->ld_node.next, INT_MAX);
 			move_to_sol(b);
 			line_down(b);
 			goto_pos(b, error + a);
@@ -473,32 +473,36 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		start_undo_chain(b);
 		for(i = 0; i < c && !stop; i++) {
 			if (a == BACKSPACE_A) {
-				if (b->win_x + b->cur_x == 0 && b->cur_line == 0) {
-					end_undo_chain(b);
-					return ERROR;
+				if (b->cur_pos == 0) {
+					if (b->cur_line == 0) {
+						/* Start of buffer. We just return an error. */
+						end_undo_chain(b);
+						return ERROR;
+					}
+					/* We turn a backspace at the start of a line into a delete 
+						at the end of the previous line. */
+					char_left(b);
 				}
-				if (b->cur_pos == 0) a = DELETECHAR_A; /* BS at beginning of a line */
-				char_left(b);                          /* is like a Del at the end of the previous line. */
-			}	
+				else {
+					char_left(b);
+					/* If we are not over text, we are in free form mode; the backspace
+						is turned into moving to the left. */
+					if (b->cur_pos >= b->cur_line_desc->line_len) continue;
+				}
+			}
+			
+			/* From here, we just implement a delete. */
 			if (b->cur_pos > b->cur_line_desc->line_len) {
 				col = b->win_x + b->cur_x;
 				/* We are not over text; we must be in FreeForm mode.
 				   We're deleting past the end of the line, so if we aren't on the last line
-				   we need to pad this line with space up to cur_pos, then fall through to the
+				   we need to pad this line with space up to col, then fall through to the
 				   delete_one_char() below. */
-				if (a == BACKSPACE_A || b->cur_line_desc->ld_node.next->next == NULL) continue;
-				if (b->cur_line_desc->line_len == 0) {
-					auto_indent_line(b, b->cur_line, b->cur_line_desc);
-					goto_column(b,col);
-					/* We may now have space to our right. */
-					if (col < calc_width(b->cur_line_desc, b->cur_line_desc->line_len, b->opt.tab_size, b->encoding)) {
-						delete_to_eol(b, b->cur_line_desc, b->cur_line, calc_pos(b->cur_line_desc, col+1, b->opt.tab_size, b->encoding)-1);
-					}
-					goto_column(b,col);
-					/* N.B.: Our original col may have been in the middle of a tab, which we just deleted. */
-				}
-				insert_spaces(b, b->cur_line_desc, b->cur_line, b->cur_line_desc->line_len, b->win_x + b->cur_x - calc_width(b->cur_line_desc, b->cur_line_desc->line_len, b->opt.tab_size, b->encoding));
-				move_to_eol(b);
+				if (b->cur_line_desc->ld_node.next->next == NULL) continue;
+				if (b->cur_line_desc->line_len == 0) auto_indent_line(b, b->cur_line, b->cur_line_desc, col);
+				/* We need spaces if the line was not empty, or if we were sitting in the middle of a TAB. */
+				insert_spaces(b, b->cur_line_desc, b->cur_line, b->cur_line_desc->line_len, col - calc_width(b->cur_line_desc, b->cur_line_desc->line_len, b->opt.tab_size, b->encoding));
+				freeze_attributes(b, b->cur_line_desc);
 			}
 
 			if (b->syn && b->attr_len < 0) freeze_attributes(b, b->cur_line_desc);
@@ -511,7 +515,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 				update_deleted_char(b, old_char, b->cur_line_desc, b->cur_pos, b->cur_char, b->cur_y, b->cur_x);	
 				if (b->syn) update_line(b, b->cur_y, TRUE, TRUE);
 			}
-			else if (a == DELETECHAR_A ) {
+			else {
 				/* Here we handle the case in which two lines are joined. Note that if the first line is empty,
 					it is just deleted by delete_one_char(), so we must store its initial state and restore
 					it after the deletion. */
@@ -552,7 +556,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 					}
 
 					assert(b->cur_line_desc->ld_node.next->next != NULL);
-					if (b->opt.auto_indent) a = auto_indent_line(b, b->cur_line + 1, (line_desc *)b->cur_line_desc->ld_node.next);
+					if (b->opt.auto_indent) a = auto_indent_line(b, b->cur_line + 1, (line_desc *)b->cur_line_desc->ld_node.next, INT_MAX);
 
 					move_to_sol(b);
 					line_down(b);
@@ -568,7 +572,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 					if (b->syn) ((line_desc *)b->cur_line_desc->ld_node.next)->highlight_state = b->next_state;
 
 					assert(b->cur_line_desc->ld_node.next->next != NULL);
-					if (b->opt.auto_indent) a = auto_indent_line(b, b->cur_line + 1, (line_desc *)b->cur_line_desc->ld_node.next);
+					if (b->opt.auto_indent) a = auto_indent_line(b, b->cur_line + 1, (line_desc *)b->cur_line_desc->ld_node.next, INT_MAX);
 
 					move_to_sol(b);
 					line_down(b);

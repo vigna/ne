@@ -541,20 +541,25 @@ int center(buffer * const b) {
 
 
 
-/* Indents a line of the amount of whitespace present on the previous line. The
-	number of inserted bytes is returned. */
+/* Indents a line of the amount of whitespace present on the previous line, stopping
+	at a given column (use INT_MAX for not stopping). The number of
+	inserted bytes is returned. */
 
-int auto_indent_line(buffer * const b, const int line, line_desc * const ld) {
+int auto_indent_line(buffer * const b, const int line, line_desc * const ld, const int up_to_col) {
 
 	line_desc * const prev_ld = (line_desc *)ld->ld_node.prev;
-	int pos = 0;
+	int pos = 0, col = 0, c;
 
 	assert(prev_ld->ld_node.prev != NULL);
 	assert_line_desc(prev_ld, b->encoding);
 
 	if (prev_ld->line_len == 0) return 0;
 
-	while(pos < prev_ld->line_len && ne_isspace(get_char(&prev_ld->line[pos], b->encoding), b->encoding)) pos = next_pos(prev_ld->line, pos, b->encoding);
+	while(pos < prev_ld->line_len && ne_isspace(c = get_char(&prev_ld->line[pos], b->encoding), b->encoding)) {
+		col += (c == '\t' ? b->opt.tab_size - col % b->opt.tab_size : 1);
+		if (col > up_to_col) break;
+		pos = next_pos(prev_ld->line, pos, b->encoding);
+	}
 	insert_stream(b, ld, line, 0, prev_ld->line, pos);
 	return pos;
 }
