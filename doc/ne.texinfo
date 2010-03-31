@@ -3371,7 +3371,7 @@ associated commands. It is not recorded when recording a macro.
 FLAG COMMAND      ABBR  DESCRIPTION
   i   Insert        I    inserts new characters (vs. replacing)
   a   AutoIndent    AI   aligns cursor under previous line after <Return>
-  b   BackSearch    BS   searches search backward rather than forward
+  b   SearchBack    SB   searches search backward rather than forward
   c   CaseSearch    CS   searches are case sensitive
   w   WordWrap      WW   breaks long lines as you type
   f   FreeForm      FF   allows cursor to move beyond the end of lines
