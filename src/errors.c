@@ -88,6 +88,7 @@ char *info_msg[INFO_COUNT] = {
 	"Saved.",
 	"Select file or press F1, Escape or Escape-Escape to enter a file name.",
 	"Start of block marked. Move to the end of block and request actions.",
+	"Start of vertical block marked. Move to the end of block and request actions.",
 	"Starting macro recording...",
 	"Macro recording completed.",
 	"Some documents have not been saved; are you sure?",

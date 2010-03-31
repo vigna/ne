@@ -1194,7 +1194,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 	case MARKVERT_A:
 		SET_USER_FLAG(b, c, marking);
 		if (!b->marking) return(OK);
-		print_message(info_msg[BLOCK_START_MARKED]);
+		print_message(info_msg[a==MARK_A ? BLOCK_START_MARKED : VERTICAL_BLOCK_START_MARKED]);
 		b->mark_is_vertical = (a == MARKVERT_A);
 		b->block_start_line = b->cur_line;
 		b->block_start_col = b->win_x + b->cur_x;
