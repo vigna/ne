@@ -1211,9 +1211,12 @@ takes the syntax name as a parameter. For example, the name ``@code{c}''
 works for C syntax files with extensions @samp{.c}, @samp{.h},
 @samp{c++}, etc. @code{ne} searches for the specified syntax definition
 file in the @samp{syntax} subdirectory of your @file{~/.ne} directory
-first. If not found, the there @code{ne} looks in the @samp{syntax}
+first. If not found there, @code{ne} then looks in the @samp{syntax}
 subdirectory of @code{ne}'s global directory for the syntax definition
 file. @xref{Arguments}.
+
+With no parameter, the @code{Syntax} command prompts you for a syntax
+to load, the offered default being the currently loaded syntax if there is one.
 
 You can create your own syntax definitions and store them in your
 @file{~/.ne/syntax} directory (actually, modifying the colors of an
@@ -3946,15 +3949,16 @@ flag is true.
 @noindent loads the syntax with the given name, and colors the
 current buffer accordingly.
 
-If the optional @var{name} argument is not specified, you are prompted
-for one. The special @var{name} * turns off syntax highlighting for the current
-document. Otherwise, @var{name} must match a syntax definition
-either in your @file{~/.ne/syntax} directory or in a directory
-named @samp{syntax} inside @code{ne}'s
-global directory. Additionally, @code{ne} has a table mapping
-common suffixes to syntax names. If there is no syntax with a given name,
-@code{ne} will try to remap the name using the following table  (the string before the colon
-is the name of the syntax file):
+If the optional @var{name} argument is not specified, you are
+prompted for one. The current one, if set, is suggested as the
+default. The special @var{name} * turns off syntax highlighting for
+the current document. Otherwise, @var{name} must match a syntax
+definition either in your @file{~/.ne/syntax} directory or in a
+directory named @samp{syntax} inside @code{ne}'s global directory.
+Additionally, @code{ne} has a table mapping common suffixes to
+syntax names. If there is no syntax with a given name, @code{ne}
+will try to remap the name using the following table  (the string
+before the colon is the name of the syntax file):
 
 @example
    ada: adb, ads
