@@ -210,6 +210,7 @@ static const menu_item prefs_item[] =
 	{
 		{ "Tab Size...     ", TABSIZE_ABBREV },
 		{ "Tabs/Spaces     ", TABS_ABBREV },
+		{ "BackTab         ", BACKTAB_ABBREV },
 		{ "Insert/Over  Ins", INSERT_ABBREV },
 		{ "Free Form       ", FREEFORM_ABBREV },
 		{ "Status Bar      ", STATUSBAR_ABBREV },
@@ -581,6 +582,7 @@ char *gen_flag_string(const buffer * const b) {
 	string[i++] = b->opt.do_undo        ? 'u' : '-';
 	string[i++] = b->opt.read_only      ? 'r' : '-';
 	string[i++] = b->opt.tabs           ? 't' : '-';
+	string[i++] = b->opt.back_tabs      ? 'T' : '-';
 	string[i++] = b->opt.binary         ? 'B' : '-';
 	string[i++] = b->marking            ? (b->mark_is_vertical ? 'V' :'M') : '-';
 	string[i++] = b->recording          ? 'R' : '-';

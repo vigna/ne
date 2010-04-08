@@ -3,7 +3,7 @@ Changes from version 2.0.3
 ---- Improvements ----
 
   * New commands: KeyCode, DeleteNextWord, DeletePrevWord, AutoComplete,
-    InsertTab, Tabs, RequestOrder.
+    InsertTab, Tabs, BackTab, RequestOrder.
 
   * Now we set the syntax when a file is saved with a (different) name.
 

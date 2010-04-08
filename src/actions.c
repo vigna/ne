@@ -355,6 +355,10 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		SET_USER_FLAG(b, c, opt.tabs);
 		return OK;
 
+	case BACKTAB_A:
+		SET_USER_FLAG(b, c, opt.back_tabs);
+		return OK;
+
 	case INSERTTAB_A:
 		recording = b->recording;
 		b->recording = 0;
@@ -485,6 +489,16 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 				}
 				else {
 					char_left(b);
+					if (b->opt.back_tabs) {
+						if (backtab(b)) {
+							if (b->syn) {
+								freeze_attributes(b, b->cur_line_desc);
+								update_line(b, b->cur_y, FALSE, FALSE);
+							}
+							else update_partial_line(b, b->cur_y, b->cur_x, FALSE, FALSE);
+							continue;
+						}
+					}
 					/* If we are not over text, we are in free form mode; the backspace
 						is turned into moving to the left. */
 					if (b->cur_pos >= b->cur_line_desc->line_len) continue;

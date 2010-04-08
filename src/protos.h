@@ -123,6 +123,7 @@ int word_wrap(buffer *b);
 int paragraph(buffer *b);
 int center(buffer *b);
 int auto_indent_line(buffer * const b, const int line, line_desc * const ld, const int up_to_col);
+int backtab(buffer *b);
 
 /* errors.c */
 

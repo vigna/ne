@@ -199,6 +199,7 @@ buffer *alloc_buffer(const buffer * const cur_b) {
 			b->opt.cur_clip       = cur_b->opt.cur_clip;
 			b->opt.tab_size       = cur_b->opt.tab_size;
 			b->opt.tabs           = cur_b->opt.tabs;
+			b->opt.back_tabs      = cur_b->opt.back_tabs;
 			b->opt.right_margin   = cur_b->opt.right_margin;
 
 			b->opt.free_form      = cur_b->opt.free_form;
