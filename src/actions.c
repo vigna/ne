@@ -294,11 +294,15 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			b->bookmark[c].pos = b->cur_pos;
 			b->bookmark[c].line = b->cur_line;
 			b->bookmark_mask |= (1 << c);
+			snprintf(msg, MAX_MESSAGE_SIZE, "Bookmark %d set", c-1);
+			print_message(msg);
 			break;
 		case UNSETBOOKMARK_A:
 			if (! (b->bookmark_mask & (1 << c)))
 				return BOOKMARK_NOT_SET;
 			b->bookmark_mask &= ~(1 << c);
+			snprintf(msg, MAX_MESSAGE_SIZE, "Bookmark %d unset", c-1);
+			print_message(msg);
 			break;
 		case GOTOBOOKMARK_A:
 			if (! (b->bookmark_mask & (1 << c))) return BOOKMARK_NOT_SET;
@@ -701,15 +705,15 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		b->undo.last_save_step = b->undo.cur_step;
 		return OK;
 
-   case KEYCODE_A:
-   	print_message(info_msg[PRESS_A_KEY]);
-   	c = get_key_code();
- 		i = CHAR_CLASS(c);
- 		col = (c < 0) ? -c-1 : c;
- 		snprintf(msg, MAX_MESSAGE_SIZE, "Key Code: 0x%02x,  Input Class: %s,  Assigned Command: %s", col, input_class_names[i],
- 		              (key_binding[col] && key_binding[col][0]) ? key_binding[col] : "(none)" );
-  		print_message(msg);
-   	return OK;
+	case KEYCODE_A:
+		print_message(info_msg[PRESS_A_KEY]);
+		c = get_key_code();
+		i = CHAR_CLASS(c);
+		col = (c < 0) ? -c-1 : c;
+		snprintf(msg, MAX_MESSAGE_SIZE, "Key Code: 0x%02x,  Input Class: %s,  Assigned Command: %s", col, input_class_names[i],
+		         (key_binding[col] && key_binding[col][0]) ? key_binding[col] : "(none)" );
+		print_message(msg);
+		return OK;
 
 	case CLEAR_A:
 		if ((b->is_modified) && !request_response(b, info_msg[THIS_DOCUMENT_NOT_SAVED], FALSE)) return ERROR;
@@ -809,7 +813,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 				int first_search = TRUE, num_replace = 0;
 
 				if (replace_encoding != ENC_ASCII && b->encoding != ENC_ASCII && replace_encoding != b->encoding ||
-					 search_encoding != ENC_ASCII && replace_encoding != ENC_ASCII && search_encoding != replace_encoding) {
+					search_encoding != ENC_ASCII && replace_encoding != ENC_ASCII && search_encoding != replace_encoding) {
 					free(p);
 					return INCOMPATIBLE_REPLACE_STRING_ENCODING;
 				}
@@ -898,7 +902,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			if (b->last_was_replace) {
 				const encoding_type replace_encoding = detect_encoding(b->replace_string, strlen(b->replace_string));
 				if (replace_encoding != ENC_ASCII && b->encoding != ENC_ASCII && replace_encoding != b->encoding ||
-					 search_encoding != ENC_ASCII && replace_encoding != ENC_ASCII && search_encoding != replace_encoding)
+					search_encoding != ENC_ASCII && replace_encoding != ENC_ASCII && search_encoding != replace_encoding)
 					return INCOMPATIBLE_REPLACE_STRING_ENCODING;
 			}
 
