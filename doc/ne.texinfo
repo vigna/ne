@@ -974,9 +974,6 @@ appears if the read only flag is true. @xref{ReadOnly}.
 @item t
 appears if the tabs flag is true. @xref{Tabs}.
 
-@item T
-appears if the backtab flag is true. @xref{BackTab}.
-
 @item B
 appears if the binary flag is true. @xref{Binary}.
 
@@ -1615,9 +1612,6 @@ your preferred document flags.
 
 @item Tabs/Spaces
 @xref{Tabs}.
-
-@item BackTab
-@xref{BackTab}.
 
 @item Insert/Over
 @xref{Insert}.
@@ -3349,7 +3343,6 @@ process, you can clear the automatic preferences flag. See @ref{AutoPrefs}.
 * EscapeTime::
 * TabSize::
 * Tabs::
-* BackTab::
 * Turbo::
 * VerboseMacros::
 * PreserveCR::
@@ -3394,7 +3387,6 @@ FLAG COMMAND      ABBR  DESCRIPTION
   u   DoUndo        DU   record edits for later undoing
   r   ReadOnly      RO   changes are not allowed
   t   Tabs          TAB  TAB key inserts TABs instead of spaces
-  T   BackTab       BT   BackSpace removes white space to tab stops
   B   Binary        B    affects file loading/saving
   M   Mark          M    mark set for line-oriented block operations
   V   MarkVert      MV   like mark, but block is rectangle
@@ -3671,8 +3663,8 @@ strictly between 0 and half the width of the screen.
 @noindent Syntax: @code{Tabs [0|1]}@*
 @noindent Abbreviation: @code{TAB}
 
-@noindent sets the @code{Tabs} flag. When this flag is true, in
-normal editing the @code{InsertTab} command will insert literal
+@noindent sets the @code{Tabs} flag. When this flag is true, 
+the @code{InsertTab} command will insert literal
 @var{TAB} characters. Otherwise it will insert enough spaces to
 have the same visual effect.
 
@@ -3681,31 +3673,18 @@ In normal editing, the @key{Tab} key invokes the command
 be mapped to other commands. Thus the @code{Tabs} flag provides the
 only customization @code{ne} offers for the @key{Tab} key.
 
+The @code{Tabs} flag also affects the action of the @key{BackSpace}
+key in one special circumstance. That is, if the normal action of
+the @key{BackSpace} key would remove white space, and there is only
+white space between the cursor and the preceeding tab stop, then
+all the white space between the cursor and that tab stop is
+removed. In all other cases, the @key{BackSpace} key performs its
+normal function.
+
 If you invoke @code{Tabs} with no arguments, it will toggle the flag. If you
 specify 0 or 1, the flag will be set to false or true, respectively. A lower
 case @samp{t} will appear on the status bar if the flag is true.
 
-
-
-
-@node BackTab
-@subsection BackTab
-@cmindex BackTab
-
-@noindent Syntax: @code{BackTab [0|1}@*
-@noindent Abbreviation: @code{BT}
-
-@noindent sets the @code{BackTab} flag. When this flag is true, the
-action of the @key{BackSpace} key is enhanced in one special
-circumstance. That is, if the normal action of the @key{BackSpace} key
-would remove white space, and there is only white space between the cursor
-and the preceeding tab stop, then all the white space between the cursor and
-that tab stop is removed. In all other cases, the @key{BackSpace} key
-performs its normal function.
-
-If you invoke @code{BackTab} with no arguments, it will toggle the flag. If you
-specify 0 or 1, the flag will be set to false or true, respectively. An
-upper case @samp{T} will appear on the status bar fi the flag is true.
 
 
 
@@ -3850,12 +3829,11 @@ restore the users previous preferences settings.
 @noindent @code{PushPrefs} saves the following values on the preferences stack:
 
 @example
-  AutoIndent   DoUndo      ReadOnly     UTF8Auto
-  AutoPrefs    FreeForm    RightMargin  VisualBell
-  BackTab      HexCode     SearchBack   WordWrap
-  Binary       Insert      StatusBar
-  CaseSearch   NoFileReq   Tabs
-  ClipNumber   PreserveCR  TabSize
+  AutoIndent   DoUndo      PreserveCR   Tabs
+  AutoPrefs    FreeForm    ReadOnly     TabSize
+  Binary       HexCode     RightMargin  UTF8Auto
+  CaseSearch   Insert      SearchBack   VisualBell
+  ClipNumber   NoFileReq   StatusBar    WordWrap
 @end example
 
 
@@ -3883,12 +3861,11 @@ restore the users previous preferences settings.
 @noindent PopPrefs restores the following values from the preferences stack:
 
 @example
-  AutoIndent   DoUndo      ReadOnly     UTF8Auto
-  AutoPrefs    FreeForm    RightMargin  VisualBell
-  BackTab      HexCode     SearchBack   WordWrap
-  Binary       Insert      StatusBar
-  CaseSearch   NoFileReq   Tabs
-  ClipNumber   PreserveCR  TabSize
+  AutoIndent   DoUndo      PreserveCR   Tabs
+  AutoPrefs    FreeForm    ReadOnly     TabSize
+  Binary       HexCode     RightMargin  UTF8Auto
+  CaseSearch   Insert      SearchBack   VisualBell
+  ClipNumber   NoFileReq   StatusBar    WordWrap
 @end example
 
 

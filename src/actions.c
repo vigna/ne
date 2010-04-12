@@ -355,10 +355,6 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		SET_USER_FLAG(b, c, opt.tabs);
 		return OK;
 
-	case BACKTAB_A:
-		SET_USER_FLAG(b, c, opt.back_tabs);
-		return OK;
-
 	case INSERTTAB_A:
 		recording = b->recording;
 		b->recording = 0;
@@ -489,7 +485,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 				}
 				else {
 					char_left(b);
-					if (b->opt.back_tabs) {
+					if (!b->opt.tabs) {
 						if (backtab(b)) {
 							if (b->syn) {
 								freeze_attributes(b, b->cur_line_desc);

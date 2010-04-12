@@ -67,7 +67,6 @@ static const command commands[ACTION_COUNT] = {
 	{ NAHL(AUTOINDENT    ),                           IS_OPTION                                   },
 	{ NAHL(AUTOPREFS     ),                           IS_OPTION                                   },
 	{ NAHL(BACKSPACE     ),0                                                                      },
-	{ NAHL(BACKTAB       ),                           IS_OPTION                                   },
 	{ NAHL(BEEP          ), NO_ARGS                                                               },
 	{ NAHL(BINARY        ),                           IS_OPTION                                   },
 	{ NAHL(CAPITALIZE    ),0                                                                      },
