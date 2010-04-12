@@ -379,7 +379,7 @@ sub tail_names_c
 /* These are extras that are very useful in the default menus and key bindings. */
 
 const char PLAYONCE_ABBREV[] = "PL 1";
-const char CENTERVIEW_ABBREV[] = "AV C";
+const char MIDDLEVIEW_ABBREV[] = "AV M";
 
 /* This is the NULL-terminated, ordered list of names, useful for help etc. */
 
@@ -424,7 +424,7 @@ sub tail_names_h
 
 /* These are extras that are very useful in the default menus and key bindings. */
 extern const char PLAYONCE_ABBREV[];
-extern const char CENTERVIEW_ABBREV[];
+extern const char MIDDLEVIEW_ABBREV[];
 
 /* This is the NULL-terminated, ordered list of names, useful for help etc. */
 

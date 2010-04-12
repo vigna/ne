@@ -172,7 +172,7 @@ static const menu_item extras_item[] =
 		{ "Center         ", CENTER_ABBREV },
 		{ "Paragraph    [P", PARAGRAPH_ABBREV },
 		{ "Adjust View  ^^", ADJUSTVIEW_ABBREV },
-		{ "Center View  [C", CENTERVIEW_ABBREV },
+		{ "Middle View  [C", MIDDLEVIEW_ABBREV },
 		{ "ToUpper      [V", TOUPPER_ABBREV },
 		{ "ToLower      [L", TOLOWER_ABBREV },
 		{ "Capitalize     ", CAPITALIZE_ABBREV },
