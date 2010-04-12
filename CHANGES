@@ -29,6 +29,8 @@ Changes from version 2.0.3
   * Replace reports the number of replacements (again).
 
   * Display the global directory on startup even if it is not found.
+  
+  * Default global directory changed from /usr/local/lib/ne to /usr/local/share/ne.
 	
   * Aborting an OpenNew doesn't leave you in a new blank document.
 
