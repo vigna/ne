@@ -209,7 +209,6 @@ typedef struct {
 	assert((ld)->line_len >= 0);\
 	assert(((ld)->line == NULL) == ((ld)->line_len == 0));\
 	assert(((ld)->line_len == 0) || ((ld)->line[0] != 0 && (ld)->line[(ld)->line_len - 1] != 0));\
-	assert(((ld)->line_len == 0) || ((ld)->line[0] != 0 && (ld)->line[(ld)->line_len - 1] != 0)); \
 	if (encoding == ENC_UTF8) { int i = 0; while(i < (ld)->line_len) { assert(utf8len((ld)->line[i]) > 0); i = next_pos((ld)->line, i, encoding);} } \
 }}
 #else
