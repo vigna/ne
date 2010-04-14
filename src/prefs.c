@@ -225,16 +225,23 @@ int load_prefs(buffer * const b, const char * const name) {
 	return error;
 }
 
-/* Loads the given syntax. */
+/* Loads the given syntax, taking care to preserve the old 
+   syntax if the new one cannot be loaded. */
 
 int load_syntax_by_name(buffer * const b, const char * const name) {
+	struct high_syntax *syn;
 	assert_buffer(b);
 	assert(name != NULL);
-	b->syn = load_syntax((char *)name);
-	if (!b->syn) b->syn = load_syntax((char *)ext2syntax(name));
-	if (b->syn) reset_syntax_states(b);
-	return b->syn ? OK : NO_SYNTAX_FOR_EXT;
+	syn = load_syntax((char *)name);
+	if (!syn) syn = load_syntax((char *)ext2syntax(name));
+	if (syn) {
+		b->syn = syn;
+		reset_syntax_states(b);
+		return OK;
+	}
+	return NO_SYNTAX_FOR_EXT;
 }
+
 
 
 /* Performs an automatic preferences operation, which can be loading or saving,
