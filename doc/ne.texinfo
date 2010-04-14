@@ -4581,11 +4581,11 @@ These commands allow modifying a document directly.
 @noindent Syntax: @code{InsertChar [@var{code}]}@*
 @noindent Abbreviation: @code{IC}
 
-@noindent inserts a character whose @sc{ascii} code is @var{code} at the current
-cursor position.
-@var{code} must always be different from 0. All the
-currently active preferences options (insert, word wrapping, auto
-indent, @i{et cetera}) are applied.
+@noindent inserts a character whose @sc{ascii} code is @var{code} at the
+current cursor position. @var{code} can be either decimal, hexadecimal if
+preceded by @samp{0x}, or octal if preceded by @samp{0}. In any case,
+@var{code} must be different from 0. All the currently active preferences
+options (insert, word wrapping, auto indent, @i{et cetera}) are applied.
 
 If the optional argument @var{code} is not specified, you can enter it on
 the input line, the default being the last inserted character.
