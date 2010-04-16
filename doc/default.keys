@@ -424,75 +424,75 @@ KEY	1EF	OpenClip
 
 KEY	90	Paragraph
 KEY	190	Paragraph
-KEY	1B0	Paragraph
+KEY	1D0	Paragraph
 KEY	1F0	Paragraph
 
 # CONTROL-META-q, META-q, ESC Q and ESC q
 
 KEY	91	Quit
 KEY	191	Quit
-KEY	1B1	Quit
+KEY	1D1	Quit
 KEY	1F1	Quit
 
 # CONTROL-META-r, META-r, ESC R and ESC r
 
 KEY	92	Redo
 KEY	192	Redo
-KEY	1B2	Redo
+KEY	1D2	Redo
 KEY	1F2	Redo
 
 # CONTROL-META-s, META-s, ESC S and ESC s
 
 KEY	93	SaveClip
 KEY	193	SaveClip
-KEY	1B3	SaveClip
+KEY	1D3	SaveClip
 KEY	1F3	SaveClip
 
 # CONTROL-META-t, META-t, ESC T and ESC t
 
 KEY	94	Through
 KEY	194	Through
-KEY	1B4	Through
+KEY	1D4	Through
 KEY	1F4	Through
 
 # CONTROL-META-u, META-u, ESC U and ESC u
 
 KEY	95	Undo
 KEY	195	Undo
-KEY	1B5	Undo
+KEY	1D5	Undo
 KEY	1F5	Undo
 
 # CONTROL-META-v, META-v, ESC V and ESC v
 
 KEY	96	ToUpper
 KEY	196	ToUpper
-KEY	1B6	ToUpper
+KEY	1D6	ToUpper
 KEY	1F6	ToUpper
 
 # CONTROL-META-w, META-w, ESC W and ESC w
 
 KEY	97	WordWrap
 KEY	197	WordWrap
-KEY	1B7	WordWrap
+KEY	1D7	WordWrap
 KEY	1F7	WordWrap
 
 # CONTROL-META-x, META-x, ESC X and ESC x
 
 KEY	98	Exit
 KEY	198	Exit
-KEY	1B8	Exit
+KEY	1D8	Exit
 KEY	1F8	Exit
 
 # CONTROL-META-y, META-y, ESC Y and ESC y
 
 KEY	99	DeleteEOL
 KEY	199	DeleteEOL
-KEY	1B9	DeleteEOL
+KEY	1D9	DeleteEOL
 KEY	1F9	DeleteEOL
 
 # CONTROL-META-z, META-z, ESC Z and ESC z
 
 KEY	9A	CRLF
 KEY	19A	CRLF
-KEY	1BA	CRLF
+KEY	1DA	CRLF
 KEY	1FA	CRLF
