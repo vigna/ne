@@ -693,6 +693,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 				change_filename(b, p);
 				if (load_syntax && extension(p)) {
 					load_syntax_by_name(b, extension(p));
+					load_auto_prefs(b, extension(p));
 					reset_window();
 				}
 				print_info(SAVED);
