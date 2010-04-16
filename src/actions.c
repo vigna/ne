@@ -510,7 +510,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 							}
 							delete_stream(b, b->cur_line_desc, b->cur_line, b->cur_pos, col);
 							insert_one_char(b, b->cur_line_desc, b->cur_line, b->cur_pos, '\t');
-							update_partial_line(b, b->cur_y, b->cur_x, TRUE, b->syn != NULL);	
+							if (b->syn) update_partial_line(b, b->cur_y, b->cur_x, TRUE, TRUE);	
 						}
 					}
 					else char_left(b);
