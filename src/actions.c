@@ -373,7 +373,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			while (c-- > 0) {
 				do {
 					error = do_action(b, INSERTCHAR_A, ' ', NULL);
-				} while (b->opt.tab_size && b->cur_pos % b->opt.tab_size);
+				} while (b->opt.tab_size && (b->win_x + b->cur_x) % b->opt.tab_size);
 			}
 		}
 		end_undo_chain(b);
@@ -509,7 +509,6 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 				col = 0;
 				do col++; while((b->win_x + b->cur_x + col) % b->opt.tab_size != 0 
 					&& b->cur_pos + col < b->cur_line_desc->line_len && b->cur_line_desc->line[b->cur_pos + col] == ' ');
-				fprintf(stderr, "%d\n", col);
 				/* We are positioned at the start of the block of col spaces. If there is at most
 					one character to delete, we can just go on. Otherwise, we replace the block with a 
 					TAB, doing some magick to keep everything in sync. */
