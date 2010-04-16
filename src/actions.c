@@ -683,13 +683,13 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		p = str_dup(b->filename);
 
 	case SAVEAS_A:
-		if (p || (p = request_file(b, "Filename", b->filename))) {
+		if (p || (q = p = request_file(b, "Filename", b->filename))) {
 			print_info(SAVING);
 
 			error = save_buffer_to_file(b, p);
 
 			if (!print_error(error)) {
-				const int load_syntax = b->filename == NULL || b->syn != NULL;
+				const int load_syntax = b->filename == NULL || ! same_str(extension(p), extension(b->filename));
 				change_filename(b, p);
 				if (load_syntax && extension(p)) {
 					load_syntax_by_name(b, extension(p));

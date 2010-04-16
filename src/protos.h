@@ -255,6 +255,7 @@ int delete_from_stream(char_stream *cs, int p, int len);
 int insert_in_stream(char_stream *cs, const char *s, int p, int len);
 
 /* support.c */
+int same_str(const char *p, const char *q);
 char *ne_getcwd(const int bufsize);
 const char *get_global_dir(void);
 const char *tilde_expand(const char *filename);

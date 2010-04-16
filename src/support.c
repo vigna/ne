@@ -199,6 +199,13 @@ int strnlen_ne(const char *s, int n) {
 	return s - p;
 }
 
+/* Compares strings for equality, but accepts NULLs. */
+
+int same_str(const char *p, const char *q) {
+	if (p == q) return TRUE;
+	if (p == NULL || q == NULL) return FALSE;
+	return strcmp(p, q) == 0;
+}
 
 /* Computes the length of the maximal common prefix of s and	t. */
 

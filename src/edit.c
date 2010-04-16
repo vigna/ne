@@ -251,7 +251,7 @@ int backtab(buffer * const b) {
 	prev_tab_width = width - (width % b->opt.tab_size);
 	if (prev_tab_width > calc_width(ld, ld->line_len, b->opt.tab_size, b->encoding)) {
 		goto_pos(b, prev_tab_width);
-		return 1;
+		return TRUE;
 	}
 	spaces_to_delete = 0;
 	while(width % b->opt.tab_size) {
@@ -261,15 +261,15 @@ int backtab(buffer * const b) {
 			pos = prev_pos(ld->line, pos, b->encoding);
 			spaces_to_delete++;
 		}
-		else return 0; /* We didn't have real or virtual spaces between cur_pos and the prev tab stop. */
+		else return FALSE; /* We didn't have real or virtual spaces between cur_pos and the prev tab stop. */
 	}
 	
 	if (ld->line[pos] == ' ' && spaces_to_delete++) { 
 		delete_stream(b, ld, b->cur_line, pos, spaces_to_delete);
 		goto_pos(b,pos);
-   	return 1;
-   }
-   return 0;
+		return 1;
+	}
+	return FALSE;
 }
 
 
