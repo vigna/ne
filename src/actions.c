@@ -490,12 +490,17 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 				else {
 					if (!b->opt.tabs && (b->win_x + b->cur_x) % b->opt.tab_size == 0
 						&& (b->cur_pos > b->cur_line_desc->line_len || b->cur_line_desc->line[b->cur_pos - 1] == ' ')) {
+						/* We are deleting one or more spaces from a tabbing position. We go left until the
+						previous tabbing, or when spaces end. */
 						col = 0;
 						do {
 							if (b->cur_pos <= b->cur_line_desc->line_len) col++;
 							char_left(b);
 						} while((b->win_x + b->cur_x) % b->opt.tab_size != 0 && (b->cur_pos > b->cur_line_desc->line_len || b->cur_line_desc->line[b->cur_pos - 1] == ' '));
 
+						/* Now we are positioned at the start of the block of spaces. If there just one character to
+						delete, we can just go on. Otherwise, we replace the block with a TAB, doing some magick
+						to keep everything in sync. */
 						if (col > 1) {
 							if (b->syn) {
 								freeze_attributes(b, b->cur_line_desc);
