@@ -233,46 +233,6 @@ int word_wrap(buffer * const b) {
 }
 
 
-/* backtab() removes spaces from the current position to the previous tab
-   stop, but only if it's all spaces. It returns true if anything changed,
-   either buffer content or current position. */
-
-int backtab(buffer * const b) {
-	int pos, prev_tab_width, width, spaces_to_delete;
-	line_desc *ld = b->cur_line_desc;
-	
-	if (b->cur_pos < 1) return 0;
-
-	pos = b->cur_pos;
-	width = calc_width(ld, pos, b->opt.tab_size, b->encoding);
-
-	/* In free_form mode, it's possible that the entire range of "spaces" is
-	   beyond the end of our line, so the buffer doesn't change; only our position. */
-	prev_tab_width = width - (width % b->opt.tab_size);
-	if (prev_tab_width > calc_width(ld, ld->line_len, b->opt.tab_size, b->encoding)) {
-		goto_pos(b, prev_tab_width);
-		return TRUE;
-	}
-	spaces_to_delete = 0;
-	while(width % b->opt.tab_size) {
-		width--;
-		if (pos >= ld->line_len) pos--;   /* a virtual space, past the end */
-		else if (ld->line[pos] == ' ') {  /* a real space we may delete */
-			pos = prev_pos(ld->line, pos, b->encoding);
-			spaces_to_delete++;
-		}
-		else return FALSE; /* We didn't have real or virtual spaces between cur_pos and the prev tab stop. */
-	}
-	
-	if (ld->line[pos] == ' ' && spaces_to_delete++) { 
-		delete_stream(b, ld, b->cur_line, pos, spaces_to_delete);
-		goto_pos(b,pos);
-		return 1;
-	}
-	return FALSE;
-}
-
-
 /* These functions reformat a paragraph while preserving appropriate
 leading US-ASCII white space. The strategy is as follows:
 

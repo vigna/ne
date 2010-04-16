@@ -488,17 +488,27 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 					char_left(b);
 				}
 				else {
-					char_left(b);
-					if (!b->opt.tabs) {
-						if (backtab(b)) {
+					if (!b->opt.tabs && (b->win_x + b->cur_x) % b->opt.tab_size == 0
+						&& (b->cur_pos > b->cur_line_desc->line_len || b->cur_line_desc->line[b->cur_pos - 1] == ' ')) {
+						col = 0;
+						do {
+							if (b->cur_pos <= b->cur_line_desc->line_len) col++;
+							char_left(b);
+						} while((b->win_x + b->cur_x) % b->opt.tab_size != 0 && (b->cur_pos > b->cur_line_desc->line_len || b->cur_line_desc->line[b->cur_pos - 1] == ' '));
+
+						if (col > 1) {
 							if (b->syn) {
 								freeze_attributes(b, b->cur_line_desc);
-								update_line(b, b->cur_y, FALSE, FALSE);
+								memmove(b->attr_buf + b->cur_pos + 1, b->attr_buf + b->cur_pos + col, b->attr_len - (b->cur_pos + col));
+								b->attr_buf[b->cur_pos] = -1;
+								b->attr_len -= (col - 1);
 							}
-							else update_partial_line(b, b->cur_y, b->cur_x, FALSE, FALSE);
-							continue;
+							delete_stream(b, b->cur_line_desc, b->cur_line, b->cur_pos, col);
+							insert_one_char(b, b->cur_line_desc, b->cur_line, b->cur_pos, '\t');
+							update_partial_line(b, b->cur_y, b->cur_x, TRUE, b->syn != NULL);	
 						}
 					}
+					else char_left(b);
 					/* If we are not over text, we are in free form mode; the backspace
 						is turned into moving to the left. */
 					if (b->cur_pos >= b->cur_line_desc->line_len) continue;
