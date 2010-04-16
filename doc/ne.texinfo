@@ -3678,7 +3678,7 @@ The @code{Tabs} flag also affects the action of the @key{BackSpace} and
 action of these keys would remove white space, and that white space
 could be represented by a tab, then one tab's worth of space is
 removed. In all other cases, the @key{BackSpace} and @key{Delete} keys
-perform its normal function.
+perform their normal function.
 
 If you invoke @code{Tabs} with no arguments, it will toggle the flag. If you
 specify 0 or 1, the flag will be set to false or true, respectively. A lower
