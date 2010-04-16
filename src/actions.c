@@ -505,7 +505,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			/* From here, we just implement a delete. */
 			
 			if (!b->opt.tabs && b->cur_pos < b->cur_line_desc->line_len && b->cur_line_desc->line[b->cur_pos] == ' ' && 
-				(b->win_x + b->cur_x) % b->opt.tab_size == 0 || b->cur_line_desc->line[b->cur_pos - 1] != ' ') {
+				((b->win_x + b->cur_x) % b->opt.tab_size == 0 || b->cur_line_desc->line[b->cur_pos - 1] != ' ')) {
 				col = 0;
 				do col++; while((b->win_x + b->cur_x + col) % b->opt.tab_size != 0 
 					&& b->cur_pos + col < b->cur_line_desc->line_len && b->cur_line_desc->line[b->cur_pos + col] == ' ');
