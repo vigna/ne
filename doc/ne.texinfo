@@ -3673,13 +3673,12 @@ In normal editing, the @key{Tab} key invokes the command
 be mapped to other commands. Thus the @code{Tabs} flag provides the
 only customization @code{ne} offers for the @key{Tab} key.
 
-The @code{Tabs} flag also affects the action of the @key{BackSpace}
-key in one special circumstance. That is, if the normal action of
-the @key{BackSpace} key would remove white space, and there is only
-white space between the cursor and the preceeding tab stop, then
-all the white space between the cursor and that tab stop is
-removed. In all other cases, the @key{BackSpace} key performs its
-normal function.
+The @code{Tabs} flag also affects the action of the @key{BackSpace} and
+@key{Delete} keys in one special circumstance. That is, if the normal
+action of these keys would remove white space, and that white space
+could be represented by a tab, then one tab's worth of space is
+removed. In all other cases, the @key{BackSpace} and @key{Delete} keys
+perform its normal function.
 
 If you invoke @code{Tabs} with no arguments, it will toggle the flag. If you
 specify 0 or 1, the flag will be set to false or true, respectively. A lower
