@@ -894,7 +894,6 @@ for n lines, given a parametrized and/or a one-line capability
 for that purpose. */
 
 static void do_multi_ins_del(char * const multi, const char * const single, int n) {
-
 	if (multi) {
 		char *const buf = tparm(multi, n);
 		OUTPUT(buf);
@@ -905,19 +904,19 @@ static void do_multi_ins_del(char * const multi, const char * const single, int 
 
 /* Inserts n lines at vertical position vpos. If n is negative, it deletes -n
 	lines. specified_window is taken into account. This function assumes
-	line_ins_del_ok == TRUE. */
+	line_ins_del_ok == TRUE. Returns TRUE if an insertion/deletion actually happened. */
 
-void ins_del_lines (const int vpos, const int n) {
+int ins_del_lines (const int vpos, const int n) {
 
 	int i = n > 0 ? n : -n;
 
 	assert(line_ins_del_ok);
 	assert(i != 0);
 	assert(vpos < specified_window);
-
-	if (scroll_region_ok && vpos + i >= specified_window) return;
-
-	if (!ne_memory_below && vpos + i >= ne_lines) return;
+	
+	if (scroll_region_ok && vpos + i >= specified_window) return FALSE;
+	
+	if (!ne_memory_below && vpos + i >= ne_lines) return FALSE;
 
 	standout_if_wanted();
 
@@ -959,6 +958,8 @@ void ins_del_lines (const int vpos, const int n) {
 			}
 		}
 	}
+	
+	return TRUE;
 }
 
 

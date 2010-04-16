@@ -715,14 +715,8 @@ void scroll_window(buffer * const b, const int line, const int n) {
 		return;
 	}
 
-	if (n > 0) {
-		ins_del_lines(line, 1);
-		update_line(b, line, TRUE, FALSE);
-	}
-	else {
-		ins_del_lines(line, -1);
-		update_line(b, ne_lines - 2, FALSE, FALSE);
-	}
+	if (n > 0) update_line(b, line, ins_del_lines(line, 1), FALSE);
+	else update_line(b, ne_lines - 2, ins_del_lines(line, -1), FALSE);
 }
 
 

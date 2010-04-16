@@ -314,7 +314,7 @@ void output_char(int c, unsigned int attr, int utf8);
 void insert_chars(const unsigned char *start, const unsigned int *attr, int raw_len, int utf8);
 void insert_char(int c, const unsigned int attr, int utf8);
 void delete_chars(int n);
-void ins_del_lines(int vpos, int n);
+int ins_del_lines(int vpos, int n);
 int ttysize(void);
 void term_init(void);
 
