@@ -512,7 +512,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 				/* We are positioned at the start of the block of col spaces. If there is at most
 					one character to delete, we can just go on. Otherwise, we replace the block with a 
 					TAB, doing some magick to keep everything in sync. */
-				if (col > 1 && (b->cur_pos + col == b->cur_line_desc->line_len || (b->win_x + b->cur_x + col) % b->opt.tab_size == 0)) {
+				if (col > 1 && (b->win_x + b->cur_x + col) % b->opt.tab_size == 0) {
 					if (b->syn) {
 						freeze_attributes(b, b->cur_line_desc);
 						memmove(b->attr_buf + b->cur_pos + 1, b->attr_buf + b->cur_pos + col, b->attr_len - (b->cur_pos + col));
