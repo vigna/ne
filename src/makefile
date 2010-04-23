@@ -104,7 +104,7 @@ CFLAGS=$(OPTS) $(NO_SIGN) \
 LIBS=$(if $(NE_TERMCAP)$(NE_ANSI),,-lcurses)
 
 ne:	$(OBJS) $(if $(NE_TERMCAP)$(NE_ANSI),$(TERMCAPOBJS),)
-	$(CC) -lm $(OPTS) $(LDFLAGS) $^ $(LIBS) -o $(PROGRAM)
+	MACOSX_DEPLOYMENT_TARGET=10.2 $(CC) -lm $(OPTS) $(LDFLAGS) $^ $(LIBS) -o $(PROGRAM)
 
 clean:
 	rm -f *.o core

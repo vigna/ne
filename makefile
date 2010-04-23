@@ -58,8 +58,13 @@ install:
 
 
 package:
-	# To create a Mac package, first run this target. Change the user/group of /tmp/package to root:wheel.
-	#  Then, create using /Developer/Applications/Utilities/PackageMake a package whose only content is 
+	# To create a Mac package, compile with 
+	#
+	#	export MACOSX_DEPLOYMENT_TARGET=10.2
+	#	make CC=/Developer/usr/bin/gcc OPTS="-mmacosx-version-min=10.2"
+	#
+	# Then run this target. Change the user/group of /tmp/package to root:wheel.
+	# Finally, create using /Developer/Applications/Utilities/PackageMake a package whose only content is 
 	# /tmp/package, save it, and use Disk Utility to create a (properly named) disk image containing the package.
 	-rm -fr /tmp/package
 	mkdir -p /tmp/package/usr/local/bin
