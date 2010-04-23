@@ -56,6 +56,21 @@ install:
 	cp -p doc/ne.info.gz $(DESTDIR)$(PREFIX)/share/info
 	-install-info --dir-file=$(DESTDIR)$(PREFIX)/share/info/dir $(DESTDIR)$(PREFIX)/share/info/ne.info.gz
 
+
+package:
+	# To create a Mac package, first run this target. Then, create using /Developer/Applications/Utilities/PackageMaker
+	# a package whose only content is /tmp/package, save it, and use Disk Utility to create a disk image containing the package.
+	-rm -fr /tmp/package
+	mkdir -p /tmp/package/usr/local/bin
+	mkdir -p /tmp/package/usr/local/share/doc
+	mkdir -p /tmp/package/usr/local/share/info
+	mkdir -p /tmp/package/usr/local/share/man/man1
+	cp /usr/local/bin/ne /tmp/package/usr/local/bin
+	cp -pr /usr/local/share/doc/ne /tmp/package/usr/local/share/doc/
+	cp -pr /usr/local/share/ne /tmp/package/usr/local/share/
+	cp /usr/local/share/info/ne.info.gz /tmp/package/usr/local/share/info/
+	cp /usr/local/share/man/man1/ne.1 /tmp/package/usr/local/share/man/man1/
+
 clean:
 	-rm -f ne-*.tar*
 
