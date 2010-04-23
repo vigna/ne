@@ -58,8 +58,9 @@ install:
 
 
 package:
-	# To create a Mac package, first run this target. Then, create using /Developer/Applications/Utilities/PackageMaker
-	# a package whose only content is /tmp/package, save it, and use Disk Utility to create a disk image containing the package.
+	# To create a Mac package, first run this target. Change the user/group of /tmp/package to root:wheel.
+	#  Then, create using /Developer/Applications/Utilities/PackageMake a package whose only content is 
+	# /tmp/package, save it, and use Disk Utility to create a (properly named) disk image containing the package.
 	-rm -fr /tmp/package
 	mkdir -p /tmp/package/usr/local/bin
 	mkdir -p /tmp/package/usr/local/share/doc
