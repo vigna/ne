@@ -1,7 +1,7 @@
-
+#
 # This Makefile has the basic commands for converting
 # ne.texinfo into a plain text file (ne.txt), an
-# info document set (ne.info*), an HTML file (ne.html) and a PDF
+# info document set (ne.info*), a set of HTML files (html/) and a PDF
 # document (ne.pdf).
 #
 

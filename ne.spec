@@ -41,7 +41,7 @@ install -m 755 ./src/ne $RPM_BUILD_ROOT/usr/bin/ne
 install -m 644 ./syntax/*.jsf $RPM_BUILD_ROOT/usr/share/ne/syntax
 install -m 644 ./doc/ne.1 $RPM_BUILD_ROOT/%{_mandir}/man1
 install -m 644 ./doc/ne.info* $RPM_BUILD_ROOT/%{_infodir}
-mv ./doc/ne html
+mv doc/html .
 
 %files
 %defattr(-,root,root)
@@ -68,7 +68,7 @@ fi
 
 
 %changelog
-* Wed Mar 17 2010 Sebastiano Vigna <vigna@dsi.unimi.it> 2.1
+* Fri Apr 23 2010 Sebastiano Vigna <vigna@dsi.unimi.it> 2.1
 - Upgraded to 2.1.
 * Fri Feb 20 2009 Sebastiano Vigna <vigna@dsi.unimi.it> 2.0.3
 - Upgraded to 2.0.3.
