@@ -5585,7 +5585,7 @@ A lot of people contributed to this project. Part of the code comes from
 @code{emacs} and @code{joe}. Many people, in particular at the silab (the Milan
 University Computer Science Department Laboratory), helped in beta testing the
 first versions. Daniele Filaretti worked at the integration of syntax-highlighting
-code from @code{joe}.
+code from @code{joe}. John Gabriele suggested several new features and relentlessly tested them.
 
 Comments, complaints, desiderata are welcome.
 
