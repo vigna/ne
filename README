@@ -1,83 +1,20 @@
 Welcome to ne, the nice editor.
 
+ne is a free (GPL'd) text editor based on the POSIX standard that runs (we
+hope) on almost any UN*X machine. ne is easy to use for the beginner, but
+powerful and fully configurable for the wizard, and most sparing in its
+resource usage. See the manual for some highlights of ne's features.
+
+ne is distributed under the GNU Public License (see COPYING). The INSTALL
+file contains detailed installation instructions. The version of this
+distribution of ne can be found in src/version.h.
+
 Documentation (in the "doc" directory) is provided in the form of a
 texinfo file. It can be printed as a manual using TeX and GNU's
 texinfo.tex macro package, or turned into a hypertext document using GNU's
 makeinfo. The directory contains several pre-compiled printable and
 hypertext versions of the documentation.
 
-1. To build and install into /usr/local:
-
-    # unpack distribution
-    cd ne-x.y.z
-    make
-    sudo make install
-
-2. To build and install into some alternative location (for example,
-into your own `~/opt`):
-
-    make PREFIX=/home/<you>/opt install
-
-
-There are three makefiles provided with the distribution: a top-level
-makefile for easy build and installation, a low-level makefile in the
-src directory that just builds ne's executable and provides some more
-flexibility, and another low-level makefile in the doc directory.
-
-The top-level makefile provides targets "source" (builds the standard
-source distribution), "cygwin" (builds the cygwin distribution) and "install"
-(build and installs ne). The PREFIX make variable decides where ne will be
-installed and which will be its global directory. For example:
-
-    make PREFIX=/home/myname/opt
-
-For installation (i.e., "make install), a POSIX compliant machine with a
-terminfo database should be sufficient. You may receive some errors from the
-install-info command if you do not have write access to the system
-infodir.bak file; these can be ignored. Note, however, that creating a source
-distribution with the "source" target requires a complete build, and in
-particular the presence of a number of tools that manipulate texinfo files,
-as some of the source files are generated from the documentation.
-
-By playing with the low-level src makefile you have more options (as you can
-first build using the low-level makefile and then use the install target
-of the top-level makefile). If you have a termcap database, you should
-specify "NE_TERMCAP=1" (i.e., type "make NE_TERMCAP=1"). It uses the GNU
-version of termcap, whose sources are included (no library is needed). In
-general, if a compilation via a simple "make" fails you should try these
-variations in order until one of them succeeds:
-    make
-    make NE_POSIX=1
-    make NE_TERMCAP=1
-    make NE_POSIX=1 NE_TERMCAP=1
-They use slightly different #define's to overcome the slight differences
-among systems. If you have a problem with the local compiler and you have the
-GNU C compiler installed, try "CC=gcc", and possibly also "OPTS=-ansi".
-
-If you are compiling under Cygwin or similar emulations of UN*X running
-under other operating systems, you can specify "NE_ANSI=1" to build a copy
-of ne that by default will use built-in ANSI terminal control sequences.
-By combining "NE_ANSI=1" and "NE_TERMCAP=1" you will get a version of ne
-that needs no library, and moreover starts by default in ANSI mode.
-Regardless of how ne was built, you can always override this choice by
-invoking ne with one of the command line options "--ansi" or "--no-ansi".
-
-ne can handle UTF-8, and supports multiple-column characters. The latter
-requires some support from the system: you can disable wide-character,
-multiple-column support with "NE_NOWCHAR=1".
-
-If you cannot install ne as root, you can change the position of the
-global preferences directory with "NE_GLOBAL_DIR=<directory>" (this is
-done automatically by the top-level makefile on the basis of the PREFIX
-variable). The global directory should contain automatic preferences files
-for common extensions, and must contain the syntax directory provided with
-ne's distribution, which contains joe's syntax definition files. In any
-case, if the NE_GLOBAL_DIR environment variable is set ne will use its
-value instead. The value ne ultimately uses, whether compiled in
-or from the environment, is displayed at startup if no file is open.
-
-Compatibility problems are also discussed in the documentation. Don't be
-alarmed if you get a lot of warnings about signed vs. unsigned values.
 If something does not work, please feel free to email us.
 
 
