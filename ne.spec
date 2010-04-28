@@ -41,6 +41,7 @@ install -m 755 ./src/ne $RPM_BUILD_ROOT/usr/bin/ne
 install -m 644 ./syntax/*.jsf $RPM_BUILD_ROOT/usr/share/ne/syntax
 install -m 644 ./doc/ne.1 $RPM_BUILD_ROOT/%{_mandir}/man1
 install -m 644 ./doc/ne.info* $RPM_BUILD_ROOT/%{_infodir}
+rm INSTALL
 mv doc/html .
 
 %files
