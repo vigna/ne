@@ -23,7 +23,7 @@ source:
 	( cd src; make clean; make )
 	-rm -f ne-$(VERSION)
 	ln -s . ne-$(VERSION)
-	tar cvf ne-$(VERSION).tar ne-$(VERSION)/version.pl ne-$(VERSION)/makefile ne-$(VERSION)/COPYING ne-$(VERSION)/INSTALL ne-$(VERSION)/README ne-$(VERSION)/CHANGES \
+	tar cvf ne-$(VERSION).tar ne-$(VERSION)/version.pl ne-$(VERSION)/makefile ne-$(VERSION)/COPYING ne-$(VERSION)/INSTALL ne-$(VERSION)/README ne-$(VERSION)/NEWS \
 	ne-$(VERSION)/src/*.[hc] ne-$(VERSION)/src/*.c.in ne-$(VERSION)/src/*.pl \
 	ne-$(VERSION)/syntax/*.jsf \
 	ne-$(VERSION)/src/makefile ne-$(VERSION)/src/ne.texinfo ne-$(VERSION)/doc/ne.1 \
@@ -52,7 +52,7 @@ install:
 	cp -pf src/ne$(CMDSUFFIX) $(DESTDIR)$(PREFIX)/bin
 	cp -p syntax/*.jsf $(DESTDIR)$(PREFIX)/share/ne/syntax
 	cp -p doc/ne.1 $(DESTDIR)$(PREFIX)/share/man/man1
-	cp -pr doc/ne.pdf doc/html doc/ne.txt doc/default.* README COPYING CHANGES $(DESTDIR)$(PREFIX)/share/doc/ne
+	cp -pr doc/ne.pdf doc/html doc/ne.txt doc/default.* README COPYING NEWS $(DESTDIR)$(PREFIX)/share/doc/ne
 	cp -p doc/ne.info.gz $(DESTDIR)$(PREFIX)/share/info
 	-install-info --dir-file=$(DESTDIR)$(PREFIX)/share/info/dir $(DESTDIR)$(PREFIX)/share/info/ne.info.gz
 
