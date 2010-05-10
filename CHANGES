@@ -1,0 +1,19 @@
+2.1
+
+  * Fixed efficiency bug introduced with syntax highlighting: ne should now
+    be much more responsive along slow connections.
+
+  * Fixed old, bad, shameful bug: complex assertions were compiled into
+    the code even for the non-debug version. As a result, ne was deadly
+    slow on large files.
+
+  * Fixed small mistakes in the keyboard sequences displayed in the menus,
+    and small discrepancies between default.keys/default.menus and reality
+    (thanks to John Gabriele for having pointed out this).
+
+  * In some cases after a keyboard timeout an ESC character was left in
+    the keyboard buffer, causing weird behaviours.
+
+  * Probably really (this time) fixed problems with regexps matching empty strings.
+
+  * BackSpace and Delete behave better in FreeForm mode.
