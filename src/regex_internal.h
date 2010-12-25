@@ -433,8 +433,18 @@ static unsigned int re_string_context_at (const re_string_t *input, int idx,
 # endif
 #endif
 
+/*
+   We redefine re_malloc() and re_realloc() to work on systems which
+   return NULL on malloc(0) and realloc(0) -- AIX in particular.
+   regex_internal.c is full of code which expects non-NULL free()-able
+   pointers to be returned. Oddly enough, either is a valid return from
+   malloc(0). We quietly turn malloc(0) into malloc(1).
 #define re_malloc(t,n) ((t *) malloc ((n) * sizeof (t)))
 #define re_realloc(p,t,n) ((t *) realloc (p, (n) * sizeof (t)))
+*/
+#define re_malloc(t,n) ((t *) malloc (((n)?(n):1) * sizeof (t)))
+#define re_realloc(p,t,n) ((t *) realloc (p, (!(p)&&!(n)?1:(n)) * sizeof (t)))
+
 #define re_free(p) free (p)
 
 struct bin_tree_t
