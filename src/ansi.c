@@ -1,6 +1,6 @@
 /* Hardwired ANSI terminal control sequences.
 
-	Copyright (C) 2001-2010 Todd M. Lewis and Sebastiano Vigna
+	Copyright (C) 2001-2011 Todd M. Lewis and Sebastiano Vigna
 
 	This file is part of ne, the nice editor.
 
