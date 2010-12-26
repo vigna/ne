@@ -17,3 +17,8 @@
   * Probably really (this time) fixed problems with regexps matching empty strings.
 
   * BackSpace and Delete behave better in FreeForm mode.
+
+  * Fixed memory allocation macros in regex code from glibc to work on systems
+    which return NULL on zero-sized allocations.
+
+  * In makefile, made explicit the dependancies for regex.o.
