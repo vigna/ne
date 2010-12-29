@@ -772,7 +772,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		return ERROR;
 
 	case ABOUT_A:
-		print_message(ABOUT_MSG);
+	   about();
 		return OK;
 
 	case REFRESH_A:

@@ -54,6 +54,8 @@ char *NO_WARRANTY_msg[] = {	PROGRAM_NAME " " VERSION ".",
 										"prefixed by ^ are activated by the Control key; the shortcuts prefixed",
 										"by [ are activated by Control+Meta or just Meta, depending on your terminal",
 										"emulator. Alternatively, just press Escape followed by a letter.",
+										"",
+										"Discuss ne at http://groups.google.com/group/niceeditor",
 										NULL
 									};
 
@@ -97,7 +99,8 @@ int verbose_macros = TRUE;
 buffer *cur_buffer;
 int turbo;
 int do_syntax = TRUE;
-
+int displaying_info = FALSE;
+ 
 /* These function live here because they access cur_buffer. new_buffer()
 creates a new buffer, adds it to the buffer list, and assign it to
 cur_buffer. delete_buffer() destroys cur_buffer, and makes the previous or
@@ -142,6 +145,31 @@ int delete_buffer(void) {
 }
 
 
+void about() {      
+   int i;
+   
+	displaying_info = TRUE;
+
+	clear_entire_screen();
+	for(i = 0; NO_WARRANTY_msg[i]; i++) {
+		if (i == ne_lines - 1) break;
+		move_cursor(i, 0);
+		output_string(NO_WARRANTY_msg[i], FALSE);
+	}
+	if (++i < ne_lines - 1) {
+		move_cursor(i, 0);
+		if (exists_gprefs_dir()) {
+			output_string("Global Directory: ", FALSE);
+			output_string(exists_gprefs_dir(), FALSE);
+		}
+		else {
+			output_string("Global directory \"", FALSE);
+			output_string(get_global_dir(), FALSE);
+			output_string("\" not found!", FALSE);
+		}
+	}
+	print_message(ABOUT_MSG);
+}
 
 /* The main() function. It is responsible for argument parsing, calling
 some terminal and signal initialization functions, and entering the
@@ -150,7 +178,7 @@ event loop. */
 int main(int argc, char **argv) {
 	
 	input_class ic;
-	int i, c, no_config = FALSE, displaying_info = FALSE, first_line = 0;
+	int i, c, no_config = FALSE, first_line = 0;
 	char *macro_name = NULL, *key_bindings_name = NULL, *menu_conf_name = NULL;
 
 	clip_desc *cd;
@@ -342,25 +370,7 @@ int main(int argc, char **argv) {
 		/* If there is no file to load, and no macro to execute, we display
 		the "NO WARRANTY" message. */
 
-		displaying_info = TRUE;
-
-		for(i = 0; NO_WARRANTY_msg[i]; i++) {
-			if (i == ne_lines - 1) break;
-			move_cursor(i, 0);
-			output_string(NO_WARRANTY_msg[i], FALSE);
-		}
-		if (++i < ne_lines - 1) {
-			move_cursor(i, 0);
-			if (exists_gprefs_dir()) {
-				output_string("Global Directory: ", FALSE);
-				output_string(exists_gprefs_dir(), FALSE);
-			}
-			else {
-				output_string("Global directory \"", FALSE);
-				output_string(get_global_dir(), FALSE);
-				output_string("\" not found!", FALSE);
-			}
-		}
+      about();
 	}
 
 	while(TRUE) {
@@ -385,13 +395,9 @@ int main(int argc, char **argv) {
 		if (displaying_info) {
 			displaying_info = FALSE;
 
-			for(i = 0; i < sizeof NO_WARRANTY_msg / sizeof *NO_WARRANTY_msg + 2; i++) {
-				if (i == ne_lines - 1) break;
-				move_cursor(i, 0);
-				clear_to_eol();
-			}
-
-			fflush(stdout);
+         ttysize();
+         keep_cursor_on_screen(cur_buffer);
+         reset_window();
 		}
 
 		switch(ic) {

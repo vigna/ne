@@ -22,3 +22,7 @@
     which return NULL on zero-sized allocations.
 
   * In makefile, made explicit the dependancies for regex.o.
+
+  * Mention http://groups.google.com/group/niceeditor in splash screen.
+
+  * About now displays splash screen in addition to its status bar message.

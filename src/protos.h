@@ -196,6 +196,7 @@ void move_inc_up(buffer *b);
 /* ne.c */
 buffer *new_buffer(void);
 int delete_buffer(void);
+void about(void);
 int main(int argc, char **argv);
 
 /* prefs.c */
