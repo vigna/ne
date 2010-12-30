@@ -145,30 +145,37 @@ int delete_buffer(void) {
 }
 
 
-void about() {      
+void about(int show) {      
    int i;
    
-	displaying_info = TRUE;
-
-	clear_entire_screen();
-	for(i = 0; NO_WARRANTY_msg[i]; i++) {
-		if (i == ne_lines - 1) break;
-		move_cursor(i, 0);
-		output_string(NO_WARRANTY_msg[i], FALSE);
-	}
-	if (++i < ne_lines - 1) {
-		move_cursor(i, 0);
-		if (exists_gprefs_dir()) {
-			output_string("Global Directory: ", FALSE);
-			output_string(exists_gprefs_dir(), FALSE);
+   if (show) {
+		displaying_info = TRUE;
+		clear_entire_screen();
+		for(i = 0; NO_WARRANTY_msg[i]; i++) {
+			if (i == ne_lines - 1) break;
+			move_cursor(i, 0);
+			output_string(NO_WARRANTY_msg[i], FALSE);
 		}
-		else {
-			output_string("Global directory \"", FALSE);
-			output_string(get_global_dir(), FALSE);
-			output_string("\" not found!", FALSE);
+		if (++i < ne_lines - 1) {
+			move_cursor(i, 0);
+			if (exists_gprefs_dir()) {
+				output_string("Global Directory: ", FALSE);
+				output_string(exists_gprefs_dir(), FALSE);
+			}
+			else {
+				output_string("Global directory \"", FALSE);
+				output_string(get_global_dir(), FALSE);
+				output_string("\" not found!", FALSE);
+			}
 		}
+		print_message(ABOUT_MSG);
 	}
-	print_message(ABOUT_MSG);
+	else {
+		displaying_info = FALSE;
+      ttysize();
+      keep_cursor_on_screen(cur_buffer);
+      reset_window();
+	}
 }
 
 /* The main() function. It is responsible for argument parsing, calling
@@ -370,7 +377,7 @@ int main(int argc, char **argv) {
 		/* If there is no file to load, and no macro to execute, we display
 		the "NO WARRANTY" message. */
 
-      about();
+      about(1);
 	}
 
 	while(TRUE) {
@@ -392,13 +399,8 @@ int main(int argc, char **argv) {
 			window_changed_size = FALSE;
 		}
 
-		if (displaying_info) {
-			displaying_info = FALSE;
-
-         ttysize();
-         keep_cursor_on_screen(cur_buffer);
-         reset_window();
-		}
+		if (displaying_info)
+			about(0);
 
 		switch(ic) {
 		case INVALID:

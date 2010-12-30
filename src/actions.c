@@ -772,7 +772,9 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		return ERROR;
 
 	case ABOUT_A:
-	   about();
+	   about(1);
+	   c = get_key_code();
+	   about(0);
 		return OK;
 
 	case REFRESH_A:
