@@ -876,10 +876,10 @@ administrator can store macros, default preferences, and syntax
 definitions for all users of the system. The location of this directory
 is defined when @code{ne} is built, but you can override it by creating
 and exporting the @code{NE_GLOBAL_DIR} environment variable prior to
-invoking @code{ne}. If you load no files when you start @code{ne}, it
-will display a splash screen. The last line on that screen shows the
-global directory @code{ne} is using, if it exists, or an error message,
-otherwise.
+invoking @code{ne}. If you load no files when you start @code{ne}, or
+if you invoke the @code{About} command, it will display a splash
+screen. The last line on that screen shows the global directory
+@code{ne} is using, if it exists, or an error message otherwise.
 
 
 @node The Status Bar
@@ -4767,8 +4767,9 @@ provide access to the shell and a way to assign the functionality of
 @noindent Syntax: @code{About}@*
 @noindent Abbreviation: @code{About}
 
-@noindent displays a simple information line about @code{ne} on the status bar.
-
+@noindent displays the copyright splash screen and places a simple
+information line containing the version and build date of @code{ne}
+on the status bar. Press any key to dismiss this screen.
 
 
 @node Alert
@@ -5177,7 +5178,7 @@ specify the home directory of another user.
 Sometimes, due to different opinions about the best default foreground and
 background colors, some of the color choices in a syntax file might be
 unreadable (for instance, @samp{dim white} on a terminal with a white
-background). Just copy the guilty syntax specification file in the
+background). Just copy the guilty syntax specification file to the
 @file{~/.ne/syntax} directory, and change the color names at the start of
 the file.
 
