@@ -1,6 +1,6 @@
 /* main(), global initialization and global buffer functions.
 
-	Copyright (C) 1993-1998 Sebastiano Vigna 
+	Copyright (C) 1993-1998 Sebastiano Vigna
 	Copyright (C) 1999-2011 Todd M. Lewis and Sebastiano Vigna
 
 	This file is part of ne, the nice editor.
@@ -9,12 +9,12 @@
 	under the terms of the GNU General Public License as published by the
 	Free Software Foundation; either version 2, or (at your option) any
 	later version.
-	
+
 	This program is distributed in the hope that it will be useful, but
 	WITHOUT ANY WARRANTY; without even the implied warranty of
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 	General Public License for more details.
-	
+
 	You should have received a copy of the GNU General Public License along
 	with this program; see the file COPYING.  If not, write to the Free
 	Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -55,7 +55,8 @@ char *NO_WARRANTY_msg[] = {	PROGRAM_NAME " " VERSION ".",
 										"by [ are activated by Control+Meta or just Meta, depending on your terminal",
 										"emulator. Alternatively, just press Escape followed by a letter.",
 										"",
-										"Discuss ne at http://groups.google.com/group/niceeditor",
+										"ne Home page: http://ne.dsi.unimi.it/",
+										"Discuss ne at http://groups.google.com/group/niceeditor/",
 										NULL
 									};
 
@@ -99,8 +100,7 @@ int verbose_macros = TRUE;
 buffer *cur_buffer;
 int turbo;
 int do_syntax = TRUE;
-int displaying_info = FALSE;
- 
+
 /* These function live here because they access cur_buffer. new_buffer()
 creates a new buffer, adds it to the buffer list, and assign it to
 cur_buffer. delete_buffer() destroys cur_buffer, and makes the previous or
@@ -111,13 +111,13 @@ buffer *new_buffer(void) {
 
 	if (b) {
 		clear_buffer(b);
-		if (cur_buffer) 
+		if (cur_buffer)
 			add(&b->b_node, &cur_buffer->b_node);
-		else 
+		else
 			add_head(&buffers, &b->b_node);
-		
-		
-		
+
+
+
 		cur_buffer = b;
 	}
 
@@ -145,11 +145,10 @@ int delete_buffer(void) {
 }
 
 
-void about(int show) {      
+void about(int show) {
    int i;
-   
+
    if (show) {
-		displaying_info = TRUE;
 		clear_entire_screen();
 		for(i = 0; NO_WARRANTY_msg[i]; i++) {
 			if (i == ne_lines - 1) break;
@@ -171,7 +170,6 @@ void about(int show) {
 		print_message(ABOUT_MSG);
 	}
 	else {
-		displaying_info = FALSE;
       ttysize();
       keep_cursor_on_screen(cur_buffer);
       reset_window();
@@ -183,9 +181,9 @@ some terminal and signal initialization functions, and entering the
 event loop. */
 
 int main(int argc, char **argv) {
-	
+
 	input_class ic;
-	int i, c, no_config = FALSE, first_line = 0;
+	int i, c, no_config = FALSE, displaying_info = FALSE, first_line = 0;
 	char *macro_name = NULL, *key_bindings_name = NULL, *menu_conf_name = NULL;
 
 	clip_desc *cd;
@@ -378,6 +376,8 @@ int main(int argc, char **argv) {
 		the "NO WARRANTY" message. */
 
       about(1);
+      displaying_info = TRUE;
+
 	}
 
 	while(TRUE) {
@@ -386,7 +386,7 @@ int main(int argc, char **argv) {
 		window now */
 
 		if (!displaying_info) refresh_window(cur_buffer);
-	
+
 		draw_status_bar();
 
 		move_cursor(cur_buffer->cur_y, cur_buffer->cur_x);
@@ -399,14 +399,16 @@ int main(int argc, char **argv) {
 			window_changed_size = FALSE;
 		}
 
-		if (displaying_info)
+		if (displaying_info) {
 			about(0);
+			displaying_info = FALSE;
+		}
 
 		switch(ic) {
 		case INVALID:
 			print_error(INVALID_CHARACTER);
 			break;
-			
+
 		case ALPHA:
 			print_error(do_action(cur_buffer, INSERTCHAR_A, c, NULL));
 			break;
@@ -414,7 +416,7 @@ int main(int argc, char **argv) {
 		case TAB:
 			print_error(do_action(cur_buffer, INSERTTAB_A, 1, NULL));
 			break;
-			
+
 		case RETURN:
 			print_error(do_action(cur_buffer, INSERTLINE_A, -1, NULL));
 			break;
@@ -423,7 +425,7 @@ int main(int argc, char **argv) {
 			if (c < 0) c = -c - 1;
 			if (key_binding[c]) print_error(execute_command_line(cur_buffer, key_binding[c]));
 			break;
-			
+
 		default:
 			break;
 		}
