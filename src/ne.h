@@ -429,6 +429,11 @@ typedef struct {
 	int cur_char;             /* position of cursor within the attribute buffer (counts characters) */
 	int num_lines;
 	int block_start_line, block_start_col;
+	struct {
+		int shown;
+		int pos;
+		int line;
+	} automatch;
 	int allocated_chars;
 	int free_chars;
 	encoding_type encoding;

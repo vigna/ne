@@ -144,6 +144,20 @@ int delete_buffer(void) {
 	return FALSE;
 }
 
+void automatch_bracket(buffer *b, int show) {
+	if (show) {
+		if (find_matching_bracket(b, b->win_y, b->win_y + ne_lines >= b->num_lines ? b->num_lines - 1 : b->win_y +ne_lines - 1,
+		                          &b->automatch.line, &b->automatch.pos) == OK) {
+			/* highlight that character */
+		   b->automatch.shown = 1;
+		}
+	} else {
+		if (b->automatch.shown) {
+      	/* unhighlight that character */
+      	b->automatch.shown = 0;
+		}
+	}
+}
 
 void about(int show) {
    int i;
@@ -390,6 +404,7 @@ int main(int argc, char **argv) {
 		draw_status_bar();
 
 		move_cursor(cur_buffer->cur_y, cur_buffer->cur_x);
+		if (!displaying_info) automatch_bracket(cur_buffer,1);
 
 		c = get_key_code();
 		ic = CHAR_CLASS(c);
@@ -397,12 +412,14 @@ int main(int argc, char **argv) {
 		if (window_changed_size) {
 			print_error(do_action(cur_buffer, REFRESH_A, 0, NULL));
 			window_changed_size = FALSE;
+			cur_buffer->automatch.shown = 0;
 		}
 
 		if (displaying_info) {
 			about(0);
 			displaying_info = FALSE;
 		}
+		else if (cur_buffer->automatch.shown) automatch_bracket(cur_buffer,0);
 
 		switch(ic) {
 		case INVALID:
