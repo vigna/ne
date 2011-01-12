@@ -145,15 +145,34 @@ int delete_buffer(void) {
 }
 
 void automatch_bracket(buffer *b, int show) {
+	static int c;
+	int orig_line, orig_pos;
 	if (show) {
-		if (find_matching_bracket(b, b->win_y, b->win_y + ne_lines >= b->num_lines ? b->num_lines - 1 : b->win_y +ne_lines - 1,
-		                          &b->automatch.line, &b->automatch.pos) == OK) {
+		if (find_matching_bracket(b, b->win_y, b->win_y + ne_lines - 2 >= b->num_lines - 1 ? b->num_lines - 1 : b->win_y + ne_lines - 2,
+		                          &b->automatch.line, &b->automatch.pos, &c) == OK) {
 			/* highlight that character */
+			orig_line = b->cur_line;
+			orig_pos  = b->cur_pos;
+			goto_line(b, b->automatch.line);
+			goto_pos(b, b->automatch.pos);
+			move_cursor(b->cur_y, b->cur_x);
+			output_char(c, 212, b->encoding == ENC_UTF8); /* need to determing reasonable attr. 212? ?! */
+			goto_line(b, orig_line);
+			goto_pos(b, orig_pos);
+			move_cursor(b->cur_y, b->cur_x);
 		   b->automatch.shown = 1;
 		}
 	} else {
 		if (b->automatch.shown) {
       	/* unhighlight that character */
+			orig_line = b->cur_line;
+			orig_pos  = b->cur_pos;
+			goto_line(b, b->automatch.line);
+			goto_pos(b, b->automatch.pos);
+      	update_window_lines(b, b->cur_y, b->cur_y, TRUE);
+			goto_line(b, orig_line);
+			goto_pos(b, orig_pos);
+			move_cursor(b->cur_y, b->cur_x);
       	b->automatch.shown = 0;
 		}
 	}
