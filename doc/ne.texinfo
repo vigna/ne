@@ -305,8 +305,8 @@ have such a key, @key{Escape}. Immediately, the @dfn{menu bar} will appear,
 and the first menu will be drawn. (If you find yourself waiting for the menu
 to appear, you can press @key{Escape} twice in a row.) You can now move
 around menus and menu items by pressing the cursor keys. Moreover, a lower
-case alphabetic key will move to the first item in the current menu whose name starts with that
-letter, and an upper case alphabetic key will move to the first menu whose
+case alphabetic key will move to the next item in the current menu whose name starts with that
+letter, and an upper case alphabetic key will move to the next menu whose
 name starts with that letter.
 
 Moving around the menus should give you an idea of the capabilities of
@@ -685,6 +685,7 @@ a line with @samp{#}.
 @cindex UTF-8 support
 @cindex Bookmarks
 @cindex Automatic Completion
+@cindex Automatic Bracket Matching
 @cindex MS-DOS files
 @cindex File requester
 @cindex Binary files
@@ -741,6 +742,13 @@ think of that as a warning that if you select one of these bold words you
 will introduce a new word into your current document. Plain words already
 exist somewhere in your current document. @xref{AutoComplete}, and
 @ref{CaseSearch}.
+
+@subsection Automatic Bracket Matching
+Unless you tell it not to (with the @code{AutoMatchBracket} flag),
+@code{ne} will highlight any recognized bracket that matches the
+bracket your cursor is on if that matching bracket is already visible on
+your screen. Recognized brackets are @samp{@{@}}, @samp{()}, @samp{[]} and
+@samp{<>}. @xref{AutoMatchBracket}.
 
 @subsection MS-DOS files
 @code{ne} will detect automagically the presence of MS-DOS line terminators
@@ -2607,6 +2615,7 @@ optionally case insensitive).
 * ReplaceAll::
 * RepeatLast::
 * MatchBracket::
+* AutoMatchBracket::
 * SearchBack::
 * CaseSearch::
 * AutoComplete::
@@ -2801,6 +2810,20 @@ provided.
 cursor is on. If the cursor is not on a bracket, or there is no bracket
 associated with the current one, an error message is issued. Recognized
 brackets are @samp{@{@}}, @samp{()}, @samp{[]} and @samp{<>}.
+See @ref{AutoMatchBracket}.
+
+@node AutoMatchBracket
+@subsection AutoMatchBracket
+@cmindex AutoMatchBracket
+
+@noindent Syntax: @code{AutoMatchBracket [0|1]}@*
+@noindent Abbreviation: @code{AMB}
+
+@noindent sets the auto match bracket flag. When this flag is set, if
+the cursor is on a recognized bracket and the associated matching
+bracket is on the screen, the matching bracket will be highlighted.
+Recognized brackets are @samp{@{@}}, @samp{()}, @samp{[]} and @samp{<>}.
+See @ref{MatchBracket}.
 
 
 
@@ -3397,8 +3420,9 @@ FLAG COMMAND      ABBR  DESCRIPTION
   @@   UTF8IO        U8IO I/O (keyboard and terminal) are UTF-8 encoded
 A/8/U UTF8          U8   the document encoding (ASCII, 8-bit or UTF-8)
 @end example
-The @code{RequestOrder} flag's state is not indicated on the status bar.
-See @ref{RequestOrder}.
+
+The @code{RequestOrder} and @code{AutoMatchBracket} flags' states are not indicated on the status bar.
+See @ref{RequestOrder} and @ref{AutoMatchBracket} respectively.
 
 
 @node AutoPrefs

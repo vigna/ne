@@ -192,8 +192,8 @@ HIGHLIGHT_STATE parse(struct high_syntax *syntax, line_desc *ld, HIGHLIGHT_STATE
 	
 		
 	/* Get next character */
-	
-	while( p <= q ) { /* Una iterazione in più: aggiungo '\n' come ultimo carattere. */
+	                  /* Una iterazione in più: aggiungo '\n' come ultimo carattere. */
+	while( p <= q ) { /* On the last itteration, process the virtual '\n' character. */
 		struct high_cmd *cmd, *kw_cmd;
 		int x;
 			

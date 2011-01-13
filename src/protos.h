@@ -119,6 +119,7 @@ int to_upper(buffer *b);
 int to_lower(buffer *b);
 int capitalize(buffer *b);
 int match_bracket(buffer *b);
+int find_matching_bracket(buffer *b, const int min_line, const int max_line, int *match_line, int *match_pos, int *c, line_desc ** ld);
 int word_wrap(buffer *b);
 int paragraph(buffer *b);
 int center(buffer *b);
@@ -197,6 +198,7 @@ void move_inc_up(buffer *b);
 buffer *new_buffer(void);
 int delete_buffer(void);
 void about(int show);
+void automatch_bracket(buffer *b, int show);
 int main(int argc, char **argv);
 
 /* prefs.c */

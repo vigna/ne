@@ -382,6 +382,7 @@ typedef struct {
 		search_back:1,     /* Last search was backwards */
 		case_search:1,     /* Look at case matching in searches */
 		tabs:1,            /* TAB inserts TABs vs. spaces */
+		automatch:1,       /* Automatically match visible brackets */
 		binary:1,          /* Load and save in binary mode */
 		utf8auto:1,        /* Try to detect automatically UTF-8 */
 		visual_bell:1;     /* Prefer visible bell to audible */
@@ -429,6 +430,11 @@ typedef struct {
 	int cur_char;             /* position of cursor within the attribute buffer (counts characters) */
 	int num_lines;
 	int block_start_line, block_start_col;
+	struct {
+		int shown;
+		int pos;
+		int line;
+	} automatch;
 	int allocated_chars;
 	int free_chars;
 	encoding_type encoding;
