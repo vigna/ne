@@ -132,8 +132,8 @@ int capitalize(buffer *b) {
 
 int match_bracket(buffer *b) {
 
-	int match_line, match_pos, c, rc;
-	rc = find_matching_bracket(b, 0, b->num_lines-1, &match_line, &match_pos, &c);
+	int match_line, match_pos, rc;
+	rc = find_matching_bracket(b, 0, b->num_lines-1, &match_line, &match_pos, NULL, NULL);
 	if (rc == OK) {
 		goto_line(b, match_line);
 		goto_pos(b, match_pos);
@@ -142,7 +142,7 @@ int match_bracket(buffer *b) {
 	return rc;
 }
 
-int find_matching_bracket(buffer *b, int min_line, int max_line, int *match_line, int *match_pos, int *c) {
+int find_matching_bracket(buffer *b, const int min_line, int max_line, int *match_line, int *match_pos, int *c, line_desc ** match_ld) {
 
 	static unsigned char bracket_table[NUM_BRACKETS][2] = { { '(',')' }, { '[',']' }, { '{','}' }, { '<','>' } };
 
@@ -179,7 +179,8 @@ int find_matching_bracket(buffer *b, int min_line, int max_line, int *match_line
 				if (n == 0) {
 					*match_line = y;
 					*match_pos  = pos;
-					*c = line[pos];
+					if (c) *c = line[pos];
+					if (match_ld) *match_ld = ld;
 					return OK;
 				}
 				if (dir > 0) pos = next_pos(line, pos, b->encoding);

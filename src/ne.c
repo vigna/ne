@@ -145,22 +145,36 @@ int delete_buffer(void) {
 }
 
 void automatch_bracket(buffer *b, int show) {
-	static int c;
-	int orig_line, orig_pos;
+	static int c, orig_attr;
+	int orig_line, orig_pos, match_col;
+	line_desc *matching_ld;
 	if (show) {
 		if (find_matching_bracket(b, b->win_y, b->win_y + ne_lines - 2 >= b->num_lines - 1 ? b->num_lines - 1 : b->win_y + ne_lines - 2,
-		                          &b->automatch.line, &b->automatch.pos, &c) == OK) {
+		                          &b->automatch.line, &b->automatch.pos, &c, &matching_ld) == OK) {
 			/* highlight that character */
 			orig_line = b->cur_line;
 			orig_pos  = b->cur_pos;
-			goto_line(b, b->automatch.line);
-			goto_pos(b, b->automatch.pos);
-			move_cursor(b->cur_y, b->cur_x);
-			output_char(c, 212, b->encoding == ENC_UTF8); /* need to determing reasonable attr. 212? ?! */
-			goto_line(b, orig_line);
-			goto_pos(b, orig_pos);
-			move_cursor(b->cur_y, b->cur_x);
-		   b->automatch.shown = 1;
+			
+			/* find_matching_bracket() limited its search to the visible lines, but not the
+			visible portions of those lines. Now ensure that matching pos is within the visible window. */
+			match_col = calc_width(matching_ld, b->automatch.pos, b->opt.tab_size, b->encoding) - b->win_x;
+			if (match_col >= 0 && match_col < ne_columns ) {
+				if (b->automatch.line != b->cur_line) goto_line(b, b->automatch.line);
+				goto_pos(b, b->automatch.pos);
+				move_cursor(b->cur_y, b->cur_x);
+				if (b->syn) {
+					parse(b->syn, matching_ld, matching_ld->highlight_state, b->encoding == ENC_UTF8);
+					orig_attr = attr_buf[b->cur_pos];
+				} else orig_attr = 0; /* That's a stretch. FIX_ME */
+				output_char(c, AT_MASK, b->encoding == ENC_UTF8);
+		   	b->automatch.shown = 1;
+				if (b->automatch.line != orig_line) goto_line(b, orig_line);
+				goto_pos(b, orig_pos);
+				move_cursor(b->cur_y, b->cur_x);
+				if (0 && b->syn) {
+					if (b->automatch.line != b->cur_line) parse(b->syn, b->cur_line_desc, b->cur_line_desc->highlight_state, b->encoding == ENC_UTF8);
+				}
+			}
 		}
 	} else {
 		if (b->automatch.shown) {
@@ -169,7 +183,9 @@ void automatch_bracket(buffer *b, int show) {
 			orig_pos  = b->cur_pos;
 			goto_line(b, b->automatch.line);
 			goto_pos(b, b->automatch.pos);
-      	update_window_lines(b, b->cur_y, b->cur_y, TRUE);
+			move_cursor(b->cur_y, b->cur_x);
+			output_char(c, orig_attr, b->encoding == ENC_UTF8);
+      	/* update_window_lines(b, b->cur_y, b->cur_y, TRUE); */
 			goto_line(b, orig_line);
 			goto_pos(b, orig_pos);
 			move_cursor(b->cur_y, b->cur_x);

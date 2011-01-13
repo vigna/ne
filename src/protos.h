@@ -119,7 +119,7 @@ int to_upper(buffer *b);
 int to_lower(buffer *b);
 int capitalize(buffer *b);
 int match_bracket(buffer *b);
-int find_matching_bracket(buffer *b, int min_line, int max_line, int *match_line, int *match_pos, int *c);
+int find_matching_bracket(buffer *b, const int min_line, const int max_line, int *match_line, int *match_pos, int *c, line_desc ** ld);
 int word_wrap(buffer *b);
 int paragraph(buffer *b);
 int center(buffer *b);
