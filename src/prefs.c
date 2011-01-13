@@ -158,25 +158,26 @@ int save_prefs(buffer * const b, const char * const name) {
 
 		if (!saving_global && b->syn) record_action(cs, SYNTAX_A, -1, b->syn->name, verbose_macros);
 
-		record_action(cs, TABSIZE_A,       b->opt.tab_size,       NULL, verbose_macros);
-		record_action(cs, CLIPNUMBER_A,    b->opt.cur_clip,       NULL, verbose_macros);
-		record_action(cs, RIGHTMARGIN_A,   b->opt.right_margin,   NULL, verbose_macros);
-		record_action(cs, FREEFORM_A,      b->opt.free_form,      NULL, verbose_macros);
-		record_action(cs, HEXCODE_A,       b->opt.hex_code,       NULL, verbose_macros);
-		record_action(cs, WORDWRAP_A,      b->opt.word_wrap,      NULL, verbose_macros);
-		record_action(cs, AUTOINDENT_A,    b->opt.auto_indent,    NULL, verbose_macros);
-		record_action(cs, PRESERVECR_A,    b->opt.preserve_cr,    NULL, verbose_macros);
-		record_action(cs, INSERT_A,        b->opt.insert,         NULL, verbose_macros);
-		record_action(cs, DOUNDO_A,        b->opt.do_undo,        NULL, verbose_macros);
-		record_action(cs, AUTOPREFS_A,     b->opt.auto_prefs,     NULL, verbose_macros);
-		record_action(cs, NOFILEREQ_A,     b->opt.no_file_req,    NULL, verbose_macros);
+		record_action(cs, TABSIZE_A,          b->opt.tab_size,       NULL, verbose_macros);
+		record_action(cs, CLIPNUMBER_A,       b->opt.cur_clip,       NULL, verbose_macros);
+		record_action(cs, RIGHTMARGIN_A,      b->opt.right_margin,   NULL, verbose_macros);
+		record_action(cs, FREEFORM_A,         b->opt.free_form,      NULL, verbose_macros);
+		record_action(cs, HEXCODE_A,          b->opt.hex_code,       NULL, verbose_macros);
+		record_action(cs, WORDWRAP_A,         b->opt.word_wrap,      NULL, verbose_macros);
+		record_action(cs, AUTOINDENT_A,       b->opt.auto_indent,    NULL, verbose_macros);
+		record_action(cs, PRESERVECR_A,       b->opt.preserve_cr,    NULL, verbose_macros);
+		record_action(cs, INSERT_A,           b->opt.insert,         NULL, verbose_macros);
+		record_action(cs, DOUNDO_A,           b->opt.do_undo,        NULL, verbose_macros);
+		record_action(cs, AUTOPREFS_A,        b->opt.auto_prefs,     NULL, verbose_macros);
+		record_action(cs, NOFILEREQ_A,        b->opt.no_file_req,    NULL, verbose_macros);
       /* Skip read_only */
       /* Skip search_back */
-		record_action(cs, CASESEARCH_A,    b->opt.case_search,    NULL, verbose_macros);
-		record_action(cs, TABS_A,          b->opt.tabs,           NULL, verbose_macros);
-		record_action(cs, BINARY_A,        b->opt.binary,         NULL, verbose_macros);
-		record_action(cs, UTF8AUTO_A,      b->opt.utf8auto,       NULL, verbose_macros);
-		record_action(cs, VISUALBELL_A,    b->opt.visual_bell,    NULL, verbose_macros);
+		record_action(cs, CASESEARCH_A,       b->opt.case_search,    NULL, verbose_macros);
+		record_action(cs, TABS_A,             b->opt.tabs,           NULL, verbose_macros);
+		record_action(cs, AUTOMATCHBRACKET_A, b->opt.automatch,      NULL, verbose_macros);
+		record_action(cs, BINARY_A,           b->opt.binary,         NULL, verbose_macros);
+		record_action(cs, UTF8AUTO_A,         b->opt.utf8auto,       NULL, verbose_macros);
+		record_action(cs, VISUALBELL_A,       b->opt.visual_bell,    NULL, verbose_macros);
 		
 		if (saving_global) {
 			/* We only save the global flags that differ from their defaults. */
