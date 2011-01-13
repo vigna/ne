@@ -2607,6 +2607,7 @@ optionally case insensitive).
 * ReplaceAll::
 * RepeatLast::
 * MatchBracket::
+* AutoMatchBracket::
 * SearchBack::
 * CaseSearch::
 * AutoComplete::
@@ -2801,6 +2802,20 @@ provided.
 cursor is on. If the cursor is not on a bracket, or there is no bracket
 associated with the current one, an error message is issued. Recognized
 brackets are @samp{@{@}}, @samp{()}, @samp{[]} and @samp{<>}.
+See @ref{AutoMatchBracket}.
+
+@node AutoMatchBracket
+@subsection AutoMatchBracket
+@cmindex AutoMatchBracket
+
+@noindent Syntax: @code{AutoMatchBracket [0|1]}@*
+@noindent Abbreviation: @code{AMB}
+
+@noindent sets the auto match bracket flag. When this flag is set, if
+the cursor is on a recognized bracket and the associated matching
+bracket is on the screen, the matching bracket will be highlighted.
+Recognized brackets are @samp{@{@}}, @samp{()}, @samp{[]} and @samp{<>}.
+See @ref{MatchBracket}.
 
 
 
@@ -3397,8 +3412,9 @@ FLAG COMMAND      ABBR  DESCRIPTION
   @@   UTF8IO        U8IO I/O (keyboard and terminal) are UTF-8 encoded
 A/8/U UTF8          U8   the document encoding (ASCII, 8-bit or UTF-8)
 @end example
-The @code{RequestOrder} flag's state is not indicated on the status bar.
-See @ref{RequestOrder}.
+
+The @code{RequestOrder} and @code{AutoMatchBracket} flags' states are not indicated on the status bar.
+See @ref{RequestOrder} and @ref{AutoMatchBracket} respectively.
 
 
 @node AutoPrefs

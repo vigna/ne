@@ -359,6 +359,10 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		SET_USER_FLAG(b, c, opt.tabs);
 		return OK;
 
+	case AUTOMATCHBRACKET_A:
+		SET_USER_FLAG(b, c, opt.automatch);
+		return OK;
+
 	case INSERTTAB_A:
 		recording = b->recording;
 		b->recording = 0;
