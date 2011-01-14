@@ -30,3 +30,6 @@
   * Added AutoMatchBracket to indicate visible matching {}, (), [], <> pairs.
 
   * Fixed bug in "AdjustView R" that could push current character of screen.
+
+  * Ensure tab size remains less than half the window width when the window
+    changes size.
