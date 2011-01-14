@@ -28,3 +28,5 @@
   * About now displays splash screen in addition to its status bar message.
 
   * Added AutoMatchBracket to indicate visible matching {}, (), [], <> pairs.
+
+  * Fixed bug in "AdjustView R" that could push current character of screen.

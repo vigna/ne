@@ -1,6 +1,6 @@
 /* Navigation functions.
 
-	Copyright (C) 1993-1998 Sebastiano Vigna 
+	Copyright (C) 1993-1998 Sebastiano Vigna
 	Copyright (C) 1999-2011 Todd M. Lewis and Sebastiano Vigna
 
 	This file is part of ne, the nice editor.
@@ -39,7 +39,7 @@ in an obvious way. (Yeah, right.) */
 
 /*********************************************************************************
 You stand absolutely no chance of understanding this code if you aren't intimately
-familiar with this diagram.      
+familiar with this diagram.
 
           |<- cur_pos (in bytes)-->|
           |<- cur_char (in chars)->|
@@ -56,7 +56,7 @@ familiar with this diagram.
     cur_y |         |                         |          |  |         |       |
       |   |         |                         |          |  |         |       |
       |   |         |                         |          |  |         |       |
-     ---  |         |              @ <-Cursor |          | ---        |      ne_lines   
+     ---  |         |              @ <-Cursor |          | ---        |      ne_lines
           |         |                         |          |          num_lines |
           |         |                         |          |            |       |
           |         |                         |          |            |       |
@@ -68,10 +68,10 @@ familiar with this diagram.
           +----------------------------------------------+          -----
 
                     |<---- ne_columns ------->|
-         
+
 ************************************************************************************/
 
-          
+
 /* "Resyncs" cur_pos (the current character the cursor is on) with cur_x and
 	win_x. It has to take into account the TAB expansion, and can cause
 	left/right movement in order to properly land on a real character.  x is the
@@ -225,7 +225,7 @@ int line_down(buffer * const b) {
  * because the screen may have been resized since the last time we
  * were here.
  */
- 
+
 void keep_cursor_on_screen(buffer * const b) {
 	if (b->cur_y > ne_lines - 2) {
 		while(b->cur_y > ne_lines - 2) {
@@ -233,13 +233,13 @@ void keep_cursor_on_screen(buffer * const b) {
 			b->win_y++;
 			b->attr_len = -1;
 			b->top_line_desc = (line_desc *)b->top_line_desc->ld_node.next;
-		}  
+		}
 		assert(b->win_y = b->cur_line - b->cur_y);
 		b->y_wanted = FALSE;
 	}
 
 	while(b->cur_x >= ne_columns) {
-		b->win_x += b->opt.tab_size; 
+		b->win_x += b->opt.tab_size;
 		b->cur_x -= b->opt.tab_size;
 	}
 }
@@ -469,7 +469,7 @@ int page_up(buffer * const b) {
 			b->cur_line_desc = (line_desc *)b->cur_line_desc->ld_node.prev;
 			b->cur_line--;
 		}
-		   
+		
 	   /* Should we shift the view up? */
 		if (b->win_y > 0 /* We aren't already at the top */
 				&& b->win_y + b->wanted_cur_y > b->wanted_y) { /* Gap between virtual cursor and TOS is to small */
@@ -505,7 +505,7 @@ int page_down(buffer * const b) {
    }
 
    shift_view = (b->win_y + disp < b->num_lines); /* can't already see the last line */
-   
+
 	for (i = 0; i < disp; i++) {
 		b->wanted_y++; /* We want to move down */
 			
@@ -515,7 +515,7 @@ int page_down(buffer * const b) {
 			b->cur_line_desc = (line_desc *)b->cur_line_desc->ld_node.next;
 			b->cur_line++;
 		}
-		   
+		
 	   /* Should we shift the view down? */
 		if (shift_view /* already decided we should */
 				&& b->wanted_y - b->wanted_cur_y >  b->win_y) { /* Gap between virtual cursor and TOS is to big */
@@ -587,7 +587,7 @@ int adjust_view(buffer * const b, const unsigned char *p) {
 	b->y_wanted = 0;
 
 	if (!p) p = "t";
-	  
+	
 	while(*p) {
 		disp = 0;
 		mag = max(0,strtol(p+1, &q, 0));
@@ -642,7 +642,7 @@ int adjust_view(buffer * const b, const unsigned char *p) {
 			case 'R' :
 				/* Shift the view as far right as possible, or mag columns. */
 				if (mag == 0) mag = b->win_x;
-				while (b->cur_x < ne_columns - ne_columns % b->opt.tab_size && b->win_x >= b->opt.tab_size && mag > 0) {
+				while (b->cur_x < ne_columns - b->opt.tab_size && b->win_x >= b->opt.tab_size && mag > 0) {
 					mag      -= b->opt.tab_size;
 					b->win_x -= b->opt.tab_size;
 					b->cur_x += b->opt.tab_size;
@@ -771,7 +771,7 @@ void move_to_sol(buffer * const b) {
 	t = b->win_x;
 	b->win_x =
 	b->cur_x =
-	b->cur_pos = 
+	b->cur_pos =
 	b->cur_char = 0;
 
 	if (t &&  b == cur_buffer) update_window(b);
