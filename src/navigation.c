@@ -227,6 +227,12 @@ int line_down(buffer * const b) {
  */
 
 void keep_cursor_on_screen(buffer * const b) {
+   int shift_right;
+	b->opt.tab_size = min(b->opt.tab_size, max(ne_columns / 2 - 1,1));
+	if (shift_right = b->win_x % b->opt.tab_size) {
+		b->win_x -= shift_right;
+		b->cur_x += shift_right;
+	}
 	if (b->cur_y > ne_lines - 2) {
 		while(b->cur_y > ne_lines - 2) {
 			b->cur_y--;
