@@ -170,7 +170,7 @@ ne.o: ne.h keycodes.h names.h errors.h protos.h version.h regex.h
 
 prefs.o: ne.h keycodes.h names.h errors.h protos.h
 
-regex.o: regex.h regex_internal.c regex_internal.h
+regex.o: regex.h regex_internal.c regex_internal.h regexec.c
 
 request.o: ne.h keycodes.h names.h errors.h protos.h
 

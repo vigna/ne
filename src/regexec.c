@@ -2899,7 +2899,7 @@ check_arrival (re_match_context_t *mctx, state_array_t *path, int top_node,
 	      sizeof (re_dfastate_t *) * (path->alloc - old_alloc));
     }
 
-  str_idx = path->next_idx ?: top_str;
+  str_idx = path->next_idx ? path->next_idx : top_str;
 
   /* Temporary modify MCTX.  */
   backup_state_log = mctx->state_log;
