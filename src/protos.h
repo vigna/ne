@@ -113,6 +113,7 @@ void reset_window(void);
 void refresh_window(buffer *b);
 void scroll_window(buffer *b, int line, int n);
 HIGHLIGHT_STATE freeze_attributes(buffer *b, line_desc *ld);
+void automatch_bracket(buffer * const b, const int show);
 
 /* edit.c */
 int to_upper(buffer *b);

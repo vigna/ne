@@ -432,8 +432,8 @@ typedef struct {
 	int block_start_line, block_start_col;
 	struct {
 		int shown;
-		int pos;
-		int line;
+		int x;						/* Visual (on-screen) coordinates of the highlighted bracket, if shown is true. */
+		int y;
 	} automatch;
 	int allocated_chars;
 	int free_chars;

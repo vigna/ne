@@ -144,95 +144,6 @@ int delete_buffer(void) {
 	return FALSE;
 }
 
-void automatch_bracket(buffer *b, int show) {
-	static int c, orig_attr;
-	int orig_line, orig_pos, match_col, tmp_attr;
-	line_desc *matching_ld;
-	if (show) {
-		if (find_matching_bracket(b, b->win_y, b->win_y + ne_lines - 2 >= b->num_lines - 1 ? b->num_lines - 1 : b->win_y + ne_lines - 2,
-		                          &b->automatch.line, &b->automatch.pos, &c, &matching_ld) == OK) {
-			/* highlight that character */
-			orig_line = b->cur_line;
-			orig_pos  = b->cur_pos;
-			
-			/* We limited find_matching_bracket()'s search to the visible lines, but not the
-			visible portions of those lines. Now ensure the matching pos is within the visible window. */
-			match_col = calc_width(matching_ld, b->automatch.pos, b->opt.tab_size, b->encoding) - b->win_x;
-			if (match_col >= 0 && match_col < ne_columns ) {
-				if (b->automatch.line != b->cur_line) goto_line(b, b->automatch.line);
-				goto_pos(b, b->automatch.pos);
-				move_cursor(b->cur_y, b->cur_x);
-				if (b->syn) {
-					parse(b->syn, matching_ld, matching_ld->highlight_state, b->encoding == ENC_UTF8);
-					orig_attr = attr_buf[b->cur_pos];
-				} else orig_attr = 0; /* That's a stretch. FIX_ME */
-				switch (orig_attr & BG_MASK) {
-				case BG_BLACK:    tmp_attr = BG_BBLACK;       break;
-				case BG_RED:      tmp_attr = BG_BRED;         break;
-				case BG_GREEN:    tmp_attr = BG_BGREEN;       break;
-				case BG_YELLOW:   tmp_attr = BG_BYELLOW;      break;
-				case BG_BLUE:     tmp_attr = BG_BBLUE;        break;
-				case BG_MAGENTA:  tmp_attr = BG_BMAGENTA;     break;
-				case BG_CYAN:     tmp_attr = BG_BCYAN;        break;
-				case BG_WHITE:    tmp_attr = BG_BWHITE;       break;
-				case BG_BBLACK:   tmp_attr = BG_BLACK;        break;
-				case BG_BRED:     tmp_attr = BG_RED;          break;
-				case BG_BGREEN:   tmp_attr = BG_GREEN;        break;
-				case BG_BYELLOW:  tmp_attr = BG_YELLOW;       break;
-				case BG_BBLUE:    tmp_attr = BG_BLUE;         break;
-				case BG_BMAGENTA: tmp_attr = BG_MAGENTA;      break;
-				case BG_BCYAN:    tmp_attr = BG_CYAN;         break;
-				case BG_BWHITE:   tmp_attr = BG_WHITE;        break;
-				default:          tmp_attr = BG_BWHITE;       break;
-				}                           
-				
-				switch (orig_attr & FG_MASK) {
-				case FG_BLACK:    tmp_attr |= FG_BBLACK;      break;
-				case FG_RED:      tmp_attr |= FG_BRED;        break;
-				case FG_GREEN:    tmp_attr |= FG_BGREEN;      break;
-				case FG_YELLOW:   tmp_attr |= FG_BYELLOW;     break;
-				case FG_BLUE:     tmp_attr |= FG_BBLUE;       break;
-				case FG_MAGENTA:  tmp_attr |= FG_BMAGENTA;    break;
-				case FG_CYAN:     tmp_attr |= FG_BCYAN;       break;
-				case FG_WHITE:    tmp_attr |= FG_BWHITE;      break;
-				case FG_BBLACK:   tmp_attr |= FG_BLACK;       break;
-				case FG_BRED:     tmp_attr |= FG_RED;         break;
-				case FG_BGREEN:   tmp_attr |= FG_GREEN;       break;
-				case FG_BYELLOW:  tmp_attr |= FG_YELLOW;      break;
-				case FG_BBLUE:    tmp_attr |= FG_BLUE;        break;
-				case FG_BMAGENTA: tmp_attr |= FG_MAGENTA;     break;
-				case FG_BCYAN:    tmp_attr |= FG_CYAN;        break;
-				case FG_BWHITE:   tmp_attr |= FG_WHITE;       break;
-				default:          tmp_attr |= FG_BBLACK;      break;
-				}
-				if (!orig_attr) tmp_attr |= BOLD;
-				output_char(c, tmp_attr, b->encoding == ENC_UTF8);
-		   	b->automatch.shown = 1;
-				if (b->automatch.line != orig_line) goto_line(b, orig_line);
-				goto_pos(b, orig_pos);
-				move_cursor(b->cur_y, b->cur_x);
-				if (0 && b->syn) {
-					if (b->automatch.line != b->cur_line) parse(b->syn, b->cur_line_desc, b->cur_line_desc->highlight_state, b->encoding == ENC_UTF8);
-				}
-			}
-		}
-	} else {
-		if (b->automatch.shown) {
-      	/* unhighlight that character */
-			orig_line = b->cur_line;
-			orig_pos  = b->cur_pos;
-			goto_line(b, b->automatch.line);
-			goto_pos(b, b->automatch.pos);
-			move_cursor(b->cur_y, b->cur_x);
-			output_char(c, orig_attr, b->encoding == ENC_UTF8);
-			goto_line(b, orig_line);
-			goto_pos(b, orig_pos);
-			move_cursor(b->cur_y, b->cur_x);
-      	b->automatch.shown = 0;
-		}
-	}
-}
-
 void about(int show) {
    int i;
 
@@ -473,12 +384,13 @@ int main(int argc, char **argv) {
 		/* If we are displaying the "NO WARRANTY" info, we should not refresh the
 		window now */
 
-		if (!displaying_info) refresh_window(cur_buffer);
+		if (!displaying_info) {
+			refresh_window(cur_buffer);
+			if (cur_buffer->opt.automatch) automatch_bracket(cur_buffer, TRUE);
+		}
 
 		draw_status_bar();
-
 		move_cursor(cur_buffer->cur_y, cur_buffer->cur_x);
-		if (!displaying_info && cur_buffer->opt.automatch) automatch_bracket(cur_buffer,1);
 
 		c = get_key_code();
 		ic = CHAR_CLASS(c);
@@ -493,7 +405,7 @@ int main(int argc, char **argv) {
 			about(0);
 			displaying_info = FALSE;
 		}
-		else if (cur_buffer->automatch.shown) automatch_bracket(cur_buffer,0);
+		else if (cur_buffer->automatch.shown) automatch_bracket(cur_buffer, FALSE);
 
 		switch(ic) {
 		case INVALID:
