@@ -335,7 +335,7 @@ int dump_config(void) {
 #endif
 
 static void draw_cur_item(const int n) {
-	move_cursor(menus[n].cur_item + 1, menus[n].xpos);
+	move_cursor(menus[n].cur_item + 1, menus[n].xpos - (fast_gui || !standout_ok));
 	if (!fast_gui && standout_ok) output_chars(menus[n].items[menus[n].cur_item].text, NULL, menus[n].width - (cursor_on_off_ok ? 0 : 1), TRUE);
 }
 
@@ -344,7 +344,7 @@ static void undraw_cur_item(const int n) {
 	if (!fast_gui && standout_ok)  {
 		set_attr(0);
 		standout_on();
-		move_cursor(1 + menus[n].cur_item, menus[n].xpos);
+		move_cursor(menus[n].cur_item + 1, menus[n].xpos);
 		output_chars(menus[n].items[menus[n].cur_item].text, NULL, menus[n].width - (cursor_on_off_ok ? 0 : 1), TRUE);
 		standout_off();
 	}
