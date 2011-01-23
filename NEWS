@@ -6,6 +6,10 @@
 
   * About now displays splash screen in addition to its status bar message.
 
+  * In FastGUI mode, when highlighting menu items the cursor is now
+    positioned on the border of the menu rather then on the first letter
+    of menu items.
+
 2.1
 
   * New commands: KeyCode, DeleteNextWord, DeletePrevWord, AutoComplete,
