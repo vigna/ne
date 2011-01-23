@@ -1,3 +1,15 @@
+2.2
+
+  * Fixed memory allocation macros in regex code from glibc to work on systems
+    that return NULL on zero-sized allocations.
+
+  * In makefile, made explicit the dependencies for regex.o.
+
+  * Fixed bug in "AdjustView R" that could push current character off screen.
+
+  * Ensure tab size remains less than half the window width when the window
+    changes size.
+
 2.1
 
   * Fixed efficiency bug introduced with syntax highlighting: ne should now
@@ -18,18 +30,3 @@
 
   * BackSpace and Delete behave better in FreeForm mode.
 
-  * Fixed memory allocation macros in regex code from glibc to work on systems
-    which return NULL on zero-sized allocations.
-
-  * In makefile, made explicit the dependancies for regex.o.
-
-  * Mention http://groups.google.com/group/niceeditor in splash screen.
-
-  * About now displays splash screen in addition to its status bar message.
-
-  * Added AutoMatchBracket to indicate visible matching {}, (), [], <> pairs.
-
-  * Fixed bug in "AdjustView R" that could push current character of screen.
-
-  * Ensure tab size remains less than half the window width when the window
-    changes size.
