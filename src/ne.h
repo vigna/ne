@@ -442,6 +442,7 @@ typedef struct {
 	struct {
 		int pos;
 		int line;
+		int cur_y;
 	} bookmark[NUM_BOOKMARKS];
 	int bookmark_mask;        /* bit N is set if bookmark[N] is set */
 	

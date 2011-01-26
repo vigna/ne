@@ -293,6 +293,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		case SETBOOKMARK_A:
 			b->bookmark[c].pos = b->cur_pos;
 			b->bookmark[c].line = b->cur_line;
+			b->bookmark[c].cur_y = b->cur_y;
 			b->bookmark_mask |= (1 << c);
 			snprintf(msg, MAX_MESSAGE_SIZE, "Bookmark %d set", c-1);
 			print_message(msg);
@@ -309,11 +310,18 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			else {
 				const int prev_line = b->cur_line;
 				const int prev_pos  = b->cur_pos;
+				const int cur_y     = b->cur_y;
+				int  avshift;
 				delay_update();
 				goto_line(b, b->bookmark[c].line);
 				goto_pos(b, b->bookmark[c].pos);
-				b->bookmark[0].line = prev_line;
-				b->bookmark[0].pos = prev_pos;
+				if (avshift = b->cur_y - b->bookmark[c].cur_y) {
+					snprintf(msg, MAX_MESSAGE_SIZE, "%c%d", avshift > 0 ? 'T' :'B', avshift > 0 ? avshift : -avshift);
+					adjust_view(b,msg);
+				}
+				b->bookmark[0].line  = prev_line;
+				b->bookmark[0].pos   = prev_pos;
+				b->bookmark[0].cur_y = cur_y;
 				b->bookmark_mask |= 1;
 			}
 		}

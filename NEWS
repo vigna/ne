@@ -10,6 +10,8 @@
     positioned on the border of the menu rather then on the first letter
     of menu items.
 
+  * Bookmarks now remember/restore their vertical offest in the window.
+
 2.1
 
   * New commands: KeyCode, DeleteNextWord, DeletePrevWord, AutoComplete,
