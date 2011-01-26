@@ -765,7 +765,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 				b->syn = NULL; /* So that autoprefs will load the right syntax. */
 				if (b->opt.auto_prefs && extension(p)) load_auto_prefs(b, extension(p));
 				error = load_file_in_buffer(b, p);
-				if (error != FILE_IS_MIGRATED && error != FILE_IS_DIRECTORY) change_filename(b, p);
+				if (error != FILE_IS_MIGRATED && error != FILE_IS_DIRECTORY && error != OUT_OF_MEMORY) change_filename(b, p);
 				print_error(error);
 				reset_window();
 				return OK;

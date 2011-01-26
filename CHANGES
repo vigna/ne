@@ -10,6 +10,8 @@
   * Ensure tab size remains less than half the window width when the window
     changes size.
 
+  * Fixed buggy out-of-memory handling when loading files.
+
 2.1
 
   * Fixed efficiency bug introduced with syntax highlighting: ne should now

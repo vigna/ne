@@ -1204,6 +1204,7 @@ int load_fh_in_buffer(buffer *b, int fh) {
 		if (read(fh, cp->pool, len) < len) {
 			free_char_pool(cp);
 			release_signals();
+			clear_buffer(b);
 			return IO_ERROR;
 		}
 
@@ -1310,6 +1311,7 @@ int load_fh_in_buffer(buffer *b, int fh) {
 	}
 
 	release_signals();
+	clear_buffer(b);
 	return OUT_OF_MEMORY;
 }
 
