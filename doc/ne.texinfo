@@ -698,22 +698,26 @@ manipulate UTF-8 files transparently, in particular on systems that
 provide UTF-8 I/O. @xref{UTF-8 Support}.
 
 @subsection Bookmarks
-It often happens that you have to browse through a file, switching frequently
-between a small number of positions. In this case, you can use
-@dfn{bookmarks}. There are up to ten bookmarks per document, each designated
-by a single digit, with the default being @samp{0}. You can set them with the
-@code{SetBookmark} command, and you can return to any set bookmark with the
-@code{GotoBookmark} command. Also, @code{ne} sets an automatic bookmark
-(designated by @samp{-}) to your current position in a document whenever you
-use the @code{GotoBookmark} command. You can use this automatic bookmark to
-return to that previous location with a @code{GotoBookmark -} command. Doing
-so will reset the automatic bookmark, so that subsequent @code{GotoBookmark -}
-commands will switch between those two locations. @xref{SetBookmark},
-@ref{GotoBookmark}, and @ref{UnsetBookmark}. The @code{GotoNextBookmark} and
-@code{GotoPrevBookmark} commands let you easily cycle through all your set
-bookmarks. Note that in the default
-configuration no key binding is assigned to these commands. If you use them
-frequently, you may want to change the key bindings. @xref{Key Bindings}.
+It often happens that you have to browse through a file, switching
+frequently between a small number of positions. In this case, you can use
+@dfn{bookmarks}. There are up to ten bookmarks per document, each
+designated by a single digit, with the default being @samp{0}. You can set
+them with the @code{SetBookmark} command, and you can return to any set
+bookmark with the @code{GotoBookmark} command. Also, @code{ne} sets an
+automatic bookmark (designated by @samp{-}) to your current position in a
+document whenever you use the @code{GotoBookmark} command. You can use
+this automatic bookmark to return to that previous location with a
+@code{GotoBookmark -} command. Doing so will reset the automatic bookmark,
+so that subsequent @code{GotoBookmark -} commands will switch between
+those two locations. The special parameters @samp{+1} and @samp{-1}
+indicate the next or previous set bookmark in conjunction with
+@code{GotoBookmark} and @code{UnsetBookmark}, but reference the next or
+previous unset bookmark when used with @code{SetBookmark}. A sequence of
+@code{GotoBookmark +1} commands lets you easily cycle through all your set
+bookmarks. @xref{SetBookmark}, @ref{GotoBookmark}, and
+@ref{UnsetBookmark}. Note that in the default configuration no key binding
+is assigned to these commands. If you use them frequently, you may want to
+change the key bindings. @xref{Key Bindings}.
 
 @subsection Automatic Completion
 The @code{AutoComplete} command helps you extend a given prefix with matching
@@ -1454,12 +1458,6 @@ contents or locations within a document.
 
 @item Goto Bookmark
 @xref{GotoBookmark}.
-
-@item Goto Next Bookmark
-@xref{GotoNextBookmark}.
-
-@item Goto Prev Bookmark
-@xref{GotoPrevBookmark}.
 
 @end table
 
@@ -4158,8 +4156,6 @@ to the same position later.
 * ToggleSEOL::
 * SetBookmark::
 * GotoBookmark::
-* GotoNextBookmark::
-* GotoPrevBookmark::
 * UnsetBookmark::
 @end menu
 
@@ -4540,78 +4536,54 @@ order to gain some keystrokes on systems with very few keys. See also
 @subsection SetBookmark
 @cmindex SetBookmark
 
-@noindent Syntax: @code{SetBookmark [@var{n}|@var{-}]}@*
+@noindent Syntax: @code{SetBookmark [@var{n}|@var{+1}|@var{-1}|@var{-}]}@*
 @noindent Abbreviation: @code{SBM}
 
-@noindent sets the @var{n}th bookmark to the current cursor position. If the
-optional @var{n} argument is not specified, it is assumed to be zero. You can
-also unset the @samp{-} automatic bookmark, but it will be reset automatically to
-the current position whenever a @code{GotoBookmark} command is issued. Each
-document's valid bookmark designations are 0 to 9, and the @samp{-} automatic
-bookmark.
-
+@noindent sets a document bookmark to the current cursor position.
+Each document has 10 available bookmarks designated @samp{0} to @samp{9},
+plus the automatic bookmark designated by @samp{-}. If no option is given,
+@samp{0} is assumed. Values of @var{n} from @samp{0} to @samp{9} set the
+@var{n}th bookmark, while @samp{+1} and @samp{-1} indicate respectively
+the next and previous available unset bookmarks. You can also set the
+@samp{-} automatic bookmark, but it will be reset automatically to the
+current position whenever a @code{GotoBookmark} command is issued.
 
 
 @node GotoBookmark
 @subsection GotoBookmark
 @cmindex GotoBookmark
 
-@noindent Syntax: @code{GotoBookmark [@var{n}|@var{-}]}@*
+@noindent Syntax: @code{GotoBookmark [@var{n}|@var{+1}|@var{-1}|@var{-}]}@*
 @noindent Abbreviation: @code{GBM}
 
-@noindent moves the cursor to the @var{n}th or @var{-} automatic bookmark,
-assuming that bookmark has been set; see @ref{SetBookmark}. If the optional
-@var{n} argument is not specified, it is assumed to be zero. When successful,
-the @samp{-} automatic bookmark is set to the position in the document from which
-the command was issued, so that @code{GotoBookmark -} returns you to the location
-from which you last issued a @code{GotoBookmark} command. Subsequent repeated
-@code{GotoBookmark -} commands toggle you between the two locations. Each
-document's valid bookmark designations are 0 to 9, and the @samp{-} automatic
-bookmark.
-
-
-
-@node GotoNextBookmark
-@subsection GotoNextBookmark
-@cmindex GotoNextBookmark
-
-@noindent Syntax: @code{GotoNextBookmark}@*
-@noindent Abbreviation: @code{GNB}
-
-@noindent moves the cursor to the next bookmark,
-assuming that a bookmark has been set; see @ref{SetBookmark}. When successful,
-the @samp{-} automatic bookmark is set to the position in the document from which
-the command was issued, so that @code{GotoBookmark -} returns you to that location.
-
-
-
-@node GotoPrevBookmark
-@subsection GotoPrevBookmark
-@cmindex GotoPrevBookmark
-
-@noindent Syntax: @code{GotoPrevBookmark}@*
-@noindent Abbreviation: @code{GPB}
-
-@noindent moves the cursor to the previous bookmark,
-assuming that a bookmark has been set; see @ref{SetBookmark}. When successful,
-the @samp{-} automatic bookmark is set to the position in the document from which
-the command was issued, so that @code{GotoBookmark -} returns you to that location.
-
+@noindent moves the cursor to the designated bookmark if that bookmark is
+set; see @ref{SetBookmark}. Each document has 10 available bookmarks
+designated @samp{0} to @samp{9}, plus the automatic bookmark designated by
+@samp{-}. If no option is given, @samp{0} is assumed. The optons @samp{+1}
+and @samp{-1} indicate respectively the next and previous set bookmarks,
+so that repeated @code{GotoBookmark +1} commands will cycle through all
+currently set bookmarks. When successful, the @samp{-} automatic bookmark
+is set to the position in the document from which the command was issued,
+so that @code{GotoBookmark -} returns you to the location from which you
+last issued a successful @code{GotoBookmark} command. Subsequent repeated
+@code{GotoBookmark -} commands will toggle you between the two locations.
 
 
 @node UnsetBookmark
 @subsection UnsetBookmark
 @cmindex UnsetBookmark
 
-@noindent Syntax: @code{UnsetBookmark [@var{n}|@var{-}]}@*
+@noindent Syntax: @code{UnsetBookmark [@var{n}|@var{+1}|@var{-1}|@var{-}|@var{*}]}@*
 @noindent Abbreviation: @code{UBM}
 
-@noindent unsets the @var{n}th bookmark, making it as if it had never been
-set; see @ref{SetBookmark}. If the optional @var{n} argument is not specified,
-it is assumed to be zero. You can also unset the @samp{-} automatic bookmark, but
-it will be reset automatically to the current position whenever a @code{GotoBookmark}
-command is issued. Each document's valid bookmark designations are 0 to 9, and
-the  @samp{-} automatic bookmark.
+@noindent unsets either the @var{n}th bookmark, the next (@var{+1}) or
+previous (@var{-1}) set bookmarks, the automatic (@var{-}) bookmark, or
+all (@var{*}) bookmarks, making it as if they had never been set; see
+@ref{SetBookmark}. If no option is specified, @var{n} is assumed to be
+zero. While you can unset the automatic bookmark @samp{-}, it will be
+reset automatically to the current position whenever a @code{GotoBookmark}
+command is issued. Each document's valid bookmark designations are 0 to 9,
+and the  @samp{-} automatic bookmark.
 
 
 

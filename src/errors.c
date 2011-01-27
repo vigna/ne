@@ -34,7 +34,7 @@ char *error_msg[ERROR_COUNT] = {
 	"You are not positioned over {}, (), [] or <>.",
 	"Can't find matching bracket.",
 	"Bookmark not set.",
-	"Bookmark number out of range.",
+	"Invalid Bookmark designation (use 0 through 9, -1, +1, or '-').",
 	"You cannot insert a character whose ASCII code is 0.",
 	"No search string.",
 	"No replace string.",

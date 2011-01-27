@@ -4,7 +4,8 @@
 
   * Bookmarks now remember/restore their vertical offest in the window.
 
-  * New GotoNextBookmark and GotoPrevBookmark commands cycle through your bookmarks.
+  * Bookmark commands take -1/+1 to cycle through your bookmarks,
+    "UnsetBookmark *" to unset all bookmarks.
 
   * Mention http://groups.google.com/group/niceeditor in splash screen.
 
@@ -21,7 +22,7 @@
 
   * Now we set the syntax when a file is saved with a (different) name.
 
-  * Now we highlight correctly control characters in the command line.
+  * Now we correctly highlight control characters in the command line.
 
   * Display request lists by columns ("RequestOrder 1") or rows ("RequestOrder 0").
 

@@ -100,8 +100,6 @@ static const command commands[ACTION_COUNT] = {
 	{ NAHL(GOTOCOLUMN    ),0                                                                      },
 	{ NAHL(GOTOLINE      ),0                                                                      },
 	{ NAHL(GOTOMARK      ), NO_ARGS                                                               },
-	{ NAHL(GOTONEXTBOOKMARK),NO_ARGS                                                              },
-	{ NAHL(GOTOPREVBOOKMARK),NO_ARGS                                                              },
 	{ NAHL(HELP          ),           ARG_IS_STRING |             DO_NOT_RECORD                   },
 	{ NAHL(HEXCODE       ),                           IS_OPTION                                   },
 	{ NAHL(INSERT        ),                           IS_OPTION                                   },

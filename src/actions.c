@@ -270,13 +270,36 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		move_inc_down(b);
 		return OK;
 
-	case SETBOOKMARK_A:
 	case UNSETBOOKMARK_A:
+		if (p && p[0]=='*' && !p[1]) { /* Special parm "*" for UNSETBOOKMARK_A */
+			b->bookmark_mask = b->cur_bookmark = 0;
+			print_message("All BookMarks cleared.");
+			free(p);
+			return OK;
+		} /* Intentionally fall through to regular BOOKMARK parm parsing. */
+	case SETBOOKMARK_A:
 	case GOTOBOOKMARK_A:
-		/* *p can be  "", "-", "0".."9", for which, respectively, */
-		/*  c becomes  1,  0,   1 .. 10. Anything else is out of range. */
+		/* *p can be  "", "-", "0".."9", "+1","-1", for which, respectively, */
+		/*  c becomes  1,  0,   1 .. 10, next,prev. Anything else is out of range. */
 		if (p) {
-			if (p[0]) {
+			if ((p[0]=='+' || p[0]=='-') && p[1]=='1') {
+				if (b->cur_bookmark<1 || b->cur_bookmark>=NUM_BOOKMARKS) b->cur_bookmark = 1;
+				for (i=0; i<NUM_BOOKMARKS-1; i++) {
+					b->cur_bookmark = (b->cur_bookmark-1+NUM_BOOKMARKS-1+(p[0]=='+'?1:-1))%(NUM_BOOKMARKS-1)+1;
+					if ((a==SETBOOKMARK_A?~b->bookmark_mask:b->bookmark_mask) & (1<<b->cur_bookmark)) {
+						c = b->cur_bookmark;
+						break;
+					}
+				}
+				if (i==NUM_BOOKMARKS-1) {
+					if (a==SETBOOKMARK_A) snprintf(msg, MAX_MESSAGE_SIZE, "No unset Bookmarks available to set.");
+					else snprintf(msg, MAX_MESSAGE_SIZE, "No set Bookmarks to %s.", a==GOTOBOOKMARK_A?"goto":"unset" );
+					print_message(msg);
+					free(p);
+					return OK;
+				}
+				
+			} else if (p[0]) {
 				if (!p[1]) {
 					if (*p == '-') c = 0;
 					else c = *p - '0' + 1;
@@ -285,22 +308,10 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			}
 			else c = 1;
 			free(p);
-			if (c < 0 || c >= NUM_BOOKMARKS) return BOOKMARK_OUT_OF_RANGE;
+			if (c < 0 || c >= NUM_BOOKMARKS) return INVALID_BOOKMARK_DESIGNATION;
 		}
 		else 
 			c = 1;
-	case GOTONEXTBOOKMARK_A:
-	case GOTOPREVBOOKMARK_A:
-		if (b->cur_bookmark<1 || b->cur_bookmark>=NUM_BOOKMARKS) b->cur_bookmark = 1;
-		if (a==GOTONEXTBOOKMARK_A || a==GOTOPREVBOOKMARK_A && (b->bookmark_mask & ((1<<NUM_BOOKMARKS)-2))) {
-			for (i=0; i<NUM_BOOKMARKS-1; i++) {
-				b->cur_bookmark = (b->cur_bookmark-1+NUM_BOOKMARKS-1+(a==GOTONEXTBOOKMARK_A?1:-1))%(NUM_BOOKMARKS-1)+1;
-				if (b->bookmark_mask & (1<<b->cur_bookmark)) {
-					c = b->cur_bookmark;
-					break;
-				}
-			}
-		}
 		switch(a) {
 		case SETBOOKMARK_A:
 			b->bookmark[c].pos = b->cur_pos;
@@ -308,18 +319,16 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			b->bookmark[c].cur_y = b->cur_y;
 			b->bookmark_mask |= (1 << c);
 			b->cur_bookmark = c;
-			snprintf(msg, MAX_MESSAGE_SIZE, "Bookmark %d set", c-1);
+			snprintf(msg, MAX_MESSAGE_SIZE, "Bookmark %c set", c>0?'0'+c-1 : '-');
 			print_message(msg);
 			break;
 		case UNSETBOOKMARK_A:
 			if (! (b->bookmark_mask & (1 << c)))
 				return BOOKMARK_NOT_SET;
 			b->bookmark_mask &= ~(1 << c);
-			snprintf(msg, MAX_MESSAGE_SIZE, "Bookmark %d unset", c-1);
+			snprintf(msg, MAX_MESSAGE_SIZE, "Bookmark %c unset", c>0?'0'+c-1 : '-');
 			print_message(msg);
 			break;
-		case GOTONEXTBOOKMARK_A:
-		case GOTOPREVBOOKMARK_A:
 		case GOTOBOOKMARK_A:
 			if (! (b->bookmark_mask & (1 << c))) return BOOKMARK_NOT_SET;
 			else {
