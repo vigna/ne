@@ -64,8 +64,10 @@ char *NO_WARRANTY_msg[] = {	PROGRAM_NAME " " VERSION ".",
 char ARG_HELP[] = ABOUT_MSG "\n"
 						"Usage: ne [options] [files]\n"
 						"--help        print this message.\n"
-						"--            next token is a filename.\n"
-						"+[N]          move to the N-th (or the last, if N is missing) line of the first file.\n"
+						"--           *next token is a filename.\n"
+						"+[N]         *move to the N-th line (or last if N is missing) of the next file loaded.\n"
+						"+N,M         *move to the N-th line and M-th column of the next file loaded.\n"
+						"--binary     *load the next file in binary mode.\n"
 						"--utf8        use UTF-8 I/O.\n"
 						"--no-utf8     do not use UTF-8 I/O.\n"
 						"--ansi        use built-in ANSI control sequences.\n"
@@ -74,7 +76,8 @@ char ARG_HELP[] = ABOUT_MSG "\n"
 						"--no-syntax   disable syntax-highlighting support.\n"
 						"--keys FILE   use this file for keyboard configuration.\n"
 						"--menus FILE  use this file for menu configuration.\n"
-						"--macro FILE  exec this macro after start.\n";
+						"--macro FILE  exec this macro after start.\n\n"
+						"             *These options can appear multiple times.\n";
 
 
 /* The regular expression used to parse the locale. */
@@ -217,7 +220,7 @@ int main(int argc, char **argv) {
 		N-th line. */
 
 		if (argv[i][0] == '-' && argv[i][1] == '-') {
-			if (!argv[i][2]) skiplist[i++] = 1; /* You can use "--" to force the next token to be a filename */
+			if (!argv[i][2]) i++; /* You can use "--" to force the next token to be a filename */
 			else if (!strcmp(&argv[i][2], "help" "\0" VERSION_STRING)) {
 				puts(ARG_HELP);
 				exit(0);
@@ -264,11 +267,6 @@ int main(int argc, char **argv) {
 					skiplist[i] = skiplist[i+1] = 1; /* argv[i] = argv[i+1] = NULL; */
 				}
 			}
-		}
-		else if (argv[i][0] == '+') {
-			first_line = argv[i][1] ? strtol(argv[i]+1, NULL, 10) : INT_MAX;
-			if (errno || first_line < 0) first_line = 0;
-			skiplist[i] = 1; /* argv[i] = NULL; */
 		}
 	}
 
@@ -342,15 +340,56 @@ int main(int argc, char **argv) {
 		unwanted results). */
 
 		int first_file = TRUE;
-
+		int first_line=0, first_col=0, binary=0, skip_plus=0;
+      char *d;
 		stop = FALSE;
 
 		for(i = 1; i < argc && !stop; i++) {
 			if (argv[i] && !skiplist[i]) {
-				if (!first_file) do_action(cur_buffer, NEWDOC_A, -1, NULL);
-				else first_file = FALSE;
-
-				do_action(cur_buffer, OPEN_A, 0, str_dup(argv[i]));
+				if (argv[i][0] == '+' && !skip_plus) {   /* looking for "+", or "+N" or "+N,M"  */
+					int tmp_l=INT_MAX, tmp_c=0;
+					char *d;
+					errno = 0;
+					if (argv[i][1]) {
+						if (isdigit(argv[i][1])) {
+							tmp_l = strtol(argv[i]+1, &d, 10);
+							if (!errno) {
+								if (*d) {                     /* separator between N and M */
+									if (isdigit(d[1])) {
+										tmp_c = strtol(d+1, &d, 10);
+										if (*d) errno = ERANGE;
+									}
+									else errno = ERANGE;
+								}
+							}
+						}
+						else errno = ERANGE;
+					}
+					if (!errno) {
+						first_line = tmp_l;
+						first_col  = tmp_c;
+					}
+					else {
+						skip_plus = 1;
+						i--;
+					}
+				}
+				else if (!strcmp(argv[i],"--binary")) {
+					binary = 1;
+				}
+				else {
+					if (!strcmp(argv[i],"--")) i++;
+					if (!first_file) do_action(cur_buffer, NEWDOC_A, -1, NULL);
+					else first_file = FALSE;
+               cur_buffer->opt.binary = binary;
+               if (i<argc) do_action(cur_buffer, OPEN_A, 0, str_dup(argv[i]));
+					if (first_line) do_action(cur_buffer, GOTOLINE_A, first_line, NULL);
+					if (first_col)  do_action(cur_buffer, GOTOCOLUMN_A, first_col, NULL);
+					skip_plus  =
+					first_line =
+					first_col  =
+					binary     = 0;
+				}
 			}
 		}
 
@@ -360,7 +399,7 @@ int main(int argc, char **argv) {
 		only if more than one buffer exist. */
 
 		if (get_nth_buffer(1)) do_action(cur_buffer, NEXTDOC_A, -1, NULL);
-		if (first_line) do_action(cur_buffer, GOTOLINE_A, first_line, NULL);
+		
 	}
 
 	/* Note that we do not need to update the display. clear_entire_screen() is

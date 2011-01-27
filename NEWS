@@ -1,11 +1,18 @@
 2.2
 
-  * Added AutoMatchBracket to indicate visible matching {}, (), [], <> pairs.
+  * Added AutoMatchBracket option to indicate visible matching
+    {}, (), [], <> pairs. Option is on by default.
 
-  * Bookmarks now remember/restore their vertical offest in the window.
+  * Bookmarks now remember/restore their vertical offests in the window.
 
-  * Bookmark commands take -1/+1 to cycle through your bookmarks,
-    "UnsetBookmark *" to unset all bookmarks.
+  * Bookmark commands take -1/+1 to cycle through your bookmarks;
+    Use "UnsetBookmark *" to unset all bookmarks.
+
+  * New --binary command line option loads next listed file in binary mode.
+    May appear multiple times on the command line.
+
+  * +[N[,M]] command line option moves to N-th line, M-th column of next file loaded.
+    May appear multiple times on the command line.
 
   * Mention http://groups.google.com/group/niceeditor in splash screen.
 

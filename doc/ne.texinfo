@@ -836,10 +836,21 @@ specify @code{--help} anywhere on the command line, a simple help text
 describing @code{ne}'s arguments will be printed.
 
 The @code{+@var{N}} option causes @code{ne} to advance to the @var{N}th
-line of the first document loaded. This option is fairly common among
+line of the next document loaded. This option is fairly common among
 editors and text display programs like @code{vi} and @code{less}. The
 @var{N} itself is optional. Without it, a bare @code{+} on the command
-line causes @code{ne} to advance to the last line of the first document.
+line causes @code{ne} to advance to the last line of the first
+document. You can specify a line and column as @code{+N,M}. Any
+non-digit can be used to separate the @var{N} from the @var{M}. As it
+only affects the next document loaded, it can appear multiple times on
+the command line.
+
+The @code{--binary} option causes @code{ne} to load the next document
+in binary mode. Binary mode treats the normal line termination
+characters as any other character and only breaks lines on NULL
+characters. Like @code{+N,M}, @code{--binary} only affects the next
+document loaded, and it can appear multiple times on the command line.
+See @ref{Binary}.
 
 The @code{--no-config} option skips the reading of the key
 bindings and menu configuration files (@pxref{Configuration}). This is
