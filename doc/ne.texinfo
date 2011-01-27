@@ -709,7 +709,9 @@ use the @code{GotoBookmark} command. You can use this automatic bookmark to
 return to that previous location with a @code{GotoBookmark -} command. Doing
 so will reset the automatic bookmark, so that subsequent @code{GotoBookmark -}
 commands will switch between those two locations. @xref{SetBookmark},
-@ref{GotoBookmark}, and @ref{UnsetBookmark}. Note that in the default
+@ref{GotoBookmark}, and @ref{UnsetBookmark}. The @code{GotoNextBookmark} and
+@code{GotoPrevBookmark} commands let you easily cycle through all your set
+bookmarks. Note that in the default
 configuration no key binding is assigned to these commands. If you use them
 frequently, you may want to change the key bindings. @xref{Key Bindings}.
 
@@ -1452,6 +1454,12 @@ contents or locations within a document.
 
 @item Goto Bookmark
 @xref{GotoBookmark}.
+
+@item Goto Next Bookmark
+@xref{GotoNextBookmark}.
+
+@item Goto Prev Bookmark
+@xref{GotoPrevBookmark}.
 
 @end table
 
@@ -4150,6 +4158,8 @@ to the same position later.
 * ToggleSEOL::
 * SetBookmark::
 * GotoBookmark::
+* GotoNextBookmark::
+* GotoPrevBookmark::
 * UnsetBookmark::
 @end menu
 
@@ -4558,6 +4568,34 @@ from which you last issued a @code{GotoBookmark} command. Subsequent repeated
 @code{GotoBookmark -} commands toggle you between the two locations. Each
 document's valid bookmark designations are 0 to 9, and the @samp{-} automatic
 bookmark.
+
+
+
+@node GotoNextBookmark
+@subsection GotoNextBookmark
+@cmindex GotoNextBookmark
+
+@noindent Syntax: @code{GotoNextBookmark}@*
+@noindent Abbreviation: @code{GNB}
+
+@noindent moves the cursor to the next bookmark,
+assuming that a bookmark has been set; see @ref{SetBookmark}. When successful,
+the @samp{-} automatic bookmark is set to the position in the document from which
+the command was issued, so that @code{GotoBookmark -} returns you to that location.
+
+
+
+@node GotoPrevBookmark
+@subsection GotoPrevBookmark
+@cmindex GotoPrevBookmark
+
+@noindent Syntax: @code{GotoPrevBookmark}@*
+@noindent Abbreviation: @code{GPB}
+
+@noindent moves the cursor to the previous bookmark,
+assuming that a bookmark has been set; see @ref{SetBookmark}. When successful,
+the @samp{-} automatic bookmark is set to the position in the document from which
+the command was issued, so that @code{GotoBookmark -} returns you to that location.
 
 
 

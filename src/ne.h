@@ -445,6 +445,7 @@ typedef struct {
 		int cur_y;
 	} bookmark[NUM_BOOKMARKS];
 	int bookmark_mask;        /* bit N is set if bookmark[N] is set */
+	int cur_bookmark;         /* For Goto(Next|Prev)Bookmark. */
 	
 	struct high_syntax *syn;				/* Syntax loaded for this buffer. */
 	int *attr_buf;								/* If attr_len >= 0, a pointer to the list of *current* attributes of the *current* line. */ 

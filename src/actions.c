@@ -289,12 +289,25 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		}
 		else 
 			c = 1;
+	case GOTONEXTBOOKMARK_A:
+	case GOTOPREVBOOKMARK_A:
+		if (b->cur_bookmark<1 || b->cur_bookmark>=NUM_BOOKMARKS) b->cur_bookmark = 1;
+		if (a==GOTONEXTBOOKMARK_A || a==GOTOPREVBOOKMARK_A && (b->bookmark_mask & ((1<<NUM_BOOKMARKS)-2))) {
+			for (i=0; i<NUM_BOOKMARKS-1; i++) {
+				b->cur_bookmark = (b->cur_bookmark-1+NUM_BOOKMARKS-1+(a==GOTONEXTBOOKMARK_A?1:-1))%(NUM_BOOKMARKS-1)+1;
+				if (b->bookmark_mask & (1<<b->cur_bookmark)) {
+					c = b->cur_bookmark;
+					break;
+				}
+			}
+		}
 		switch(a) {
 		case SETBOOKMARK_A:
 			b->bookmark[c].pos = b->cur_pos;
 			b->bookmark[c].line = b->cur_line;
 			b->bookmark[c].cur_y = b->cur_y;
 			b->bookmark_mask |= (1 << c);
+			b->cur_bookmark = c;
 			snprintf(msg, MAX_MESSAGE_SIZE, "Bookmark %d set", c-1);
 			print_message(msg);
 			break;
@@ -305,12 +318,15 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			snprintf(msg, MAX_MESSAGE_SIZE, "Bookmark %d unset", c-1);
 			print_message(msg);
 			break;
+		case GOTONEXTBOOKMARK_A:
+		case GOTOPREVBOOKMARK_A:
 		case GOTOBOOKMARK_A:
 			if (! (b->bookmark_mask & (1 << c))) return BOOKMARK_NOT_SET;
 			else {
 				const int prev_line = b->cur_line;
 				const int prev_pos  = b->cur_pos;
 				const int cur_y     = b->cur_y;
+				b->cur_bookmark = c;
 				int  avshift;
 				delay_update();
 				goto_line(b, b->bookmark[c].line);

@@ -2,6 +2,10 @@
 
   * Added AutoMatchBracket to indicate visible matching {}, (), [], <> pairs.
 
+  * Bookmarks now remember/restore their vertical offest in the window.
+
+  * New GotoNextBookmark and GotoPrevBookmark commands cycle through your bookmarks.
+
   * Mention http://groups.google.com/group/niceeditor in splash screen.
 
   * About now displays splash screen in addition to its status bar message.
@@ -9,8 +13,6 @@
   * In FastGUI mode, when highlighting menu items the cursor is now
     positioned on the border of the menu rather then on the first letter
     of menu items.
-
-  * Bookmarks now remember/restore their vertical offest in the window.
 
 2.1
 
