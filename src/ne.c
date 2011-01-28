@@ -65,8 +65,7 @@ char ARG_HELP[] = ABOUT_MSG "\n"
 						"Usage: ne [options] [files]\n"
 						"--help        print this message.\n"
 						"--           *next token is a filename.\n"
-						"+[N]         *move to the N-th line (or last if N is missing) of the next file loaded.\n"
-						"+N,M         *move to the N-th line and M-th column of the next file loaded.\n"
+						"+[N[,M]]     *move to last or N-th line, first or M-th column of next named file.\n"
 						"--binary     *load the next file in binary mode.\n"
 						"--utf8        use UTF-8 I/O.\n"
 						"--no-utf8     do not use UTF-8 I/O.\n"
@@ -77,7 +76,7 @@ char ARG_HELP[] = ABOUT_MSG "\n"
 						"--keys FILE   use this file for keyboard configuration.\n"
 						"--menus FILE  use this file for menu configuration.\n"
 						"--macro FILE  exec this macro after start.\n\n"
-						"             *These options can appear multiple times.\n";
+						"             *These options may appear multiple times.\n";
 
 
 /* The regular expression used to parse the locale. */
