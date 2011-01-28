@@ -279,78 +279,89 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		} /* Intentionally fall through to regular BOOKMARK parm parsing. */
 	case SETBOOKMARK_A:
 	case GOTOBOOKMARK_A:
-		/* *p can be  "", "-", "0".."9", "+1","-1", for which, respectively, */
-		/*  c becomes  1,  0,   1 .. 10, next,prev. Anything else is out of range. */
-		if (p) {
-			if ((p[0]=='+' || p[0]=='-') && p[1]=='1') {
-				if (b->cur_bookmark<1 || b->cur_bookmark>=NUM_BOOKMARKS) b->cur_bookmark = 1;
-				for (i=0; i<NUM_BOOKMARKS-1; i++) {
-					b->cur_bookmark = (b->cur_bookmark-1+NUM_BOOKMARKS-1+(p[0]=='+'?1:-1))%(NUM_BOOKMARKS-1)+1;
-					if ((a==SETBOOKMARK_A?~b->bookmark_mask:b->bookmark_mask) & (1<<b->cur_bookmark)) {
-						c = b->cur_bookmark;
-						break;
+		{
+			int relative = 0;
+			/* *p can be  "", "-", "0".."9", "+1","-1", for which, respectively, */
+			/*  c becomes  1,  0,   1 .. 10, next,prev. Anything else is out of range. */
+			if (p) {
+				if ((p[0]=='+' || p[0]=='-') && p[1]=='1') {
+					if (b->cur_bookmark<1 || b->cur_bookmark>=NUM_BOOKMARKS) b->cur_bookmark = 1;
+					for (i=0; i<NUM_BOOKMARKS-1; i++) {
+						b->cur_bookmark = (b->cur_bookmark-1+NUM_BOOKMARKS-1+(p[0]=='+'?1:-1))%(NUM_BOOKMARKS-1)+1;
+						if ((a==SETBOOKMARK_A?~b->bookmark_mask:b->bookmark_mask) & (1<<b->cur_bookmark)) {
+							c = b->cur_bookmark;
+							relative = 1;
+							break;
+						}
+					}
+					if (i==NUM_BOOKMARKS-1) {
+						free(p);
+						switch (a) {
+						case SETBOOKMARK_A:
+							return NO_UNSET_BOOKMARKS_TO_SET;
+						case GOTOBOOKMARK_A:
+							return NO_SET_BOOKMARKS_TO_GOTO;
+						default:
+							return NO_SET_BOOKMARKS_TO_UNSET;
+						}
+					}
+				} else if (p[0]) {
+					if (!p[1]) {
+						if (*p == '-') c = 0;
+						else c = *p - '0' + 1;
+					}
+					else c = -1;
+				}
+				else c = 1;
+				free(p);
+				if (c < 0 || c >= NUM_BOOKMARKS) return INVALID_BOOKMARK_DESIGNATION;
+			}
+			else 
+				c = 1;
+			switch(a) {
+			case SETBOOKMARK_A:
+				b->bookmark[c].pos = b->cur_pos;
+				b->bookmark[c].line = b->cur_line;
+				b->bookmark[c].cur_y = b->cur_y;
+				b->bookmark_mask |= (1 << c);
+				b->cur_bookmark = c;
+				snprintf(msg, MAX_MESSAGE_SIZE, "Bookmark %c set", c>0?'0'+c-1 : '-');
+				print_message(msg);
+				break;
+			case UNSETBOOKMARK_A:
+				if (! (b->bookmark_mask & (1 << c)))
+					return BOOKMARK_NOT_SET;
+				b->bookmark_mask &= ~(1 << c);
+				snprintf(msg, MAX_MESSAGE_SIZE, "Bookmark %c unset", c>0?'0'+c-1 : '-');
+				print_message(msg);
+				break;
+			case GOTOBOOKMARK_A:
+				if (! (b->bookmark_mask & (1 << c))) return BOOKMARK_NOT_SET;
+				else {
+					const int prev_line = b->cur_line;
+					const int prev_pos  = b->cur_pos;
+					const int cur_y     = b->cur_y;
+					b->cur_bookmark = c;
+					int  avshift;
+					delay_update();
+					goto_line(b, b->bookmark[c].line);
+					goto_pos(b, b->bookmark[c].pos);
+					if (avshift = b->cur_y - b->bookmark[c].cur_y) {
+						snprintf(msg, MAX_MESSAGE_SIZE, "%c%d", avshift > 0 ? 'T' :'B', avshift > 0 ? avshift : -avshift);
+						adjust_view(b,msg);
+					}
+					b->bookmark[0].line  = prev_line;
+					b->bookmark[0].pos   = prev_pos;
+					b->bookmark[0].cur_y = cur_y;
+					b->bookmark_mask |= 1;
+					if (relative) {
+						snprintf(msg, MAX_MESSAGE_SIZE, "At Bookmark %c", c>0?'0'+c-1 : '-');
+						print_message(msg);
 					}
 				}
-				if (i==NUM_BOOKMARKS-1) {
-					if (a==SETBOOKMARK_A) snprintf(msg, MAX_MESSAGE_SIZE, "No unset Bookmarks available to set.");
-					else snprintf(msg, MAX_MESSAGE_SIZE, "No set Bookmarks to %s.", a==GOTOBOOKMARK_A?"goto":"unset" );
-					print_message(msg);
-					free(p);
-					return OK;
-				}
-				
-			} else if (p[0]) {
-				if (!p[1]) {
-					if (*p == '-') c = 0;
-					else c = *p - '0' + 1;
-				}
-				else c = -1;
 			}
-			else c = 1;
-			free(p);
-			if (c < 0 || c >= NUM_BOOKMARKS) return INVALID_BOOKMARK_DESIGNATION;
+			return OK;
 		}
-		else 
-			c = 1;
-		switch(a) {
-		case SETBOOKMARK_A:
-			b->bookmark[c].pos = b->cur_pos;
-			b->bookmark[c].line = b->cur_line;
-			b->bookmark[c].cur_y = b->cur_y;
-			b->bookmark_mask |= (1 << c);
-			b->cur_bookmark = c;
-			snprintf(msg, MAX_MESSAGE_SIZE, "Bookmark %c set", c>0?'0'+c-1 : '-');
-			print_message(msg);
-			break;
-		case UNSETBOOKMARK_A:
-			if (! (b->bookmark_mask & (1 << c)))
-				return BOOKMARK_NOT_SET;
-			b->bookmark_mask &= ~(1 << c);
-			snprintf(msg, MAX_MESSAGE_SIZE, "Bookmark %c unset", c>0?'0'+c-1 : '-');
-			print_message(msg);
-			break;
-		case GOTOBOOKMARK_A:
-			if (! (b->bookmark_mask & (1 << c))) return BOOKMARK_NOT_SET;
-			else {
-				const int prev_line = b->cur_line;
-				const int prev_pos  = b->cur_pos;
-				const int cur_y     = b->cur_y;
-				b->cur_bookmark = c;
-				int  avshift;
-				delay_update();
-				goto_line(b, b->bookmark[c].line);
-				goto_pos(b, b->bookmark[c].pos);
-				if (avshift = b->cur_y - b->bookmark[c].cur_y) {
-					snprintf(msg, MAX_MESSAGE_SIZE, "%c%d", avshift > 0 ? 'T' :'B', avshift > 0 ? avshift : -avshift);
-					adjust_view(b,msg);
-				}
-				b->bookmark[0].line  = prev_line;
-				b->bookmark[0].pos   = prev_pos;
-				b->bookmark[0].cur_y = cur_y;
-				b->bookmark_mask |= 1;
-			}
-		}
-		return OK;
 	
 	case GOTOLINE_A:
 		if (c < 0 && (c = request_number("Line", b->cur_line + 1))<0) return NUMERIC_ERROR(c);
