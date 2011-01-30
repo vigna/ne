@@ -2938,7 +2938,7 @@ or recorded).
 @cmindex Record
 
 @noindent Syntax: @code{Record [0|1]}@*
-@noindent Abbreviation: @code{Rec}
+@noindent Abbreviation: @code{REC}
 
 @noindent sets the recording state flag. When this flag becomes true,
 @code{ne} starts recording your actions in a new macro. When it becomes
