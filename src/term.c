@@ -613,6 +613,7 @@ void clear_end_of_line(const int first_unused_hpos) {
 
 	if (curX >= first_unused_hpos) return;
 
+	if (curr_attr & BG_NOT_DEFAULT) set_attr(0);
 	if (ne_clr_eol) OUTPUT1 (ne_clr_eol);
 	else {
 		/* We have to do it the hard way. */
