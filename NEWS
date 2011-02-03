@@ -3,7 +3,7 @@
   * Added AutoMatchBracket option to indicate visible matching
     {}, (), [], <> pairs. Option is on by default.
 
-  * Bookmarks now remember/restore their vertical offests in the window.
+  * Bookmarks now remember/restore their vertical offsets in the window.
 
   * Bookmark commands take -1/+1 to cycle through your bookmarks;
     Use "UnsetBookmark *" to unset all bookmarks.

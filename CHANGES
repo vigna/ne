@@ -12,6 +12,8 @@
 
   * Fixed buggy out-of-memory handling when loading files.
 
+  * Fixed wrong background line colour when clearing to the end of line.
+
 2.1
 
   * Fixed efficiency bug introduced with syntax highlighting: ne should now
