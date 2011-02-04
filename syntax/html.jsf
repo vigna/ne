@@ -91,7 +91,7 @@
 	"-A-Za-z0-9._:"		tag_name recolor=-1
 
 :tag_name TagName
-	*			tag_idle noeat strings
+	*			tag_idle noeat istrings
 	"script"		stag_enter_idle
 	"style"			ytag_enter_idle
 done
@@ -100,7 +100,7 @@ done
 :tag_idle Background
 	*			mistake_tag recolor=-1
 	"<"			tag_maybe_php recolor=-1
-	" \t\n"		tag_idle
+	" \t\n"			tag_idle
 	"/"			tag_end recolor=-1 
 	">"			tag_end noeat recolor=-1
 	"-A-Za-z0-9._:"		tag_param noeat recolor=-1
@@ -143,7 +143,7 @@ done
 
 :stag_idle Background
 	*			smistake_tag recolor=-1
-	" \t\n"		stag_idle
+	" \t\n"			stag_idle
 	"/"			stag_end recolor=-1 
 	">"			stag_end noeat recolor=-1
 	"-A-Za-z0-9._:"		stag_param noeat recolor=-1
@@ -183,7 +183,7 @@ done
 
 :ytag_idle Background
 	*			ymistake_tag recolor=-1
-	" \t\n"		ytag_idle
+	" \t\n"			ytag_idle
 	"/"			ytag_end recolor=-1 
 	">"			ytag_end noeat recolor=-1
 	"-A-Za-z0-9._:"		ytag_param noeat recolor=-1

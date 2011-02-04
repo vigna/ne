@@ -11,6 +11,8 @@
     changes size.
 
   * Fixed buggy out-of-memory handling when loading files.
+  
+  * Fixed buggy HTML/CSS syntax highlighting.
 
   * Fixed wrong background line colour when clearing to the end of line.
 
