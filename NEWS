@@ -22,6 +22,8 @@
     positioned on the border of the menu rather then on the first letter
     of menu items.
 
+  * New "tabs" syntax definition makes tabs visibly distinct from spaces.
+
 2.1
 
   * New commands: KeyCode, DeleteNextWord, DeletePrevWord, AutoComplete,

@@ -1,0 +1,12 @@
+# JOE syntax highlight file for text with visible tabs
+
+=Idle
+=Tab	bg_cyan
+
+:idle Idle
+	*		idle
+	"\t"		tab	noeat
+
+:tab Tab
+	*		idle	noeat
+	"\t"		tab

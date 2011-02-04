@@ -1243,6 +1243,10 @@ file. @xref{Arguments}.
 With no parameter, the @code{Syntax} command prompts you for a syntax
 to load, the offered default being the currently loaded syntax if there is one.
 
+One syntax definition you may find useful for any type of text file is
+called simply @samp{tabs}. It highlights the @sc{tab}s in your text so
+you can distinguish them from regular spaces.
+
 You can create your own syntax definitions and store them in your
 @file{~/.ne/syntax} directory (actually, modifying the colors of an
 existing definition is much easier; @pxref{Hints and Tricks}). A complete
@@ -5226,6 +5230,14 @@ unreadable (for instance, @samp{dim white} on a terminal with a white
 background). Just copy the guilty syntax specification file to the
 @file{~/.ne/syntax} directory, and change the color names at the start of
 the file.
+
+@item Use the @samp{tabs} syntax to distinguish @sc{tab}s from @sc{space}s.
+When you're struggling to clean up a mix of @sc{tab}s and @sc{space}s,
+temporarily switching to the @samp{tabs} syntax may help. The command
+@command{Syntax tabs} makes @sc{tab} characters show up in a different
+background color from @sc{space}s. Once you've gotten your white space
+issues straightened out, you can switch back to the syntax appropriate
+for your current file type.
 
 @item @code{ne} does interactive filename completion.
 When you have to specify a file name as last element of a long input,
