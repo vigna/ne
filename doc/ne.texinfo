@@ -750,9 +750,9 @@ exist somewhere in your current document. @xref{AutoComplete}, and
 @ref{CaseSearch}.
 
 @subsection Automatic Bracket Matching
-Unless you tell it not to (with the @code{AutoMatchBracket} flag),
+Unless you tell it not to (with the @code{AutoMatchBracket} command),
 @code{ne} will highlight any recognized bracket that matches the
-bracket your cursor is on if that matching bracket is already visible on
+bracket your cursor is on if that matching bracket is currently visible on
 your screen. Recognized brackets are @samp{@{@}}, @samp{()}, @samp{[]} and
 @samp{<>}. @xref{AutoMatchBracket}.
 
@@ -2837,14 +2837,17 @@ See @ref{AutoMatchBracket}.
 @subsection AutoMatchBracket
 @cmindex AutoMatchBracket
 
-@noindent Syntax: @code{AutoMatchBracket [0|1]}@*
+@noindent Syntax: @code{AutoMatchBracket [0|1|2|3|4|5|6|7]}@*
 @noindent Abbreviation: @code{AMB}
 
-@noindent sets the auto match bracket flag. When this flag is set, if
-the cursor is on a recognized bracket and the associated matching
-bracket is on the screen, the matching bracket will be highlighted.
-Recognized brackets are @samp{@{@}}, @samp{()}, @samp{[]} and @samp{<>}.
-See @ref{MatchBracket}.
+@noindent sets the auto match bracket mode. When the cursor is on a
+recognized bracket (@samp{@{@}}, @samp{()}, @samp{[]} or @samp{<>}) and
+the associated matching bracket is on the screen, that matching bracket
+will be indicated according to the mode. The mode is either zero for no
+bracket matching, or the sum of 1 (altered bolding of the foreground and
+background colors), 2 (inverse), and 4 (underline). If no mode is
+specified, @code{ne} sets the mode to 0 if it's non-zero, or to 1 if it
+is zero. The default mode is 1. See @ref{MatchBracket}.
 
 
 

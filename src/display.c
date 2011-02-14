@@ -754,45 +754,53 @@ void automatch_bracket(buffer * const b, const int show) {
 					orig_attr = attr_buf[match_pos];
 				}
 				else orig_attr = 0; /* That's a stretch. FIX_ME */
-				
-				switch (orig_attr & BG_MASK) {
-				case BG_BLACK:    tmp_attr = BG_BBLACK;       break;
-				case BG_RED:      tmp_attr = BG_BRED;         break;
-				case BG_GREEN:    tmp_attr = BG_BGREEN;       break;
-				case BG_YELLOW:   tmp_attr = BG_BYELLOW;      break;
-				case BG_BLUE:     tmp_attr = BG_BBLUE;        break;
-				case BG_MAGENTA:  tmp_attr = BG_BMAGENTA;     break;
-				case BG_CYAN:     tmp_attr = BG_BCYAN;        break;
-				case BG_WHITE:    tmp_attr = BG_BWHITE;       break;
-				case BG_BBLACK:   tmp_attr = BG_BLACK;        break;
-				case BG_BRED:     tmp_attr = BG_RED;          break;
-				case BG_BGREEN:   tmp_attr = BG_GREEN;        break;
-				case BG_BYELLOW:  tmp_attr = BG_YELLOW;       break;
-				case BG_BBLUE:    tmp_attr = BG_BLUE;         break;
-				case BG_BMAGENTA: tmp_attr = BG_MAGENTA;      break;
-				case BG_BCYAN:    tmp_attr = BG_CYAN;         break;
-				case BG_BWHITE:   tmp_attr = BG_WHITE;        break;
-				default:          tmp_attr = BG_BWHITE;       break;
-				}                           
-				
-				switch (orig_attr & FG_MASK) {
-				case FG_BLACK:    tmp_attr |= FG_BBLACK;      break;
-				case FG_RED:      tmp_attr |= FG_BRED;        break;
-				case FG_GREEN:    tmp_attr |= FG_BGREEN;      break;
-				case FG_YELLOW:   tmp_attr |= FG_BYELLOW;     break;
-				case FG_BLUE:     tmp_attr |= FG_BBLUE;       break;
-				case FG_MAGENTA:  tmp_attr |= FG_BMAGENTA;    break;
-				case FG_CYAN:     tmp_attr |= FG_BCYAN;       break;
-				case FG_WHITE:    tmp_attr |= FG_BWHITE;      break;
-				case FG_BBLACK:   tmp_attr |= FG_BLACK;       break;
-				case FG_BRED:     tmp_attr |= FG_RED;         break;
-				case FG_BGREEN:   tmp_attr |= FG_GREEN;       break;
-				case FG_BYELLOW:  tmp_attr |= FG_YELLOW;      break;
-				case FG_BBLUE:    tmp_attr |= FG_BLUE;        break;
-				case FG_BMAGENTA: tmp_attr |= FG_MAGENTA;     break;
-				case FG_BCYAN:    tmp_attr |= FG_CYAN;        break;
-				case FG_BWHITE:   tmp_attr |= FG_WHITE;       break;
-				default:          tmp_attr |= FG_BBLACK;      break;
+				tmp_attr = orig_attr;
+				if (b->opt.automatch & 1 ) { /* invert boldness of FG, BG */
+					switch (orig_attr & BG_MASK) {
+					case BG_BLACK:    tmp_attr = (tmp_attr & ~BG_MASK ) | BG_BBLACK;       break;
+					case BG_RED:      tmp_attr = (tmp_attr & ~BG_MASK ) | BG_BRED;         break;
+					case BG_GREEN:    tmp_attr = (tmp_attr & ~BG_MASK ) | BG_BGREEN;       break;
+					case BG_YELLOW:   tmp_attr = (tmp_attr & ~BG_MASK ) | BG_BYELLOW;      break;
+					case BG_BLUE:     tmp_attr = (tmp_attr & ~BG_MASK ) | BG_BBLUE;        break;
+					case BG_MAGENTA:  tmp_attr = (tmp_attr & ~BG_MASK ) | BG_BMAGENTA;     break;
+					case BG_CYAN:     tmp_attr = (tmp_attr & ~BG_MASK ) | BG_BCYAN;        break;
+					case BG_WHITE:    tmp_attr = (tmp_attr & ~BG_MASK ) | BG_BWHITE;       break;
+					case BG_BBLACK:   tmp_attr = (tmp_attr & ~BG_MASK ) | BG_BLACK;        break;
+					case BG_BRED:     tmp_attr = (tmp_attr & ~BG_MASK ) | BG_RED;          break;
+					case BG_BGREEN:   tmp_attr = (tmp_attr & ~BG_MASK ) | BG_GREEN;        break;
+					case BG_BYELLOW:  tmp_attr = (tmp_attr & ~BG_MASK ) | BG_YELLOW;       break;
+					case BG_BBLUE:    tmp_attr = (tmp_attr & ~BG_MASK ) | BG_BLUE;         break;
+					case BG_BMAGENTA: tmp_attr = (tmp_attr & ~BG_MASK ) | BG_MAGENTA;      break;
+					case BG_BCYAN:    tmp_attr = (tmp_attr & ~BG_MASK ) | BG_CYAN;         break;
+					case BG_BWHITE:   tmp_attr = (tmp_attr & ~BG_MASK ) | BG_WHITE;        break;
+					default:          tmp_attr = (tmp_attr & ~BG_MASK ) | BG_BWHITE;       break;
+					}                           
+					
+					switch (orig_attr & FG_MASK) {
+					case FG_BLACK:    tmp_attr = (tmp_attr & ~FG_MASK) | FG_BBLACK;      break;
+					case FG_RED:      tmp_attr = (tmp_attr & ~FG_MASK) | FG_BRED;        break;
+					case FG_GREEN:    tmp_attr = (tmp_attr & ~FG_MASK) | FG_BGREEN;      break;
+					case FG_YELLOW:   tmp_attr = (tmp_attr & ~FG_MASK) | FG_BYELLOW;     break;
+					case FG_BLUE:     tmp_attr = (tmp_attr & ~FG_MASK) | FG_BBLUE;       break;
+					case FG_MAGENTA:  tmp_attr = (tmp_attr & ~FG_MASK) | FG_BMAGENTA;    break;
+					case FG_CYAN:     tmp_attr = (tmp_attr & ~FG_MASK) | FG_BCYAN;       break;
+					case FG_WHITE:    tmp_attr = (tmp_attr & ~FG_MASK) | FG_BWHITE;      break;
+					case FG_BBLACK:   tmp_attr = (tmp_attr & ~FG_MASK) | FG_BLACK;       break;
+					case FG_BRED:     tmp_attr = (tmp_attr & ~FG_MASK) | FG_RED;         break;
+					case FG_BGREEN:   tmp_attr = (tmp_attr & ~FG_MASK) | FG_GREEN;       break;
+					case FG_BYELLOW:  tmp_attr = (tmp_attr & ~FG_MASK) | FG_YELLOW;      break;
+					case FG_BBLUE:    tmp_attr = (tmp_attr & ~FG_MASK) | FG_BLUE;        break;
+					case FG_BMAGENTA: tmp_attr = (tmp_attr & ~FG_MASK) | FG_MAGENTA;     break;
+					case FG_BCYAN:    tmp_attr = (tmp_attr & ~FG_MASK) | FG_CYAN;        break;
+					case FG_BWHITE:   tmp_attr = (tmp_attr & ~FG_MASK) | FG_WHITE;       break;
+					default:          tmp_attr = (tmp_attr & ~FG_MASK) | FG_BBLACK;      break;
+					}
+				}
+				if (b->opt.automatch & 2 ) {
+					tmp_attr = tmp_attr ^ INVERSE;
+				}
+				if (b->opt.automatch & 4 ) {
+					tmp_attr = tmp_attr ^ UNDERLINE;
 				}
 				if (!orig_attr) tmp_attr |= BOLD;
 				output_char(c, tmp_attr, b->encoding == ENC_UTF8);

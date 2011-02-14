@@ -1,7 +1,7 @@
 2.2
 
-  * Added AutoMatchBracket option to indicate visible matching
-    {}, (), [], <> pairs. Option is on by default.
+  * Added AutoMatchBracket mode to indicate visible matching
+    {}, (), [], <> pairs. Mode is 1 (colors) by default.
 
   * Bookmarks now remember/restore their vertical offsets in the window.
 

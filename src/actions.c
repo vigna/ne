@@ -404,7 +404,9 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		return OK;
 
 	case AUTOMATCHBRACKET_A:
-		SET_USER_FLAG(b, c, opt.automatch);
+		if (c<0) b->opt.automatch = b->opt.automatch ? 0 : 1;
+		else if (c<8) b->opt.automatch = c;
+		else return NOT_A_NUMBER;
 		return OK;
 
 	case INSERTTAB_A:
