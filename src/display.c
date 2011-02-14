@@ -751,7 +751,7 @@ void automatch_bracket(buffer * const b, const int show) {
 				move_cursor(b->automatch.y, b->automatch.x);
 				if (b->syn) {
 					parse(b->syn, matching_ld, matching_ld->highlight_state, b->encoding == ENC_UTF8);
-					orig_attr = attr_buf[b->cur_pos];
+					orig_attr = attr_buf[match_pos];
 				}
 				else orig_attr = 0; /* That's a stretch. FIX_ME */
 				
