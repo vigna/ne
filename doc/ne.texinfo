@@ -2837,17 +2837,16 @@ See @ref{AutoMatchBracket}.
 @subsection AutoMatchBracket
 @cmindex AutoMatchBracket
 
-@noindent Syntax: @code{AutoMatchBracket [0|1|2|3|4|5|6|7]}@*
+@noindent Syntax: @code{AutoMatchBracket [0..15]}@*
 @noindent Abbreviation: @code{AMB}
 
 @noindent sets the auto match bracket mode. When the cursor is on a
 recognized bracket (@samp{@{@}}, @samp{()}, @samp{[]} or @samp{<>}) and
 the associated matching bracket is on the screen, that matching bracket
 will be indicated according to the mode. The mode is either zero for no
-bracket matching, or the sum of 1 (altered bolding of the foreground and
-background colors), 2 (inverse), and 4 (underline). If no mode is
-specified, @code{ne} sets the mode to 0 if it's non-zero, or to 1 if it
-is zero. The default mode is 1. See @ref{MatchBracket}.
+bracket matching, or the sum of 1 (altered foreground and background
+brightness), 2 (inverse), 4 (bold), and 8 (underline). If no mode is specified,
+@code{ne} prompts your for one. The default mode is 1. See @ref{MatchBracket}.
 
 
 

@@ -404,9 +404,8 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		return OK;
 
 	case AUTOMATCHBRACKET_A:
-		if (c<0) b->opt.automatch = b->opt.automatch ? 0 : 1;
-		else if (c<8) b->opt.automatch = c;
-		else return NOT_A_NUMBER;
+		if (c < 0 && (c = request_number("Match mode (sum of 0:none, 1:brightness, 2:inverse, 4:bold, 8:underline)", b->opt.automatch))<0||c>15) return INVALID_MATCH_MODE;
+		b->opt.automatch = c;
 		return OK;
 
 	case INSERTTAB_A:

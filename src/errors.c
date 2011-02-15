@@ -42,6 +42,7 @@ char *error_msg[ERROR_COUNT] = {
 	"No search string.",
 	"No replace string.",
 	"TAB size out of range.",
+	"Invalid match mode.",
 	"Mark a block first.",
 	"Out of memory. DANGER!",
 	"Nothing to undo.",

@@ -800,9 +800,11 @@ void automatch_bracket(buffer * const b, const int show) {
 					tmp_attr = tmp_attr ^ INVERSE;
 				}
 				if (b->opt.automatch & 4 ) {
+					tmp_attr = tmp_attr ^ BOLD;
+				}
+				if (b->opt.automatch & 8 ) {
 					tmp_attr = tmp_attr ^ UNDERLINE;
 				}
-				if (!orig_attr) tmp_attr |= BOLD;
 				output_char(c, tmp_attr, b->encoding == ENC_UTF8);
 				b->automatch.shown = 1;
 			}
