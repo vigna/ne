@@ -62,68 +62,68 @@
 #endif
 
 /* Include the list of all possible actions that do_action() can execute.
-Note also that menu handling is governed by such a command (ESCAPE). */
+   Note also that menu handling is governed by such a command (ESCAPE). */
 
 #include "enums.h"
 
 /* The input_class of a character is a first differentiation between
-alphabetic, command-activating, and ignorable character. The class[] vector
-(indexed by the extended character code) gives back the input class. */
+   alphabetic, command-activating, and ignorable character. The class[] vector
+   (indexed by the extended character code) gives back the input class. */
 
 typedef enum {
-	 ALPHA, COMMAND, RETURN, TAB, IGNORE, INVALID, INPUT_CLASS_COUNT
+	ALPHA, COMMAND, RETURN, TAB, IGNORE, INVALID, INPUT_CLASS_COUNT
 } input_class;
 
 extern const char *input_class_names[];
 
 /* The name of the default preferences file name. */
 
-#define DEF_PREFS_NAME			".default"
+#define DEF_PREFS_NAME     ".default"
 
 /* The name of the syntax subdirectory (global and local). */
 
-#define SYNTAX_DIR			"syntax"
+#define SYNTAX_DIR         "syntax"
 
 /* This is the extension of syntax definition files. */
 
-#define SYNTAX_EXT			".jsf"
+#define SYNTAX_EXT         ".jsf"
 
 /* The name of the file containing the mappings from extensions to syntax names. */
 
-#define EXT_2_SYN				"ext2syn"
+#define EXT_2_SYN          "ext2syn"
 
 /* This is the name taken by unnamed documents. */
 
-#define UNNAMED_NAME				"<unnamed>"
+#define UNNAMED_NAME       "<unnamed>"
 
 /* The number of key codes, including ISO-8859-1 plus 256 extra codes. */
 
-#define NUM_KEYS					(256+256)
+#define NUM_KEYS           (256+256)
 
 /* A key code that has class INVALID. */
 
-#define INVALID_CHAR				INT_MIN
+#define INVALID_CHAR       INT_MIN
 
 /* The mask for commands. */
 
-#define COMMAND_MASK				0x80000000
+#define COMMAND_MASK       0x80000000
 
 #define CHAR_CLASS(c) ( ((c)<0) ? (((-c - 1) == INVALID_CHAR) ? INVALID : COMMAND) : ((c)>0xFF) ? ALPHA : char_class[c] )
 
 /* This number is used throughout ne when an integer has to be expanded in
-characters. It is expected that sprintf("%d")ing an integer will produce a
-string shorter than the following number. PORTABILITY PROBLEM: improbable,
-but possible. */
+   characters. It is expected that sprintf("%d")ing an integer will produce a
+   string shorter than the following number. PORTABILITY PROBLEM: improbable,
+   but possible. */
 
-#define MAX_INT_LEN				32
+#define MAX_INT_LEN        32
 
 /* A buffer or clip at any given time may be marked as ASCII, UTF-8 or
-8-bit. This means, respectively, that it contains just bytes below 0x80, an
-UTF-8-encoded byte sequence or an arbitrary byte sequence.
+   8-bit. This means, respectively, that it contains just bytes below 0x80, an
+   UTF-8-encoded byte sequence or an arbitrary byte sequence.
 
-The attribution is lazy, but stable. This means that a buffer starts as ASCII,
-and becomes UTF-8 or 8-bit as soon as some insertion makes it necessary. This
-is useful to delay the encoding choice as much as possible. */
+   The attribution is lazy, but stable. This means that a buffer starts as ASCII,
+   and becomes UTF-8 or 8-bit as soon as some insertion makes it necessary. This
+   is useful to delay the encoding choice as much as possible. */
 
 typedef enum {
 	ENC_ASCII = 0, ENC_UTF8, ENC_8_BIT
@@ -131,37 +131,37 @@ typedef enum {
 
 /* The number of bookmarks per buffer. It comprises the automatic bookmark (0). */
 
-#define NUM_BOOKMARKS 11
+#define NUM_BOOKMARKS      11
 
 /* These are the list and node structures used throughout ne. See the exec.c
-source for some elaborations on the subject. */
+   source for some elaborations on the subject. */
 
 typedef struct struct_node {
-    struct struct_node *next;
-    struct struct_node *prev;
+	struct struct_node *next;
+	struct struct_node *prev;
 } node;
 
 
 typedef struct {
-   node *head;
-   node *tail;
-   node *tail_pred;
+	node *head;
+	node *tail;
+	node *tail_pred;
 } list;
 
 
 
 /* All the structures that follow have an assertion macro which checks for
-partial internal consistency of the structure. These macros are extensively
-used in the code. */
+   partial internal consistency of the structure. These macros are extensively
+   used in the code. */
 
 
 /* This structure represent a sequence, or stream, of NULL-terminated
-strings. It is used for many purposes, such as storage of macros, clips,
-etc. General functions allow to allocate, free, load, save and append to
-such streams. Size represent the size of the chunk of memory pointed to by
-stream, while len gives you the number of bytes currently used. You can
-append in the last size-len bytes, or realloc() stream, updating size
-correspondingly. */
+   strings. It is used for many purposes, such as storage of macros, clips,
+   etc. General functions allow to allocate, free, load, save and append to
+   such streams. Size represent the size of the chunk of memory pointed to by
+   stream, while len gives you the number of bytes currently used. You can
+   append in the last size-len bytes, or realloc() stream, updating size
+   correspondingly. */
 
 typedef struct {
 	int size, len;
@@ -182,21 +182,21 @@ typedef struct {
 
 
 /* This structure defines a line descriptor; it is a node containing a pointer
-to the line text, and an integer containing the line length in bytes. The
-line pointer by ld_text is NOT NULL-terminated. line_len is zero iff line
-is zero, in which case we are representing an empty line. ld_node->next
-is NULL iff this node is free for use. */
+   to the line text, and an integer containing the line length in bytes. The
+   line pointer by ld_text is NOT NULL-terminated. line_len is zero iff line
+   is zero, in which case we are representing an empty line. ld_node->next
+   is NULL iff this node is free for use. */
 
 
 typedef struct {
 	node ld_node;
 	unsigned char *line;
 	int line_len;
-	HIGHLIGHT_STATE highlight_state;	/* Initial highlight state for this line */
+	HIGHLIGHT_STATE highlight_state; /* Initial highlight state for this line */
 } line_desc;
 
 /* The purpose of this structure is to provide the byte count for allocating
-line descriptors when no syntax highlighting is required.  */
+   line descriptors when no syntax highlighting is required.  */
 
 typedef struct {
 	node ld_node;
@@ -205,7 +205,7 @@ typedef struct {
 } no_syntax_line_desc;
 
 #ifndef NDEBUG
-#define assert_line_desc(ld, encoding) {if ((ld)) {		\
+#define assert_line_desc(ld, encoding) {if ((ld)) { \
 	assert((ld)->line_len >= 0);\
 	assert(((ld)->line == NULL) == ((ld)->line_len == 0));\
 	assert(((ld)->line_len == 0) || ((ld)->line[0] != 0 && (ld)->line[(ld)->line_len - 1] != 0));\
@@ -217,9 +217,9 @@ typedef struct {
 
 
 /* This structure defines a pool of line descriptors. pool points to an
-array of size line descriptors. The first free descriptor is contained in
-first_free. The last free descriptor is contained in last_free. The
-allocated_items field keeps track of how many items are allocated. */
+   array of size line descriptors. The first free descriptor is contained in
+   first_free. The last free descriptor is contained in last_free. The
+   allocated_items field keeps track of how many items are allocated. */
 
 typedef struct {
 	node ldp_node;
@@ -243,11 +243,11 @@ typedef struct {
 
 
 /* This structure defines a pool of characters. size represents the size of
-the pool pointed by pool, while first_used and last_used represent
-the min and max characters which are used. A character is not used if it
-is zero. It is perfectly possible (and likely) that between first_used
-and last_used there are many free chars, which are named "lost" chars. See
-the source buffer.c for some elaboration on the subject. */
+   the pool pointed by pool, while first_used and last_used represent
+   the min and max characters which are used. A character is not used if it
+   is zero. It is perfectly possible (and likely) that between first_used
+   and last_used there are many free chars, which are named "lost" chars. See
+   the source buffer.c for some elaboration on the subject. */
 
 typedef struct {
 	node cp_node;
@@ -273,8 +273,8 @@ typedef struct {
 
 
 /* This structure defines a macro. A macro is just a stream plus a node, a
-file name and a hash code relative to the filename (it is used to make the
-search for a given macro quicker). */
+   file name and a hash code relative to the filename (it is used to make the
+   search for a given macro quicker). */
 
 typedef struct struct_macro_desc {
 	struct struct_macro_desc *next;
@@ -290,7 +290,7 @@ typedef struct struct_macro_desc {
 
 
 /* This structure defines a clip. Clip are numbered from 0 onwards, and
-contain a stream of characters. The stream may be optionally marked as UTF-8. */
+   contain a stream of characters. The stream may be optionally marked as UTF-8. */
 
 typedef struct {
 	node cd_node;
@@ -308,12 +308,12 @@ typedef struct {
 #endif
 
 /* An undo step is given by a position, a transformation which can be
-INSERT_CHAR or DELETE_CHAR and the length of the stream to which the
-transformation applies. For compactness reasons, the transformation is
-really stored in the sign of the length. Plus means insert, minus means
-delete. Note also that pos can be negative, in which case the real position
-is -(pos+1), and the undo step is linked to the following one (in the sense
-that they should be performed indivisibly). */
+   INSERT_CHAR or DELETE_CHAR and the length of the stream to which the
+   transformation applies. For compactness reasons, the transformation is
+   really stored in the sign of the length. Plus means insert, minus means
+   delete. Note also that pos can be negative, in which case the real position
+   is -(pos+1), and the undo step is linked to the following one (in the sense
+   that they should be performed indivisibly). */
 
 typedef struct {
 	int line;
@@ -325,14 +325,14 @@ typedef struct {
 
 
 /* This structure defines an undo buffer. steps points to an array of
-steps_size undo_steps, used up to cur_step. last_step represent the undo step
-which is the next to be redone in case some undo had place. Note that the
-characters stored in streams, which are used when executing an insertion undo
-step, are not directly pointed to by the undo step. The correct position is
-calculated incrementally, and kept in cur_stream and last_stream.  Redo
-contains the stream of characters necessary to perform the redo
-steps. last_save_step is the step (if any) corresponding to the last successful
-buffer save operation. */
+   steps_size undo_steps, used up to cur_step. last_step represent the undo step
+   which is the next to be redone in case some undo had place. Note that the
+   characters stored in streams, which are used when executing an insertion undo
+   step, are not directly pointed to by the undo step. The correct position is
+   calculated incrementally, and kept in cur_stream and last_stream.  Redo
+   contains the stream of characters necessary to perform the redo
+   steps. last_save_step is the step (if any) corresponding to the last successful
+   buffer save operation. */
 
 typedef struct {
 	undo_step *steps;
@@ -362,7 +362,7 @@ typedef struct {
 #endif
 
 /* This structure defines all the per document options which can be
-used with PushPrefs and PopPrefs. */
+   used with PushPrefs and PopPrefs. */
 
 typedef struct {
 	int cur_clip;
@@ -382,7 +382,7 @@ typedef struct {
 		search_back:1,     /* Last search was backwards */
 		case_search:1,     /* Look at case matching in searches */
 		tabs:1,            /* TAB inserts TABs vs. spaces */
-		automatch:4,       /* Automatically match visible brackets:1=^bold, 2=inverse, 3=underline */
+		automatch:4,       /* Automatically match visible brackets */
 		binary:1,          /* Load and save in binary mode */
 		utf8auto:1,        /* Try to detect automatically UTF-8 */
 		visual_bell:1;     /* Prefer visible bell to audible */
@@ -398,14 +398,14 @@ typedef struct {
 #endif
 
 /* This structure defines a buffer node; a buffer is composed by two lists,
-the list of line descriptor pools and the list of character pools, plus some
-data as the current window and cursor position. The line descriptors are
-kept in a list, too. The other fields are more or less self-documented.
-wanted_x represents the position the cursor would like to be on, but cannot
-because a line is too short or because it falls inside a TAB expansion. When
-a flag is declared as multilevel, this means that the flag is
-incremented/decremented rather than set/unset, so that activations and
-deactivations can be nested. */
+   the list of line descriptor pools and the list of character pools, plus some
+   data as the current window and cursor position. The line descriptors are
+   kept in a list, too. The other fields are more or less self-documented.
+   wanted_x represents the position the cursor would like to be on, but cannot
+   because a line is too short or because it falls inside a TAB expansion. When
+   a flag is declared as multilevel, this means that the flag is
+   incremented/decremented rather than set/unset, so that activations and
+   deactivations can be nested. */
 
 typedef struct {
 	node b_node;
@@ -432,7 +432,7 @@ typedef struct {
 	int block_start_line, block_start_col;
 	struct {
 		int shown;
-		int x;						/* Visual (on-screen) coordinates of the highlighted bracket, if shown is true. */
+		int x;                 /* Visual (on-screen) coordinates of the highlighted bracket, if shown is true. */
 		int y;
 	} automatch;
 	int allocated_chars;
@@ -444,34 +444,34 @@ typedef struct {
 		int line;
 		int cur_y;
 	} bookmark[NUM_BOOKMARKS];
-	int bookmark_mask;        /* bit N is set if bookmark[N] is set */
-	int cur_bookmark;         /* For Goto(Next|Prev)Bookmark. */
+	int bookmark_mask;          /* bit N is set if bookmark[N] is set */
+	int cur_bookmark;           /* For Goto(Next|Prev)Bookmark. */
 	
-	struct high_syntax *syn;				/* Syntax loaded for this buffer. */
-	int *attr_buf;								/* If attr_len >= 0, a pointer to the list of *current* attributes of the *current* line. */ 
-	int attr_size;								/* attr_buf size. */						
-	int attr_len;								/* attr_buf valid number of characters, or -1 to denote that attr_buf is not valid. */						
-	HIGHLIGHT_STATE next_state;			/* If attr_len >= 0, the state after the *current* line. */						
+	struct high_syntax *syn;    /* Syntax loaded for this buffer. */
+	int *attr_buf;              /* If attr_len >= 0, a pointer to the list of *current* attributes of the *current* line. */ 
+	int attr_size;              /* attr_buf size. */
+	int attr_len;               /* attr_buf valid number of characters, or -1 to denote that attr_buf is not valid. */
+	HIGHLIGHT_STATE next_state; /* If attr_len >= 0, the state after the *current* line. */
 
 	unsigned int
 
-		link_undos,					/* Link the undo steps. Multilevel. */
-		is_modified:1, 					/* Buffer has been modified since last save */
-		recording:1,					/* We are recording a macro */
-		marking:1,					/* We are marking a block */
-		x_wanted:1,					/* We're not where we would like to be */
-		y_wanted:1,					/* We've been paging up/down */
-		exec_only_options:1,				/* Only option changes can be executed */
-		find_string_changed:1,				/* The search string has to be recompiled before use. */
-		last_was_replace:1,				/* The last search operation was a replace */
-		last_was_regexp:1,				/* The last search operation was done with regexps */
-		undoing:1,					/* We are currently undoing an action */
-		redoing:1,					/* We are currently redoing an action */
-		mark_is_vertical:1,				/* The current marking is vertical */
-		executing_internal_macro:1,			/* We are currently executing the internal macro of the current buffer */
-		is_CRLF:1; 			                /* Buffer should be saved with CR/LF terminators */
+		link_undos,              /* Link the undo steps. Multilevel. */
+		is_modified:1,           /* Buffer has been modified since last save */
+		recording:1,             /* We are recording a macro */
+		marking:1,               /* We are marking a block */
+		x_wanted:1,              /* We're not where we would like to be */
+		y_wanted:1,              /* We've been paging up/down */
+		exec_only_options:1,     /* Only option changes can be executed */
+		find_string_changed:1,   /* The search string has to be recompiled before use. */
+		last_was_replace:1,      /* The last search operation was a replace */
+		last_was_regexp:1,       /* The last search operation was done with regexps */
+		undoing:1,               /* We are currently undoing an action */
+		redoing:1,               /* We are currently redoing an action */
+		mark_is_vertical:1,      /* The current marking is vertical */
+		executing_internal_macro:1,  /* We are currently executing the internal macro of the current buffer */
+		is_CRLF:1;               /* Buffer should be saved with CR/LF terminators */
 
-	options_t opt;                         			/* These get pushed/popped on the prefs stack */
+	options_t opt;              /* These get pushed/popped on the prefs stack */
 } buffer;
 
 
@@ -479,8 +479,8 @@ typedef struct {
 #define assert_buffer(b) {if ((b)) {\
 	assert((b)->line_desc_list.head->next == NULL || (b)->cur_line_desc != NULL);\
 	assert((b)->line_desc_list.head->next == NULL || (b)->top_line_desc != NULL);\
-	assert_line_desc((b)->cur_line_desc, (b)->encoding);									\
-	assert_line_desc((b)->top_line_desc, (b)->encoding);									\
+	assert_line_desc((b)->cur_line_desc, (b)->encoding);\
+	assert_line_desc((b)->top_line_desc, (b)->encoding);\
 	assert_char_stream((b)->last_deleted);\
 	assert_char_stream((b)->cur_macro);\
 	assert((b)->win_y + (b)->cur_y<(b)->num_lines);\
@@ -522,7 +522,8 @@ extern list buffers, clips, macros;
 extern int turbo;
 
 
-/* If true, the current line has changed and care must be taken to update the initial state of the following lines. */
+/* If true, the current line has changed and care must be taken
+   to update the initial state of the following lines. */
 
 extern int need_attr_update;
 
@@ -558,8 +559,8 @@ extern int do_syntax;
 
 
 /* This flag can be set anywhere to FALSE, and will become TRUE if the user
-hits the interrupt key (usually CTRL-'\'). It is handled through SIGQUIT and
-SIGINT. */
+   hits the interrupt key (usually CTRL-'\'). It is handled through SIGQUIT and
+   SIGINT. */
 
 extern unsigned int stop;
 
@@ -575,13 +576,13 @@ get_key_code()) its input class. */
 extern const input_class char_class[];
 
 /* A boolean recording whether the last replace was for an empty string 
-	(of course, this can happen only with regular expressions). */
+  (of course, this can happen only with regular expressions). */
 
 extern int last_replace_empty_match;
 
 
 /* This number defines the macro hash table size. This table can have
-conflicts. */
+   conflicts. */
 
 #define MACRO_HASH_TABLE_SIZE (101)
 
@@ -598,8 +599,8 @@ extern const unsigned char ascii_up_case[];
 #include "debug.h"
 
 /* In the unfortunate case we are compiling in some known system
-	with a completely different handling of binary and ASCII files,
-	we force the use of binary files. */
+   with a completely different handling of binary and ASCII files,
+   we force the use of binary files. */
 
 #ifdef O_BINARY
 #define READ_FLAGS  O_RDONLY | O_BINARY
