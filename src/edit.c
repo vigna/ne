@@ -43,7 +43,9 @@ static int to_something(buffer *b, int (to_first)(int), int (to_rest)(int)) {
 	if (b->cur_line == b->num_lines -1 && b->cur_pos >= b->cur_line_desc->line_len) return ERROR;
 
 	/* First of all, we search for the word start, if we're not over it. */
-	if (pos >= b->cur_line_desc->line_len || !ne_isword(c = get_char(&b->cur_line_desc->line[pos], b->encoding), b->encoding)) search_word(b, 1);
+	if (pos >= b->cur_line_desc->line_len || !ne_isword(c = get_char(&b->cur_line_desc->line[pos], b->encoding), b->encoding))
+		if (search_word(b, 1) != OK)
+			return ERROR;
 	x = b->cur_x; /* The original x position (to perform the line update). */
 
 	pos = b->cur_pos;
@@ -100,9 +102,7 @@ static int to_something(buffer *b, int (to_first)(int), int (to_rest)(int)) {
 		update_syntax_states(b, b->cur_y, b->cur_line_desc, NULL);
 	}
 
-	search_word(b, 1);
-
-	return OK;
+	return search_word(b, 1);
 }
 
 

@@ -15,6 +15,8 @@
   * Fixed buggy HTML/CSS syntax highlighting.
 
   * Fixed wrong background line colour when clearing to the end of line.
+  
+  * ToUpper and ToLower now stop when they reach the end of a document.
 
 2.1
 
