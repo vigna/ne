@@ -595,9 +595,10 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			if (b->cur_pos < b->cur_line_desc->line_len) {
 				/* Deletion inside a line. */
 				const int old_char = b->encoding == ENC_UTF8 ? utf8char(&b->cur_line_desc->line[b->cur_pos]) : b->cur_line_desc->line[b->cur_pos];
+				const int old_attr = b->syn ? b->attr_buf[b->cur_pos] : 0;
 				delete_one_char(b, b->cur_line_desc, b->cur_line, b->cur_pos);
 				
-				update_deleted_char(b, old_char, b->cur_line_desc, b->cur_pos, b->cur_char, b->cur_y, b->cur_x);	
+				update_deleted_char(b, old_char, old_attr, b->cur_line_desc, b->cur_pos, b->cur_char, b->cur_y, b->cur_x);	
 				if (b->syn) update_line(b, b->cur_y, TRUE, TRUE);
 			}
 			else {

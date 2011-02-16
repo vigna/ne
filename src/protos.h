@@ -106,7 +106,7 @@ void update_line(buffer *b, int n, const int cleared_at_end, const int different
 void update_window_lines(buffer *b, int start_line, int end_line, int doit);
 void update_syntax_and_lines(buffer *b, line_desc *start_ld, line_desc *end_ld);
 void update_window(buffer *b);
-void update_deleted_char(buffer *b, int c, const line_desc *ld, int pos, int attr_pos, int line, int x);
+void update_deleted_char(buffer *b, int c, int a, const line_desc *ld, int pos, int attr_pos, int line, int x);
 void update_inserted_char(buffer *b, int c, const line_desc *ld, int pos, int attr_pos, int line, int x);
 void update_overwritten_char(buffer *b, int old_char, int new_char, const line_desc *ld, int pos, int attr_pos, int line, int x);
 void reset_window(void);

@@ -376,7 +376,7 @@ void update_syntax_and_lines(buffer *b, line_desc *start_ld, line_desc *end_ld) 
 	optimized (such as writing a space at the end of a line). TURBO is
 	taken into consideration. */
 
-void update_deleted_char(buffer * const b, const int c, const line_desc * const ld, int pos, int attr_pos, const int line, const int x) {
+void update_deleted_char(buffer * const b, const int c, const int a, const line_desc * const ld, int pos, int attr_pos, const int line, const int x) {
 
 	int i, j, c_width, tab_width, tab_found = FALSE, curr_attr_pos;
 
@@ -394,7 +394,7 @@ void update_deleted_char(buffer * const b, const int c, const line_desc * const 
 		return;
 	}
 
-	if (pos > ld->line_len || (pos == ld->line_len && (c == '\t' || c == ' '))) return;
+	if (pos > ld->line_len || (pos == ld->line_len && ((c == '\t' || c == ' ') && !a))) return;
 
 	move_cursor(line, x);
 
