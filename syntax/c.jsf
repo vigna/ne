@@ -443,6 +443,34 @@ done
 	"auto"		type
 	"const"		type
 	"volatile"	type
+	"int8_t"	type
+	"int16_t"	type
+	"int32_t"	type
+	"int64_t"	type
+	"uint8_t"	type
+	"uint16_t"	type
+	"uint32_t"	type
+	"uint64_t"	type
+	"int_least8_t"	type
+	"int_least16_t"	type
+	"int_least32_t"	type
+	"int_least64_t"	type
+	"uint_least8_t"	type
+	"uint_least16_t"	type
+	"uint_least32_t"	type
+	"uint_least64_t"	type
+	"int_fast8_t"	type
+	"int_fast16_t"	type
+	"int_fast32_t"	type
+	"int_fast64_t"	type
+	"uint_fast8_t"	type
+	"uint_fast16_t"	type
+	"uint_fast32_t"	type
+	"uint_fast64_t"	type
+	"intmax_t"	type
+	"uintmax_t"	type
+	"intptr_t"	type
+	"uintptr_t"	type
 	"if"		kw
 	"else"		kw
 	"while"		kw

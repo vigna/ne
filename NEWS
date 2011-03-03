@@ -24,6 +24,8 @@
 
   * New "tabs" syntax definition makes tabs visibly distinct from spaces.
 
+  * Recognize C99 integer types from <stdint.h> and highlight accordingly.
+
 2.1
 
   * New commands: KeyCode, DeleteNextWord, DeletePrevWord, AutoComplete,
