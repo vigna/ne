@@ -520,7 +520,9 @@ sub head_enums_h
   {
     print ENUMS_H <<"_EOT_";
 /* This is the list of all possible actions that do_action() can execute.
-Note also that menu handling is governed by such a command (ESCAPE). */
+Note also that menu handling is governed by such a command (ESCAPE).
+
+$copyright  */
 
 typedef enum {
 _EOT_
