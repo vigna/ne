@@ -118,7 +118,12 @@ done
 :tag_param TagParam
 	*			tag_idle noeat recolor=-1
 	"-A-Za-z0-9._:"		tag_param
-	"="			tag_delim recolor=-1
+	"="			tag_may_delim recolor=-1
+	" \t\n"			tag_may_delim
+
+:tag_may_delim TagDelim
+	*			tag_delim noeat recolor=-1
+	"= \t\n"		tag_may_delim
 
 :tag_delim TagDelim
 	*			mistake_tag noeat recolor=-1
