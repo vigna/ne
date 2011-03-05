@@ -272,7 +272,7 @@ done
 
 :char Constant
 	*		char
-	"\n"		idle noeat
+#	"\n"		idle noeat
 	"'"		rest
 	"\\"		char_escape	recolor=-1
 
