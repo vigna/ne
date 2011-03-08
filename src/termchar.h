@@ -1,25 +1,22 @@
 /* extern's of flags describing terminal's characteristics.
 
-	Copyright (C) 1985, 1986, 1987 Free Software Foundation, Inc.
-	Originally part of GNU Emacs.
-	Vastly edited and modified for use within ne.
+	Copyright (C) 1993-1998 Sebastiano Vigna 
+	Copyright (C) 1999-2011 Todd M. Lewis and Sebastiano Vigna
 
 	This file is part of ne, the nice editor.
 
-	This program is free software; you can redistribute it and/or modify it
-	under the terms of the GNU General Public License as published by the
-	Free Software Foundation; either version 2, or (at your option) any
-	later version.
-	
-	This program is distributed in the hope that it will be useful, but
-	WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-	General Public License for more details.
-	
-	You should have received a copy of the GNU General Public License along
-	with this program; see the file COPYING.  If not, write to the Free
-	Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-	02111-1307, USA.  */
+	This library is free software; you can redistribute it and/or modify it
+	under the terms of the GNU General Public License as published by
+	the Free Software Foundation; either version 3 of the License, or (at your
+	option) any later version.
+
+	This library is distributed in the hope that it will be useful, but
+	WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+	or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+	for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
 
 /** #define's from Joe's sources for colors and attributes. Please keep in sync. */
