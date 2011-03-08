@@ -1,5 +1,7 @@
 2.2
 
+  * Now ne is distributed under the GPLv3.
+
   * Added AutoMatchBracket mode to indicate visible matching of
     {}, (), [], <> pairs. Mode is 1 (brightness) by default.
 
