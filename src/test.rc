@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# Run this file only if you have built ne with NE_TEST=1
+
+function check_differences {
+	cmp $1 $1.undone
+	if [ $? -eq 0 ]
+		then echo $1 and $1.undone match. GOOD.
+		     rm $1.undone
+		else echo $1 and $1.undone differ. BAD.
+	fi
+	cmp $1.{test,redone}
+	if [ $? -eq 0 ]
+		then echo $1.{test,redone} match. GOOD.
+		     rm $1.{test,redone}
+		else echo $1.{test,redone} differ. BAD.
+	fi
+}
+
+orig=ne.texinfo
+./test.rb 512 ${orig} > test.macro
+time ./ne --macro test.macro
+check_differences $orig
+orig=ne
+./test.rb 512 ne BINARY > test.binary.macro
+time ./ne --macro test.binary.macro
+check_differences $orig
+

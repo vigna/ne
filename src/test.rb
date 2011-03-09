@@ -12,6 +12,12 @@
 # original, and if the redone file is identical to the .test
 # version. If they are not, then ne is broken.
 # 
+# By far the easiest way to use the program is to source
+# test.rc. It uses test.rb to create a non-binary macro
+# which it runs on ne.texinfo, a binary macro which it
+# runs on ./ne itself, reports the results and more or
+# less cleans up after itself.
+# 
 # Do not let a "NE_TEST" version of the ne binary out into
 # the wild; it does not do the Right Thing for production
 # use.
