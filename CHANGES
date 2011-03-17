@@ -1,3 +1,8 @@
+2.3
+
+  * Fixed ridicolously old bug when copying a block and the marker is
+    after the cursor.
+
 2.2
 
   * Fixed memory allocation macros in regex code from glibc to work on systems

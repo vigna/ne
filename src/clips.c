@@ -224,7 +224,7 @@ int copy_to_clip(buffer *b, int n, int cut) {
 
 					if (ld->line) memcpy(p, ld->line + start_pos, len);
 					p += len;
-					if (i != y) *(p++) = 0;
+					if (i != b->block_start_line) *(p++) = 0;
 				}
 				else clip_len += len + (i != y);
 
