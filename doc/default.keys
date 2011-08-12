@@ -9,11 +9,11 @@
 
 # Cursor up
 
-KEY     101	LineUp
+KEY	101	LineUp
 
 # Cursor down
 
-KEY     102	LineDown
+KEY	102	LineDown
 
 # Cursor left
 
@@ -21,7 +21,7 @@ KEY	103	MoveLeft
 
 # Cursor right
 
-KEY     104     MoveRight
+KEY	104	MoveRight
 
 # Cursor home
 
@@ -33,19 +33,19 @@ KEY	106	MoveIncDown
 
 # Cursor next page
 
-KEY     107     NextPage
+KEY	107	NextPage
 
 # Cursor prev page
 
-KEY     108     PrevPage
+KEY	108	PrevPage
 
 # Scroll forward
 
-KEY     109     LineDown
+KEY	109	LineDown
 
 # Scroll backward
 
-KEY     10A     LineUp
+KEY	10A	LineUp
 
 # Clear to end of line
 
@@ -53,7 +53,7 @@ KEY	110	DeleteEOL
 
 # Clear to end of screen
 
-KEY	111     NOP
+KEY	111	NOP
 
 # Backspace
 
@@ -97,7 +97,7 @@ KEY	122	ToggleSEOL
 
 # Keypad C1
 
-KEY     123	MoveEOF
+KEY	123	MoveEOF
 
 # Keypad C3
 
@@ -105,7 +105,7 @@ KEY	124	NextPage
 
 #
 
-KEY 125 Exec
+KEY	125	Exec
 
 # Clear all tabs
 
@@ -159,7 +159,7 @@ KEY	147	PrevWord
 
 # F8
 
-KEY     148     NextWord
+KEY	148	NextWord
 
 # F9
 
@@ -169,9 +169,9 @@ KEY	149	PlayOnce
 
 KEY	14A	Help
 
-KEY 15F DeletePrevWord
+KEY	15F	DeletePrevWord
 
-KEY 160 DeleteNextWord
+KEY	160	DeleteNextWord
 
 #
 # CONTROL-letter shortcuts
@@ -212,75 +212,75 @@ KEY	7	RepeatLast
 
 # CONTROL-h
 
-KEY     8       BackSpace
+KEY	8	BackSpace
 
 # CONTROL-i cannot be redefined (it's TAB)
 
 # CONTROL-j 
 
-KEY     A	GotoLine
+KEY	A	GotoLine
 
 # CONTROL-k
 
-KEY     B	Exec
+KEY	B	Exec
 
 # CONTROL-l
 
-KEY     C	Refresh
+KEY	C	Refresh
 
 # CONTROL-m cannot be redefined (it's RETURN)
 
 # CONTROL-n
 
-KEY     E	NextPage
+KEY	E	NextPage
 
 # CONTROL-o
 
-KEY     F	Open
+KEY	F	Open
 
 # CONTROL-p
 
-KEY     10	PrevPage
+KEY	10	PrevPage
 
 # CONTROL-q
 
-KEY     11	CloseDoc
+KEY	11	CloseDoc
 
 # CONTROL-r
 
-KEY     12	Replace
+KEY	12	Replace
 
 # CONTROL-s
 
-KEY     13	Save
+KEY	13	Save
 
 # CONTROL-t
 
-KEY     14	Record
+KEY	14	Record
 
 # CONTROL-u
 
-KEY     15	UndelLine
+KEY	15	UndelLine
 
 # CONTROL-v
 
-KEY     16	Paste
+KEY	16	Paste
 
 # CONTROL-w
 
-KEY     17	PasteVert
+KEY	17	PasteVert
 
 # CONTROL-x
 
-KEY     18	Cut
+KEY	18	Cut
 
 # CONTROL-y 
 
-KEY     19	DeleteLine
+KEY	19	DeleteLine
 
 # CONTROL-z
 
-KEY     1A	Suspend
+KEY	1A	Suspend
 
 # CONTROL-[ cannot be redefined (it's Escape)
 
@@ -288,32 +288,32 @@ KEY     1A	Suspend
 
 # CONTROL-]
 
-KEY     1D	MatchBracket
+KEY	1D	MatchBracket
 
 # CONTROL-^
 
-KEY     1E	AdjustView
+KEY	1E	AdjustView
 
 # CONTROL-_
 
-KEY     1F	FindRegExp
+KEY	1F	FindRegExp
 
 # Delete
 
 KEY	7F	DeleteChar
 
-KEY	 1cf	OpenClip
-KEY	 1d0	Paragraph
-KEY	 1d1	Quit
-KEY	 1d2	Redo
-KEY	 1d3	SaveClip
-KEY	 1d4	Through
-KEY	 1d5	Undo
-KEY	 1d6	ToUpper
-KEY	 1d7	WordWrap
-KEY	 1d8	Exit
-KEY	 1d9	DeleteEOL
-KEY	 1da	CRLF
+KEY	1cf	OpenClip
+KEY	1d0	Paragraph
+KEY	1d1	Quit
+KEY	1d2	Redo
+KEY	1d3	SaveClip
+KEY	1d4	Through
+KEY	1d5	Undo
+KEY	1d6	ToUpper
+KEY	1d7	WordWrap
+KEY	1d8	Exit
+KEY	1d9	DeleteEOL
+KEY	1da	CRLF
 
 #
 # The following bindings set up the same actions for a number of correlated

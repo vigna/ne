@@ -148,6 +148,7 @@ const char *ext2syntax(const char * const ext);
 void read_key_capabilities(void);
 void set_escape_time(int new_escape_time);
 int get_key_code(void);
+int key_may_set(const char * const cap_string, const int code);
 
 /* menu.c */
 void print_message(const char *message);

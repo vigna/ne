@@ -5027,12 +5027,13 @@ ASCII characters between 128 and 159, and will be parsed as shortcuts by
 
 @code{ne} allows you to associate any keystroke with any command. To
 accomplish this task, you have to create a (possibly UTf-8) file named
-@file{.keys} in your home directory, or in @file{~/.ne}. You can change
+@file{.keys} in your @file{~/.ne}directory. You can change
 the default name (possibly specifying a complete path) using the
 @code{--keys} argument (@pxref{Arguments}).
 
 The format of the file is very simple: each line starting with the @samp{KEY}
 sequence of capital characters is considered the description of a key binding.
+Each line starting with @samp{SEQ} binds a character sequence to a key.
 All other lines are considered comments. The format of a key binding
 description is
 
@@ -5090,7 +5091,7 @@ KEY 81 MoveSOF
 
 @noindent binds @kbd{@key{Control}-@key{Meta}-a} to the action of moving to the
 start of the document. However, @code{gnome-terminal} will emit the
-character of ASCII code 1 prefixed with ESC instead. To handle this case,
+character of ASCII code 1 prefixed with ESC instead (``@code{\x1b\x01}''). To handle this case,
 @code{ne} provides codes from 180 on for @emph{simulated @key{Meta}
 sequences}: for instance,
 
@@ -5106,7 +5107,7 @@ of your terminal (for instance, ESC followed by @samp{O} is always
 disabled because it prefixes several built-in keyboard sequences).
 
 As a final note, we remark that typing @kbd{@key{Meta}-a} on
-@code{gnome-terminal} will produce an ESC followed by @samp{a}. Since it
+@code{gnome-terminal} will produce an ESC followed by @samp{a} (``@code{\x1ba}''). Since it
 is obviously easier to press just @key{Meta} rather than @key{Meta} and
 @key{Control} at the same time, it is a good idea to associate the same
 sequence also to this combination, using
@@ -5115,7 +5116,7 @@ sequence also to this combination, using
 KEY 1E1 MoveSOF
 @end example
 
-Moreover, this setting provides the user with a second choice: one can
+@noindent Moreover, this setting provides the user with a second choice: one can
 press @key{Escape} followed by a letter instead of using modifiers.
 
 This is the approach used by default in @code{ne}: this way,
@@ -5123,6 +5124,37 @@ This is the approach used by default in @code{ne}: this way,
 @key{Meta} should work sometimes (of course, if you're sure to use
 always the same kind of emulator you can bind more features). Again, the
 best place to look at it's @file{default.keys}.
+
+As stated above, each line starting with @samp{SEQ} binds a character sequence
+to a key code. The format for a @samp{SEQ} binding is
+
+@example
+SEQ "@var{sequence}" @var{hexcode}
+@end example
+
+@noindent where "@var{sequence}" is a double-quoted string of characters
+(which can include escaped hexadecimals) followed by a hexadecimal key code
+as described above for @samp{KEY} definitions.
+
+You should rarely need this, as properly configured systems already do
+this for most keys. However, some key combinations (@key{Control} in
+conjunction with cursor keys for example) are usually not defined. If you
+know the character sequence your system generates for such a combination, you may use
+@samp{SEQ} to bind that sequence to a particular key code if that sequence
+isn't already defined on your system. For example,
+@key{Control}-``cursor-left'' may generate the sequence
+@code{\x1b[1;5D}. The following lines bind that sequence to the @key{F10}
+key code @samp{14A}, then bind that key code to the @samp{HELP} command.
+
+@example
+SEQ  "\x1b[1;5D"  14A
+KEY  14A          HELP
+@end example
+
+Sequences are inherently terminal- or terminal emulator-specific, so
+their utility will vary depending on how many emulators you use. At least
+they give you the posibility to use keys or key combinations that aren't
+covered by @code{curses}.
 
 The key binding file is parsed at startup. If something does not work,
 @code{ne} exits displaying an error message. If you want @code{ne} to skip

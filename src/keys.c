@@ -26,7 +26,8 @@
 #include <string.h>
 
 
-/* Maximum number of key definitions from terminfo */
+/* Maximum number of key definitions from terminfo plus others
+   we may get from keys file -- i.e. key_may_set(). */
 
 #define MAX_TERM_KEY 512
 
@@ -123,19 +124,25 @@ assigned. It assumes the array is already sorted, and it keeps it
 that way. This is part of the horrible hack to make cursor and
 function keys work on numerous terminals which have broken terminfo
 and termcap entries, or for weak terminal emulators which happen to
-produce well-known sequences. */
+produce well-known sequences. Returns
+   > 0 on success,
+   ==0 if table is full (or no cap_string supplied)
+   < 0 if string is already defined.
+ */
 
 
-static void key_may_set(const char * const cap_string, const int code) {
-	int pos;
+int key_may_set(const char * const cap_string, const int code) {
+	int pos=0;
 
-	if (!cap_string || (pos = binsearch(cap_string)) < 0) return;
+   if (num_keys >= MAX_TERM_KEY - 1) return 0;
+	if (!cap_string || (pos = binsearch(cap_string)) < 0) return pos;
 
 	memmove(key + pos + 1, key + pos, (num_keys - pos) * sizeof *key);
 	key[pos].string = (unsigned char *)cap_string;
 	key[pos].code = code;
 	num_keys++;
-	assert(num_keys < MAX_TERM_KEY - 1);
+	assert(num_keys < MAX_TERM_KEY);
+	return pos+1;
 }
 
 

@@ -1,6 +1,6 @@
 2.3
 
-  * Fixed ridicolously old bug when copying a block and the marker is
+  * Fixed ridiculously old bug when copying a block and the marker is
     after the cursor.
     
   * Tweak to syntax file for java.

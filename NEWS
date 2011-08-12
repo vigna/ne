@@ -1,3 +1,8 @@
+2.3
+
+  * Takes 'SEQ "sequence" KEYCODE' in ~/.ne/.keys to bind character
+    sequences to key codes.
+
 2.2
 
   * Now ne is distributed under the GPLv3.

@@ -57,6 +57,7 @@
 #define MENU_KEYWORD "MENU"
 #define ITEM_KEYWORD "ITEM"
 #define KEY_KEYWORD "KEY"
+#define SEQ_KEYWORD "SEQ"
 
 
 /* This structure defines a menu item. command_line points to
@@ -1040,7 +1041,7 @@ static void get_key_bind(const char * key_bindings_name, char * (exists_prefs_fu
 		if (key_bindings = malloc(strlen(prefs_dir) + strlen(key_bindings_name) + 1)) {
 			strcat(strcpy(key_bindings, prefs_dir), key_bindings_name);
 
-			if ((cs = load_stream(NULL, key_bindings_name, FALSE, FALSE)) || (cs = load_stream(NULL, key_bindings, FALSE, FALSE))) {
+			if (cs = load_stream(NULL, key_bindings, FALSE, FALSE)) {
 
 				p = cs->stream;
 				line = 1;
@@ -1064,7 +1065,29 @@ static void get_key_bind(const char * key_bindings_name, char * (exists_prefs_fu
 						}
 						else error_in_key_bindings(line, "can't read key code.");
 					}
-
+					else if (*p && !cmdcmp(SEQ_KEYWORD, p)) {
+						char *buf;
+						while(*p && !isasciispace(*p)) p++;    /* skip past SEQ */
+						while(isasciispace(*p)) p++;           /* skip to quoted sequence, like  "\x1b[A" */
+						buf = p;   /* Risky: we're replacing the double-quoted string with its parsed equivalent in situ. */
+						if (parse_string(&p, buf, strlen(p)) > 0) {  /* parse_string() expects double-quoted string. */
+							while(*p && isasciispace(*p)) p++;  /* skip to key code */
+							if (*p && sscanf(p, "%x %*s", &c) == 1) {    /* convert key code */
+								if (c >= 0 && c < NUM_KEYS) {
+									if (c != 27 && c != 13) {
+										if ((c=key_may_set(buf,c)) < 0)
+											error_in_key_bindings(line, "sequence already assigned." );
+										else if (c==0)
+											error_in_key_bindings(line, "sequence table full." );
+									}
+									else error_in_key_bindings(line, "you cannot redefine ESCAPE and RETURN.");
+								}
+								else error_in_key_bindings(line, "key code out of range.");
+							}
+							else error_in_key_bindings(line, "can't read key code.");
+						}
+						else error_in_key_bindings(line, "can't read double quoted character sequence.");
+					}
 					line++;
 					p += strlen(p) + 1;
 				}
@@ -1075,10 +1098,17 @@ static void get_key_bind(const char * key_bindings_name, char * (exists_prefs_fu
 	}
 }
 
+char *cur_dir(void) {
+	static char *cur_dir = "./";
+	return cur_dir;
+}
+
 /* Key bindings override easily, so pull in any global bindings
    first, then override with the users bindings. */
 void get_key_bindings(const char * key_bindings_name) {
 	get_key_bind(key_bindings_name, exists_gprefs_dir);
 	get_key_bind(key_bindings_name, exists_prefs_dir);
+	get_key_bind(key_bindings_name, cur_dir);
 }
+
 
