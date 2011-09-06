@@ -340,6 +340,7 @@ done
 	"until"		kw
 	"foreach"	kw
 	"sub"		kw
+	"our"		kw
 	"my"		kw
 	"our"		kw
 	"do"		kw
