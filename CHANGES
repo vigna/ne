@@ -1,3 +1,5 @@
+(This file, CHANGES, lists fixes. See NEWS for new features and enhancements.)
+
 2.3
 
   * Fixed ridiculously old bug when copying a block and the marker is
