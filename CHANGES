@@ -7,6 +7,8 @@
     
   * Tweak to syntax file for java.
 
+  * Changed build date in "About" to ISO YYYY-MM-DD format.
+
 2.2
 
   * Fixed memory allocation macros in regex code from glibc to work on systems
