@@ -193,7 +193,7 @@ char_stream *load_stream(char_stream * cs, const char *name, const int preserve_
 
 	name = tilde_expand(name);
 
-	if (is_migrated(name) || is_directory(name)) return NULL;
+	if (is_directory(name) || is_migrated(name)) return NULL;
 
 	cs = load_stream_from_fh(cs, fh = open(name, READ_FLAGS), preserve_cr, binary);
 	if (fh >= 0) close(fh);
@@ -265,8 +265,8 @@ int save_stream(const char_stream *const cs, const char *name, const int CRLF, c
 
 	name = tilde_expand(name);
 
-	if (is_migrated(name)) return  FILE_IS_MIGRATED ;
 	if (is_directory(name)) return  FILE_IS_DIRECTORY ;
+	if (is_migrated(name)) return  FILE_IS_MIGRATED ;
 
 	if ((fh = open(name, WRITE_FLAGS, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH))>=0) {
 		error = save_stream_to_fh(cs, fh, CRLF, binary);

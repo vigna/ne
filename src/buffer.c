@@ -1149,8 +1149,8 @@ int load_file_in_buffer(buffer * const b, const char *name) {
 	
 	name = tilde_expand(name);
 
-	if (is_migrated(name)) return FILE_IS_MIGRATED;
 	if (is_directory(name)) return FILE_IS_DIRECTORY;
+	if (is_migrated(name)) return FILE_IS_MIGRATED;
     
 	if ((fh = open(name, READ_FLAGS)) >= 0) {
 		result = load_fh_in_buffer(b, fh);
@@ -1365,8 +1365,8 @@ int save_buffer_to_file(buffer *b, const char *name) {
 	
 	name = tilde_expand(name);
 
+	if (is_directory(name)) return FILE_IS_DIRECTORY;
 	if (is_migrated(name)) return FILE_IS_MIGRATED;
-	if (is_directory(name)) return FILE_IS_MIGRATED;
     
 	block_signals();
 
