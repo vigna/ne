@@ -8,6 +8,8 @@
   * Tweak to syntax file for java.
 
   * Changed build date in "About" to ISO YYYY-MM-DD format.
+  
+  * Tweak suspend to signal process group; reduce chance of apparent hang.
 
 2.2
 

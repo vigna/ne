@@ -70,7 +70,7 @@ handler and reset the screen. */
 
 void stop_ne(void) {
 	unset_interactive_mode();
-	kill(getpid(), SIGTSTP);
+	kill(0, SIGTSTP);
 	set_interactive_mode();
 	clear_entire_screen();
 	ttysize();
