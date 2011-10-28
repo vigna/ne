@@ -56,17 +56,10 @@ static void fatal_code(const int sig) {
 }
 
 
-/* The next two functions handle the suspend/restart system. When stopped,
+/* The next function handles the suspend/restart system. When stopped,
 we reset the terminal status, set up the continuation handler and let the
 system stop us by sending again a TSTP signal, this time using the default
-handler. When we get a CONT signal, we set the terminal, set up the stop
-handler and reset the screen. */
-
-/*static void cont_code(int sig) {
-
-	set_interactive_mode();
-	ttysize();
-	}*/
+handler. */
 
 void stop_ne(void) {
 	unset_interactive_mode();
@@ -76,7 +69,6 @@ void stop_ne(void) {
 	ttysize();
 	reset_window();
 }
-
 
 
 /* This mask will hold all the existing signals. */

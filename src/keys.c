@@ -526,7 +526,7 @@ int get_key_code(void) {
 		errno = 0;
 		c = getchar();
 		e = errno;
-		
+
 		if (partial_match) set_termios_timeout(0);
 
 		/* This is necessary to circumvent the slightly different behaviour of getc() in Linux and BSD. */
@@ -542,9 +542,9 @@ int get_key_code(void) {
 		else {
 			if (cur_len) {
 
-				/* We ran out of time. If our match was not UTF-8, then the current
-					we return the first character of the keyboard buffer is returned. 
-					Otherwise, we discard the partially received UTF-8 sequence. */
+				/* We ran out of time. If our match was UTF-8, we discard the
+					partially received UTF-8 sequence. Otherwise, we return the
+					first character of the keyboard buffer.  */
 
 				if (partial_is_utf8) cur_len = last_match = partial_is_utf8 = 0;
 				else {
@@ -553,6 +553,7 @@ int get_key_code(void) {
 					return c;
 				}
 			}
+			else return INVALID_CHAR;
 		}
 	}
 }

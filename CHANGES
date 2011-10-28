@@ -11,6 +11,8 @@
   
   * Tweak suspend to signal process group; reduce chance of apparent hang.
 
+  * Instantaneous window resize works again.
+
 2.2
 
   * Fixed memory allocation macros in regex code from glibc to work on systems

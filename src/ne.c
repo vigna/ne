@@ -432,13 +432,15 @@ int main(int argc, char **argv) {
 		move_cursor(cur_buffer->cur_y, cur_buffer->cur_x);
 
 		c = get_key_code();
-		ic = CHAR_CLASS(c);
 
 		if (window_changed_size) {
 			print_error(do_action(cur_buffer, REFRESH_A, 0, NULL));
 			window_changed_size = FALSE;
 			cur_buffer->automatch.shown = 0;
 		}
+
+		if ( c == INVALID_CHAR ) continue; // Window resizing.
+		ic = CHAR_CLASS(c);
 
 		if (displaying_info) {
 			about(0);

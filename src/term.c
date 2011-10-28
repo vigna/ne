@@ -998,14 +998,14 @@ int ttysize(void) {
 #ifdef TIOCGSIZE
 	/* try using the TIOCGSIZE call, if defined */
 	struct ttysize size;
-	D(fprintf(stderr,"ttysize: CHECKING...\n");)
+	D(fprintf(stderr,"ttysize (TIOCGSIZE): CHECKING...\n");)
 	if (ioctl(0, TIOCGSIZE, &size)) return 0;
 	l = size.ts_lines;
 	c = size.ts_cols;
 #elif defined(TIOCGWINSZ)
 	/* try using the TIOCGWINSZ call, if defined */
 	struct winsize size;
-	D(fprintf(stderr,"ttysize: CHECKING...\n");)
+	D(fprintf(stderr,"ttysize (TIOCGWINSZ): CHECKING...\n");)
 	if (ioctl(0, TIOCGWINSZ, &size)) return 0;
 	l = size.ws_row;
 	c = size.ws_col;
