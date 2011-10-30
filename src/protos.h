@@ -229,7 +229,7 @@ char *request_file(const buffer *b, const char *prompt, const char *default_name
 int   request_document(void);
 
 /* search.c */
-int  find(buffer *b, const unsigned char *pattern, const skip_first);
+int  find(buffer *b, const unsigned char *pattern, const int skip_first);
 int  replace(buffer *b, int n, const char *string);
 int  find_regexp(buffer *b, const unsigned char *regex, const int skip_first);
 int  replace_regexp(buffer *b, const char *string);

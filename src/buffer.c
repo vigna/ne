@@ -1172,8 +1172,8 @@ int load_file_in_buffer(buffer * const b, const char *name) {
 
 int load_fh_in_buffer(buffer *b, int fh) {
 	
-
-	int i, len, num_lines;
+	off_t len;
+	int i, num_lines;
 	encoding_type encoding;
 	unsigned char *p, *q;
 	char_pool *cp;
@@ -1184,7 +1184,8 @@ int load_fh_in_buffer(buffer *b, int fh) {
          
 	len = lseek(fh, 0, SEEK_END);
 
-	if (len < 0 || lseek(fh, 0, SEEK_SET)<0) return IO_ERROR;
+	if (len < 0 || lseek(fh, 0, SEEK_SET) < 0) return IO_ERROR;
+	if (len > INT_MAX) return FILE_IS_TOO_LARGE;
 
 	free_buffer_contents(b);
 

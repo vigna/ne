@@ -283,7 +283,7 @@ line_desc *update_partial_line(buffer * const b, const int row, const int from_c
 /* Similar to the previous call, but updates the whole line. If the updated line is the current line,
 	we update the local attribute buffer. */
 
-void update_line(buffer * const b, const int n, const cleared_at_end, const int differential) {
+void update_line(buffer * const b, const int n, const int cleared_at_end, const int differential) {
 	line_desc * const ld = update_partial_line(b, n, 0, cleared_at_end, differential);
 	if (b->syn && ld == b->cur_line_desc) {
 		/* If we updated the entire current line, we update the local attribute buffer. */

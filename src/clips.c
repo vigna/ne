@@ -118,7 +118,7 @@ clip_desc *get_nth_clip(int n) {
 int copy_to_clip(buffer *b, int n, int cut) {
 
 	int i, pass, start_pos, end_pos, len, clip_len, y = b->cur_line;
-	unsigned char *p;
+	unsigned char *p = NULL;
 	clip_desc *cd, *new_cd;
 	line_desc *ld = b->cur_line_desc;
 
@@ -347,7 +347,7 @@ int paste_to_buffer(buffer *b, int n) {
 int copy_vert_to_clip(buffer *b, int n, int cut) {
 
 	int i, pass, start_pos, len, clip_len, y = b->cur_line, start_x, end_x;
-	char *p;
+	char *p = NULL;
 	clip_desc *cd, *new_cd;
 	line_desc *ld = b->cur_line_desc;
 

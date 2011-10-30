@@ -13,6 +13,11 @@
 
   * Instantaneous window resize works again.
 
+  * Now we display an error message (instead of crashing or returning an
+    I/O error) when a file is too large (>=2GiB).
+
+  * We no longer set the buffer filename in case of I/O error.
+
 2.2
 
   * Fixed memory allocation macros in regex code from glibc to work on systems

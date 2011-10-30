@@ -63,6 +63,7 @@ char *error_msg[ERROR_COUNT] = {
 	"This file is read-only.",
 	"Can't open file (file is migrated).",
 	"Can't open file (file is a directory).",
+	"Can't open file (file is too large).",
 	"Stopped.",
 	"I/O error.",
 	"The argument string is empty.",
