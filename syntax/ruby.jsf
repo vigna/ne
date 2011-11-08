@@ -339,7 +339,7 @@ done
 	"for"		kw
 	"if"		kw
 	"in"		kw
-	"loop"	kw
+	"loop"		kw
 	"module"	kw
 	"next"		kw
 	"nil"		kw

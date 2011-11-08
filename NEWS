@@ -28,7 +28,7 @@
   * About now displays splash screen in addition to its status bar message.
 
   * In FastGUI mode, when highlighting menu items the cursor is now
-    positioned on the border of the menu rather then on the first letter
+    positioned on the border of the menu rather than on the first letter
     of menu items.
 
   * New "tabs" syntax definition makes tabs visibly distinct from spaces.
