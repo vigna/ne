@@ -17,8 +17,7 @@ build:
 version:
 	./version.pl VERSION=$(VERSION)
 
-source:
-	./version.pl VERSION=$(VERSION)
+source: version
 	( cd doc; make )
 	( cd src; make clean; make )
 	-rm -f ne-$(VERSION)
