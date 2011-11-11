@@ -439,7 +439,7 @@ int main(int argc, char **argv) {
 			cur_buffer->automatch.shown = 0;
 		}
 
-		if ( c == INVALID_CHAR ) continue; // Window resizing.
+		if ( c == INVALID_CHAR ) continue; /* Window resizing. */
 		ic = CHAR_CLASS(c);
 
 		if (displaying_info) {
