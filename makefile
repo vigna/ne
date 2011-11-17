@@ -25,6 +25,7 @@ source: version
 	ln -s . ne-$(VERSION)
 	tar cvf ne-$(VERSION).tar ne-$(VERSION)/version.pl ne-$(VERSION)/makefile ne-$(VERSION)/COPYING ne-$(VERSION)/INSTALL ne-$(VERSION)/README ne-$(VERSION)/NEWS ne-$(VERSION)/CHANGES \
 	ne-$(VERSION)/src/*.[hc] ne-$(VERSION)/src/*.c.in ne-$(VERSION)/src/*.pl \
+	ne-$(VERSION)/macros/* \
 	ne-$(VERSION)/syntax/*.jsf \
 	ne-$(VERSION)/src/makefile ne-$(VERSION)/src/ne.texinfo ne-$(VERSION)/doc/ne.1 \
 	ne-$(VERSION)/doc/makefile ne-$(VERSION)/doc/ne.texinfo ne-$(VERSION)/doc/ne.info* ne-$(VERSION)/doc/version.*  \
@@ -51,6 +52,7 @@ install:
 	mkdir -p $(DESTDIR)$(PREFIX)/share/info
 	cp -pf src/ne$(CMDSUFFIX) $(DESTDIR)$(PREFIX)/bin
 	cp -p syntax/*.jsf $(DESTDIR)$(PREFIX)/share/ne/syntax
+	cp -p macros/*     $(DESTDIR)$(PREFIX)/share/ne
 	cp -p doc/ne.1 $(DESTDIR)$(PREFIX)/share/man/man1
 	cp -pr doc/ne.pdf doc/html doc/ne.txt doc/default.* README COPYING NEWS CHANGES $(DESTDIR)$(PREFIX)/share/doc/ne
 	cp -p doc/ne.info.gz $(DESTDIR)$(PREFIX)/share/info

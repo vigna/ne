@@ -1,0 +1,25 @@
+# This example macro implements a "Delete to Start-of-line"
+# command which you can map to a key of your choice. If I
+# chose to use the Alt-U key, for example, then first I use
+# the KeyCode command to find the ne key number for that key
+# combination. On my system, it's 1f5, which is currently
+# mapped to the "U" command shortcut for "UNDO". To map it to
+# this DeleteSOL macro instead, I would put these lines:
+#
+#    # Let Alt-U map to the DeleteSOL macro
+#    KEY 1f5 DeleteSOL
+# 
+# in my ~/.ne/.keys file. The first line is just a comment.
+#
+# Note that while the case of the "KEY" keyword and keycode
+# itself don't matter (you could spell it "Key 1F5" or "key
+# 1f5" or even "kEY 1F5"), and the case of built-in ne
+# commands don't matter either, the case of macro names does
+# matter, as these must match file names.
+
+PushPrefs
+AutoIndent 0
+InsertLine
+LineUp
+DeleteLine
+PopPrefs
