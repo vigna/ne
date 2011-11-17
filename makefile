@@ -6,6 +6,7 @@ VERSION = 2.3
 # and installed under the $(PREFIX) hierarchy. You can even use "make install PREFIX=$HOME/<dir>"
 # to install ne locally into the directory <dir>.
 
+.PHONY: install
 
 PREFIX=/usr/local
 

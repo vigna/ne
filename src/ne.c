@@ -172,9 +172,9 @@ void about(int show) {
 		print_message(ABOUT_MSG);
 	}
 	else {
-      ttysize();
-      keep_cursor_on_screen(cur_buffer);
-      reset_window();
+		ttysize();
+		keep_cursor_on_screen(cur_buffer);
+		reset_window();
 	}
 }
 
