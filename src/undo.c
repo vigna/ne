@@ -77,6 +77,7 @@ void start_undo_chain(buffer * const b) {
 
 #ifdef NE_TEST
 	fprintf(stderr, "# start_undo_chain: %d -> %d\n", b->link_undos, b->link_undos + 1);
+	fprintf(stderr, "#   undo.cur_step: %d; undo.last_step: %d\n", b->undo.cur_step, b->undo.last_step);
 #endif
 
 	assert_buffer(b);
@@ -92,6 +93,7 @@ void end_undo_chain(buffer * const b) {
 
 #ifdef NE_TEST
 	fprintf(stderr, "# end_undo_chain: %d -> %d\n", b->link_undos, b->link_undos - 1);
+	fprintf(stderr, "#   undo.cur_step: %d; undo.last_step: %d\n", b->undo.cur_step, b->undo.last_step);
 #endif
 
 	assert_undo_buffer(&b->undo);
@@ -173,6 +175,12 @@ int undo(buffer * const b) {
 
 	assert_buffer(b);
 
+	if (b->atomic_macro) {
+		b->atomic_macro = 0;
+		end_undo_chain(b);
+		print_message(info_msg[ATOMIC_MACRO_OFF]);
+	}
+	
 	if (b->undo.cur_step == 0) return NOTHING_TO_UNDO;
 
 	/* WARNING: insert_stream() and delete_stream() do different things while
@@ -180,6 +188,9 @@ int undo(buffer * const b) {
 
 	b->undoing = 1;
 
+#ifdef NE_TEST
+	fprintf(stderr, "# undo():  undo.cur_step: %d; undo.last_step: %d\n", b->undo.cur_step, b->undo.last_step);
+#endif
 	do {
 
 		b->undo.cur_step--;
@@ -202,6 +213,9 @@ int undo(buffer * const b) {
 
 		}
 
+#ifdef NE_TEST
+	fprintf(stderr, "# undo():  undo.cur_step: %d; undo.last_step: %d\n", b->undo.cur_step, b->undo.last_step);
+#endif
 	} while(b->undo.cur_step && b->undo.steps[b->undo.cur_step - 1].pos < 0);
 
 	b->undoing = 0;
@@ -226,6 +240,9 @@ int redo(buffer * const b) {
 
 	b->redoing = 1;
 
+#ifdef NE_TEST
+	fprintf(stderr, "# redo():  undo.cur_step: %d; undo.last_step: %d\n", b->undo.cur_step, b->undo.last_step);
+#endif
 	do {
 		if (b->undo.steps[b->undo.cur_step].len) {
 			line_desc *cur_line_desc;
@@ -247,7 +264,10 @@ int redo(buffer * const b) {
 
 		b->undo.cur_step++;
 
-	} while(b->undo.steps[b->undo.cur_step - 1].pos < 0);
+#ifdef NE_TEST
+	fprintf(stderr, "# redo():  undo.cur_step: %d; undo.last_step: %d\n", b->undo.cur_step, b->undo.last_step);
+#endif
+	} while(b->undo.cur_step < b->undo.last_step && b->undo.steps[b->undo.cur_step - 1].pos < 0);
 
 	b->redoing = 0;
 

@@ -103,5 +103,6 @@ char *info_msg[INFO_COUNT] = {
 	"Partially completed.",
 	"Cancelled.",
 	"Subsequent macro commands are atomic.",
+	"Subsequent macro commands are no atomic.",
 	"Not recording or playing a macro."
 };

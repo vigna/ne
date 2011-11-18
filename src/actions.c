@@ -1185,8 +1185,12 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			if (!b->atomic_macro) {
 				b->atomic_macro = 1;
 				start_undo_chain(b);
+				print_message(info_msg[ATOMIC_MACRO_ON]);
+			} else {
+				b->atomic_macro = 0;
+				end_undo_chain(b);
+				print_message(info_msg[ATOMIC_MACRO_OFF]);
 			}
-			print_message(info_msg[ATOMIC_MACRO]);
 		}
 		else print_message(info_msg[NOT_IN_MACRO]);
 		return OK;
