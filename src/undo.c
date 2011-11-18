@@ -175,10 +175,10 @@ int undo(buffer * const b) {
 
 	assert_buffer(b);
 
-	if (b->atomic_macro) {
-		b->atomic_macro = 0;
+	if (b->atomic_undo) {
+		b->atomic_undo = 0;
 		end_undo_chain(b);
-		print_message(info_msg[ATOMIC_MACRO_OFF]);
+		print_message(info_msg[ATOMIC_UNDO_OFF]);
 	}
 	
 	if (b->undo.cur_step == 0) return NOTHING_TO_UNDO;

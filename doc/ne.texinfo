@@ -682,10 +682,10 @@ Any changes made to a document by a macro are recorded just as if you had
 entered the commands yourself. Therefore you can use the @code{Undo} command
 to roll back those changes one at a time. This can be useful especially when
 developing macros, but sometimes you may want to undo all the changes made by
-a macro with a single @code{Undo} command. The @code{AtomicMacro} command
+a macro with a single @code{Undo} command. The @code{AtomicUndo} command
 makes this possible. It's only allowed when recording or playing a macro, and
 it makes all subsequent changes made by the macro undoable by one
-@code{Undo}. @xref{AtomicMacro}.
+@code{Undo}. @xref{AtomicUndo}.
 
 Finally, any line in a macro that starts with a non-alphabetical character
 is considered a comment, so you can add comments to a macro by starting
@@ -2947,7 +2947,6 @@ or recorded).
 * OpenMacro::
 * SaveMacro::
 * UnloadMacros::
-* AtomicMacro::
 @end menu
 
 
@@ -3103,20 +3102,6 @@ bound to some keystroke, and you are interactively modifying it and playing it.
 
 
 
-@node AtomicMacro
-@subsection AtomicMacro
-@cmindex AtomicMacro
-
-@noindent Syntax: @code{AtomicMacro}@*
-@noindent Abbreviation: @code{AM}
-
-@noindent if invoked within a macro, indicates that all subsequent
-operations executed by the macro will be undone by a single @code{Undo}
-command. Outside of a macro it has no effect except to report that no macro
-is being executed or recorded.
-
-
-
 @node Undo Commands
 @section Undo Commands
 
@@ -3127,6 +3112,7 @@ The following commands control the undo system.
 * Redo::
 * UndelLine::
 * DoUndo::
+* AtomicUndo::
 @end menu
 
 
@@ -3202,6 +3188,20 @@ megabytes of text) it is a good idea to disable the undo system, both for
 improving (doubling) performance and for using less (half) memory. Except for
 this, on a virtual memory system we see no reason to not keep the undo flag
 always true, and this is indeed the default.
+
+
+@node AtomicUndo
+@subsection AtomicUndo
+@cmindex AtomicUndo
+
+@noindent Syntax: @code{AtomicUndo}@*
+@noindent Abbreviation: @code{AU}
+
+@noindent if invoked within a macro, indicates that all subsequent
+operations executed by the macro will be undone by a single @code{Undo}
+command. Outside of a macro it has no effect except to report that no macro
+is being executed or recorded.
+
 
 
 

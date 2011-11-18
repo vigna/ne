@@ -1163,7 +1163,10 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 
 	case DOUNDO_A:
 		SET_USER_FLAG(b, c, opt.do_undo);
-		if (!(b->opt.do_undo)) reset_undo_buffer(&b->undo);
+		if (!(b->opt.do_undo)) {
+			reset_undo_buffer(&b->undo);
+			b->atomic_undo = 0;
+		}
 		return OK;
 
 	case READONLY_A:
@@ -1180,16 +1183,16 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		b->find_string_changed = 1;
 		return OK;
 
-	case ATOMICMACRO_A:
-		if (b->recording || b->executing_macro) {
-			if (!b->atomic_macro) {
-				b->atomic_macro = 1;
+	case ATOMICUNDO_A:
+		if (b->opt.do_undo /* b->recording || b->executing_macro */ ) {
+			if (!b->atomic_undo ) {
+				b->atomic_undo = 1;
 				start_undo_chain(b);
-				print_message(info_msg[ATOMIC_MACRO_ON]);
+				print_message(info_msg[ATOMIC_UNDO_ON]);
 			} else {
-				b->atomic_macro = 0;
+				b->atomic_undo = 0;
 				end_undo_chain(b);
-				print_message(info_msg[ATOMIC_MACRO_OFF]);
+				print_message(info_msg[ATOMIC_UNDO_OFF]);
 			}
 		}
 		else print_message(info_msg[NOT_IN_MACRO]);
@@ -1201,12 +1204,13 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		if (b->recording && !recording) {
 			b->cur_macro = reset_stream(b->cur_macro);
 			print_message(info_msg[STARTING_MACRO_RECORDING]);
-			b->atomic_macro = 0;
+			if (b->atomic_undo) end_undo_chain(b);
+			b->atomic_undo = 0;
 		}
 		else if (!b->recording && recording) {
 			print_message(info_msg[MACRO_RECORDING_COMPLETED]);
-			if (b->atomic_macro) {
-				b->atomic_macro = 0;
+			if (b->atomic_undo) {
+				b->atomic_undo = 0;
 				end_undo_chain(b);
 			}
 		}

@@ -62,7 +62,7 @@ static const command commands[ACTION_COUNT] = {
 	{ NAHL(ABOUT         ), NO_ARGS                                                               },
 	{ NAHL(ADJUSTVIEW    ),           ARG_IS_STRING                                               },
 	{ NAHL(ALERT         ), NO_ARGS                                                               },
-	{ NAHL(ATOMICMACRO   ), NO_ARGS                                                               },
+	{ NAHL(ATOMICUNDO    ), NO_ARGS                                                               },
 	{ NAHL(AUTOCOMPLETE  ),           ARG_IS_STRING |                             EMPTY_STRING_OK },
 	{ NAHL(AUTOINDENT    ),                           IS_OPTION                                   },
 	{ NAHL(AUTOMATCHBRACKET),                         IS_OPTION                                   },
@@ -526,9 +526,9 @@ int play_macro(buffer *b, char_stream *cs) {
 		p += strlen(p) + 1;
 	}
 	b->executing_macro = executing_macro_orig;
-	if (b->atomic_macro && !b->executing_macro) {
+	if (b->atomic_undo && !b->executing_macro) {
 		end_undo_chain(b);
-		b->atomic_macro = 0;
+		b->atomic_undo = 0;
 	}
 
 	free(stream);
