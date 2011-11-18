@@ -1181,7 +1181,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		return OK;
 
 	case ATOMICMACRO_A:
-		if (b->recording || b->executing_internal_macro) {
+		if (b->recording || b->executing_macro) {
 			if (!b->atomic_macro) {
 				b->atomic_macro = 1;
 				start_undo_chain(b);
@@ -1199,7 +1199,13 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			print_message(info_msg[STARTING_MACRO_RECORDING]);
 			b->atomic_macro = 0;
 		}
-		else if (!b->recording && recording) print_message(info_msg[MACRO_RECORDING_COMPLETED]);
+		else if (!b->recording && recording) {
+			print_message(info_msg[MACRO_RECORDING_COMPLETED]);
+			if (b->atomic_macro) {
+				b->atomic_macro = 0;
+				end_undo_chain(b);
+			}
+		}
 		return OK;
 
 	case PLAY_A:
@@ -1208,10 +1214,6 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			b->executing_internal_macro = 1;
 			for(i = 0; i < c && !(error = play_macro(b, b->cur_macro)); i++);
 			b->executing_internal_macro = 0;
-			if (b->atomic_macro) {
-				end_undo_chain(b);
-				b->atomic_macro = 0;
-			}
 			return print_error(error) ? ERROR : 0;
 		}
 		else return ERROR;

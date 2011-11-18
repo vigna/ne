@@ -457,7 +457,6 @@ typedef struct {
 		link_undos,              /* Link the undo steps. Multilevel. */
 		is_modified:1,           /* Buffer has been modified since last save */
 		recording:1,             /* We are recording a macro */
-		atomic_macro:1,          /* subsequent macro commands in undo block */
 		marking:1,               /* We are marking a block */
 		x_wanted:1,              /* We're not where we would like to be */
 		y_wanted:1,              /* We've been paging up/down */
@@ -468,6 +467,8 @@ typedef struct {
 		undoing:1,               /* We are currently undoing an action */
 		redoing:1,               /* We are currently redoing an action */
 		mark_is_vertical:1,      /* The current marking is vertical */
+		atomic_macro:1,          /* subsequent macro commands in undo block */
+		executing_macro:1,       /* We are currently executing a macro. */
 		executing_internal_macro:1,  /* We are currently executing the internal macro of the current buffer */
 		is_CRLF:1;               /* Buffer should be saved with CR/LF terminators */
 

@@ -75,6 +75,10 @@ static int cat_undo_step(undo_buffer * const ub, const int line, const int pos, 
 
 void start_undo_chain(buffer * const b) {
 
+#ifdef NE_TEST
+	fprintf(stderr, "# start_undo_chain: %d -> %d\n", b->link_undos, b->link_undos + 1);
+#endif
+
 	assert_buffer(b);
 	assert(b->undo.cur_step == 0 || b->link_undos || b->undo.steps[b->undo.cur_step - 1].pos >= 0);
 
@@ -85,6 +89,10 @@ void start_undo_chain(buffer * const b) {
 /* See the comments to the previous function. */
 
 void end_undo_chain(buffer * const b) {
+
+#ifdef NE_TEST
+	fprintf(stderr, "# end_undo_chain: %d -> %d\n", b->link_undos, b->link_undos - 1);
+#endif
 
 	assert_undo_buffer(&b->undo);
 

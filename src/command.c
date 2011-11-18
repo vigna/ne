@@ -493,6 +493,7 @@ int play_macro(buffer *b, char_stream *cs) {
 
 	int error = OK, len;
 	unsigned char *p, *stream;
+	int executing_macro_orig = b->executing_macro;
 
 	if (!cs) return ERROR;
 
@@ -506,6 +507,7 @@ int play_macro(buffer *b, char_stream *cs) {
 
 	stop = FALSE;
 
+	b->executing_macro = 1;
 	while(!stop && p - stream < len) {	
 #ifdef NE_TEST
 		fprintf(stderr, "%s\n", p); /* During tests, we output to stderr the current command. */
@@ -522,6 +524,11 @@ int play_macro(buffer *b, char_stream *cs) {
 		draw_status_bar();
 #endif
 		p += strlen(p) + 1;
+	}
+	b->executing_macro = executing_macro_orig;
+	if (b->atomic_macro && !b->executing_macro) {
+		end_undo_chain(b);
+		b->atomic_macro = 0;
 	}
 
 	free(stream);
