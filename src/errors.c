@@ -101,5 +101,7 @@ char *info_msg[INFO_COUNT] = {
 	"No matching words found.",
 	"Completed.",
 	"Partially completed.",
-	"Cancelled."
+	"Cancelled.",
+	"Subsequent macro commands are atomic.",
+	"Not recording or playing a macro."
 };

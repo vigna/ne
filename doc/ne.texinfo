@@ -655,13 +655,15 @@ Since loading a macro each time it is invoked would be a rather slow and
 expensive process, once a macro has been executed it is cached internally.
 Subsequent invocations of the macro will used the cached version.
 
-@noindent @strong{Warning:} macro names are @emph{not} case
-sensitive or path sensitive. @code{ne} only caches the file name of a
-macro, not the path name, and uses a case insensitive comparison. That
-is, if you invoke @file{~/foobar/macro}, a subsequent call for
-@file{/usr/MACRO} will use the cached version of @file{~/foobar/macro}.
-You can clear the cache by using the @code{UnloadMacros} command.
-@xref{UnloadMacros}.
+@noindent @strong{Warning:} while path and file names are case sensitive
+when initially loading macros, loaded macro names are @emph{not} case
+sensitive or path sensitive. @code{ne} only caches the file name of an
+already loaded macro, not the path name, and uses a case insensitive
+comparison. That is, if you invoke @file{~/foobar/MyMacro}, @code{ne}
+remembers it with the case-insensitive name @file{mymacro}; a subsequent
+call for @file{/usr/MYMACRO} will instead find and use the cached version
+of @file{~/foobar/MyMacro}. You can clear the cache by using the
+@code{UnloadMacros} command. @xref{UnloadMacros}.
 
 The behaviour of macros may vary with different preferences. If the user
 changes the AutoIndent and WordWrap flags, for example, new lines and new
@@ -2936,6 +2938,7 @@ or recorded).
 * OpenMacro::
 * SaveMacro::
 * UnloadMacros::
+* AtomicMacro::
 @end menu
 
 
@@ -3088,6 +3091,20 @@ play.
 bound to some keystroke, and you are interactively modifying it and playing it.
 @code{UnloadMacros} forces @code{ne} to look for the newer version available.
 
+
+
+
+@node AtomicMacro
+@subsection AtomicMacro
+@cmindex AtomicMacro
+
+@noindent Syntax: @code{AtomicMacro}@*
+@noindent Abbreviation: @code{AM}
+
+@noindent if invoked within a macro, indicates that all subsequent
+operations executed by the macro will be undone by a single @code{Undo}
+command. Outside of a macro it has no effect except to report that no macro
+is being executed or recorded.
 
 
 

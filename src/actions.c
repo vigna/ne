@@ -1180,12 +1180,24 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		b->find_string_changed = 1;
 		return OK;
 
+	case ATOMICMACRO_A:
+		if (b->recording || b->executing_internal_macro) {
+			if (!b->atomic_macro) {
+				b->atomic_macro = 1;
+				start_undo_chain(b);
+			}
+			print_message(info_msg[ATOMIC_MACRO]);
+		}
+		else print_message(info_msg[NOT_IN_MACRO]);
+		return OK;
+
 	case RECORD_A:
 		recording = b->recording;
 		SET_USER_FLAG(b, c, recording);
 		if (b->recording && !recording) {
 			b->cur_macro = reset_stream(b->cur_macro);
 			print_message(info_msg[STARTING_MACRO_RECORDING]);
+			b->atomic_macro = 0;
 		}
 		else if (!b->recording && recording) print_message(info_msg[MACRO_RECORDING_COMPLETED]);
 		return OK;
@@ -1196,6 +1208,10 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			b->executing_internal_macro = 1;
 			for(i = 0; i < c && !(error = play_macro(b, b->cur_macro)); i++);
 			b->executing_internal_macro = 0;
+			if (b->atomic_macro) {
+				end_undo_chain(b);
+				b->atomic_macro = 0;
+			}
 			return print_error(error) ? ERROR : 0;
 		}
 		else return ERROR;

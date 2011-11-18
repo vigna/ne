@@ -17,6 +17,7 @@
 # commands don't matter either, the case of macro names does
 # matter, as these must match file names.
 
+AtomicMacro
 PushPrefs
 AutoIndent 0
 InsertLine

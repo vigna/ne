@@ -458,6 +458,7 @@ typedef struct {
 		link_undos,              /* Link the undo steps. Multilevel. */
 		is_modified:1,           /* Buffer has been modified since last save */
 		recording:1,             /* We are recording a macro */
+		atomic_macro:1,          /* subsequent macro commands in undo block */
 		marking:1,               /* We are marking a block */
 		x_wanted:1,              /* We're not where we would like to be */
 		y_wanted:1,              /* We've been paging up/down */

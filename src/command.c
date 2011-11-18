@@ -62,6 +62,7 @@ static const command commands[ACTION_COUNT] = {
 	{ NAHL(ABOUT         ), NO_ARGS                                                               },
 	{ NAHL(ADJUSTVIEW    ),           ARG_IS_STRING                                               },
 	{ NAHL(ALERT         ), NO_ARGS                                                               },
+	{ NAHL(ATOMICMACRO   ), NO_ARGS                                                               },
 	{ NAHL(AUTOCOMPLETE  ),           ARG_IS_STRING |                             EMPTY_STRING_OK },
 	{ NAHL(AUTOINDENT    ),                           IS_OPTION                                   },
 	{ NAHL(AUTOMATCHBRACKET),                         IS_OPTION                                   },
