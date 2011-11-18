@@ -27,6 +27,7 @@
 #include <string.h>
 
 #ifndef TERMCAP
+#include <termio.h>
 #include <curses.h>
 #include <term.h>
 #else
