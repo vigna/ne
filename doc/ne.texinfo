@@ -678,6 +678,15 @@ restores the preferences (either by the user pressing
 @kbd{@key{Control}-\} or by a command failing) then that responsibility
 falls on the user.
 
+Any changes made to a document by a macro are recorded just as if you had
+entered the commands yourself. Therefore you can use the @code{Undo} command
+to roll back those changes one at a time. This can be useful especially when
+developing macros, but sometimes you may want to undo all the changes made by
+a macro with a single @code{Undo} command. The @code{AtomicMacro} command
+makes this possible. It's only allowed when recording or playing a macro, and
+it makes all subsequent changes made by the macro undoable by one
+@code{Undo}. @xref{AtomicMacro}.
+
 Finally, any line in a macro that starts with a non-alphabetical character
 is considered a comment, so you can add comments to a macro by starting
 a line with @samp{#}.
