@@ -175,12 +175,6 @@ int undo(buffer * const b) {
 
 	assert_buffer(b);
 
-	if (b->atomic_undo) {
-		b->atomic_undo = 0;
-		end_undo_chain(b);
-		print_message(info_msg[ATOMIC_UNDO_OFF]);
-	}
-	
 	if (b->undo.cur_step == 0) return NOTHING_TO_UNDO;
 
 	/* WARNING: insert_stream() and delete_stream() do different things while

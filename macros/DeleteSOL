@@ -17,10 +17,11 @@
 # commands don't matter either, the case of macro names does
 # matter, as these must match file names.
 
-AtomicMacro
+AtomicUndo +
 PushPrefs
 AutoIndent 0
 InsertLine
 LineUp
 DeleteLine
 PopPrefs
+AtomicUndo -

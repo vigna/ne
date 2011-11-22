@@ -62,7 +62,7 @@ static const command commands[ACTION_COUNT] = {
 	{ NAHL(ABOUT         ), NO_ARGS                                                               },
 	{ NAHL(ADJUSTVIEW    ),           ARG_IS_STRING                                               },
 	{ NAHL(ALERT         ), NO_ARGS                                                               },
-	{ NAHL(ATOMICUNDO    ), NO_ARGS                                                               },
+	{ NAHL(ATOMICUNDO    ),           ARG_IS_STRING |                             EMPTY_STRING_OK },
 	{ NAHL(AUTOCOMPLETE  ),           ARG_IS_STRING |                             EMPTY_STRING_OK },
 	{ NAHL(AUTOINDENT    ),                           IS_OPTION                                   },
 	{ NAHL(AUTOMATCHBRACKET),                         IS_OPTION                                   },
@@ -446,9 +446,9 @@ static int insertchar_val(const unsigned char *p) {
 
 void optimize_macro(char_stream *cs, int verbose) {
 	char *cmd;
-	int	pos;
-	int	chr;
-	int	building = 0;
+	int pos;
+	int chr;
+	int building = 0;
 	 
 	if (!cs || !cs->len) return;
 
@@ -465,14 +465,14 @@ void optimize_macro(char_stream *cs, int verbose) {
 			}
 			else {
 				const char *insert;
-				int	len;
+				int len;
 				insert = verbose ? INSERTSTRING_NAME : INSERTSTRING_ABBREV;
-				len	 = strlen(insert);
-				insert_in_stream(cs, "\"",	pos, 2);	/* Closing quote */
-				insert_in_stream(cs, two,	 pos, 1);		/* The character itself */
-				insert_in_stream(cs, " \"",  pos, 2);	/* space and openning quote */
-				insert_in_stream(cs, insert, pos, len);	/* The command itself */
-				building = pos + len + 2;						/* This is where the char is now */
+				len  = strlen(insert);
+				insert_in_stream(cs, "\"",   pos, 2);   /* Closing quote */
+				insert_in_stream(cs, two,    pos, 1);   /* The character itself */
+				insert_in_stream(cs, " \"",  pos, 2);   /* space and openning quote */
+				insert_in_stream(cs, insert, pos, len); /* The command itself */
+				building = pos + len + 2;               /* This is where the char is now */
 			}
 		}
 		else {
@@ -493,7 +493,6 @@ int play_macro(buffer *b, char_stream *cs) {
 
 	int error = OK, len;
 	unsigned char *p, *stream;
-	int executing_macro_orig = b->executing_macro;
 
 	if (!cs) return ERROR;
 
@@ -524,11 +523,6 @@ int play_macro(buffer *b, char_stream *cs) {
 		draw_status_bar();
 #endif
 		p += strlen(p) + 1;
-	}
-	b->executing_macro = executing_macro_orig;
-	if (b->atomic_undo && !b->executing_macro) {
-		end_undo_chain(b);
-		b->atomic_undo = 0;
 	}
 
 	free(stream);
@@ -613,7 +607,13 @@ int execute_macro(buffer *b, const char *name) {
 
 	assert_macro_desc(md);
 
-	if (md) return play_macro(b, md->cs);
+	if (md) {
+		if (b->recording) {
+			add_to_stream(b->cur_macro, "# macro ", 8);
+			add_to_stream(b->cur_macro, md->name, strlen(md->name)+1);
+		}
+		return play_macro(b, md->cs);
+	}
 
 	return CANT_OPEN_MACRO;
 }

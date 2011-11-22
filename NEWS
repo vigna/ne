@@ -2,7 +2,7 @@
 
 2.4
 
-  * New AtomicMacro command makes Undo undo a macro's changes as a group
+  * New AtomicUndo command groups changes to be undone/redone as a group
     instead of individually.
 
 2.3

@@ -62,8 +62,7 @@ function was aborted or not-a-number error if an invalid number was read. */
 
 
 
-/* This is the dispatcher of all actions that have some effect on the text are
-	dispatched. 
+/* This is the dispatcher of all actions that have some effect on the text.
 
 	The arguments are an action to be executed, a possible integer parameter and
 	a possible string parameter. -1 and NULL are, respectively, reserved values
@@ -1184,19 +1183,24 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		return OK;
 
 	case ATOMICUNDO_A:
-		if (b->opt.do_undo /* b->recording || b->executing_macro */ ) {
-			if (!b->atomic_undo ) {
-				b->atomic_undo = 1;
-				start_undo_chain(b);
-				print_message(info_msg[ATOMIC_UNDO_ON]);
-			} else {
-				b->atomic_undo = 0;
-				end_undo_chain(b);
-				print_message(info_msg[ATOMIC_UNDO_OFF]);
-			}
-		}
-		else print_message(info_msg[NOT_IN_MACRO]);
-		return OK;
+		if (b->opt.do_undo) {
+			/* set c to the desired b->link_undos */
+			if (!p) {
+				c = b->link_undos ? b->link_undos - 1 : 1;
+			} else if (p[0]=='0') {
+				c = 0;
+			} else if (p[0]=='-') {
+				c = b->link_undos ? b->link_undos - 1 : 0;
+			} else if (p[0]=='+' || p[0]=='1') {  /* Kindly allow undocumented "AtomicUndo 1" also. */
+				c = b->link_undos + 1;
+			} else return INVALID_LEVEL;
+			while(c > b->link_undos) start_undo_chain(b);
+			while(c < b->link_undos) end_undo_chain(b);
+			b->atomic_undo = (c > 0) ? 1 : 0;
+			snprintf(msg, MAX_MESSAGE_SIZE, "AtomicUndo level: %d", c);
+			print_message(msg);
+			return OK;
+		} else return UNDO_NOT_ENABLED;
 
 	case RECORD_A:
 		recording = b->recording;
@@ -1204,16 +1208,8 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		if (b->recording && !recording) {
 			b->cur_macro = reset_stream(b->cur_macro);
 			print_message(info_msg[STARTING_MACRO_RECORDING]);
-			if (b->atomic_undo) end_undo_chain(b);
-			b->atomic_undo = 0;
 		}
-		else if (!b->recording && recording) {
-			print_message(info_msg[MACRO_RECORDING_COMPLETED]);
-			if (b->atomic_undo) {
-				b->atomic_undo = 0;
-				end_undo_chain(b);
-			}
-		}
+		else if (!b->recording && recording) print_message(info_msg[MACRO_RECORDING_COMPLETED]);
 		return OK;
 
 	case PLAY_A:
@@ -1566,6 +1562,12 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 
 		NORMALIZE(c);
 		delay_update();
+
+		if (b->atomic_undo) {
+			b->atomic_undo = 0;
+			while (b->link_undos) end_undo_chain(b);
+			print_message("AtomicUndo level: 0");
+		}
 
 		for(i = 0; i < c && !(error = undo(b)) && !stop; i++);
 		if (stop) error = STOPPED;

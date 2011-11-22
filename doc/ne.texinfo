@@ -681,11 +681,12 @@ falls on the user.
 Any changes made to a document by a macro are recorded just as if you had
 entered the commands yourself. Therefore you can use the @code{Undo} command
 to roll back those changes one at a time. This can be useful especially when
-developing macros, but sometimes you may want to undo all the changes made by
-a macro with a single @code{Undo} command. The @code{AtomicUndo} command
-makes this possible. It's only allowed when recording or playing a macro, and
-it makes all subsequent changes made by the macro undoable by one
-@code{Undo}. @xref{AtomicUndo}.
+developing macros, but you may want to be able to undo all the changes made
+by a macro with a single @code{Undo} command. The @code{AtomicUndo} command
+makes this possible. If you add @code{AtomicUndo +} at the start of your
+macro and @code{AtomicUndo -} at the end, then the @code{Undo} and
+@code{Redo} commands will handle all changes made by your macro atomically,
+i.e., as if they had been made by a single command. @xref{AtomicUndo}.
 
 Finally, any line in a macro that starts with a non-alphabetical character
 is considered a comment, so you can add comments to a macro by starting
@@ -3180,7 +3181,9 @@ buffers are reset.
 
 If you invoke @code{DoUndo} with no arguments, it will toggle the flag. If you
 specify 0 or 1, the flag will be set to false or true, respectively. A lower
-case @samp{u} will appear on the status bar if the flag is true.
+case @samp{u} will appear on the status bar if the flag is true. (The
+@samp{U} will be upper case if the flag is true and the @code{AtomicUndo}
+level is non-zero.)
 
 The usefulness of this option relies in the fact that the undo system is a major
 memory eater. If you plan to do massive editing (say, cutting and pasting
@@ -3194,13 +3197,27 @@ always true, and this is indeed the default.
 @subsection AtomicUndo
 @cmindex AtomicUndo
 
-@noindent Syntax: @code{AtomicUndo}@*
+@noindent Syntax: @code{AtomicUndo [0|+|-]}@*
 @noindent Abbreviation: @code{AU}
 
-@noindent if invoked within a macro, indicates that all subsequent
-operations executed by the macro will be undone by a single @code{Undo}
-command. Outside of a macro it has no effect except to report that no macro
-is being executed or recorded.
+@noindent increases, decreases, sets or clears the @code{AtomicUndo} level.
+The normal level is zero. All current document changes made while the
+@code{AtomicUndo} level is above zero are treated as a single change by the
+@code{Undo} and @code{Redo} commands. If no parameter is given, a level of 0
+is set to 1; otherwise the current non-zero level is decremented. If 0 is
+given, the level is reset to zero. Parameters of @samp{+} and @samp{-} respectively
+increment and decrement the level, which in no case can be negative. If the
+level is above zero, the @code{DoUndo} flag in the status bar, which is
+normally a lower-case @samp{u}, becomes upper case @samp{U}.
+
+Two other actions will reset the @code{AtomicUndo} level to zero: invoking the
+@code{Undo} command, and disabling the undo system with the @code{DoUndo}
+command. You cannot set a non-zero @code{AtomicUndo} level unless the undo
+system is enabled.
+
+Note: macros that you wish to undo and redo atomically---i.e., as if they
+were single commands---should begin with @code{AtomicUndo +} and end with
+@code{AtomicUndo -} so that they can call and/or be called by other macros.
 
 
 

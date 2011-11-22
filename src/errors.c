@@ -36,6 +36,7 @@ char *error_msg[ERROR_COUNT] = {
 	"No unset Bookmarks to set.",
 	"No set Bookmarks to goto.",
 	"No set Bookmarks to unset.",
+	"Invalid level (use 0, '+', '-', or none).",
 	"You cannot insert a character whose ASCII code is 0.",
 	"No search string.",
 	"No replace string.",
@@ -102,7 +103,4 @@ char *info_msg[INFO_COUNT] = {
 	"Completed.",
 	"Partially completed.",
 	"Cancelled.",
-	"Subsequent commands undo as a group.",
-	"Subsequent commands undo individually.",
-	"Not recording or playing a macro."
 };
