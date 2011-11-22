@@ -2,6 +2,8 @@
 
 2.4
 
+  * Recorded macros preserve comments; indicate other included macros.
+
   * New AtomicUndo command groups changes to be undone/redone as a group
     instead of individually.
 

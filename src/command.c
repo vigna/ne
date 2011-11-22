@@ -278,7 +278,13 @@ action parse_command_line(const unsigned char * command_line, int * const num_ar
 
 	command_line = p;
 
-	if (!isalpha(*p)) return NOP_A;
+	if (!isalpha(*p)) { /* Comment, treated as NOP. */
+		int len = strlen(p);
+		if (!(*string_arg = malloc(len + 1))) return -OUT_OF_MEMORY;
+		memcpy(*string_arg, p, len);
+		(*string_arg)[len] = 0;
+		return NOP_A;
+	}
 
 	while(*p && !isasciispace(*p)) p++;
 
@@ -386,6 +392,14 @@ void record_action(char_stream *cs, action a, int c, unsigned char *p, int verbo
 	char t[MAX_INT_LEN + 2];
 
 	if (commands[a].flags & DO_NOT_RECORD) return;
+	
+	/* NOP_A is special; it may actually be a comment.
+	   Blank lines and real NOPs are recorded as blank lines. */
+	if (a == NOP_A) {
+		if (p && *p) add_to_stream(cs, p, strlen(p) + 1);
+		else add_to_stream(cs, "", 1);
+		return;
+	}
 
 	if (verbose) add_to_stream(cs, commands[a].name, strlen(commands[a].name));
 	else add_to_stream(cs, commands[a].short_name, strlen(commands[a].short_name));
@@ -609,10 +623,15 @@ int execute_macro(buffer *b, const char *name) {
 
 	if (md) {
 		if (b->recording) {
-			add_to_stream(b->cur_macro, "# macro ", 8);
+			add_to_stream(b->cur_macro, "# include macro ", 16);
 			add_to_stream(b->cur_macro, md->name, strlen(md->name)+1);
 		}
-		return play_macro(b, md->cs);
+		h = play_macro(b, md->cs);
+		if (b->recording) {
+			add_to_stream(b->cur_macro, "# conclude macro ", 17);
+			add_to_stream(b->cur_macro, md->name, strlen(md->name)+1);
+		}
+		return h;
 	}
 
 	return CANT_OPEN_MACRO;
