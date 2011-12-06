@@ -12,10 +12,9 @@ $| = 1;
 #     Copyright (C) $from_year
 # to these:
 #     Copyright (C) ####-$to_year
-#     Copyright (C) $to_year
+#     Copyright (C) $from_year-$to_year
 #
 # It should work on itself too! Behold:
-#   Copyright (C) 2011-2011 Todd M. Lewis and Sebastiano Vigna
 #   Copyright (C) 2011 Todd M. Lewis and Sebastiano Vigna
 # Ciao!
 
@@ -34,7 +33,7 @@ matching these patterns:
    Copyright (C) <from_year>
 to these:
    Copyright (C) ####-<to_year>
-   Copyright (C) <to_year>\n];
+   Copyright (C) <from_year>-<to_year>\n];
    
       exit 1;
     }
@@ -50,7 +49,8 @@ for my $file ( @files )
         }
     my $text = join('',<FILE>);
     close FILE;
-    my $count = $text =~ s/(Copyright\s+\(C\)\s+(\d\d\d\d-)?)$from_year/$1${to_year}/ig;
+    my $count = $text =~ s/(Copyright\s+\(C\)\s+$from_year)/$1-${to_year}/ig;
+    $count   += $text =~ s/(Copyright\s+\(C\)\s+\d\d\d\d-)$from_year/$1${to_year}/ig;
     # printf "%8d %s\n", $count, $file;
     next unless $count > 0;
     if ( ! open FILE, ">", $file )
