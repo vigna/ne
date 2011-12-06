@@ -7,13 +7,16 @@ $| = 1;
 # in the current directory and updates them for the new year.
 # Give it two parameters: from_year and to_year, each of which
 # should be four digits.
-#   It changes files with lines containing text like this:
+#   It changes files with lines containing text like these:
 #     Copyright (C) ####-$from_year
-# to this:
+#     Copyright (C) $from_year
+# to these:
 #     Copyright (C) ####-$to_year
+#     Copyright (C) $to_year
 #
 # It should work on itself too! Behold:
 #   Copyright (C) 2011-2011 Todd M. Lewis and Sebastiano Vigna
+#   Copyright (C) 2011 Todd M. Lewis and Sebastiano Vigna
 # Ciao!
 
 use Getopt::Long;
@@ -26,10 +29,12 @@ if ( @ARGV || !defined $from_year || !defined $to_year ||
 
 where from_year and to_year are 4-digit years. This program updates any
 .c, .h, .pl, and .jsf files in the current directory that have strings
-matching this pattern:
+matching these patterns:
    Copyright (C) ####-<from_year>
-to this:
-   Copyright (C) ####-<to_year>\n];
+   Copyright (C) <from_year>
+to these:
+   Copyright (C) ####-<to_year>
+   Copyright (C) <to_year>\n];
    
       exit 1;
     }
@@ -45,7 +50,7 @@ for my $file ( @files )
         }
     my $text = join('',<FILE>);
     close FILE;
-    my $count = $text =~ s/(Copyright\s+\(C\)\s+\d\d\d\d-)$from_year/$1${to_year}/ig;
+    my $count = $text =~ s/(Copyright\s+\(C\)\s+(\d\d\d\d-)?)$from_year/$1${to_year}/ig;
     # printf "%8d %s\n", $count, $file;
     next unless $count > 0;
     if ( ! open FILE, ">", $file )
