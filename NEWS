@@ -7,6 +7,8 @@
   * New AtomicUndo command groups changes to be undone/redone as a group
     instead of individually.
 
+  * For commands that have key bindings, Help displays them.
+
 2.3
 
   * Takes 'SEQ "sequence" KEYCODE' in ~/.ne/.keys to bind character

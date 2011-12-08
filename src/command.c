@@ -658,7 +658,40 @@ void unload_macros(void) {
 	}
 }
 
-
+/* Find any key strokes that currently map to commands[i].name or commands[i].short_name.
+   Returns either NULL or a char string that must be freed by the caller. */
+char *find_key_strokes(int c) {
+	int i;
+	char *str=NULL, *p;
+	
+	for (i=0; i<NUM_KEYS; i++) {
+		if (key_binding[i]) {
+			if (((!strncasecmp(commands[c].short_name,key_binding[i],strlen(commands[c].short_name))) &&
+			     ((!key_binding[i][strlen(commands[c].short_name)]      ) || 
+			      (key_binding[i][strlen(commands[c].short_name)] == ' ')
+			     )
+			    ) || 
+			    ((!strncasecmp(commands[c].name,key_binding[i],strlen(commands[c].name))) &&
+			     ((!key_binding[i][strlen(commands[c].name)]      ) ||
+			      (key_binding[i][strlen(commands[c].name)] == ' ')
+			     )
+			    )
+			   ) {
+				if (!str) {
+					if (!(str = malloc(14))) return NULL;
+					strcpy(str,"Bound key(s):");
+				}
+				if (p = realloc(str,strlen(str) + strlen(key_stroke[i]) + 2)) {
+					str = strcat(strcat(p," "),key_stroke[i]);
+				} else {
+					free(str);
+					return NULL;
+				}
+			}
+		}
+	}
+	return str;
+}
 
 /* This function helps. The help text relative to the command name pointed to
 	by p is displayed (p can also contain arguments). If p is NULL, the
@@ -668,6 +701,8 @@ void unload_macros(void) {
 void help(char *p) {
 
 	action a;
+	char *key_strokes;
+	char **tmphelp;
 	int j, i = 0;
 	D(fprintf(stderr,"Help Called with parm %p.\n",p);)
 	do {
@@ -699,7 +734,18 @@ void help(char *p) {
 			assert(i >= 0 && i < ACTION_COUNT);
 
 			print_message("Help: press Enter, or F1 or Escape or Escape-Escape");
-			if ((j = request_strings(commands[i].help, commands[i].help_len, 0, ne_columns, FALSE)) < 0 ) i = j;
+			if ((key_strokes = find_key_strokes(i)) && (tmphelp = calloc(commands[i].help_len+1, sizeof(char *)))) {
+				tmphelp[0] = (char *)commands[i].help[0];
+				tmphelp[1] = (char *)commands[i].help[1];
+				tmphelp[2] = key_strokes;
+				memcpy(&tmphelp[3], &commands[i].help[2], sizeof(char *) * (commands[i].help_len-2)); 
+				if ((j = request_strings((const char * const* const)tmphelp, commands[i].help_len+1, 0, ne_columns, FALSE)) < 0 ) i = j;
+				free(tmphelp);
+			} else {
+				if ((j = request_strings(commands[i].help, commands[i].help_len, 0, ne_columns, FALSE)) < 0 ) i = j;
+			}
+			if (key_strokes)
+				free(key_strokes);
 		}
 	} while(i >= 0);
 	draw_status_bar();

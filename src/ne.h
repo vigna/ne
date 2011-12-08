@@ -576,6 +576,11 @@ get_key_code()) its input class. */
 
 extern const input_class char_class[];
 
+/* This vector associates key codes to strings indicating the
+key combinations required to produce those key codes. */
+
+extern const char *key_stroke[];
+
 /* A boolean recording whether the last replace was for an empty string 
   (of course, this can happen only with regular expressions). */
 
