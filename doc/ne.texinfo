@@ -4106,6 +4106,7 @@ before the colon is the name of the syntax file):
        profile, rc
    skill: il
    tex: latex, dtx, sty
+   texinfo: texi, txi
    troff: 1
    verilog: v, vh, vhd
    xml: xsd

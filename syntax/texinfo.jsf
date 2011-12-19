@@ -1,0 +1,348 @@
+# A .jsf syntax highlight file for texinfo source files.
+# License: GPL
+# See c.jsf for a more complete description of these .jsf files.
+
+=Idle
+=Atsign   cyan
+=Comment  green
+=Escape   blue
+=Error    yellow bg_red
+=Warn     blue bg_yellow
+=Keyword  yellow
+=Brackets blue
+=Parms    blue
+
+:idle Idle
+	*      idle
+	"@"    atsign recolor=-1
+
+:atsign Atsign
+	*                               idle noeat
+	"\-/\\\"=',^~@*:.?!\t \n"       accent noeat
+	"a-zA-Z"                        ident mark buffer
+
+:accent Escape
+   *      idle
+   
+:comment Comment
+   *    comment
+   "\n"   idle
+
+:keyword Keyword
+	*      idle noeat
+	"{"    parms noeat
+
+# This is much to simple. We bail on the first closing bracket,
+# which is okay sometimes, but parsing parameters needs much more care.
+:parms Parms
+   *      parms
+   "}"    idle
+   
+:error Error
+   *      idle
+   
+:maybe_error Warn
+   *      idle noeat
+   
+:empty_brackets_start Brackets
+   *      error noeat
+   "{"    empty_brackets_end
+   
+:empty_brackets_end Brackets
+   *      error noeat
+   "}"    idle
+      
+:kw_empty_brackets Keyword
+   *      empty_brackets_start noeat
+   
+:ident Idle
+	*        maybe_error recolormark strings
+   "aa"                 kw_empty_brackets # These keywords should always be followed by empty brackets.
+   "AA"                 kw_empty_brackets
+   "ae"                 kw_empty_brackets
+   "AE"                 kw_empty_brackets
+   "arrow"              kw_empty_brackets
+   "bullet"             kw_empty_brackets
+   "click"              kw_empty_brackets
+   "comma"              kw_empty_brackets
+   "copyright"          kw_empty_brackets
+   "dh"                 kw_empty_brackets
+   "DH"                 kw_empty_brackets
+   "dots"               kw_empty_brackets
+   "enddots"            kw_empty_brackets
+   "equiv"              kw_empty_brackets
+   "error"              kw_empty_brackets
+   "euro"               kw_empty_brackets
+   "exclamdown"         kw_empty_brackets
+   "expansion"          kw_empty_brackets
+   "geq"                kw_empty_brackets
+   "guillemetleft"      kw_empty_brackets
+   "guillemetright"     kw_empty_brackets
+   "guillemotleft"      kw_empty_brackets
+   "guillemotright"     kw_empty_brackets
+   "guilsinglleft"      kw_empty_brackets
+   "guilsinglright"     kw_empty_brackets
+   "LaTex"              kw_empty_brackets
+   "leg"                kw_empty_brackets
+   "l"                  kw_empty_brackets
+   "L"                  kw_empty_brackets
+   "minus"              kw_empty_brackets
+   "oe"                 kw_empty_brackets
+   "OE"                 kw_empty_brackets
+   "o"                  kw_empty_brackets
+   "O"                  kw_empty_brackets
+   "ordf"               kw_empty_brackets
+   "ordm"               kw_empty_brackets
+   "point"              kw_empty_brackets
+   "pounds"             kw_empty_brackets
+   "print"              kw_empty_brackets
+   "questiondown"       kw_empty_brackets
+   "quotedblbase"       kw_empty_brackets
+   "quotedblleft"       kw_empty_brackets
+   "quotedblright"      kw_empty_brackets
+   "quoteleft"          kw_empty_brackets
+   "quoteright"         kw_empty_brackets
+   "quotesinglebase"    kw_empty_brackets
+   "registeredsymbol"   kw_empty_brackets
+   "result"             kw_empty_brackets
+   "ss"                 kw_empty_brackets
+   "TeX"                kw_empty_brackets
+   "tie"                kw_empty_brackets
+   "today"              kw_empty_brackets
+                        # Some of these require parameters, but we don't care.
+                        # Maybe in some later version...
+   "abbr"                           keyword
+   "acronym"                        keyword
+   "afivepaper"                     keyword
+   "afourlatex"                     keyword
+   "afourpaper"                     keyword
+   "afourwide"                      keyword
+   "alias"                          keyword
+   "anchor"                         keyword
+   "appendix"                       keyword
+   "appendixsec"                    keyword
+   "appendixsection"                keyword
+   "appendixsubsec"                 keyword
+   "appendixsubsections"            keyword
+   "appendixsubsubsec"              keyword
+   "appendixsubsubsection"          keyword
+   "asis"                           keyword
+   "author"                         keyword
+   "b"                              keyword
+   "bullet"                         keyword
+   "bye"                            keyword
+   "caption"                        keyword
+   "cartouche"                      keyword
+   "c"                       comment
+   "centerchap"                     keyword
+   "center"                         keyword
+   "chapheading"                    keyword
+   "chapter"                        keyword
+   "cindex"                         keyword
+   "cite"                           keyword
+   "clear"                          keyword
+   "cmindex"                        keyword
+   "code"                           keyword
+   "command"                        keyword
+   "comment"                 comment
+   "contents"                       keyword
+   "defcodeindex"                   keyword
+   "defcv"                          keyword
+   "defcvx"                         keyword
+   "deffn"                          keyword
+   "deffnx"                         keyword
+   "deffun"                         keyword
+   "deffunx"                        keyword
+   "defindex"                       keyword
+   "definfoenclose"                 keyword
+   "defivar"                        keyword
+   "defivarx"                       keyword
+   "defmac"                         keyword
+   "defmacx"                        keyword
+   "defmethod"                      keyword
+   "defmethodx"                     keyword
+   "defop"                          keyword
+   "defopt"                         keyword
+   "defopx"                         keyword
+   "defspec"                        keyword
+   "defspecx"                       keyword
+   "deftp"                          keyword
+   "deftpx"                         keyword
+   "deftypecv"                      keyword
+   "deftypecvx"                     keyword
+   "deftypefn"                      keyword
+   "deftypefnx"                     keyword
+   "deftypefun"                     keyword
+   "deftypefunx"                    keyword
+   "deftypeivar"                    keyword
+   "deftypeivarx"                   keyword
+   "deftypemethod"                  keyword
+   "deftypemethodx"                 keyword
+   "deftypeop"                      keyword
+   "deftypeopx"                     keyword
+   "deftypevar"                     keyword
+   "deftypevarx"                    keyword
+   "deftypevr"                      keyword
+   "deftypevrx"                     keyword
+   "deftypfnx"                      keyword
+   "defvar"                         keyword
+   "defvarx"                        keyword
+   "defvr"                          keyword
+   "defvrx"                         keyword
+   "detailmenu"                     keyword
+   "dfn"                            keyword
+   "dircategory"                    keyword
+   "direntry"                       keyword
+   "display"                        keyword
+   "docbook"                        keyword
+   "documentdescription"            keyword
+   "documentencoding"               keyword
+   "documentlanguage"               keyword
+   "email"                          keyword
+   "emph"                           keyword
+   "endif"                          keyword
+   "end"                            keyword
+   "enumerate"                      keyword
+   "env"                            keyword
+   "evenfooting"                    keyword
+   "evenheading"                    keyword
+   "everyfooting"                   keyword
+   "everyheading"                   keyword
+   "exampleindent"                  keyword
+   "example"                        keyword
+   "exdent"                         keyword
+   "file"                           keyword
+   "finalout"                       keyword
+   "findex"                         keyword
+   "float"                          keyword
+   "flushleft"                      keyword
+   "flushright"                     keyword
+   "footnote"                       keyword
+   "footnotestyle"                  keyword
+   "format"                         keyword
+   "ftable"                         keyword
+   "group"                          keyword
+   "heading"                        keyword
+   "headings"                       keyword
+   "headitem"                       keyword
+   "H"                              keyword
+   "html"                           keyword
+   "hyphenation"                    keyword
+   "ifclear"                        keyword
+   "ifdocbook"                      keyword
+   "ifhtml"                         keyword
+   "ifinfo"                         keyword
+   "ifnotclear"                     keyword
+   "ifnotdocbook"                   keyword
+   "ifnothtml"                      keyword
+   "ifnotinfo"                      keyword
+   "ifnotplaintext"                 keyword
+   "ifnotset"                       keyword
+   "ifnottex"                       keyword
+   "ifnotxml"                       keyword
+   "ifplaintext"                    keyword
+   "ifset"                          keyword
+   "iftex"                          keyword
+   "ifxml"                          keyword
+   "ignore"                         keyword
+   "i"                              keyword
+   "image"                          keyword
+   "include"                        keyword
+   "indicateurl"                    keyword
+   "inforef"                        keyword
+   "itemize"                        keyword
+   "item"                           keyword
+   "itemx"                          keyword
+   "kbdinputstyle"                  keyword
+   "kbd"                            keyword
+   "key"                            keyword
+   "kindex"                         keyword
+   "lisp"                           keyword
+   "listoffloats"                   keyword
+   "lowersections"                  keyword
+   "macro"                          keyword
+   "majorheading"                   keyword
+   "menu"                           keyword
+   "multitable"                     keyword
+   "need"                           keyword
+   "node"                           keyword
+   "noindent"                       keyword
+   "novalidate"                     keyword
+   "oddfooting"                     keyword
+   "oddheading"                     keyword
+   "page"                           keyword
+   "pagesizes"                      keyword
+   "paragraphindent"                keyword
+   "pindex"                         keyword
+   "pref"                           keyword
+   "printindex"                     keyword
+   "pxref"                          keyword
+   "quotation"                      keyword
+   "raggedright"                    keyword
+   "raisesections"                  keyword
+   "refill"                         keyword
+   "ref"                            keyword
+   "r"                              keyword
+   "samp"                           keyword
+   "sansserif"                      keyword
+   "sc"                             keyword
+   "section"                        keyword
+   "setchapternewpage"              keyword
+   "setcontentsaftertitlepage"      keyword
+   "setfilename"                    keyword
+   "set"                            keyword
+   "setshortcontentsaftertitlepage" keyword
+   "settitle"                       keyword
+   "shortcaption"                   keyword
+   "shortcontens"                   keyword
+   "shorttitlepage"                 keyword
+   "smallbook"                      keyword
+   "smalldisplay"                   keyword
+   "smallexample"                   keyword
+   "smallformat"                    keyword
+   "smalllisp"                      keyword
+   "smallquotation"                 keyword
+   "sp"                             keyword
+   "strong"                         keyword
+   "subheading"                     keyword
+   "subsection"                     keyword
+   "subsubheading"                  keyword
+   "subsubsection"                  keyword
+   "subtitle"                       keyword
+   "summarycontents"                keyword
+   "syncodeindex"                   keyword
+   "synindex"                       keyword
+   "tab"                            keyword
+   "table"                          keyword
+   "tex"                            keyword
+   "thischapter"                    keyword
+   "thischaptername"                keyword
+   "thischapternum"                 keyword
+   "thisfile"                       keyword
+   "thispage"                       keyword
+   "thistitle"                      keyword
+   "tie"                            keyword
+   "tindex"                         keyword
+   "titlefont"                      keyword
+   "title"                          keyword
+   "titlepage"                      keyword
+   "t"                              keyword
+   "top"                            keyword
+   "unnumbered"                     keyword
+   "unnumberedsec"                  keyword
+   "unnumberedsubsec"               keyword
+   "unnumberedsubsubsec"            keyword
+   "url"                            keyword
+   "value"                          keyword
+   "var"                            keyword
+   "verbatiminclude"                keyword
+   "verbatim"                       keyword
+   "verb"                           keyword
+   "vindex"                         keyword
+   "vskip"                          keyword
+   "vtable"                         keyword
+   "w"                              keyword
+   "xml"                            keyword
+   "xref"                           keyword
+   done
+   "a-zA-Z" ident
