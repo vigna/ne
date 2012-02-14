@@ -375,6 +375,8 @@ int request_strings(const char * const * const _entries, const int _num_entries,
 						request_toggle_seof();
 						break;
 
+					case CLOSEDOC_A: 
+					case QUIT_A:
 					case ESCAPE_A:
 						return -1;
 					}
