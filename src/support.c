@@ -556,3 +556,25 @@ int ne_isspace(const int c, const int encoding) {
 int ne_isword(const int c, const int encoding) {
 	return c == '_' || !(ne_isspace(c, encoding) || ne_ispunct(c, encoding));
 }
+
+/* Returns a copy of the ne_isword() string to the left of the cursor, or an empty
+	string if none is found. Consumer is responsible for seeing that the string is freed.
+	*prefix_pos is the offset from the beginning of the current line where the prefix starts. */
+int context_prefix(const buffer *b, unsigned char **p, int *prefix_pos, encoding_type encoding) {
+
+	*prefix_pos = b->cur_pos;
+	if (*prefix_pos && *prefix_pos <= b->cur_line_desc->line_len) {
+		*prefix_pos = prev_pos(b->cur_line_desc->line, *prefix_pos, b->encoding);
+		while (*prefix_pos && ne_isword(get_char(&b->cur_line_desc->line[*prefix_pos], b->encoding), b->encoding))
+			*prefix_pos = prev_pos(b->cur_line_desc->line, *prefix_pos, b->encoding);
+		if (! ne_isword(get_char(&b->cur_line_desc->line[*prefix_pos], b->encoding), b->encoding))
+			*prefix_pos = next_pos(b->cur_line_desc->line, *prefix_pos, b->encoding);
+		*p = malloc(b->cur_pos + 1 - *prefix_pos);
+		if (!*p) return OUT_OF_MEMORY;
+		strncpy(*p, &b->cur_line_desc->line[*prefix_pos], b->cur_pos - *prefix_pos);
+	} 
+	else *p = malloc(1); /* no prefix left of the cursor; we'll give an empty one. */
+	
+	(*p)[b->cur_pos - *prefix_pos] = 0;
+	return OK;
+}

@@ -180,7 +180,7 @@ signals.o: ne.h keycodes.h names.h errors.h protos.h
 
 streams.o: ne.h keycodes.h names.h errors.h protos.h
 
-support.o: ne.h keycodes.h names.h errors.h protos.h
+support.o: ne.h keycodes.h names.h errors.h protos.h support.c
 	$(CC) $(CFLAGS) -DGLOBALDIR=\"$(NE_GLOBAL_DIR)\" -c support.c
 
 term.o: termchar.h cm.h ansi.h

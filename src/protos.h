@@ -294,6 +294,7 @@ int get_char_width(const unsigned char * const s, const encoding_type encoding);
 int ne_ispunct(const int c, const int encoding);
 int ne_isspace(const int c, const int encoding);
 int ne_isword(const int c, const int encoding);
+int context_prefix(const buffer *b, unsigned char **p, int *prefix_pos, encoding_type encoding);
 
 /* term.c */
 int output_width(int c);

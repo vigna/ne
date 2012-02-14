@@ -1609,24 +1609,13 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			we do not want to record this insertion twice. Also, we are counting on 
 			INSERTSTRING_A to handle character encoding issues. */
 		recording = b->recording;
+
 		i = b->cur_pos;
 		
 		if ( !p ) { /* no prefix given; find one left of the cursor. */
-			if (i && i <= b->cur_line_desc->line_len) {
-				i = prev_pos(b->cur_line_desc->line, i, b->encoding);
-				while (i && ne_isword(c = get_char(&b->cur_line_desc->line[i], b->encoding), b->encoding))
-					i = prev_pos(b->cur_line_desc->line, i, b->encoding);
-				if (! ne_isword(c = get_char(&b->cur_line_desc->line[i], b->encoding), b->encoding))
-					i = next_pos(b->cur_line_desc->line, i, b->encoding);
-				p = malloc(b->cur_pos - i + 1);
-				if (!p) return OUT_OF_MEMORY;
-				strncpy(p, &b->cur_line_desc->line[i], b->cur_pos - i);
-			} 
-			else p = malloc(1); /* no prefix left of the cursor; we'll find _all_ word strings! */
-			
-			p[b->cur_pos - i] = 0;
+			if ( context_prefix(b, &p, &i, b->encoding) ) return OUT_OF_MEMORY;
 		}	
-
+      
 		snprintf(msg, MAX_MESSAGE_SIZE, "AutoComplete: prefix \"%s\"", p);
 			
 		if (p = autocomplete(p, msg, TRUE, &col)) {
