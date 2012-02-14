@@ -1371,6 +1371,31 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		}
 		return ERROR;
 
+	case EXECCONTEXT_A:
+		i = b->cur_pos;
+		
+		if ( !p ) { /* no prefix given; find one left of the cursor. */
+			if ( context_prefix(b, &p, &i, b->encoding) ) return OUT_OF_MEMORY;
+		}	
+      
+		if (strlen(p)) {
+			start_undo_chain(b);
+			if (i >= b->cur_pos || (error = do_action(b, DELETEPREVWORD_A, 1, NULL)) == OK) {
+				free(b->command_line);
+				b->command_line = p;
+				i = execute_command_line(b, p);
+				end_undo_chain(b);
+				if (i == NO_SUCH_COMMAND) {
+            	do_action(b, UNDO_A, 1, NULL);
+            	do_action(b, MOVERIGHT_A, 1, NULL);
+            	return NO_SUCH_COMMAND;
+            }
+				return print_error(i) ? ERROR : 0;
+			}
+		}
+		free(p);
+		return ERROR;
+
 	case SYSTEM_A:
 		if (p || (p = request_string("Shell command", NULL, FALSE, TRUE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
 

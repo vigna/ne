@@ -4843,6 +4843,7 @@ provide access to the shell and a way to assign the functionality of
 * Alert::
 * Beep::
 * Exec::
+* ExecContext::
 * Flash::
 * Help::
 * NOP::
@@ -4906,6 +4907,23 @@ manually programmed macros.
 
 Note that if the command you specify does not appear in @code{ne}'s internal
 tables, it is considered to be a macro name. See @ref{Macro}.
+
+
+
+@node ExecContext
+@subsection ExecContext
+@cmindex ExecContext
+
+@noindent Syntax: @code{ExecContext}@*
+@noindent Abbreviation: @code{EC}
+
+@noindent extracts a command from the current document, consuming text to the
+left of the cursor, and executes it. It is never registered while recording a
+macro (though the command taken from the text is).
+
+Note that if the command found to the left of the cursor does not appear in
+@code{ne}'s internal tables, it is considered to be a macro name. See
+@ref{Macro}.
 
 
 
