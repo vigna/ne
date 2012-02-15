@@ -580,6 +580,9 @@ macro_desc *load_macro(const char *name) {
 	}
 
 	if (cs) {
+		/* the last line may not be null-terminated, so... */
+		add_to_stream(cs, "", 1);
+
 		md->cs = cs;
 		md->name = str_dup(file_part(name));
 
