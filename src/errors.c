@@ -61,6 +61,7 @@ char *error_msg[ERROR_COUNT] = {
 	"Clip does not exist.",
 	"Mark is out of document.",
 	"Can't open macro.",
+	"Maximum macro depth exceeded.",
 	"This file is read-only.",
 	"Can't open file (file is migrated).",
 	"Can't open file (file is a directory).",

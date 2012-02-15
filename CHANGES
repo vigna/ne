@@ -3,6 +3,8 @@
 2.4
 
   * CLOSEDOC and QUIT (^Q and Alt-Q) now close string requesters just like Esc.
+  
+  * Macro calling macros are now stopped at an arbitrary depth of 32 calls.
 
 2.3
 

@@ -9,9 +9,6 @@
 
   * For commands that have key bindings, Help displays them.
   
-  * ExecContext extracts text immediately to the left of the cursor as
-    a command or macro name and executes it.
-
 2.3
 
   * Takes 'SEQ "sequence" KEYCODE' in ~/.ne/.keys to bind character

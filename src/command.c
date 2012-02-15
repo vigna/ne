@@ -605,9 +605,15 @@ macro list, it is loaded. A standard error code is returned. */
 
 int execute_macro(buffer *b, const char *name) {
 
+	static call_depth = 0;
 	const char *p;
 	macro_desc *md;
 	int h;
+
+	if (++call_depth > 32) {
+		--call_depth;
+		return MAX_MACRO_DEPTH_EXCEEDED;
+	}
 
 	p = file_part(name);
 
@@ -631,9 +637,11 @@ int execute_macro(buffer *b, const char *name) {
 			add_to_stream(b->cur_macro, "# conclude macro ", 17);
 			add_to_stream(b->cur_macro, md->name, strlen(md->name)+1);
 		}
+		--call_depth;
 		return h;
 	}
 
+	--call_depth;
 	return CANT_OPEN_MACRO;
 }
 
