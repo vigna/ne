@@ -89,7 +89,6 @@ static const command commands[ACTION_COUNT] = {
 	{ NAHL(ESCAPE        ),                                       DO_NOT_RECORD                   },
 	{ NAHL(ESCAPETIME    ),                           IS_OPTION                                   },
 	{ NAHL(EXEC          ),           ARG_IS_STRING |             DO_NOT_RECORD                   },
-	{ NAHL(EXECCONTEXT   ), NO_ARGS |                             DO_NOT_RECORD                   },
 	{ NAHL(EXIT          ), NO_ARGS                                                               },
 	{ NAHL(FASTGUI       ),                           IS_OPTION                                   },
 	{ NAHL(FIND          ),           ARG_IS_STRING                                               },
