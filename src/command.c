@@ -171,6 +171,8 @@ static const command commands[ACTION_COUNT] = {
 	{ NAHL(SEARCHBACK    ),                           IS_OPTION                                   },
 	{ NAHL(SELECTDOC     ),0                                                                      },
 	{ NAHL(SETBOOKMARK   ),           ARG_IS_STRING |                             EMPTY_STRING_OK },
+	{ NAHL(SHIFT         ),           ARG_IS_STRING |                             EMPTY_STRING_OK },
+	{ NAHL(SHIFTTABS     ),                           IS_OPTION                                   },
 	{ NAHL(STATUSBAR     ),                           IS_OPTION                                   },
 	{ NAHL(SUSPEND       ), NO_ARGS                                                               },
 	{ NAHL(SYNTAX        ),           ARG_IS_STRING | IS_OPTION                                   },

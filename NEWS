@@ -2,6 +2,8 @@
 
 2.4
 
+  * New Shift command indent/outdents selected lines.
+
   * Recorded macros preserve comments; indicate other included macros.
 
   * New AtomicUndo command groups changes to be undone/redone as a group

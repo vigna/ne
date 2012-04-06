@@ -573,3 +573,97 @@ int auto_indent_line(buffer * const b, const int line, line_desc * const ld, con
 	insert_stream(b, ld, line, 0, prev_ld->line, pos);
 	return pos;
 }
+
+
+/* Shift a block of lines left or right with whitespace adjustments. */
+
+int shift(buffer * const b, char *p, char *msg, int msg_size) {
+	int use_tabs = b->opt.tabs && b->opt.shift_tabs;
+	long int shift_size = 1;
+	char dir = '>';
+	int init_line = b->cur_line,
+	    init_pos  = b->cur_pos,
+	    init_y    = b->cur_y;
+	int first_line = b->cur_line, last_line = b->cur_line, left_col = 0;
+	int line;
+	int avshift;
+	int rc = 0;
+	
+	/* Parse parm p; looks like [<|>] ### [s|t] */
+	if (p) {
+		while (isasciispace(*p)) p++;
+		if (*p == '<' || *p == '>')
+			dir = *p++;
+		while (isasciispace(*p)) p++;
+		if (isdigit(*p)) {
+			errno = 0;
+			shift_size = strtol(p, &p, 10);
+			if (errno) return INVALID_SHIFT_SPECIFIED;
+		}
+		while (isasciispace(*p)) p++;
+		if (*p == 's') { p++; }
+		else if (*p == 't') { shift_size *= max(1,b->opt.tab_size); p++; }
+		while (isasciispace(*p)) p++;
+		if (*p) return INVALID_SHIFT_SPECIFIED;
+	}
+
+	if (b->marking) {
+		if (b->mark_is_vertical)
+			left_col= min(b->block_start_col,  b->cur_char);
+		first_line = min(b->block_start_line, b->cur_line);
+		last_line  = max(b->block_start_line, b->cur_line);
+	}
+
+	/* Before making any changes, if we're shifting left (dir=='<'), verify that
+	   we have sufficient white space to remove on all the relevant lines. */
+   
+	if (dir=='<')
+		for (line=first_line; line<=last_line; line++) {
+			goto_line(b,line);
+			goto_pos(b,calc_pos(b->cur_line_desc, left_col, b->opt.tab_size, b->encoding));
+			rc = INSUFFICIENT_WHITESPACE;
+		}
+
+	if (!rc) {
+		for (line=first_line; line<=last_line; line++) {
+			goto_line(b,line);
+			goto_pos(b,calc_pos(b->cur_line_desc, left_col, b->opt.tab_size, b->encoding));
+
+			/* To adjust a line's space:
+		
+			Starting from left_col, advance to the right to the first non-blank character C.
+
+			Note C's col. The desired new column is this value +/- shift_size.
+
+			Move left looking for the first tab or non-whitespace or the left_col, whichever comes first.
+
+			Whitespace changes all take place at that transition point.
+
+			While C's col is wrong
+			  if C's col is too far to the right,
+			      if we're on a space, delete it;
+			      else if there's a tab to our left, delete it;
+			      else we should not have started, because it's not possible!
+			  if C's col is too far to the left,
+			      if it's needs to be beyond the next tab stop,
+			         insert a tab and move right;
+			      else insert a space.
+			*/
+		}
+	}
+	
+	/* put the screen back the way we found it. */
+	goto_line(b, init_line);
+	goto_pos(b, init_pos);
+	/* delay_update(); */
+	if (avshift = b->cur_y - init_y) {
+		snprintf(msg, msg_size, "%c%d", avshift > 0 ? 'T' :'B', avshift > 0 ? avshift : -avshift);
+		adjust_view(b,msg);
+	}
+
+	return rc;	
+}
+
+
+
+

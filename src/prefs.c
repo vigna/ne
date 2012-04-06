@@ -172,6 +172,7 @@ int save_prefs(buffer * const b, const char * const name) {
       /* Skip search_back */
 		record_action(cs, CASESEARCH_A,       b->opt.case_search,    NULL, verbose_macros);
 		record_action(cs, TABS_A,             b->opt.tabs,           NULL, verbose_macros);
+		record_action(cs, SHIFTTABS_A,        b->opt.shift_tabs,     NULL, verbose_macros);
 		record_action(cs, AUTOMATCHBRACKET_A, b->opt.automatch,      NULL, verbose_macros);
 		record_action(cs, BINARY_A,           b->opt.binary,         NULL, verbose_macros);
 		record_action(cs, UTF8AUTO_A,         b->opt.utf8auto,       NULL, verbose_macros);

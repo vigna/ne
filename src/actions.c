@@ -401,6 +401,10 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		SET_USER_FLAG(b, c, opt.tabs);
 		return OK;
 
+	case SHIFTTABS_A:
+		SET_USER_FLAG(b, c, opt.shift_tabs);
+		return OK;
+
 	case AUTOMATCHBRACKET_A:
 		if (c < 0 && (c = request_number("Match mode (sum of 0:none, 1:brightness, 2:inverse, 4:bold, 8:underline)", b->opt.automatch))<0||c>15) return ((c) == ABORT ? OK : INVALID_MATCH_MODE);
 		b->opt.automatch = c;
@@ -1514,6 +1518,14 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		for(i = 0; i < c && !(error = paragraph(b)) && !stop; i++);
 
 		if (stop) error = STOPPED;
+		return print_error(error) ? ERROR : 0;
+
+	case SHIFT_A:
+		if (b->opt.read_only) return FILE_IS_READ_ONLY;
+
+		error = shift(b, p, &msg[0], MAX_MESSAGE_SIZE);
+		if (stop) error = STOPPED;
+		if (p) free(p);
 		return print_error(error) ? ERROR : 0;
 
 	case LOADPREFS_A:

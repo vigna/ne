@@ -1008,8 +1008,9 @@ appears if the undo flag is true. @xref{DoUndo}.
 @item r
 appears if the read only flag is true. @xref{ReadOnly}.
 
-@item t
-appears if the tabs flag is true. @xref{Tabs}.
+@item t/T
+appears if the tabs flag is true. It's upper case if
+the shifttabs flag is also true. @xref{Tabs}, @ref{ShiftTabs}.
 
 @item B
 appears if the binary flag is true. @xref{Binary}.
@@ -2444,6 +2445,7 @@ Note that by using the @code{Through} command you can automatically pass a
 * Paste::
 * PasteVert::
 * Erase::
+* Shift::
 * OpenClip::
 * SaveClip::
 * ClipNumber::
@@ -2550,6 +2552,32 @@ lines at the horizontal cursor position.
 
 @noindent acts like @code{Cut}, but the block is just deleted and not
 copied into any clip.
+
+
+
+@node Shift
+@subsection Shift
+@cmindex Shift
+
+@noindent Syntax: @code{Shift [<|>][n][t|s]]}@*
+@noindent Abbreviation: @code{SH}
+
+@noindent shifts the text on lines between the mark and the cursor either
+right (@samp{>}, the default) or left (@samp{<}) by adding or removing 
+white space on each line. The adjustment size, specified as an unsigned
+integer @samp{n}, is in units of the current tab size (@samp{t}) or spaces
+(@samp{s}). The default is 1. Adjustments start at the left edge of a
+vertical mark, or column 1 otherwise. If the mark is not currently set, only
+the current line is affected.
+
+In no case will @code{Shift} insert tab characters if the document's
+@code{Tabs} flag is off. If neither @samp{t} nor @samp{s} is given, the
+@code{ShiftTabs} flag determines whether spaces or tabs (or
+@code{TabSize} equivalent spaces if the @code{Tabs} flag is off) are used.
+
+In the case of left shifts, if any indicated line has insufficient leading
+white space for the requested adjustment to be made, then @code{Shift}
+reports an error and makes no changes.
 
 
 
@@ -3432,6 +3460,7 @@ process, you can clear the automatic preferences flag. See @ref{AutoPrefs}.
 * EscapeTime::
 * TabSize::
 * Tabs::
+* ShiftTabs::
 * Turbo::
 * VerboseMacros::
 * PreserveCR::
@@ -3476,6 +3505,7 @@ FLAG COMMAND      ABBR  DESCRIPTION
   u   DoUndo        DU   record edits for later undoing
   r   ReadOnly      RO   changes are not allowed
   t   Tabs          TAB  TAB key inserts TABs instead of spaces
+  T   ShiftTabs     ST   Shift may insert TABs
   B   Binary        B    affects file loading/saving
   M   Mark          M    mark set for line-oriented block operations
   V   MarkVert      MV   like mark, but block is rectangle
@@ -3775,6 +3805,18 @@ specify 0 or 1, the flag will be set to false or true, respectively. A lower
 case @samp{t} will appear on the status bar if the flag is true.
 
 
+@node ShiftTabs
+@subsection ShiftTabs
+@cmindex ShiftTabs
+
+@noindent Syntax: @code{ShiftTabs [0|1]}@*
+@noindent Abbreviation: @code{SHT}
+
+@noindent sets the @code{ShiftTabs} flag. When this flag and the @code{Tabs}
+flag are both true, left and right @code{Shift} commands may use tab
+characters to adjust leading white space. Otherwise only spaces are used.
+@xref{Shift}.
+
 
 
 @node Turbo
@@ -3918,12 +3960,12 @@ restore the users previous preferences settings.
 @noindent @code{PushPrefs} saves the following values on the preferences stack:
 
 @example
-  AutoIndent   DoUndo      PreserveCR   Tabs
-  AutoPrefs    FreeForm    ReadOnly     TabSize
-  Binary       HexCode     RightMargin  UTF8Auto
-  CaseSearch   Insert      SearchBack   VisualBell
-  ClipNumber   NoFileReq   StatusBar    WordWrap
-@end example
+  AutoIndent   DoUndo      PreserveCR   ShiftTabs   WordWrap
+  AutoPrefs    FreeForm    ReadOnly     Tabs
+  Binary       HexCode     RightMargin  TabSize
+  CaseSearch   Insert      SearchBack   UTF8Auto
+  ClipNumber   NoFileReq   StatusBar    VisualBell
+@end example 
 
 
 
@@ -3950,11 +3992,11 @@ restore the users previous preferences settings.
 @noindent PopPrefs restores the following values from the preferences stack:
 
 @example
-  AutoIndent   DoUndo      PreserveCR   Tabs
-  AutoPrefs    FreeForm    ReadOnly     TabSize
-  Binary       HexCode     RightMargin  UTF8Auto
-  CaseSearch   Insert      SearchBack   VisualBell
-  ClipNumber   NoFileReq   StatusBar    WordWrap
+  AutoIndent   DoUndo      PreserveCR   ShiftTabs   WordWrap
+  AutoPrefs    FreeForm    ReadOnly     Tabs
+  Binary       HexCode     RightMargin  TabSize
+  CaseSearch   Insert      SearchBack   UTF8Auto
+  ClipNumber   NoFileReq   StatusBar    VisualBell
 @end example
 
 

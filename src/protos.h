@@ -125,6 +125,7 @@ int paragraph(buffer *b);
 int center(buffer *b);
 int auto_indent_line(buffer * const b, const int line, line_desc * const ld, const int up_to_col);
 int backtab(buffer *b);
+int shift(buffer *b, char *p, char *msg, int msg_size);
 
 /* errors.c */
 

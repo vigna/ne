@@ -185,6 +185,7 @@ buffer *alloc_buffer(const buffer * const cur_b) {
 
 		b->opt.insert         =
 		b->opt.tabs           =
+		b->opt.shift_tabs     =
 		b->opt.automatch      =
 		b->opt.do_undo        =
 		b->opt.auto_prefs     = 1;
@@ -198,6 +199,7 @@ buffer *alloc_buffer(const buffer * const cur_b) {
 			b->opt.cur_clip       = cur_b->opt.cur_clip;
 			b->opt.tab_size       = cur_b->opt.tab_size;
 			b->opt.tabs           = cur_b->opt.tabs;
+			b->opt.shift_tabs     = cur_b->opt.shift_tabs;
 			b->opt.automatch      = cur_b->opt.automatch;
 			b->opt.right_margin   = cur_b->opt.right_margin;
 

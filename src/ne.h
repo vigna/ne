@@ -381,6 +381,7 @@ typedef struct {
 		search_back:1,     /* Last search was backwards */
 		case_search:1,     /* Look at case matching in searches */
 		tabs:1,            /* TAB inserts TABs vs. spaces */
+		shift_tabs:1,      /* Shift may insert tabs, but only if tabs is also true */
 		automatch:4,       /* Automatically match visible brackets */
 		binary:1,          /* Load and save in binary mode */
 		utf8auto:1,        /* Try to detect automatically UTF-8 */
