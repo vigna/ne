@@ -609,7 +609,7 @@ int shift(buffer * const b, char *p, char *msg, int msg_size) {
 
 	if (b->marking) {
 		if (b->mark_is_vertical)
-			left_col= min(b->block_start_col,  b->cur_char);
+			left_col= min(calc_width(b->cur_line_desc, b->block_start_pos, b->opt.tab_size, b->encoding),  b->cur_char);
 		first_line = min(b->block_start_line, b->cur_line);
 		last_line  = max(b->block_start_line, b->cur_line);
 	}

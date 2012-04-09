@@ -1312,7 +1312,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		print_message(info_msg[a==MARK_A ? BLOCK_START_MARKED : VERTICAL_BLOCK_START_MARKED]);
 		b->mark_is_vertical = (a == MARKVERT_A);
 		b->block_start_line = b->cur_line;
-		b->block_start_col = b->win_x + b->cur_x;
+		b->block_start_pos = b->cur_pos;
 		return OK;
 
 	case CUT_A:
@@ -1344,7 +1344,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		if (b->marking) {
 			delay_update();
 			goto_line(b, b->block_start_line);
-			goto_column(b, b->block_start_col);
+			goto_column(b, calc_width(b->cur_line_desc, b->block_start_pos, b->opt.tab_size, b->encoding));
 			return OK;
 		}
 		print_error(MARK_BLOCK_FIRST);

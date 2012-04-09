@@ -429,7 +429,7 @@ typedef struct {
 	int cur_pos;              /* position of cursor within the document buffer (counts bytes) */
 	int cur_char;             /* position of cursor within the attribute buffer (counts characters) */
 	int num_lines;
-	int block_start_line, block_start_col;
+	int block_start_line, block_start_pos;
 	struct {
 		int shown;
 		int x;                 /* Visual (on-screen) coordinates of the highlighted bracket, if shown is true. */

@@ -831,7 +831,7 @@ int insert_stream(buffer * const b, line_desc * ld, int line, int pos, const uns
 			b->is_modified = 1;
 			
 			/* We just inserted len chars at (line,pos); adjust bookmarks and mark accordingly. */
-			if (b->marking && b->block_start_line == line && b->block_start_col > pos) b->block_start_col += len;
+			if (b->marking && b->block_start_line == line && b->block_start_pos > pos) b->block_start_pos += len;
 
 			for (i=0, mask=b->bookmark_mask;  mask;  i++, mask >>= 1) 
 				if ((mask & 1) && b->bookmark[i].line == line && b->bookmark[i].pos > pos) b->bookmark[i].pos += len;
@@ -861,8 +861,8 @@ int insert_stream(buffer * const b, line_desc * ld, int line, int pos, const uns
 				/* We just inserted a line break at (line,pos);
 				   adjust the buffer bookmarks and mark accordingly. */
 				if (b->marking) {
-					if (b->block_start_line == line && b->block_start_col > pos) {
-						b->block_start_col -= pos;
+					if (b->block_start_line == line && b->block_start_pos > pos) {
+						b->block_start_pos -= pos;
 						b->block_start_line++;
 					}
 					else if (b->block_start_line > line) b->block_start_line++;
@@ -986,7 +986,7 @@ int delete_stream(buffer * const b, line_desc * const ld, const int line, const 
 			if (b->marking) {
 				if (b->block_start_line == line+1) {
 					b->block_start_line--;
-					b->block_start_col += ld->line_len;
+					b->block_start_pos += ld->line_len;
 				}
 				else if (b->block_start_line > line) b->block_start_line--;
 			}
@@ -1059,10 +1059,10 @@ int delete_stream(buffer * const b, line_desc * const ld, const int line, const 
 			}
 		}
 
-		/* Second case: we are inside a line. We delete len characters or, if
-			there are less then len characters to delete, we delete up to the end
+		/* Second case: we are inside a line. We delete len bytes or, if
+			there are less then len bytes to delete, we delete up to the end
 			of the line. In the latter case, we simply set the line length and
-			free the corresponding characters.  Otherwise, the number of characters to
+			free the corresponding bytes.  Otherwise, the number of bytes to
 			move is minimized. */
 
 		else {
@@ -1071,11 +1071,11 @@ int delete_stream(buffer * const b, line_desc * const ld, const int line, const 
 			/* We're about to erase n chars at (line,pos); adjust mark and bookmarks accordingly. */
 			if (b->marking)
 				if (b->block_start_line == line)
-					if (b->block_start_col >= pos)
-						if (b->block_start_col < pos + n)
-							b->block_start_col = pos;
+					if (b->block_start_pos >= pos)
+						if (b->block_start_pos < pos + n)
+							b->block_start_pos = pos;
 						else
-							b->block_start_col -= n;
+							b->block_start_pos -= n;
 			for (m=0, mask=b->bookmark_mask;  mask;  m++, mask>>=1) {
 				if (mask & 1) {
 					if (b->bookmark[m].line == line)

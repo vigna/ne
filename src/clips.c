@@ -132,8 +132,8 @@ int copy_to_clip(buffer *b, int n, int cut) {
 	cd = get_nth_clip(n);
 
 	if (y == b->block_start_line &&
-		(b->win_x + b->cur_x == b->block_start_col ||
-		 b->cur_pos >= ld->line_len && b->block_start_col >= calc_width(ld, ld->line_len, b->opt.tab_size, b->encoding))) {
+	   (b->cur_pos == b->block_start_pos ||
+		 b->cur_pos >= ld->line_len && b->block_start_pos >= ld->line_len)) {
 
 		if (!(new_cd = realloc_clip_desc(cd, n, 0))) return OUT_OF_MEMORY;
 		if (!cd) add_head(&clips, &new_cd->cd_node);
@@ -144,7 +144,7 @@ int copy_to_clip(buffer *b, int n, int cut) {
 	/* We have two different loops for direct or inverse copying. Making this
 	conditional code would be cumbersome, awkward, and definitely inefficient. */
 
-	if (y > b->block_start_line || y == b->block_start_line && b->win_x + b->cur_x > b->block_start_col) {
+	if (y > b->block_start_line || y == b->block_start_line && b->cur_pos > b->block_start_pos) {
 
 		for(pass = clip_len = 0; pass < 2; pass++) {
 
@@ -156,7 +156,7 @@ int copy_to_clip(buffer *b, int n, int cut) {
 				len = ld->line_len;
 
 				if (i == b->block_start_line) {
-					start_pos = calc_pos(ld, b->block_start_col, b->opt.tab_size, b->encoding);
+					start_pos = b->block_start_pos;
 					len -= start_pos;
 				}
 
@@ -184,7 +184,7 @@ int copy_to_clip(buffer *b, int n, int cut) {
 
 				if (cut) {
 					goto_line(b, b->block_start_line);
-					goto_column(b, b->block_start_col);
+					goto_column(b, calc_width(b->cur_line_desc, b->block_start_pos, b->opt.tab_size, b->encoding));
 					delete_stream(b, b->cur_line_desc, b->cur_line, b->cur_pos, clip_len);
 					update_syntax_and_lines(b, b->cur_line_desc, NULL);
 				}
@@ -215,7 +215,7 @@ int copy_to_clip(buffer *b, int n, int cut) {
 				}
 
 				if (i == b->block_start_line) {
-					end_pos = calc_pos(ld, b->block_start_col, b->opt.tab_size, b->encoding);
+					end_pos = b->block_start_pos;
 					len -= ld->line_len - end_pos;
 				}
 
@@ -262,16 +262,16 @@ int erase_block(buffer *b) {
 	if (b->block_start_line >= b->num_lines) return MARK_OUT_OF_BUFFER;
 
 	if (y == b->block_start_line &&
-		(b->win_x + b->cur_x == b->block_start_col ||
-		 b->cur_pos >= ld->line_len && b->block_start_col >= calc_width(ld, ld->line_len, b->opt.tab_size, b->encoding)))
+		(b->cur_pos == b->block_start_pos ||
+		 b->cur_pos >= ld->line_len && b->block_start_pos >= ld->line_len))
 		return OK;
 
-	if (y > b->block_start_line || y == b->block_start_line && b->win_x + b->cur_x > b->block_start_col) {
+	if (y > b->block_start_line || y == b->block_start_line && b->cur_pos > b->block_start_pos) {
 		for(i = y; i >= b->block_start_line; i--) {
 			start_pos = 0;
 			len = ld->line_len;
 			if (i == b->block_start_line) {
-				start_pos = calc_pos(ld, b->block_start_col, b->opt.tab_size, b->encoding);
+				start_pos = b->block_start_pos;
 				len -= start_pos;
 			}
 			if (i == y) {
@@ -281,7 +281,7 @@ int erase_block(buffer *b) {
 			ld = (line_desc *)ld->ld_node.prev;
 		}
 		goto_line(b, b->block_start_line);
-		goto_column(b, b->block_start_col);
+      goto_column(b, calc_width(b->cur_line_desc, b->block_start_pos, b->opt.tab_size, b->encoding));
 	}
 	else {
 		for(i = y; i <= b->block_start_line; i++) {
@@ -292,7 +292,7 @@ int erase_block(buffer *b) {
 				len -= start_pos;
 			}
 			if (i == b->block_start_line) {
-				end_pos = calc_pos(ld, b->block_start_col, b->opt.tab_size, b->encoding);
+				end_pos = b->block_start_pos;
 				len -= ld->line_len - end_pos;
 			}
 			erase_len += len + 1;
@@ -356,8 +356,9 @@ int copy_vert_to_clip(buffer *b, int n, int cut) {
 
 	cd = get_nth_clip(n);
 
-	if (b->win_x + b->cur_x == b->block_start_col ||
-		y == b->block_start_line && b->cur_pos >= ld->line_len && b->block_start_col >= calc_width(ld, ld->line_len, b->opt.tab_size, b->encoding)) {
+	if (b->cur_pos == b->block_start_pos ||
+		y == b->block_start_line && b->cur_pos >= ld->line_len && 
+		b->block_start_pos >= ld->line_len) {
 
 		if (!(new_cd = realloc_clip_desc(cd, n, 0))) return OUT_OF_MEMORY;
 		set_stream_encoding(new_cd->cs, ENC_ASCII);
@@ -365,12 +366,12 @@ int copy_vert_to_clip(buffer *b, int n, int cut) {
 		return OK;
 	}
 
-	start_x = b->block_start_col;
+	start_x = calc_width(b->cur_line_desc, b->block_start_pos, b->opt.tab_size, b->encoding);
 	end_x = b->win_x + b->cur_x;
 
 	if (end_x < start_x) {
 		start_x = b->win_x + b->cur_x;
-		end_x = b->block_start_col + 1;
+		end_x = calc_width(b->cur_line_desc, b->block_start_pos, b->opt.tab_size, b->encoding);
 	}
 
 	if (cut) start_undo_chain(b);
@@ -404,7 +405,7 @@ int copy_vert_to_clip(buffer *b, int n, int cut) {
 				if (cut) {
 					update_syntax_and_lines(b, (line_desc *)ld->ld_node.next, b->cur_line_desc);
 					goto_line(b, min(b->block_start_line, b->cur_line));
-					goto_column(b, min(b->block_start_col, b->win_x + b->cur_x));
+					goto_column(b, min(calc_width(b->cur_line_desc, b->block_start_pos, b->opt.tab_size, b->encoding), b->win_x + b->cur_x));
 					end_undo_chain(b);
 				}
 				return OK;
@@ -445,7 +446,7 @@ int copy_vert_to_clip(buffer *b, int n, int cut) {
 				if (cut) {
 					update_syntax_and_lines(b, b->cur_line_desc, (line_desc *)ld->ld_node.prev);
 					goto_line(b, min(b->block_start_line, b->cur_line));
-					goto_column(b, min(b->block_start_col, b->win_x + b->cur_x));
+					goto_column(b, min(calc_width(b->cur_line_desc, b->block_start_pos, b->opt.tab_size, b->encoding), b->win_x + b->cur_x));
 					end_undo_chain(b);
 				}
 				return OK;
@@ -472,16 +473,17 @@ int erase_vert_block(buffer *b) {
 	if (!b->marking) return MARK_BLOCK_FIRST;
 	if (b->block_start_line >= b->num_lines) return MARK_OUT_OF_BUFFER;
 
-	if (b->win_x + b->cur_x == b->block_start_col ||
-		y == b->block_start_line && b->cur_pos >= ld->line_len && b->block_start_col >= calc_width(ld, ld->line_len, b->opt.tab_size, b->encoding)) 
+	if (b->cur_pos == b->block_start_pos ||
+		y == b->block_start_line && b->cur_pos >= ld->line_len && 
+		b->block_start_pos >= ld->line_len) 
 		return OK;
 
-	start_x = b->block_start_col;
+	start_x = calc_width(b->cur_line_desc, b->block_start_pos, b->opt.tab_size, b->encoding);
 	end_x = b->win_x + b->cur_x;
 
 	if (end_x < start_x) {
 		start_x = b->win_x + b->cur_x;
-		end_x = b->block_start_col + 1;
+		end_x = calc_width(b->cur_line_desc, b->block_start_pos, b->opt.tab_size, b->encoding);
 	}
 
 	start_undo_chain(b);
@@ -508,7 +510,7 @@ int erase_vert_block(buffer *b) {
 	end_undo_chain(b);
 
 	goto_line(b, min(b->block_start_line, b->cur_line));
-	goto_column(b, min(b->block_start_col, b->win_x + b->cur_x));
+	goto_column(b, min(calc_width(b->cur_line_desc, b->block_start_pos, b->opt.tab_size, b->encoding), b->win_x + b->cur_x));
 
 	return OK;
 }
