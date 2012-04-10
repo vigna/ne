@@ -373,21 +373,22 @@ static int is_part_of_paragraph(const line_desc * const ld, const int tab_size, 
 
 int paragraph(buffer * const b) {
 	int pos,
-		done,
-		line			= b->cur_line,
-		right_margin = b->opt.right_margin ? b->opt.right_margin : ne_columns;
+	    done,
+	    line = b->cur_line,
+	    right_margin = b->opt.right_margin ? b->opt.right_margin : ne_columns;
+
 	line_desc *ld = b->cur_line_desc, *start_line_desc = ld;
 
-	if (!ld->line)	return line_down(b);
+	if (!ld->line) return line_down(b);
 
 	/** Step 1 **/
 	if (!(
-			 (ld->ld_node.next->next &&
-				save_space((line_desc *)ld->ld_node.next, b->opt.tab_size, b->encoding)
-				)
-			 || save_space(ld, b->opt.tab_size, b->encoding)
-			)
-		 ) return line_down(b);
+	       (ld->ld_node.next->next &&
+	         save_space((line_desc *)ld->ld_node.next, b->opt.tab_size, b->encoding)
+	         )
+	       || save_space(ld, b->opt.tab_size, b->encoding)
+	      )
+	    ) return line_down(b);
 
 
 	/** Step 2 **/
@@ -418,8 +419,8 @@ int paragraph(buffer * const b) {
 			did_split = split_pos = spaces = 0;
 
 			while (pos < ld->line_len &&
-					(calc_width(ld, pos, b->opt.tab_size, b->encoding) < right_margin ||
-					  ! split_pos)) {
+			      (calc_width(ld, pos, b->opt.tab_size, b->encoding) < right_margin ||
+			        ! split_pos)) {
 				if (isasciispace(ld->line[pos])) {
 					split_pos = pos;
 					spaces = 0;
@@ -445,8 +446,8 @@ int paragraph(buffer * const b) {
 				line++;
 
 				/** 4.5  Insert the ps_space[] stream we saved in step 1. Note that  **/
-				/** we only want to do this if this line is the result of a split,	**/
-				/** which is true if did_split != 0.											**/
+				/** we only want to do this if this line is the result of a split,   **/
+				/** which is true if did_split != 0.                                 **/
 
 				if (did_split && pa_space && pa_space_len) {
 					insert_stream(b, ld, line, 0, pa_space, pa_space_pos);
@@ -458,17 +459,17 @@ int paragraph(buffer * const b) {
 			else done = TRUE;
 		}
 
-		/** 5. If the _following_ line is part of this paragraph (i.e., its first **/
-		/**	 non-blank character is in the correct position):						 **/
+		/** 5. If the _following_ line is part of this paragraph (i.e., its first  **/
+		/**     non-blank character is in the correct position):                   **/
 
 		if (ld->ld_node.next->next && is_part_of_paragraph((line_desc *)ld->ld_node.next, b->opt.tab_size, &pos, b->encoding)) {
-			/** 5.1  Add a space to the end of the current line.							 **/
+			/** 5.1  Add a space to the end of the current line.                    **/
 			insert_one_char(b, ld, line, ld->line_len, ' ');
 
-			/** 5.2  Move following line's data starting with the first					**/
-			/** non-blank to the end of the current line.								**/
-			/**  We do this by first deleting the leading spaces, then we				 **/
-			/**  delete the newline at the end of the current line.						 **/
+			/** 5.2  Move following line's data starting with the first             **/
+			/** non-blank to the end of the current line.                           **/
+			/**  We do this by first deleting the leading spaces, then we           **/
+			/**  delete the newline at the end of the current line.                 **/
 			if (pos > 0) delete_stream(b, (line_desc *)ld->ld_node.next, line + 1, 0, pos);
 			delete_stream(b, ld, line, ld->line_len, 1);
 		}
@@ -497,7 +498,7 @@ int paragraph(buffer * const b) {
 	if (line_down(b) == ERROR) return ERROR;
 
 	/* Try to find the first non-blank starting with this line. */
-	ld	= b->cur_line_desc;
+	ld = b->cur_line_desc;
 	line = b->cur_line;
 
 	do {
@@ -579,7 +580,8 @@ int auto_indent_line(buffer * const b, const int line, line_desc * const ld, con
 
 int shift(buffer * const b, char *p, char *msg, int msg_size) {
 	int use_tabs = b->opt.tabs && b->opt.shift_tabs;
-	long int shift_size = 1;
+	line_desc *ld, *start_line_desc;
+	long int shift_size = 1, shift_mag = b->opt.tab_size;
 	char dir = '>';
 	int init_line = b->cur_line,
 	    init_pos  = b->cur_pos,
@@ -589,81 +591,136 @@ int shift(buffer * const b, char *p, char *msg, int msg_size) {
 	int avshift;
 	int rc = 0;
 	
-	/* Parse parm p; looks like [<|>] ### [s|t] */
+	/* Parse parm p; looks like [<|>] ### [s|t], but we allow them
+	   in any order, once, with optional white space. */
 	if (p) {
-		while (isasciispace(*p)) p++;
-		if (*p == '<' || *p == '>')
-			dir = *p++;
-		while (isasciispace(*p)) p++;
-		if (isdigit(*p)) {
-			errno = 0;
-			shift_size = strtol(p, &p, 10);
-			if (errno) return INVALID_SHIFT_SPECIFIED;
+		int dir_b=0, size_b=0, st_b=0;
+		while (*p) {
+			if (isasciispace(*p)) p++;
+			else if (!dir_b && (dir_b = (*p == '<' || *p == '>'))) dir = *p++;
+			else if (!size_b && (size_b = isdigit(*p))) {
+				errno = 0;
+				shift_size = strtol(p, &p, 10);
+				if (errno) return INVALID_SHIFT_SPECIFIED;
+			} else if (!st_b && (st_b = (*p == 's' || *p == 'S'))) {
+				shift_mag = 1;
+				p++;
+			} else if (!st_b && (st_b = (*p == 't' || *p == 'T'))) p++;
+			else return INVALID_SHIFT_SPECIFIED;
 		}
-		while (isasciispace(*p)) p++;
-		if (*p == 's') { p++; }
-		else if (*p == 't') { shift_size *= max(1,b->opt.tab_size); p++; }
-		while (isasciispace(*p)) p++;
-		if (*p) return INVALID_SHIFT_SPECIFIED;
 	}
+	shift_size *= max(1,shift_mag);
+	if (shift_size == 0) return INVALID_SHIFT_SPECIFIED;
 
 	if (b->marking) {
-		if (b->mark_is_vertical)
-			left_col= min(calc_width(b->cur_line_desc, b->block_start_pos, b->opt.tab_size, b->encoding),  b->cur_char);
+		if (b->mark_is_vertical) left_col = min(calc_width(b->cur_line_desc, b->block_start_pos, b->opt.tab_size, b->encoding),
+		                                        calc_width(b->cur_line_desc, b->cur_pos,         b->opt.tab_size, b->encoding));
 		first_line = min(b->block_start_line, b->cur_line);
 		last_line  = max(b->block_start_line, b->cur_line);
 	}
 
-	/* Before making any changes, if we're shifting left (dir=='<'), verify that
-	   we have sufficient white space to remove on all the relevant lines. */
+	/* If we're shifting left (dir=='<'), verify that we have sufficient white space
+	   to remove on all the relevant lines before making any changes, i. */
    
-	if (dir=='<')
-		for (line=first_line; line<=last_line; line++) {
+	if (dir == '<') {
+		shift_size = -shift_size; /* signed shift_size now also indicates direction. */
+		for (line=first_line; !rc && line<=last_line; line++) {
+			int pos, col;
 			goto_line(b,line);
-			goto_pos(b,calc_pos(b->cur_line_desc, left_col, b->opt.tab_size, b->encoding));
-			rc = INSUFFICIENT_WHITESPACE;
-		}
-
-	if (!rc) {
-		for (line=first_line; line<=last_line; line++) {
-			goto_line(b,line);
-			goto_pos(b,calc_pos(b->cur_line_desc, left_col, b->opt.tab_size, b->encoding));
-
-			/* To adjust a line's space:
-		
-			Starting from left_col, advance to the right to the first non-blank character C.
-
-			Note C's col. The desired new column is this value +/- shift_size.
-
-			Move left looking for the first tab or non-whitespace or the left_col, whichever comes first.
-
-			Whitespace changes all take place at that transition point.
-
-			While C's col is wrong
-			  if C's col is too far to the right,
-			      if we're on a space, delete it;
-			      else if there's a tab to our left, delete it;
-			      else we should not have started, because it's not possible!
-			  if C's col is too far to the left,
-			      if it's needs to be beyond the next tab stop,
-			         insert a tab and move right;
-			      else insert a space.
-			*/
+			pos = calc_pos(b->cur_line_desc, left_col, b->opt.tab_size, b->encoding);
+			col = left_col;
+			while (pos < b->cur_line_desc->line_len &&
+			       left_col - calc_width(b->cur_line_desc, pos, b->opt.tab_size, b->encoding) > shift_size) {
+				if (isasciispace(b->cur_line_desc->line[pos]))
+					pos = next_pos(b->cur_line_desc->line, pos, b->encoding);
+				else {
+					rc = INSUFFICIENT_WHITESPACE;
+					break;
+				}
+			}
 		}
 	}
+
+	if (!rc) {
+		start_undo_chain(b);
+		for (line=first_line; line<=last_line; line++) {
+			int pos, c_pos, c_col_orig, offset;
+			goto_line(b,line);
+			ld = b->cur_line_desc;
+			if (line == first_line) start_line_desc = ld;
+			pos = calc_pos(ld, left_col, b->opt.tab_size, b->encoding);
+			/* If left_col is in the middle of a tab, pos will be on that tab. */
+			/* whitespace adjustment strategy:
+			   1. Starting from left_col, advance to the right to the first non-blank character C.
+			   2. Note C's col. The desired new column is this value +/- shift_size.
+			   3. Move left looking for the first tab or non-whitespace or the left_col, whichever comes first.
+			      Whitespace changes all take place at that transition point.
+			   4. While C's col is wrong
+			        if C's col is too far to the right,
+			          if we're on a space, delete it;
+			          else if there's a tab to our left, delete it;
+			          else we should not have started, because it's not possible!
+			        if C's col is too far to the left,
+			           if its needs to be beyond the next tab stop,
+			             insert a tab and move right;
+			           else insert a space. */
+			/* 1. */
+			while (pos < ld->line_len && isasciispace(ld->line[pos]))
+				pos = next_pos(ld->line, pos, b->encoding);
+			if (pos >= ld->line_len) continue; /* We ran off the end of the line. */
+			/* line[pos] should be the first non-blank character. */ 
+			/* 2. */
+			c_pos = pos;
+			c_col_orig = calc_width(ld, c_pos, b->opt.tab_size, b->encoding);
+			/* 3. */
+			while (pos && ld->line[pos-1] == ' ')
+				pos = prev_pos(ld->line, pos, b->encoding);
+			/* If pos is non-zero, it should be on a blank, with only blanks between here and c_pos. */
+			/* 4. */
+			/* offset = how_far_we_have_moved - how_far_we_want_to_move. */
+			while (!stop && (offset = calc_width(ld, c_pos, b->opt.tab_size, b->encoding)-c_col_orig - shift_size)) {
+				if (offset > 0) { /* still too far right; remove whitespace */
+					if (ld->line[pos] == ' ') {
+						delete_stream(b, ld, b->cur_line, pos, 1);
+						c_pos--;
+					}
+					else if (pos) { /* should be a tab just to our left */
+						pos = prev_pos(ld->line, pos, b->encoding); /* now we're on the tab */
+						if (ld->line[pos] == '\t') {
+							delete_stream(b, ld, b->cur_line, pos, 1);
+							c_pos--;
+						}
+						else break; /* Should have been a tab. This should never happen! Give up on this line and go mangle the next one. */
+					}
+					else break; /* This should never happen; give up on this line and go mangle the next one. */
+				}
+				else if ( offset < 0) { /* too far left; insert whitespace */
+					char c = ' ';
+					if (use_tabs && (b->opt.tab_size - calc_width(ld, pos, b->opt.tab_size, b->encoding) % b->opt.tab_size) <= -offset )
+						c = '\t';
+					insert_one_char(b, ld, b->cur_line, pos, c);
+					pos++;
+					c_pos++;
+				}
+			}
+		}
+		end_undo_chain(b);
+		if (b->syn) {
+			b->attr_len = -1;
+			need_attr_update = TRUE;
+			update_syntax_states(b, -1, start_line_desc, (line_desc *)ld->ld_node.next);
+		}
+		update_window_lines(b, 0, ne_lines - 2, FALSE);
+	}
 	
-	/* put the screen back the way we found it. */
+	/* put the screen back where way we found it. */
 	goto_line(b, init_line);
 	goto_pos(b, init_pos);
-	/* delay_update(); */
+	delay_update();
 	if (avshift = b->cur_y - init_y) {
 		snprintf(msg, msg_size, "%c%d", avshift > 0 ? 'T' :'B', avshift > 0 ? avshift : -avshift);
 		adjust_view(b,msg);
 	}
 
-	return rc;	
+	return rc;
 }
-
-
-
-

@@ -2570,10 +2570,12 @@ integer @samp{n}, is in units of the current tab size (@samp{t}) or spaces
 vertical mark, or column 1 otherwise. If the mark is not currently set, only
 the current line is affected.
 
-In no case will @code{Shift} insert tab characters if the document's
-@code{Tabs} flag is off. If neither @samp{t} nor @samp{s} is given, the
-@code{ShiftTabs} flag determines whether spaces or tabs (or
-@code{TabSize} equivalent spaces if the @code{Tabs} flag is off) are used.
+@code{Shift} will insert tab characters only if the document's @code{Tabs}
+flag is set---in which case a @samp{t} appears in the status bar--- and the
+@code{ShiftTabs} is also set---in which case the @samp{t} in the status bar
+will be upper case. If either of the @code{ShiftTabs} or @code{Tabs} flags
+are off (and therefore the @samp{t} in the status bar is lower case or
+missing, respectively) @code{Shift} will only insert spaces.
 
 In the case of left shifts, if any indicated line has insufficient leading
 white space for the requested adjustment to be made, then @code{Shift}

@@ -370,8 +370,9 @@ int copy_vert_to_clip(buffer *b, int n, int cut) {
 	end_x = b->win_x + b->cur_x;
 
 	if (end_x < start_x) {
-		start_x = b->win_x + b->cur_x;
-		end_x = calc_width(b->cur_line_desc, b->block_start_pos, b->opt.tab_size, b->encoding);
+		i = start_x;
+		start_x = end_x;
+		end_x = i;
 	}
 
 	if (cut) start_undo_chain(b);
@@ -482,8 +483,9 @@ int erase_vert_block(buffer *b) {
 	end_x = b->win_x + b->cur_x;
 
 	if (end_x < start_x) {
-		start_x = b->win_x + b->cur_x;
-		end_x = calc_width(b->cur_line_desc, b->block_start_pos, b->opt.tab_size, b->encoding);
+		i = start_x;
+		start_x = end_x;
+		end_x = i;
 	}
 
 	start_undo_chain(b);
