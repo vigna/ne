@@ -1,6 +1,6 @@
 # Makefile for ne's distribution archive.
 
-VERSION = 2.3
+VERSION = 2.4
 
 # If you change this prefix, you can call "make install" and ne will be compiled
 # and installed under the $(PREFIX) hierarchy. You can even use "make install PREFIX=$HOME/<dir>"

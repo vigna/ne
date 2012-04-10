@@ -2,7 +2,7 @@
 
 2.4
 
-  * New Shift command indent/outdents selected lines.
+  * New Shift command indents/outdents selected lines.
 
   * Recorded macros preserve comments; indicate other included macros.
 
