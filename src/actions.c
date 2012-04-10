@@ -1046,8 +1046,10 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 	case TABSIZE_A:
 		if (c < 0 && (c = request_number("TAB Size", b->opt.tab_size))<=0) return NUMERIC_ERROR(c);
 		if (c < ne_columns / 2) {
+			i = b->cur_pos;
 			move_to_sol(b);
 			b->opt.tab_size = c;
+			goto_pos(b,i);
 			reset_window();
 			return OK;
 		}

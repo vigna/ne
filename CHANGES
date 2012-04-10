@@ -3,20 +3,26 @@
 2.4
 
   * CLOSEDOC and QUIT (^Q and Alt-Q) now close string requesters just like Esc.
-  
+
   * Macro calling macros are now stopped at an arbitrary depth of 32 calls.
-  
+
   * Last command of a loaded macro w/o trailing new-line now works.
+
+  * Vertical block selections where mark is below cursor select correct text.
+
+  * Mark right of a tab no longer moves when you change tab size.
+
+  * Cursor no longer goes to start of line when you change tab size.
 
 2.3
 
   * Fixed ridiculously old bug when copying a block and the marker is
     after the cursor.
-    
+
   * Tweak to syntax file for java.
 
   * Changed build date in "About" to ISO YYYY-MM-DD format.
-  
+
   * Tweak suspend to signal process group; reduce chance of apparent hang.
 
   * Instantaneous window resize works again.
@@ -39,11 +45,11 @@
     changes size.
 
   * Fixed buggy out-of-memory handling when loading files.
-  
+
   * Fixed buggy HTML/CSS syntax highlighting.
 
   * Fixed wrong background line colour when clearing to the end of line.
-  
+
   * ToUpper and ToLower now stop when they reach the end of a document.
 
 2.1
