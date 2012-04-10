@@ -451,7 +451,7 @@ nonempty line is deleted, it is stored in a temporary buffer from which it can
 be undeleted via the @code{UndelLine} command or @kbd{@key{Control}-U}. (See
 @ref{DeleteLine} and @ref{UndelLine}.)
 
-If you want to copy, cut, paste or erase a block of text, you have to
+If you want to copy, cut, paste, shift or erase a block of text, you have to
 set a mark. This is done via the @code{Mark} command, activated by
 choosing the @samp{Mark Block} item of the @samp{Edit} menu, or by
 pressing @kbd{@key{Control}-B} (think ``block''). This command
@@ -1555,6 +1555,10 @@ into other menus.
 
 @item Center
 @xref{Center}.
+
+@item Shift Right
+@itemx Shift Left
+@xref{Shift}.
 
 @item Paragraph
 @xref{Paragraph}.

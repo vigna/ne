@@ -169,6 +169,8 @@ static const menu_item extras_item[] =
 		{ "Undo      f5/[U", UNDO_ABBREV },
 		{ "Redo      f6/[R", REDO_ABBREV },
 		{ "Center         ", CENTER_ABBREV },
+		{ "Shift Right    ", SHIFT_ABBREV },
+		{ "Shift Left     ", SHIFTLEFT_ABBREV },
 		{ "Paragraph    [P", PARAGRAPH_ABBREV },
 		{ "Adjust View  ^^", ADJUSTVIEW_ABBREV },
 		{ "Middle View  [C", MIDDLEVIEW_ABBREV },
