@@ -209,7 +209,7 @@ ARGV[0].to_i.times do |i|
 		when 9
 			puts("AUTOCOMPLETE")
 		when 10
-#			puts("SHIFT " + (rand(2)==0?"<":">") + rand(20) + (rand(2)==0?"t":"s"));
+			puts("SHIFT " + (rand(2)==0?"<":">") + rand(20) + (rand(2)==0?"t":"s"));
 		end
 
 	else # Generate text
