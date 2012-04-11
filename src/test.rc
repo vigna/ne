@@ -19,10 +19,9 @@ function check_differences {
 
 orig=ne.texinfo
 ./test.rb 512 ${orig} > test.macro
-time ./ne --macro test.macro
+time ./ne --macro test.macro 2>test.err
 check_differences $orig
 orig=ne
 ./test.rb 512 ne BINARY > test.binary.macro
-time ./ne --macro test.binary.macro
+time ./ne --macro test.binary.macro 2>test.binary.err
 check_differences $orig
-
