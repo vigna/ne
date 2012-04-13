@@ -1,7 +1,7 @@
 #!/usr/bin/ruby
 
 # test.rb creates a roughly N step random macro for ne to
-# run on a text or binary file. Only an ne built with NE_TEST
+# run on a text file. Only an ne built with NE_TEST
 # defined will be able to run this macro; otherwise it will
 # stop on any command that can't succeed, like moving past
 # the end of the document. The macro makes arbitrary changes,
@@ -13,10 +13,7 @@
 # version. If they are not, then ne is broken.
 # 
 # By far the easiest way to use the program is to source
-# test.rc. It uses test.rb to create a non-binary macro
-# which it runs on ne.texinfo, a binary macro which it
-# runs on ./ne itself, reports the results and more or
-# less cleans up after itself.
+# test.rc.
 # 
 # Do not let a "NE_TEST" version of the ne binary out into
 # the wild; it does not do the Right Thing for production
