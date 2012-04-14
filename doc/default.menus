@@ -67,6 +67,8 @@ ITEM "Refresh      ^L" Refresh
 ITEM "Undo      f5/[U" Undo
 ITEM "Redo      f6/[R" Redo
 ITEM "Center         " Center
+ITEM "Shift Right    " "Shift"
+ITEM "Shift Left     " "Shift <"
 ITEM "Paragraph    [P" Paragraph
 ITEM "Adjust View  ^^" AdjustView
 ITEM "Middle View  [C" AdjustView M
