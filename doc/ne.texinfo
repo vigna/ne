@@ -4131,6 +4131,17 @@ syntax names. If there is no syntax with a given name, @code{ne}
 will try to remap the name using the following table  (the string
 before the colon is the name of the syntax file):
 
+@ignore
+
+    N O T E   T O    D O C U M E N T   M A I N T A I N E R S
+
+The following "example" section is read by info2src.pl to build ne's
+extension map. You can break a line if you end it with a "," but
+otherwise stick to the .jsf file base name followed by ":" followed by
+a list of common extensions. Don't get fancy with this format.
+
+@end ignore
+
 @example
    ada: adb, ads
    asm: s
