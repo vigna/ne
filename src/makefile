@@ -96,21 +96,29 @@ CFLAGS=$(OPTS) $(NO_SIGN) \
 	-D_GNU_SOURCE -D__USE_GNU -DSTDC_HEADERS -Dinline=__inline__ \
 	$(if $(NE_POSIX),   -D_POSIX_C_SOURCE=199506L,) \
 	$(if $(NE_NOWCHAR), -DNOWCHAR,) \
-	$(if $(NE_TEST),    -DNE_TEST,) \
+	$(if $(NE_TEST),    -DNE_TEST -coverage,) \
 	$(if $(NE_DEBUG),   -g,-O3 -DNDEBUG) \
 	$(if $(NE_TERMCAP), -DTERMCAP,) \
 	$(if $(NE_ANSI),    -DTERMCAP -DANSI,)
 
+
 LIBS=$(if $(NE_TERMCAP)$(NE_ANSI),,-lcurses)
 
 ne:	$(OBJS) $(if $(NE_TERMCAP)$(NE_ANSI),$(TERMCAPOBJS),)
-	$(CC) -lm $(OPTS) $(LDFLAGS) $^ $(LIBS) -o $(PROGRAM)
+	$(CC) -lm $(OPTS) $(LDFLAGS) $(if $(NE_TEST), -coverage,) $^ $(LIBS) -o $(PROGRAM)
 
 clean:
-	rm -f *.o core
+	rm -f *.o *.gcda *.gcda.info *.gcno core
 
 really-clean: clean
 	rm -f ne hash.h hash.c help.c help.h names.c names.h enums.h ext.c
+
+.PHONY: coverage
+
+coverage:
+	geninfo .
+	-rm -fr coverage
+	genhtml -o coverage *.info
 
 ###
 
