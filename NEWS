@@ -10,6 +10,8 @@
     instead of individually.
 
   * For commands that have key bindings, Help displays them.
+
+  * New syntax highlighting for texinfo files.
   
 2.3
 
