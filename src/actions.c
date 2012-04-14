@@ -1309,6 +1309,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 
 	case MARK_A:
 	case MARKVERT_A:
+		if (c < 0) c = 1;
 		SET_USER_FLAG(b, c, marking);
 		if (!b->marking) return(OK);
 		print_message(info_msg[a==MARK_A ? BLOCK_START_MARKED : VERTICAL_BLOCK_START_MARKED]);

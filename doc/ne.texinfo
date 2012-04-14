@@ -455,8 +455,7 @@ If you want to copy, cut, paste, shift or erase a block of text, you have to
 set a mark. This is done via the @code{Mark} command, activated by
 choosing the @samp{Mark Block} item of the @samp{Edit} menu, or by
 pressing @kbd{@key{Control}-B} (think ``block''). This command
-@dfn{toggles} the mark (puts it in the current cursor position or
-removes it from wherever it is).  Whenever the mark is set, the zone
+sets the mark at the current cursor position. Whenever the mark is set, the zone
 between the mark and the cursor can be cut, copied or erased. Note that
 by using @kbd{@key{Control}-@@} you can set a @emph{vertical} mark
 instead, which allows you to mark rectangles of text. Whenever a mark
@@ -2466,16 +2465,13 @@ Note that by using the @code{Through} command you can automatically pass a
 @noindent Abbreviation: @code{M}
 
 @noindent sets the mark at the current position or cancels the previous mark.
-The mark can then be used to perform clip operations. The clip
-commands act on the characters lying between the mark and the cursor.
+The mark and cursor together define the range of text over which clips
+(@code{Cut}, @code{Copy}, @code{Erase}) and left and right shifts operate .
 
-If you invoke @code{Mark} with no arguments, it will toggle the mark. If you
+If you invoke @code{Mark} with no arguments, it will set the mark. If you
 specify 0 or 1, the mark will be canceled or set to the current position,
 respectively.  A capital @samp{M} appears on the status bar, if the mark is
 active.
-
-See @ref{Record}, for the reason the mark is implemented as a flag.
-
 
 
 @node MarkVert
@@ -2485,13 +2481,25 @@ See @ref{Record}, for the reason the mark is implemented as a flag.
 @noindent Syntax: @code{MarkVert [0|1]}@*
 @noindent Abbreviation: @code{MV}
 
-@noindent is the same as @code{Mark}, but the mark is interpreted as vertical
-by the clip handling commands. This means that the region manipulated by the
+@noindent is the same as @code{Mark}, but the region manipulated by the
 cut/paste commands is the rectangle having as vertices the cursor and the mark.
-Moreover, a capital @samp{V}, rather than a capital @samp{M}, will appear on
-the status bar. Vertical cut/paste operations are useful for handling
-structured program indentation.
+If you invoke @code{MarkVert} with no arguments, it will set the mark. If you
+specify 0 or 1, the mark will be canceled or set to the current position,
+respectively. Moreover, a capital @samp{V}, rather than a capital @samp{M},
+will appear on the status bar.
 
+For example, if you have the following text:
+@example
+   aaaBbbccc
+   aaabbbccc
+   aaabbbCcc
+@end example
+@noindent and you set a vertical mark at @samp{B} then move the cursor to @samp{C},
+you can cut or copy all of the @samp{B}s.
+
+If you have made a vertical cut or copy, it's very likely you will want to
+use @code{PasteVert} rather than the usual @code{Paste} to reinsert the text
+in a rectangle. See @ref{PasteVert}.
 
 
 @node Copy
@@ -4369,8 +4377,8 @@ the input line; the default input response is the current column number.
 @noindent moves the cursor to the current mark, if it exists. See @ref{Mark}.
 
 @code{GotoMark} is mainly useful if you forgot where you started marking.
-If you want to record a position in a file and jump to it later, you
-may want to use a bookmark. See @ref{SetBookmark}.
+If you want to record positions in a file and jump to them later, you
+may want to use a bookmarks. See @ref{SetBookmark}.
 
 
 

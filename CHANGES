@@ -12,6 +12,8 @@
 
   * Mark right of a tab no longer moves when you change tab size.
 
+  * MARK and MARKVERT with no parameters always set rather than toggle the mark.
+
   * Cursor no longer goes to start of line when you change tab size.
 
 2.3
