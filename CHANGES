@@ -16,6 +16,8 @@
 
   * Cursor no longer goes to start of line when you change tab size.
 
+  * AUTOCOMPLETE could sometimes insert an inadvertent trailing "*".
+
 2.3
 
   * Fixed ridiculously old bug when copying a block and the marker is
