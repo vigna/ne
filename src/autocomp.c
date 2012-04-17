@@ -208,6 +208,7 @@ unsigned char *autocomplete(unsigned char *p, char *req_msg, const int ext, int 
 		qsort(entries, n, sizeof *entries, strdictcmp);  
 		/* Find maximum common prefix. */
 		m = strlen(entries[0]);
+		if (entries[0][m-1] == EXTERNAL_FLAG_CHAR) m--;
 		for(i = 1; i < n; i++) {
 			for(j = 0; j < m; j++) 
 				if (entries[i][j] != entries[0][j]) break;
