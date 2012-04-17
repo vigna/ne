@@ -111,8 +111,15 @@ void end_undo_chain(buffer * const b) {
    the undo stream with add_to_undo_stream(). */
 
 int add_undo_step(buffer * const b, const int line, const int pos, const int len) {
-
 	return cat_undo_step(&b->undo, line, b->link_undos ? -pos - 1 : pos, len);
+}
+
+/* Fixes the last undo step adding the given delta to its length. This
+   function is needed by delete_stream(), as it is not possible to know
+   the exact length of a deletion until it is performed. */
+
+void fix_last_undo_step(buffer * const b, const int delta) {
+	b->undo.steps[b->undo.cur_step - 1].len += delta;
 }
 
 

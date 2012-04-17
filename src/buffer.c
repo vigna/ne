@@ -885,9 +885,6 @@ int insert_stream(buffer * const b, line_desc * ld, int line, int pos, const uns
 			}
 		}
 		
-		
-		
-
 		s += len + 1;
 	}
 
@@ -948,7 +945,6 @@ int insert_spaces(buffer * const b, line_desc * const ld, const int line, const 
 	undo buffer. */
 
 int delete_stream(buffer * const b, line_desc * const ld, const int line, const int pos, int len) {
-
 	int n, m, mask;
 
 	assert_buffer(b);
@@ -961,7 +957,7 @@ int delete_stream(buffer * const b, line_desc * const ld, const int line, const 
 	block_signals();
 
 	if (b->opt.do_undo && !(b->undoing || b->redoing)) {
-		int error = add_undo_step(b, line, pos, len);
+		const int error = add_undo_step(b, line, pos, len);
 		if (error) {
 			release_signals();
 			return error;
@@ -969,7 +965,6 @@ int delete_stream(buffer * const b, line_desc * const ld, const int line, const 
 	}
 
 	while(len) {
-
 		/* First case: we are just on the end of a line. We join the current
 		line with the following one (if it's there of course). If, however,
 		the current line is empty, we rather remove it. The only difference
@@ -978,9 +973,8 @@ int delete_stream(buffer * const b, line_desc * const ld, const int line, const 
 		if (pos == ld->line_len) {
 			unsigned char *p;
 			line_desc *next_ld = (line_desc *)ld->ld_node.next;
-
-			assert(next_ld != NULL);
-			assert_line_desc(next_ld, b->encoding);
+			/* There's nothing more to do--we are at the end of the file. */
+			if (next_ld->ld_node.next == NULL) break;
 
 			/* We're about to join line+1 to line; adjust mark and bookmarks accordingly. */
 			if (b->marking) {
@@ -1022,6 +1016,7 @@ int delete_stream(buffer * const b, line_desc * const ld, const int line, const 
 				}
 				else {
 					release_signals();
+					if (b->opt.do_undo && !(b->undoing || b->redoing)) fix_last_undo_step(b, -len);
 					return OUT_OF_MEMORY;
 				}
 			}
@@ -1110,6 +1105,8 @@ int delete_stream(buffer * const b, line_desc * const ld, const int line, const 
 		}
 		b->is_modified = 1;
 	}
+
+	if (b->opt.do_undo && !(b->undoing || b->redoing)) fix_last_undo_step(b, -len);
 
 	release_signals();
 	return OK;

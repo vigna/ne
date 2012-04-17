@@ -561,7 +561,8 @@ int auto_indent_line(buffer * const b, const int line, line_desc * const ld, con
 	line_desc * const prev_ld = (line_desc *)ld->ld_node.prev;
 	int pos = 0, col = 0, c;
 
-	assert(prev_ld->ld_node.prev != NULL);
+	if (!prev_ld->ld_node.prev) return 0;
+
 	assert_line_desc(prev_ld, b->encoding);
 
 	if (prev_ld->line_len == 0) return 0;

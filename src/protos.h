@@ -329,6 +329,7 @@ void term_init(void);
 void start_undo_chain(buffer *b);
 void end_undo_chain(buffer *b);
 int add_undo_step(buffer *b, int line, int pos, int len);
+void fix_last_undo_step(buffer *b, int delta);
 int add_to_undo_stream(undo_buffer *ub, const char *p, int len);
 void reset_undo_buffer(undo_buffer *ub);
 int undo(buffer *b);
