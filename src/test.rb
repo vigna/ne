@@ -28,12 +28,12 @@ if ARGV.length > 2 then puts("BINARY"); end
 block = false
 clip = false
 a = IO.readlines(ARGV[1])
-utf8 = true
 ops = 0
 
 puts("OPEN \"" + ARGV[1] + "\"")
-puts("TURBO 100000")
+puts("TURBO 10000")
 puts("AUTOMATCHBRACKET 1")
+puts("UTF8 " + rand(2).to_s);
 
 ARGV[0].to_i.times do |i|
 
@@ -175,7 +175,7 @@ ARGV[0].to_i.times do |i|
 	
 
 	elsif r < 50 # Editing
-		case rand(12)
+		case rand(13)
 		when 0
 			puts("CAPITALIZE " + (rand(10)).to_s)
 		when 1
@@ -190,7 +190,7 @@ ARGV[0].to_i.times do |i|
 			s = a[rand(a.length)].chomp
 			end while s.length == 0
 			start = rand(s.length/2);
-			puts((rand(2)==0?"REPLACEALL":"REPLACEONCE") + "\"" + s[start..start+rand(s.length/2)] + "\"")
+			puts((rand(2)==0?"REPLACEALL":"REPLACEONCE") + " \"" + s[start..start+rand(s.length/2)] + "\"")
 		when 3
 			case rand(3)
 			when 0
@@ -205,7 +205,7 @@ ARGV[0].to_i.times do |i|
 				s = a[rand(a.length)].chomp
 			end while s.length == 0
 			start = rand(s.length/2);
-			puts((rand(2)==0?"REPLACEALL":"REPLACEONCE") + "\"" + s[start..start+rand(s.length/2)] + "\"")
+			puts((rand(2)==0?"REPLACEALL":"REPLACEONCE") + " \"" + s[start..start+rand(s.length/2)] + "\"")
 		when 4
 			puts("PARAGRAPH " + (rand(20)).to_s)
 		when 5
@@ -224,8 +224,11 @@ ARGV[0].to_i.times do |i|
 			puts("SHIFT " + (rand(2)==0?"<":">") + rand(20).to_s + (rand(2)==0?"t":"s"))
 		when 11
 			puts("REPEATLAST")
+		when 12
+			puts(rand(2)==0?"SYNTAX *":"SYNTAX texinfo")
 		end
-
+	elsif r < 60 # Atomicity
+		puts("ATOMICUNDO")
 	else # Generate text
 		ops += 1
 		case rand(4)
