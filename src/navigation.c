@@ -902,7 +902,7 @@ void move_to_bof(buffer * const b) {
 
 
 void toggle_sof_eof(buffer * const b) {
-
+	fprintf(stderr, "*\n");
 	if (b->cur_line == 0 && b->cur_pos == 0) {
 		delay_update();
 		move_to_bof(b);

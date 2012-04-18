@@ -32,14 +32,15 @@ utf8 = true
 ops = 0
 
 puts("OPEN \"" + ARGV[1] + "\"")
-puts("TURBO 1000000000")
+puts("TURBO 100000")
+puts("AUTOMATCHBRACKET 1")
 
 ARGV[0].to_i.times do |i|
 
 	r = (rand * 100).to_i
 
 	if r < 10 then # Move around
-		case rand(25)
+		case rand(29)
 		when 0
 			puts("GOTOCOLUMN " + (rand(80)+1).to_s)
 		when 1
@@ -90,9 +91,19 @@ ARGV[0].to_i.times do |i|
 			puts("GOTOBOOKMARK -")
 		when 24
 			puts("UNSETBOOKMARK")
+		when 25
+			puts("ADJUSTVIEW " + "TMB"[rand(3),1] + "LCR"[rand(3),1])
+		when 26
+			puts("TOGGLESEOL")
+		when 27
+			puts("TOGGLESEOF")
+		when 28
+			# This is actually intended to start a bracket matching
+			puts("FINDREGEXP \\(|\\)|\\[|\\]|{|}|<|>")
 		end
+
 	elsif r < 20 then # Changing flags
-		case rand(7)
+		case rand(8)
 		when 0
 			puts("FREEFORM")
 		when 1
@@ -106,12 +117,14 @@ ARGV[0].to_i.times do |i|
 		when 5
 			puts("TABS")
 		when 6
+			puts("SHIFTTABS")
+		when 7
 			puts("TABSIZE " + (rand(20) + 1).to_s)
 		end
 
 	elsif r < 30 # Deleting text
 		ops += 1
-		case rand(4)
+		case rand(5)
 		when 0
 			puts("BACKSPACE " + (rand(20)).to_s)
 		when 1
@@ -120,6 +133,8 @@ ARGV[0].to_i.times do |i|
 			puts("DELETEEOL")
 		when 3
 			puts("DELETELINE " + (rand(10)).to_s)
+		when 4
+			puts("DELETENEXTWORD " + (rand(3)).to_s)
 		end
 
 	elsif r < 40 
@@ -160,7 +175,7 @@ ARGV[0].to_i.times do |i|
 	
 
 	elsif r < 50 # Editing
-		case rand(11)
+		case rand(12)
 		when 0
 			puts("CAPITALIZE " + (rand(10)).to_s)
 		when 1
@@ -175,7 +190,7 @@ ARGV[0].to_i.times do |i|
 			s = a[rand(a.length)].chomp
 			end while s.length == 0
 			start = rand(s.length/2);
-			puts("REPLACEALL \"" + s[start..start+rand(s.length/2)] + "\"")
+			puts((rand(2)==0?"REPLACEALL":"REPLACEONCE") + "\"" + s[start..start+rand(s.length/2)] + "\"")
 		when 3
 			case rand(3)
 			when 0
@@ -190,7 +205,7 @@ ARGV[0].to_i.times do |i|
 				s = a[rand(a.length)].chomp
 			end while s.length == 0
 			start = rand(s.length/2);
-			puts("REPLACEALL \"" + s[start..start+rand(s.length/2)] + "\"")
+			puts((rand(2)==0?"REPLACEALL":"REPLACEONCE") + "\"" + s[start..start+rand(s.length/2)] + "\"")
 		when 4
 			puts("PARAGRAPH " + (rand(20)).to_s)
 		when 5
@@ -206,7 +221,9 @@ ARGV[0].to_i.times do |i|
 		when 9
 			puts("AUTOCOMPLETE")
 		when 10
-			puts("SHIFT " + (rand(2)==0?"<":">") + rand(20).to_s + (rand(2)==0?"t":"s"));
+			puts("SHIFT " + (rand(2)==0?"<":">") + rand(20).to_s + (rand(2)==0?"t":"s"))
+		when 11
+			puts("REPEATLAST")
 		end
 
 	else # Generate text
@@ -222,6 +239,8 @@ ARGV[0].to_i.times do |i|
 			s = a[rand(a.length)].chomp
 			end while s.length == 0
 			puts("INSERTSTRING \"" + s + "\"")
+			when 3
+			puts("INSERTTAB")
 		end
 	end
 
