@@ -502,7 +502,7 @@ typedef struct {
 		if ((b)->syn) assert(ld->highlight_state.state != -1);\
 		ld = (line_desc *)ld->ld_node.next;\
 	}\
-	assert(b->attr_len < 0 || b->attr_len == calc_char_len(b->cur_line_desc, b->encoding));\
+	if ((b)->syn) assert(b->attr_len < 0 || b->attr_len == calc_char_len(b->cur_line_desc, b->encoding));\
 }}
 #else
 #define assert_buffer(b) ;
