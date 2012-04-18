@@ -16,6 +16,10 @@
 
   * Cursor no longer goes to start of line when you change tab size.
 
+  * A couple of operations in free form mode (joining the first line with
+    the following one and deleting a block with an extreme beyond the end
+    of file) should not cause crashes anymore.
+
   * AUTOCOMPLETE could sometimes insert an inadvertent trailing "*".
 
 2.3

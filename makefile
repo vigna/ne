@@ -13,7 +13,7 @@ PREFIX=/usr/local
 PROGRAM       = ne
 
 build:
-	(cd src; make NE_GLOBAL_DIR=$(PREFIX)/share/ne)
+	(cd src; make clean; make NE_GLOBAL_DIR=$(PREFIX)/share/ne)
 
 version:
 	./version.pl VERSION=$(VERSION)
