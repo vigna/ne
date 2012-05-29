@@ -24,10 +24,10 @@ decides where ne will be installed and which will be its global directory.
 
 For installation (i.e., "make install"), a POSIX compliant machine with a
 terminfo database should be sufficient. Note that terminfo might come
-bundled in a package named "curses", "ncurses" or some variant of it,
-which you may need to install. Choose the simplest variant of this
-package, as ne does not actually use curses (a virtual screen library),
-but just the underlying terminfo database.
+bundled in a package named "curses", "ncurses" or some variant of it, and
+you may need to install the ncurses development files. Choose the simplest
+variant of this package, as ne does not actually use curses (a virtual
+screen library), but just the underlying terminfo database.
 
 You may receive some errors from the install-info command if you do not
 have write access to the system infodir.bak file; these can be ignored.
