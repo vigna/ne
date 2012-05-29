@@ -2,8 +2,9 @@
 
     # unpack distribution
     cd ne-x.y.z
-    make
-    sudo make install
+    make install
+
+Note that you must have adequate privileges.
 
 2. To build and install into some alternative location (for example,
 into your own `~/opt`), you must set the PREFIX variable:
@@ -17,19 +18,23 @@ src directory that just builds ne's executable and provides some more
 flexibility, and another low-level makefile in the doc directory.
 
 The top-level makefile provides targets "source" (builds the standard
-source distribution), "cygwin" (builds the cygwin distribution) and "install"
-(build and installs ne). The PREFIX make variable decides where ne will be
-installed and which will be its global directory. For example:
+source distribution), "cygwin" (builds the cygwin distribution) and
+"install" (build and installs ne). The PREFIX make variable (see above)
+decides where ne will be installed and which will be its global directory.
 
-    make PREFIX=/home/myname/opt
+For installation (i.e., "make install"), a POSIX compliant machine with a
+terminfo database should be sufficient. Note that terminfo might come
+bundled in a package named "curses", "ncurses" or some variant of it,
+which you may need to install. Choose the simplest variant of this
+package, as ne does not actually use curses (a virtual screen library),
+but just the underlying terminfo database.
 
-For installation (i.e., "make install), a POSIX compliant machine with a
-terminfo database should be sufficient. You may receive some errors from the
-install-info command if you do not have write access to the system
-infodir.bak file; these can be ignored. Note, however, that creating a source
-distribution with the "source" target requires a complete build, and in
-particular the presence of a number of tools that manipulate texinfo files,
-as some of the source files are generated from the documentation.
+You may receive some errors from the install-info command if you do not
+have write access to the system infodir.bak file; these can be ignored.
+Note, however, that creating a source distribution with the "source"
+target requires a complete build, and in particular the presence of a
+number of tools that manipulate texinfo files, as some of the source files
+are generated from the documentation.
 
 By playing with the low-level src makefile you have more options (as you can
 first build using the low-level makefile and then use the install target

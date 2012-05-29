@@ -13,7 +13,7 @@ PREFIX=/usr/local
 PROGRAM       = ne
 
 build:
-	(cd src; make clean; make NE_GLOBAL_DIR=$(PREFIX)/share/ne)
+	( cd src; make clean; make NE_GLOBAL_DIR=$(PREFIX)/share/ne )
 
 version:
 	./version.pl VERSION=$(VERSION)
@@ -44,7 +44,7 @@ cygwin:
 	tar zcvf ne-cygwin-$(VERSION).tar.gz /usr/share/ne /usr/bin/ne.exe /usr/share/doc/ne /usr/share/info/ne.info.gz /usr/share/man/man1/ne.1
 
 install:
-	(cd src; make NE_GLOBAL_DIR=$(PREFIX)/share/ne)
+	( cd src; make clean; make NE_GLOBAL_DIR=$(PREFIX)/share/ne )
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
 	mkdir -p $(DESTDIR)$(PREFIX)/share/ne/syntax
 	mkdir -p $(DESTDIR)$(PREFIX)/share/man/man1
