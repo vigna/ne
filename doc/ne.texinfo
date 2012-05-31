@@ -5138,7 +5138,7 @@ ASCII characters between 128 and 159, and will be parsed as shortcuts by
 
 @code{ne} allows you to associate any keystroke with any command. To
 accomplish this task, you have to create a (possibly UTf-8) file named
-@file{.keys} in your @file{~/.ne}directory. You can change
+@file{.keys} in your @file{~/.ne} directory. You can change
 the default name (possibly specifying a complete path) using the
 @code{--keys} argument (@pxref{Arguments}).
 
