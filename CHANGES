@@ -1,5 +1,9 @@
 (This file, CHANGES, lists fixes. See NEWS for new features and enhancements.)
 
+2.5
+
+  * Pathologically long-running PARAGRAPH commands are now stoppable (^-\).
+
 2.4
 
   * CLOSEDOC and QUIT (^Q and Alt-Q) now close string requesters just like Esc.

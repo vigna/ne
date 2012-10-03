@@ -405,7 +405,7 @@ int paragraph(buffer * const b) {
 		trim_trailing_space(b, ld, line, b->encoding);
 
 		/** Step 4 **/
-		while (!done && calc_width(ld, ld->line_len, b->opt.tab_size, b->encoding) > right_margin) {
+		while (!stop && !done && calc_width(ld, ld->line_len, b->opt.tab_size, b->encoding) > right_margin) {
 			int spaces;
 			int split_pos;
 			int did_split;
@@ -474,7 +474,7 @@ int paragraph(buffer * const b) {
 			delete_stream(b, ld, line, ld->line_len, 1);
 		}
 		else done = TRUE;
-	} while (!done);
+	} while (!done && !stop);
 
 	/** Step 6 **/
 	end_undo_chain(b);
@@ -495,7 +495,7 @@ int paragraph(buffer * const b) {
 
 	/** Step 9 **/
 	goto_line(b, line);
-	if (line_down(b) == ERROR) return ERROR;
+	if (stop || line_down(b) == ERROR) return stop ? STOPPED : ERROR;
 
 	/* Try to find the first non-blank starting with this line. */
 	ld = b->cur_line_desc;
