@@ -87,7 +87,7 @@ char *error_msg[ERROR_COUNT] = {
 	/* 59 */ "Syntax highlighting is not enabled",
 	/* 60 */ "There is no syntax for that extension",
 	/* 61 */ "Invalid Shift specified (use [<|>][#][s|t]; default is \">1t\").",
-	/* 62 */ "Insufficient white space for requested left shift."
+	/* 62 */ "Insufficient white space for requested left shift.",
 
 };
 

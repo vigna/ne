@@ -210,7 +210,7 @@ PICK(   "Page Down       ", PAGEDOWN_ABBREV    , "Page Down     ^N", PAGEDOWN_AB
 static const menu_item prefs_item[] =
 	{
 		{ "Tab Size...     ", TABSIZE_ABBREV },
-		{ "Tabs/Spaces     ", TABS_ABBREV },
+		{ "Tabs as Spaces  ", TABS_ABBREV },
 		{ "Insert/Over  Ins", INSERT_ABBREV },
 		{ "Free Form       ", FREEFORM_ABBREV },
 		{ "Status Bar      ", STATUSBAR_ABBREV },
@@ -571,6 +571,7 @@ char *gen_flag_string(const buffer * const b) {
 	int ch = b->cur_pos < b->cur_line_desc->line_len ? (b->encoding == ENC_UTF8 ? utf8char(&b->cur_line_desc->line[b->cur_pos]) : b->cur_line_desc->line[b->cur_pos]) : -1;
 
 	string[i++] = ' ';
+	
 	string[i++] = b->opt.insert         ? 'i' : '-';
 	string[i++] = b->opt.auto_indent    ? 'a' : '-';
 	string[i++] = b->opt.search_back    ? 'b' : '-';
@@ -582,14 +583,15 @@ char *gen_flag_string(const buffer * const b) {
 	string[i++] = b->opt.do_undo        ? (b->atomic_undo ? 'U' : 'u') : '-';
 	string[i++] = b->opt.read_only      ? 'r' : '-';
 	string[i++] = b->opt.tabs           ? (b->opt.shift_tabs ? 'T' : 't' ) : '-';
+	string[i++] = b->opt.del_tabs       ? 'd' : '-';
 	string[i++] = b->opt.binary         ? 'B' : '-';
 	string[i++] = b->marking            ? (b->mark_is_vertical ? 'V' :'M') : '-';
 	string[i++] = b->recording          ? 'R' : '-';
 	string[i++] = b->opt.preserve_cr    ? 'P' : '-';
 	string[i++] = b->is_CRLF            ? 'C' : '-';
-	string[i++] = b->is_modified        ? '*' : '-';
 	string[i++] = io_utf8               ? '@' : '-';
 	string[i++] = b->encoding != ENC_8_BIT? (b->encoding == ENC_UTF8 ? 'U' : 'A') : '8';
+	string[i++] = b->is_modified        ? '*' : '-';
 
 	if (b->opt.hex_code && !fast_gui) {
 		string[i++] = ' ';
@@ -653,6 +655,7 @@ void draw_status_bar(void) {
 		const int update_y = y != cur_buffer->cur_line;
 		const int update_percent = percent != new_percent;
 		const int update_flags = strcmp(flag_string, p = gen_flag_string(cur_buffer));
+		const int update_filename = strlen(flag_string) != strlen(p);
 		const int update = update_x || update_y || update_percent || update_flags;
 
 		if (!update) return;
@@ -688,7 +691,8 @@ void draw_status_bar(void) {
 		}
 
 		if (!fast_gui && standout_ok) standout_off();
-		return;
+
+		if (!update_filename) return;
 	}
 
 

@@ -1,5 +1,9 @@
 (This file, NEWS, lists new features and enhancements. See CHANGES for fixes.)
 
+2.5
+
+  * New DelTabs flag, function separated from Tabs flag.
+
 2.4
 
   * New Shift command indents/outdents selected lines.

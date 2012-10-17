@@ -3,7 +3,9 @@
 2.5
 
   * Pathologically long-running PARAGRAPH commands are now stoppable (^-\).
-
+  
+  * Move modified flag '*' to end of status line to be easier to spot.
+  
 2.4
 
   * CLOSEDOC and QUIT (^Q and Alt-Q) now close string requesters just like Esc.

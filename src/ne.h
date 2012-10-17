@@ -380,7 +380,8 @@ typedef struct {
 		read_only:1,       /* Read-only mode */
 		search_back:1,     /* Last search was backwards */
 		case_search:1,     /* Look at case matching in searches */
-		tabs:1,            /* TAB inserts TABs vs. spaces */
+		tabs:1,            /* TAB inserts TABs(1) vs. spaces(0) */
+		del_tabs:1,        /* DEL/BS deletes tab's worth of space. */
 		shift_tabs:1,      /* Shift may insert tabs, but only if tabs is also true */
 		automatch:4,       /* Automatically match visible brackets */
 		binary:1,          /* Load and save in binary mode */

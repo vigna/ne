@@ -1008,8 +1008,11 @@ appears if the undo flag is true. @xref{DoUndo}.
 appears if the read only flag is true. @xref{ReadOnly}.
 
 @item t/T
-appears if the tabs flag is true. It's upper case if
+appears as @samp{t} if the tabs flag is true, @samp{T} if
 the shifttabs flag is also true. @xref{Tabs}, @ref{ShiftTabs}.
+
+@item d
+appears if the deltabs flag is true. @xref{DelTabs}.
 
 @item B
 appears if the binary flag is true. @xref{Binary}.
@@ -1655,7 +1658,7 @@ your preferred document flags.
 @item Tab Size@dots{}
 @xref{TabSize}.
 
-@item Tabs/Spaces
+@item Tabs as Spaces
 @xref{Tabs}.
 
 @item Insert/Over
@@ -1682,14 +1685,14 @@ your preferred document flags.
 @item Auto Indent
 @xref{AutoIndent}.
 
+@item Request Order
+@xref{RequestOrder}.
+
 @item Preserve CR
 @xref{PreserveCR}.
 
 @item Save CR/LF
 @xref{CRLF}.
-
-@item Visual Bell
-@xref{VisualBell}.
 
 @item Load Prefs@dots{}
 @xref{LoadPrefs}.
@@ -2583,11 +2586,10 @@ vertical mark, or column 1 otherwise. If the mark is not currently set, only
 the current line is affected.
 
 @code{Shift} will insert tab characters only if the document's @code{Tabs}
-flag is set---in which case a @samp{t} appears in the status bar--- and the
-@code{ShiftTabs} is also set---in which case the @samp{t} in the status bar
-will be upper case. If either of the @code{ShiftTabs} or @code{Tabs} flags
-are off (and therefore the @samp{t} in the status bar is lower case or
-missing, respectively) @code{Shift} will only insert spaces.
+flag and the @code{ShiftTabs} flag are set---in which case an upper case
+@samp{T} will appear in the status bar. If either of the @code{Tabs} or
+@code{ShiftTabs} flags is unset (i.e there is no upper case @samp{T} in the
+status bar) @code{Shift} will only insert spaces.
 
 In the case of left shifts, if any indicated line has insufficient leading
 white space for the requested adjustment to be made, then @code{Shift}
@@ -3474,6 +3476,7 @@ process, you can clear the automatic preferences flag. See @ref{AutoPrefs}.
 * EscapeTime::
 * TabSize::
 * Tabs::
+* DelTabs::
 * ShiftTabs::
 * Turbo::
 * VerboseMacros::
@@ -3518,8 +3521,9 @@ FLAG COMMAND      ABBR  DESCRIPTION
   v   VerboseMacros VM   record macros using use long command names
   u   DoUndo        DU   record edits for later undoing
   r   ReadOnly      RO   changes are not allowed
-  t   Tabs          TAB  TAB key inserts TABs instead of spaces
-  T   ShiftTabs     ST   Shift may insert TABs
+  t/T Tabs          TAB  TAB key inserts TABs instead of spaces
+  T   ShiftTabs     ST   Shift may insert TABs (only if 't' is also set)
+  d   DelTabs       DT   BS and DEL may remove tabs worth of space
   B   Binary        B    affects file loading/saving
   M   Mark          M    mark set for line-oriented block operations
   V   MarkVert      MV   like mark, but block is rectangle
@@ -3797,26 +3801,35 @@ strictly between 0 and half the width of the screen.
 @noindent Syntax: @code{Tabs [0|1]}@*
 @noindent Abbreviation: @code{TAB}
 
-@noindent sets the @code{Tabs} flag. When this flag is true, 
-the @code{InsertTab} command will insert literal
-@var{TAB} characters. Otherwise it will insert enough spaces to
-have the same visual effect.
+@noindent sets the @code{Tabs} flag. When this flag is set, @key{Tab} key and
+the @code{InsertTab} command will insert literal @var{TAB} characters.
+Otherwise it will insert enough spaces to have the same visual effect.
 
 In normal editing, the @key{Tab} key invokes the command
 "@code{InsertTab} 1". Unlike most others, the @key{Tab} key cannot
 be mapped to other commands. Thus the @code{Tabs} flag provides the
 only customization @code{ne} offers for the @key{Tab} key.
 
-The @code{Tabs} flag also affects the action of the @key{BackSpace} and
-@key{Delete} keys in one special circumstance. That is, if the normal
-action of these keys would remove white space, and that white space
-could be represented by a tab, then one tab's worth of space is
-removed. In all other cases, the @key{BackSpace} and @key{Delete} keys
-perform their normal function.
+If set, either a lower case @samp{t} or upper case @samp{T} will appear
+in the status bar depending on the state of the @code{ShiftTabs} flag.
+(The @code{ShiftTabs} flag is irrelevant if the @code{Tabs} flag is off.)
+@xref{ShiftTabs}.
 
-If you invoke @code{Tabs} with no arguments, it will toggle the flag. If you
-specify 0 or 1, the flag will be set to false or true, respectively. A lower
-case @samp{t} will appear on the status bar if the flag is true.
+
+
+@node DelTabs
+@subsection DelTabs
+@cmindex DelTabs
+
+@noindent Syntax: @code{DelTabs [0|1]}@*
+@noindent Abbreviation: @code{DT}
+
+@noindent sets the @code{DelTabs} flag. When this flag is set, a @samp{d}
+will appear on the status bar, and the @key{BackSpace} and @key{Del} keys will
+remove a tab's worth of @var{space} characters if a @var{TAB} character could
+have occupied the same whitespace in the current line as the removed spaces.
+This is the deletion counterpart to the @code{Tabs} flag. @xref{Tabs}.
+
 
 
 @node ShiftTabs
@@ -3826,10 +3839,11 @@ case @samp{t} will appear on the status bar if the flag is true.
 @noindent Syntax: @code{ShiftTabs [0|1]}@*
 @noindent Abbreviation: @code{SHT}
 
-@noindent sets the @code{ShiftTabs} flag. When this flag and the @code{Tabs}
-flag are both true, left and right @code{Shift} commands may use tab
-characters to adjust leading white space. Otherwise only spaces are used.
-@xref{Shift}.
+@noindent sets the @code{ShiftTabs} flag. @code{ShiftTabs} has an effect only
+when the @code{Tabs} flag is set, in which case an upper case @samp{T}
+appears in the status line. When this flag is and the @code{Tabs} flag are
+both set, left and right @code{Shift} commands may use tab characters to
+adjust leading white space. Otherwise only spaces are used. @xref{Shift}.
 
 
 
@@ -3974,12 +3988,12 @@ restore the users previous preferences settings.
 @noindent @code{PushPrefs} saves the following values on the preferences stack:
 
 @example
-  AutoIndent   DoUndo      PreserveCR   ShiftTabs   WordWrap
-  AutoPrefs    FreeForm    ReadOnly     Tabs
-  Binary       HexCode     RightMargin  TabSize
-  CaseSearch   Insert      SearchBack   UTF8Auto
-  ClipNumber   NoFileReq   StatusBar    VisualBell
-@end example 
+  AutoIndent  DelTabs   NoFileReq    StatusBar  VisualBell
+  AutoPrefs   DoUndo    PreserveCR   ShiftTabs  WordWrap
+  Binary      FreeForm  ReadOnly     Tabs
+  CaseSearch  HexCode   RightMargin  TabSize
+  ClipNumber  Insert    SearchBack   UTF8Auto
+@end example   
 
 
 
@@ -4006,11 +4020,11 @@ restore the users previous preferences settings.
 @noindent PopPrefs restores the following values from the preferences stack:
 
 @example
-  AutoIndent   DoUndo      PreserveCR   ShiftTabs   WordWrap
-  AutoPrefs    FreeForm    ReadOnly     Tabs
-  Binary       HexCode     RightMargin  TabSize
-  CaseSearch   Insert      SearchBack   UTF8Auto
-  ClipNumber   NoFileReq   StatusBar    VisualBell
+  AutoIndent  DelTabs   NoFileReq    StatusBar  VisualBell
+  AutoPrefs   DoUndo    PreserveCR   ShiftTabs  WordWrap
+  Binary      FreeForm  ReadOnly     Tabs
+  CaseSearch  HexCode   RightMargin  TabSize
+  ClipNumber  Insert    SearchBack   UTF8Auto
 @end example
 
 

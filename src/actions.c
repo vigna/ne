@@ -401,6 +401,10 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		SET_USER_FLAG(b, c, opt.tabs);
 		return OK;
 
+	case DELTABS_A:
+		SET_USER_FLAG(b, c, opt.del_tabs);
+		return OK;
+
 	case SHIFTTABS_A:
 		SET_USER_FLAG(b, c, opt.shift_tabs);
 		return OK;
@@ -539,12 +543,12 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 					char_left(b);
 				}
 				else {
-					if (!b->opt.tabs && (b->win_x + b->cur_x) % b->opt.tab_size == 0
+					if (b->opt.del_tabs && (b->win_x + b->cur_x) % b->opt.tab_size == 0
 						&& (b->cur_pos > b->cur_line_desc->line_len || b->cur_line_desc->line[b->cur_pos - 1] == ' ')) {
 						/* We are deleting one or more spaces from a tabbing position. We go left until the
 						previous tabbing, or when spaces end. */
 						do char_left(b); while((b->win_x + b->cur_x) % b->opt.tab_size != 0 
-															&& (b->cur_pos > b->cur_line_desc->line_len || b->cur_line_desc->line[b->cur_pos - 1] == ' '));
+						                        && (b->cur_pos > b->cur_line_desc->line_len || b->cur_line_desc->line[b->cur_pos - 1] == ' '));
 					}
 					else char_left(b);
 					/* If we are not over text, we are in free form mode; the backspace
@@ -555,7 +559,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			
 			/* From here, we just implement a delete. */
 			
-			if (!b->opt.tabs && b->cur_pos < b->cur_line_desc->line_len && b->cur_line_desc->line[b->cur_pos] == ' ' && 
+			if (b->opt.del_tabs && b->cur_pos < b->cur_line_desc->line_len && b->cur_line_desc->line[b->cur_pos] == ' ' && 
 				((b->win_x + b->cur_x) % b->opt.tab_size == 0 || b->cur_line_desc->line[b->cur_pos - 1] != ' ')) {
 				col = 0;
 				do col++; while((b->win_x + b->cur_x + col) % b->opt.tab_size != 0 

@@ -84,6 +84,7 @@ static const command commands[ACTION_COUNT] = {
 	{ NAHL(DELETELINE    ),0                                                                      },
 	{ NAHL(DELETENEXTWORD),0                                                                      },
 	{ NAHL(DELETEPREVWORD),0                                                                      },
+	{ NAHL(DELTABS       ),                           IS_OPTION                                   },
 	{ NAHL(DOUNDO        ),                           IS_OPTION                                   },
 	{ NAHL(ERASE         ),0                                                                      },
 	{ NAHL(ESCAPE        ),                                       DO_NOT_RECORD                   },
