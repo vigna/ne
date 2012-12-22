@@ -117,7 +117,7 @@ clip_desc *get_nth_clip(int n) {
 
 int copy_to_clip(buffer *b, int n, int cut) {
 
-	int i, pass, start_pos, end_pos, len, clip_len, y = b->cur_line;
+	int i, chaining, bsp, pass, start_pos, end_pos, len, clip_len, y = b->cur_line;
 	unsigned char *p = NULL;
 	clip_desc *cd, *new_cd;
 	line_desc *ld = b->cur_line_desc;
@@ -145,8 +145,8 @@ int copy_to_clip(buffer *b, int n, int cut) {
 	conditional code would be cumbersome, awkward, and definitely inefficient. */
 
 	if (y > b->block_start_line || y == b->block_start_line && b->cur_pos > b->block_start_pos) {
-
-		for(pass = clip_len = 0; pass < 2; pass++) {
+		/* mark before/above cursor */
+		for(chaining = pass = clip_len = 0; pass < 2; pass++) {
 
 			ld = b->cur_line_desc;
 
@@ -156,11 +156,28 @@ int copy_to_clip(buffer *b, int n, int cut) {
 				len = ld->line_len;
 
 				if (i == b->block_start_line) {
-					start_pos = b->block_start_pos;
+					if (!pass && cut && len < b->block_start_pos) {
+						if (!chaining) {
+							chaining = 1;
+							start_undo_chain(b);
+						}
+						bsp = b->block_start_pos; /* because the mark will move when we insert_spaces()! */
+						insert_spaces(b, ld, i, len, b->block_start_pos - len);
+						b->block_start_pos = bsp;
+						len = ld->line_len;
+					}
+					start_pos = min(len,b->block_start_pos);
 					len -= start_pos;
 				}
 
 				if (i == y) {
+					if (!pass && cut && b->cur_pos > ld->line_len) {
+						if (!chaining) {
+							chaining = 1;
+							start_undo_chain(b);
+						}
+						insert_spaces(b, ld, i, ld->line_len, b->cur_pos - ld->line_len);
+					}
 					len -= (b->cur_pos >= ld->line_len) ? 0 : ld->line_len - b->cur_pos;
 				}
 
@@ -189,18 +206,22 @@ int copy_to_clip(buffer *b, int n, int cut) {
 					update_syntax_and_lines(b, b->cur_line_desc, NULL);
 				}
 
+				if (chaining) end_undo_chain(b);
 				return OK;
 			}
 
-			if (!(new_cd = realloc_clip_desc(cd, n, clip_len))) return OUT_OF_MEMORY;
+			if (!(new_cd = realloc_clip_desc(cd, n, clip_len))) {
+				if (chaining) end_undo_chain(b);
+				return OUT_OF_MEMORY;
+			}
 			if (!cd) add_head(&clips, &new_cd->cd_node);
 			cd = new_cd;
 			p = cd->cs->stream + clip_len;
 		}
 	}
 	else {
-
-		for(pass = clip_len = 0; pass < 2; pass++) {
+		/* mark after cursor */
+		for(chaining = pass = clip_len = 0; pass < 2; pass++) {
 
 			ld = b->cur_line_desc;
 
@@ -210,12 +231,29 @@ int copy_to_clip(buffer *b, int n, int cut) {
 				len = ld->line_len;
 
 				if (i == y) {
+					if (!pass && cut && b->cur_pos > ld->line_len) {
+						if (!chaining) {
+							chaining = 1;
+							start_undo_chain(b);
+						}
+						insert_spaces(b, ld, i, len, b->cur_pos - len);
+						len = ld->line_len;
+					}
 					start_pos = b->cur_pos > ld->line_len ? ld->line_len : b->cur_pos;
 					len -= start_pos;
 				}
 
 				if (i == b->block_start_line) {
-					end_pos = b->block_start_pos;
+					if (!pass && cut && b->block_start_pos > ld->line_len) {
+						if (!chaining) {
+							chaining = 1;
+							start_undo_chain(b);
+						}
+						bsp = b->block_start_pos;
+						insert_spaces(b, ld, i, ld->line_len, b->block_start_pos - ld->line_len);
+						b->block_start_pos = bsp;
+					}
+					end_pos = b->block_start_pos > ld->line_len ? ld->line_len : b->block_start_pos;
 					len -= ld->line_len - end_pos;
 				}
 
@@ -237,15 +275,20 @@ int copy_to_clip(buffer *b, int n, int cut) {
 				assert_clip_desc(cd);
 				if (cut) delete_stream(b, b->cur_line_desc, b->cur_line, b->cur_pos, clip_len);
 				update_syntax_and_lines(b, b->cur_line_desc, NULL);
+				if (chaining) end_undo_chain(b);
 				return OK;
 			}
 
-			if (!(new_cd = realloc_clip_desc(cd, n, clip_len))) return OUT_OF_MEMORY;
+			if (!(new_cd = realloc_clip_desc(cd, n, clip_len))) {
+				if (chaining) end_undo_chain(b);
+				return OUT_OF_MEMORY;
+			}
 			if (!cd) add_head(&clips, &new_cd->cd_node);
 			cd = new_cd;
 			p = cd->cs->stream;
 		}
 	}
+	if (chaining) end_undo_chain(b);
 	return OK;
 }
 

@@ -5,6 +5,10 @@
   * Pathologically long-running PARAGRAPH commands are now stoppable (^-\).
   
   * Move modified flag '*' to end of status line to be easier to spot.
+
+  * COPY, CUT, ERASE copy the correct text to the clip and do not crash
+    any more when in free form mode and cursor or mark is beyond the
+    end of a line.
   
 2.4
 
