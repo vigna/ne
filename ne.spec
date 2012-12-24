@@ -7,7 +7,7 @@ Group: Applications/Editors
 Source: http://ne.dsi.unimi.it/ne-%{version}.tar.gz
 Buildroot: /tmp/ne-%{version}
 AutoReqProv: no
-Prereq: /sbin/install-info
+Requires: /sbin/install-info
 Requires: ncurses
 BuildRequires: ncurses-devel, make, bash, perl, texinfo, sed
 
