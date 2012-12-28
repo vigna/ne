@@ -128,9 +128,14 @@ typedef enum {
 	ENC_ASCII = 0, ENC_UTF8, ENC_8_BIT
 } encoding_type;
 
-/* The number of bookmarks per buffer. It comprises the automatic bookmark (0). */
+/* Bookmark designations. User get 0 through 9 plus the AUTO_BOOKMARK '-'. */
 
-#define NUM_BOOKMARKS      11
+enum {
+	MAX_USER_BOOKMARK = 9,
+	AUTO_BOOKMARK,
+	WORDWRAP_BOOKMARK,
+	NUM_BOOKMARKS
+};
 
 /* These are the list and node structures used throughout ne. See the exec.c
    source for some elaborations on the subject. */
