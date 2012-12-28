@@ -4,6 +4,9 @@
 
   * New DelTabs flag, function separated from Tabs flag.
 
+  * Reformatting with the Paragraph command is now aware of common
+    leading characters used in comments.
+
 2.4
 
   * New Shift command indents/outdents selected lines.

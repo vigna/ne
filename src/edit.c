@@ -251,6 +251,9 @@ leading US-ASCII white space. The strategy is as follows:
      following the current line if it is non-blank. Otherwise it will be
      taken from the current line. Save a copy of it for later as space[].
 
+  1.1 If the leading non-blank (the part after space[]) is not an alphanumeric,
+     then we take it as a comment initiator and preserve it for later as spots[].
+
   2. Start an undo chain.
 
   3. Trim trailing space off the current line.
@@ -261,11 +264,15 @@ leading US-ASCII white space. The strategy is as follows:
        4.3  Split the line at the split point.  (We are done with this line)
        4.4  Make the new line the current line
        4.5  Insert the space[] stream we saved in step 1.
+       4.5.1 Insert the spots[] stream we saved from step 1.1.
        4.6  Trim trailing space off the end of the line.
 
   5. If the _following_ line is part of this paragraph (i.e., its first
      non-blank character is in the correct position):
        5.1  Add a space to the end of the current line.
+       5.2  Delete this line's leading white space.
+       5.3  If the leading non-blank character matches the first character
+            of spots[], remove it any any subsequent non-alphanumeric.
        5.2  Copy following line's data starting with the first
             non-blank to the end of the current line.
        5.3  Remove the following line.
@@ -283,9 +290,32 @@ leading US-ASCII white space. The strategy is as follows:
 
 */
 
-static char *pa_space	  = NULL;  /* Where we keep space for paragraph left offsets */
-static int	pa_space_len;			/* How long pa_space is when tabs are expanded */
-static int	pa_space_pos;			/* How long pa_space is without expanding tabs */
+static char *pa_spots     = NULL;  /* Where we keep leading non-alphanumerics */
+static int   pa_spots_pos;         /* How long pa_spots is in chars */
+
+/* save_spots() is like save_space(), but it preserves the string of non-alphanumerics
+   immediately follow where save_space() left off. */
+
+static int save_spots(line_desc * const ld, const int pos, const encoding_type encoding) {
+	int rc = 0;
+	if (pa_spots) free(pa_spots);
+	pa_spots  = NULL;
+	pa_spots_pos = 0;
+	
+	if (!ld->line || ld->line_len <= pos) return 0; /* No data on this line. */
+
+	while(pos + pa_spots_pos < ld->line_len && isparaspot(ld->line[pos+pa_spots_pos]))
+		pa_spots_pos = next_pos(ld->line, pos+pa_spots_pos, encoding) - pos;
+	if (pa_spots_pos) {
+		if ((pa_spots = malloc(pa_spots_pos)))	memcpy(pa_spots, ld->line+pos, pa_spots_pos);
+		else pa_spots_pos = 0;
+	}
+	return pa_spots_pos > 0;
+}
+	
+static char *pa_space     = NULL;  /* Where we keep space for paragraph left offsets */
+static int   pa_space_len;         /* How long pa_space is when tabs are expanded */
+static int   pa_space_pos;         /* How long pa_space is without expanding tabs */
 
 /* save_space() sets pa_space, pa_space_len, and pa_space_pos to reflect the
 	space on the left end of the line ld refers to in the context of the given
@@ -297,7 +327,7 @@ static int	pa_space_pos;			/* How long pa_space is without expanding tabs */
 static int save_space(line_desc * const ld, const int tab_size, const encoding_type encoding) {
 	int pos;
 	if (pa_space) free(pa_space);
-	pa_space	  = NULL;
+	pa_space  = NULL;
 	pa_space_len = 0;
 	pa_space_pos = 0;
 
@@ -313,13 +343,16 @@ static int save_space(line_desc * const ld, const int tab_size, const encoding_t
 
 	if (pos == 0) {
 		pa_space = NULL;
+		save_spots(ld, pos, encoding);
 		return 1;
 	}
 
 	if ((pa_space = malloc(pos))) {
 		memcpy(pa_space, ld->line, pos);
+		save_spots(ld, pos, encoding);
 		return 1;
 	}
+
 	return 0;
 }
 
@@ -374,6 +407,7 @@ static int is_part_of_paragraph(const line_desc * const ld, const int tab_size, 
 int paragraph(buffer * const b) {
 	int pos,
 	    done,
+	    skip,
 	    line = b->cur_line,
 	    right_margin = b->opt.right_margin ? b->opt.right_margin : ne_columns;
 
@@ -412,8 +446,11 @@ int paragraph(buffer * const b) {
 
 			/** 4.1  Find the split point **/
 
-			pos = 0;   /* Skip past leading spaces. */
+			pos = 0;   /* Skip past leading spaces... */
 			while(pos < ld->line_len && isasciispace(ld->line[pos]))
+			  pos = next_pos(ld->line, pos, b->encoding);
+			           /* ...and the invariants if any. */
+			while(pos < ld->line_len && isparaspot(ld->line[pos]))
 			  pos = next_pos(ld->line, pos, b->encoding);
 
 			did_split = split_pos = spaces = 0;
@@ -445,12 +482,16 @@ int paragraph(buffer * const b) {
 				ld = (line_desc *)ld->ld_node.next;
 				line++;
 
-				/** 4.5  Insert the ps_space[] stream we saved in step 1. Note that  **/
+				/** 4.5  Insert the pa_space[] stream we saved in step 1. Note that  **/
 				/** we only want to do this if this line is the result of a split,   **/
 				/** which is true if did_split != 0.                                 **/
 
-				if (did_split && pa_space && pa_space_len) {
-					insert_stream(b, ld, line, 0, pa_space, pa_space_pos);
+				if (did_split) {
+					if (pa_space && pa_space_len)
+						insert_stream(b, ld, line, 0, pa_space, pa_space_pos);
+					/** 4.5.1 Insert the pa_spots[] stream if there is one. **/
+					if (pa_spots && pa_spots_pos)
+						insert_stream(b, ld, line, pa_space_pos, pa_spots, pa_spots_pos);
 				}
 
 				/** 4.6  Trim trailing space off the end of the line. **/
@@ -459,19 +500,42 @@ int paragraph(buffer * const b) {
 			else done = TRUE;
 		}
 
+		/** If the current line is just a spot (no text), we skip over it.      **/
+		pos = 0;   /* Skip past leading spaces... */
+		skip = FALSE;
+		while(pos < ld->line_len && isasciispace(ld->line[pos]))
+			pos = next_pos(ld->line, pos, b->encoding);
+		           /* ...and the invariants if any. */
+		while(pos < ld->line_len && isparaspot(ld->line[pos]))
+			pos = next_pos(ld->line, pos, b->encoding);
+		if (pos == ld->line_len) skip = TRUE;
+			
 		/** 5. If the _following_ line is part of this paragraph (i.e., its first  **/
 		/**     non-blank character is in the correct position):                   **/
 
 		if (ld->ld_node.next->next && is_part_of_paragraph((line_desc *)ld->ld_node.next, b->opt.tab_size, &pos, b->encoding)) {
-			/** 5.1  Add a space to the end of the current line.                    **/
-			insert_one_char(b, ld, line, ld->line_len, ' ');
+			/** If the next line is just a spot (no text), we want to skip over it  **/
+			/** rather than splicing it to the current line.                        **/
+			if (skip || save_spots((line_desc *)ld->ld_node.next, pos, b->encoding) && ((line_desc *)ld->ld_node.next)->line_len <= pos+pa_spots_pos) {
+				/* skip to next line */
+				ld = (line_desc *)ld->ld_node.next;
+				line++;
+			}
+			else {
+				/** 5.1  Add a space to the end of the current line.                    **/
+				insert_one_char(b, ld, line, ld->line_len, ' ');
 
-			/** 5.2  Move following line's data starting with the first             **/
-			/** non-blank to the end of the current line.                           **/
-			/**  We do this by first deleting the leading spaces, then we           **/
-			/**  delete the newline at the end of the current line.                 **/
-			if (pos > 0) delete_stream(b, (line_desc *)ld->ld_node.next, line + 1, 0, pos);
-			delete_stream(b, ld, line, ld->line_len, 1);
+				/** 5.4  Move following line's data starting with the first             **/
+				/** non-blank to the end of the current line.                           **/
+			
+				/**  We do this by first deleting the leading spaces                    **/
+				if (pos > 0) delete_stream(b, (line_desc *)ld->ld_node.next, line + 1, 0, pos);
+				/** 5.2 Cache the leading non-alphanumeric in pa_spots, then delete it,  **/
+				if (save_spots((line_desc *)ld->ld_node.next, 0, b->encoding))
+					delete_stream(b, (line_desc *)ld->ld_node.next, line + 1, 0, pa_spots_pos);
+				/**  Finally splice the lines by deleting the newline at the end of the current line.                 **/
+				delete_stream(b, ld, line, ld->line_len, 1);
+			}
 		}
 		else done = TRUE;
 	} while (!done && !stop);

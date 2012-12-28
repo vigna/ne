@@ -3270,7 +3270,8 @@ were single commands---should begin with @code{AtomicUndo +} and end with
 @section Formatting Commands
 
 The following commands allow simple formatting operations on the text. Note
-that for @code{ne} a paragraph is delimited by an empty line.
+that for @code{ne} a paragraph is delimited by an empty line or a line with
+leading white space incongruous with that of preceeding lines.
 
 @menu
 * Center::
@@ -3315,7 +3316,9 @@ formatted relatively to the value of the right margin as set by the
 (regardless of its leading white space) and all subsequent non-blank
 lines that have identical (to each other's---not to the first line's)
 leading white space. Therefore your paragraphs can have various first
-line indentations and left margins.
+line indentations and left margins. It also takes into account characters
+commonly used at the left edge of block comments (@samp{/}, @samp{*},
+@samp{#}, spaces, and tabs).
 
 After the @code{Paragraph} command completes, your cursor will be
 positioned on the first non-blank character after the last reformatted

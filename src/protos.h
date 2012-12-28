@@ -282,6 +282,7 @@ char *complete(const char *start_prefix);
 int is_migrated(const char *name);
 int is_directory(const char *name);
 int is_ascii(const unsigned char *s, int len);
+int isparaspot(int c);
 int isasciispace(int c);
 int isasciipunct(int c);
 int isasciialpha(int c);

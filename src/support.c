@@ -410,6 +410,17 @@ int calc_pos(const line_desc * const ld, const int col, const int tab_size, cons
 	return pos;
 }
 
+/* Returns true if the specified character is invariant on the left edge of re-wrapped paragraphs */
+
+int isparaspot(const int c) {
+	char *spots = "/*#\t ";
+	char *p = spots;
+	while (*p) {
+		if (*p++ == c) return TRUE;
+	}
+	return FALSE;
+}
+
 /* Returns true if the specified character is an US-ASCII whitespace character. */
 
 int isasciispace(const int c) {
