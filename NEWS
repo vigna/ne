@@ -5,7 +5,9 @@
   * New DelTabs flag, function separated from Tabs flag.
 
   * Reformatting with the Paragraph command is now aware of common
-    leading characters used in comments.
+    leading characters used in comments: > # / * and spaces.
+
+  * WordWrap preserves leading characters identically to Paragraph.
 
 2.4
 

@@ -3313,20 +3313,22 @@ formatted relatively to the value of the right margin as set by the
 @code{RightMargin} command. See @ref{RightMargin}.
 
 @code{ne}'s notion of a paragraph includes the current non-blank line
-(regardless of its leading white space) and all subsequent non-blank
-lines that have identical (to each other's---not to the first line's)
-leading white space. Therefore your paragraphs can have various first
-line indentations and left margins. It also takes into account characters
-commonly used at the left edge of block comments (@samp{/}, @samp{*},
-@samp{#}, spaces, and tabs).
+(regardless of its leading white space) and all subsequent non-blank lines
+that have identical (to each other's---not to the first line's) leading
+white space. Therefore your paragraphs can have various first line
+indentations and left margins. @code{Paragraph} also takes into account
+characters commonly used at the left edge of block comments (@samp{/},
+@samp{*}, @samp{#}, spaces, and tabs) or quoted email (@samp{>}), and
+attempts to preserve those on the left edge when possible.
 
 After the @code{Paragraph} command completes, your cursor will be
 positioned on the first non-blank character after the last reformatted
 paragraph (or, if there is no such character, at the end of the document).
 
-If you think paragraphing should insert ``smart'' spaces after full stops
-and colons, and do other ``smart'' things such as justification, you should
-consider using a text formatter. @TeX{} is usually the best choice.
+@code{Paragraph} does not insert ``smart'' spaces after full stops and colons,
+nor does it do other ``smart'' things such as justification. If you need such
+facilities, you should consider using a text formatter. @TeX{} for example is
+usually an excellent choice.
 
 
 
@@ -3400,9 +3402,11 @@ the current screen width as right margin.
 @noindent Syntax: @code{WordWrap [0|1]}@*
 @noindent Abbreviation: @code{WW}
 
-@noindent sets the word wrap flag. When this flag is true, @code{ne} will automatically
-break lines of text longer than the current right margin
-while you type them. See @ref{RightMargin}.
+@noindent sets the word wrap flag. When this flag is true, @code{ne} will
+automatically break lines of text when you attempt to insert characters beyond
+the right margin. See @ref{RightMargin}. @code{ne} will attempt to preserve
+certain invariant characters at the left edge of paragraphs typically used to
+indicate comments in source code or quoted passages in email text. See @ref{Paragraph}.
 
 If you invoke @code{WordWrap} with no arguments, it will toggle the flag. If you
 specify 0 or 1, the flag will be set to false or true, respectively. A lower

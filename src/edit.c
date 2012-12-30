@@ -204,45 +204,54 @@ int find_matching_bracket(buffer *b, const int min_line, int max_line, int *matc
 
 
 
-/* Breaks a line at the first possible position before the current cursor
-	position (i.e., at a tab or at a space). The space is deleted, and a new
-	line is inserted. The cursor is repositioned coherently.  The number of
-	characters existing on the new line is returned, or ERROR if no word wrap was
-	possible. */
+/* This experimental alternative to word wrapping sets a bookmark, calls
+   paragraph(), then returns to the bookmark (which may have moved due to
+   insertions/deletions).  The number of characters existing on the new line is
+   returned, or ERROR if no word wrap was possible. */
 
 int word_wrap(buffer * const b) {
-	const int len = b->cur_line_desc->line_len;
-	unsigned char * const line = b->cur_line_desc->line;
-	int cur_pos, pos, first_pos;
+	static char avcmd[16];
+	int non_blank_added, pos;
+	unsigned char * line = b->cur_line_desc->line;
+	int avshift;
 
-	if (!(cur_pos = pos = b->cur_pos)) return ERROR;
-
-	/* Find the first possible position we could break a line on. */
-	first_pos = 0;
-
-	/* Skip leading white space */
-	while (first_pos < len && ne_isspace(get_char(&line[first_pos], b->encoding), b->encoding)) first_pos = next_pos(line, first_pos, b->encoding);
-
-	/* Skip non_space after leading white space */
-	while (first_pos < len && !ne_isspace(get_char(&line[first_pos], b->encoding), b->encoding)) first_pos = next_pos(line, first_pos, b->encoding);
-
-	/* Now we know that the line shouldn't be broken before &line[first_pos]. */
-
-	/* Start from the other end now and find a candidate space to break the line on.*/
-	while((pos = prev_pos(line, pos, b->encoding)) && !ne_isspace(get_char(&line[pos], b->encoding), b->encoding));
-
-	if (! pos || pos < first_pos) return ERROR;
-
-	start_undo_chain(b);
-
-	delete_one_char(b, b->cur_line_desc, b->cur_line, pos);
-	insert_one_line(b, b->cur_line_desc, b->cur_line, pos);
-
-	end_undo_chain(b);
-
-	return b->cur_pos - pos - 1;
+	if (!b->cur_pos || b->cur_pos > b->cur_line_desc->line_len) return ERROR;
+	/* If the char to our left is a space, we need to insert
+	   something else to attach our WORDWRAP_BOOKMARK to because
+	   spaces at the split point get removed, which effectively
+	   leaves our bookmark on the current line. */
+	delay_update();
+	pos = prev_pos(line, b->cur_pos, b->encoding);
+	if (non_blank_added = ne_isspace(get_char(&line[pos], b->encoding), b->encoding)) {
+		start_undo_chain(b);
+		insert_one_char(b, b->cur_line_desc, b->cur_line, b->cur_pos, 'X');
+		goto_pos(b, next_pos(line, b->cur_pos, b->encoding));
+		/* Get rid of any spaces starting at cur_pos */
+		pos = b->cur_pos;
+		while (pos < b->cur_line_desc->line_len && ne_isspace(get_char(&line[pos       ], b->encoding), b->encoding))
+			pos = next_pos(line, pos, b->encoding);
+		if (pos > b->cur_pos) delete_stream(b, b->cur_line_desc, b->cur_line, b->cur_pos, pos - b->cur_pos);
+	}
+	b->bookmark[WORDWRAP_BOOKMARK].pos   = b->cur_pos;
+	b->bookmark[WORDWRAP_BOOKMARK].line  = b->cur_line;
+	b->bookmark[WORDWRAP_BOOKMARK].cur_y = b->cur_y;
+	b->bookmark_mask |= (1 << WORDWRAP_BOOKMARK);
+	paragraph(b);
+	goto_line(b, b->bookmark[WORDWRAP_BOOKMARK].line);
+	goto_pos( b, b->bookmark[WORDWRAP_BOOKMARK].pos);
+	line = b->cur_line_desc->line;
+	if (avshift = b->cur_y - b->bookmark[WORDWRAP_BOOKMARK].cur_y-1) {
+		snprintf(avcmd, 16, "%c%d", avshift > 0 ? 'T' :'B', avshift > 0 ? avshift : -avshift);
+		adjust_view(b,avcmd);
+	}
+	b->bookmark_mask &= ~(1 << WORDWRAP_BOOKMARK);
+	if (non_blank_added) {
+		goto_pos(b, prev_pos(b->cur_line_desc->line, b->cur_pos, b->encoding));
+		delete_one_char(b, b->cur_line_desc, b->cur_line, b->cur_pos);
+		end_undo_chain(b);
+	}
+	return b->cur_line_desc->line_len;
 }
-
 
 /* These functions reformat a paragraph while preserving appropriate
 leading US-ASCII white space. The strategy is as follows:
