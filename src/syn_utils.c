@@ -2,7 +2,7 @@
 
 	Copyright (C) 1992 Joseph H. Allen
 	Copyright (C) 2001 Marek 'Marx' Grac
-	Copyright (C) 2009-2012 Todd M. Lewis and Sebastiano Vigna
+	Copyright (C) 2009-2013 Todd M. Lewis and Sebastiano Vigna
 
 	This file is part of ne, the nice editor.
 
