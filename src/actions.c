@@ -484,6 +484,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			word wrap happens with b->opt.right_margin = 0. */
 
 		if (b->opt.word_wrap && b->win_x + b->cur_x >= (b->opt.right_margin ? b->opt.right_margin : ne_columns - 1)) word_wrap(b);
+		if (b->syn) update_line(b, b->cur_y, TRUE, FALSE);
 		assert_buffer_content(b);
 		return OK;
 	}
