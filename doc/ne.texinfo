@@ -2586,7 +2586,7 @@ vertical mark, or column 1 otherwise. If the mark is not currently set, only
 the current line is affected.
 
 @code{Shift} will insert tab characters only if the document's @code{Tabs}
-flag and the @code{ShiftTabs} flag are set---in which case an upper case
+flag and the @code{ShiftTabs} flag are both set---in which case an upper case
 @samp{T} will appear in the status bar. If either of the @code{Tabs} or
 @code{ShiftTabs} flags is unset (i.e there is no upper case @samp{T} in the
 status bar) @code{Shift} will only insert spaces.
@@ -3848,7 +3848,7 @@ This is the deletion counterpart to the @code{Tabs} flag. @xref{Tabs}.
 
 @noindent sets the @code{ShiftTabs} flag. @code{ShiftTabs} has an effect only
 when the @code{Tabs} flag is set, in which case an upper case @samp{T}
-appears in the status line. When this flag is and the @code{Tabs} flag are
+appears in the status line. When this flag and the @code{Tabs} flag are
 both set, left and right @code{Shift} commands may use tab characters to
 adjust leading white space. Otherwise only spaces are used. @xref{Shift}.
 
