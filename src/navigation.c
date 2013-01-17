@@ -938,7 +938,8 @@ int search_word(buffer * const b, const int dir) {
 		if (!ne_isword(c, b->encoding)) space_skipped = TRUE;
 	}
 
-	pos = (dir > 0 ? next_pos : prev_pos)(ld->line, pos, b->encoding);
+	if (dir < 0 || pos < ld->line_len)
+		pos = (dir > 0 ? next_pos : prev_pos)(ld->line, pos, b->encoding);
 
 	y = b->cur_line;
 
