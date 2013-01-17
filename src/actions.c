@@ -931,7 +931,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 				}
 				if (stop) return STOPPED;
 
-				if ((c != 'A' && a != REPLACEALL_A || first_search) && error || error != NOT_FOUND) {
+				if (error && ((c != 'A' && a != REPLACEALL_A || first_search) || error != NOT_FOUND )) {
 					print_error(error);
 					return ERROR;
 				}
