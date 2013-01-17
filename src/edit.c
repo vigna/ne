@@ -225,6 +225,7 @@ int word_wrap(buffer * const b) {
 	if (non_blank_added = ne_isspace(get_char(&line[pos], b->encoding), b->encoding)) {
 		start_undo_chain(b);
 		insert_one_char(b, b->cur_line_desc, b->cur_line, b->cur_pos, 'X');
+		line = b->cur_line_desc->line;
 		goto_pos(b, next_pos(line, b->cur_pos, b->encoding));
 		/* Get rid of any spaces starting at cur_pos */
 		pos = b->cur_pos;
