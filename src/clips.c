@@ -151,36 +151,26 @@ int copy_to_clip(buffer *b, int n, int cut) {
 			ld = b->cur_line_desc;
 
 			for(i = y; i >= b->block_start_line; i--) {
-
 				start_pos = 0;
-				len = ld->line_len;
 
 				if (i == b->block_start_line) {
-					if (!pass && cut && len < b->block_start_pos) {
+					if (!pass && cut && ld->line_len < b->block_start_pos) {
 						if (!chaining) {
 							chaining = 1;
 							start_undo_chain(b);
 						}
 						bsp = b->block_start_pos; /* because the mark will move when we insert_spaces()! */
-						insert_spaces(b, ld, i, len, b->block_start_pos - len);
+						insert_spaces(b, ld, i, ld->line_len, b->block_start_pos - ld->line_len);
 						b->block_start_pos = bsp;
-						len = ld->line_len;
 					}
-					start_pos = min(len,b->block_start_pos);
-					len -= start_pos;
+					start_pos = min(ld->line_len,b->block_start_pos);
 				}
 
-				if (i == y) {
-					if (!pass && cut && b->cur_pos > ld->line_len) {
-						if (!chaining) {
-							chaining = 1;
-							start_undo_chain(b);
-						}
-						insert_spaces(b, ld, i, ld->line_len, b->cur_pos - ld->line_len);
-					}
-					len -= (b->cur_pos >= ld->line_len) ? 0 : ld->line_len - b->cur_pos;
-				}
-
+				if (i == y)
+					end_pos = min(ld->line_len,b->cur_pos);
+				else
+					end_pos = ld->line_len;
+				len = end_pos - start_pos;
 				if (pass) {
 					assert(!(len != 0 && ld->line == NULL));
 
@@ -194,7 +184,6 @@ int copy_to_clip(buffer *b, int n, int cut) {
 			}
 
 			if (pass) {
-
 				cd->cs->len = clip_len;
 				set_stream_encoding(cd->cs, b->encoding);
 				assert_clip_desc(cd);
