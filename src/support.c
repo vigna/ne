@@ -375,7 +375,7 @@ int calc_width(const line_desc * const ld, const int n, const int tab_size, cons
 
 	int pos, len;
 
-	for(pos = len = 0; pos < n; pos = next_pos(ld->line, pos, encoding)) {
+	for(pos = len = 0; pos < n; pos = pos < ld->line_len ? next_pos(ld->line, pos, encoding) : pos + 1) {
 		if (pos >= ld->line_len) len++;
 		else if (ld->line[pos] != '\t') len += get_char_width(&ld->line[pos], encoding);
 		else len += tab_size - len % tab_size;
