@@ -273,7 +273,7 @@ int copy_to_clip(buffer *b, int n, int cut) {
 
 int erase_block(buffer *b) {
 
-	int i, start_pos, end_pos, len, erase_len = 0, y = b->cur_line;
+	int i, bsp, start_pos, end_pos, len, erase_len = 0, chaining = 0, y = b->cur_line;
 	line_desc *ld = b->cur_line_desc;
 
 	if (!b->marking) return MARK_BLOCK_FIRST;
@@ -287,14 +287,22 @@ int erase_block(buffer *b) {
 	if (y > b->block_start_line || y == b->block_start_line && b->cur_pos > b->block_start_pos) {
 		for(i = y; i >= b->block_start_line; i--) {
 			start_pos = 0;
-			len = ld->line_len;
 			if (i == b->block_start_line) {
-				start_pos = b->block_start_pos;
-				len -= start_pos;
+				if (ld->line_len < b->block_start_pos) {
+					if (!chaining) {
+						chaining = 1;
+						start_undo_chain(b);
+					}
+					bsp = b->block_start_pos; /* because the mark will move when we insert_spaces()! */
+					insert_spaces(b, ld, i, ld->line_len, b->block_start_pos - ld->line_len);
+					b->block_start_pos = bsp;
+				}
+				start_pos = min(ld->line_len,b->block_start_pos);
 			}
-			if (i == y) {
-				len -= (b->cur_pos >= ld->line_len) ? 0 : ld->line_len - b->cur_pos;
-			}
+			if (i == y) end_pos = min(ld->line_len,b->cur_pos);
+			else end_pos = ld->line_len;
+			len = end_pos - start_pos;
+
 			erase_len += len + 1;
 			ld = (line_desc *)ld->ld_node.prev;
 		}
@@ -304,21 +312,27 @@ int erase_block(buffer *b) {
 	else {
 		for(i = y; i <= b->block_start_line; i++) {
 			start_pos = 0;
-			len = ld->line_len;
 			if (i == y) {
-				start_pos = b->cur_pos >= ld->line_len ? ld->line_len : b->cur_pos;
-				len -= start_pos;
+				if (b->cur_pos > ld->line_len) {
+					if (!chaining) {
+						chaining = 1;
+						start_undo_chain(b);
+					}
+					insert_spaces(b, ld, i, ld->line_len, b->cur_pos - ld->line_len);
+				}
+				start_pos = b->cur_pos > ld->line_len ? ld->line_len : b->cur_pos;
 			}
-			if (i == b->block_start_line) {
-				end_pos = b->block_start_pos;
-				len -= ld->line_len - end_pos;
-			}
+			if (i == b->block_start_line) end_pos = min(b->block_start_pos, ld->line_len);
+			else end_pos = ld->line_len;
+			len = end_pos - start_pos;
+
 			erase_len += len + 1;
 			ld = (line_desc *)ld->ld_node.next;
 		}
 	}
 
 	delete_stream(b, b->cur_line_desc, b->cur_line, b->cur_pos, erase_len - 1);
+	if (chaining) end_undo_chain(b);
 	update_syntax_and_lines(b, b->cur_line_desc, NULL);
 	return OK;
 }
