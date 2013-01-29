@@ -3,7 +3,7 @@
 use strict;
 $| = 1;             
 
-# This program looks for Copyright notices in .c, .h, .pl, and .jsf files
+# This program looks for Copyright notices in .c, .in, .h, .pl, and .jsf files
 # in the current directory and updates them for the new year.
 # Give it two parameters: from_year and to_year, each of which
 # should be four digits.
@@ -27,7 +27,7 @@ if ( @ARGV || !defined $from_year || !defined $to_year ||
       print qq[Usage: $0 <from_year> <to_year>
 
 where from_year and to_year are 4-digit years. This program updates any
-.c, .h, .pl, and .jsf files in the current directory that have strings
+.c, .h, .pl, .in, and .jsf files in the current directory that have strings
 matching these patterns:
    Copyright (C) ####-<from_year>
    Copyright (C) <from_year>
@@ -39,7 +39,7 @@ to these:
     }
 
 my ($pass,$fail,$changes) = (0,0,0);
-my @files = grep { -f $_ } glob('*.c *.h *.pl *.jsf');
+my @files = grep { -f $_ } glob('*.c *.h *.pl *.in *.jsf');
 for my $file ( @files )
   {
     if (! open FILE, "<", $file )
