@@ -4,7 +4,7 @@ Version: 2.5
 Release: 1
 License: GPLv3
 Group: Applications/Editors
-Source: http://ne.dsi.unimi.it/ne-%{version}.tar.gz
+Source: http://ne.di.unimi.it/ne-%{version}.tar.gz
 Buildroot: /tmp/ne-%{version}
 AutoReqProv: no
 Requires: /sbin/install-info

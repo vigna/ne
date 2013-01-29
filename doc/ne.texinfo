@@ -5819,7 +5819,7 @@ Comments, complaints, desiderata are welcome.
     I-20144 Milano MI
     Italia
 
-    vigna@@dsi.unimi.it
+    vigna@@di.unimi.it
 
 
     Todd M. Lewis

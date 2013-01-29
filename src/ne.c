@@ -56,7 +56,7 @@ char *NO_WARRANTY_msg[] = {	PROGRAM_NAME " " VERSION ".",
 										"by [ are activated by Control+Meta or just Meta, depending on your terminal",
 										"emulator. Alternatively, just press Escape followed by a letter.",
 										"",
-										"ne Home page: http://ne.dsi.unimi.it/",
+										"ne home page: http://ne.di.unimi.it/",
 										"Discuss ne at http://groups.google.com/group/niceeditor/",
 										NULL
 									};
