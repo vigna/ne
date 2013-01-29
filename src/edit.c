@@ -85,7 +85,7 @@ static int to_something(buffer *b, int (to_first)(int), int (to_rest)(int)) {
 		start_undo_chain(b);
 
 		delete_stream(b, b->cur_line_desc, b->cur_line, b->cur_pos, len);
-		insert_stream(b, b->cur_line_desc, b->cur_line, b->cur_pos, word, new_len);
+		if (new_len) insert_stream(b, b->cur_line_desc, b->cur_line, b->cur_pos, word, new_len);
 
 		free(word);
 
@@ -368,26 +368,23 @@ static int save_space(line_desc * const ld, const int tab_size, const encoding_t
 
 
 /* trim_trailing_space() removes spaces from the end of the line referred to by
-	the line_desc ld. The int line is necessary if you want to be able to undo
-	later. */
+   the line_desc ld. The int line is necessary if you want to be able to undo
+   later. */
 
 static void trim_trailing_space(buffer * const b, line_desc *ld, const int line, const encoding_type encoding) {
 	int pos;
 	if (!ld->line) return;
-	insert_one_char(b, ld, line, ld->line_len, ' '); /* Make sure there's a space on the end and not a UTF8
-                                                       so the prev_pos() below won't go berzerk. */
 	pos = ld->line_len;
-	while(pos > 0 && isasciispace(ld->line[pos - 1])) pos = prev_pos(ld->line, pos, encoding);
-
+	while (pos > 0 && isasciispace(ld->line[pos - 1])) pos = prev_pos(ld->line, pos, encoding);
 	if (pos >= 0 && pos < ld->line_len) delete_stream(b, ld, line, pos, ld->line_len - pos);
 }
 
 /* is_part_of_paragraph() determines if the line ld refers to could be
-	considered part of a paragraph based on its leading spaces compared to
-	pa_space_len. If they are the same, is_part_of_paragraph() returns 1, and
-	*first_non_blank is set to the position of the first non-blank character on
-	the line. Otherwise, *first_non_blank is -1 and is_part_of_paragraph()
-	returns 0. */
+   considered part of a paragraph based on its leading spaces compared to
+   pa_space_len. If they are the same, is_part_of_paragraph() returns 1, and
+   *first_non_blank is set to the position of the first non-blank character on
+   the line. Otherwise, *first_non_blank is -1 and is_part_of_paragraph()
+   returns 0. */
 
 static int is_part_of_paragraph(const line_desc * const ld, const int tab_size, int * const first_non_blank, const encoding_type encoding) {
 	int pos = 0;
@@ -402,8 +399,8 @@ static int is_part_of_paragraph(const line_desc * const ld, const int tab_size, 
 }
 
 /* paragraph() reformats a paragraph following the current parameters for
-	right_margin (a value of 0 forces the use of the full screen width).  On
-	completion the cursor is positioned either:
+   right_margin (a value of 0 forces the use of the full screen width).  On
+   completion the cursor is positioned either:
 
   * on the first non-blank character after the paragraph if there is one, or
 
@@ -439,7 +436,7 @@ int paragraph(buffer * const b) {
 	start_undo_chain(b);
 
 	/* This useless insertion and deletion of a single character ensures
-	that the text isn't shifted way over to the left after an undo. */
+	   that the text isn't shifted way over to the left after an undo. */
 	insert_one_char(b, ld, line, 0, ' ');
 	delete_stream(b, ld, line, 0, 1);
 
@@ -497,7 +494,7 @@ int paragraph(buffer * const b) {
 				/** which is true if did_split != 0.                                 **/
 
 				if (did_split) {
-					if (pa_space && pa_space_len)
+					if (pa_space && pa_space_len && pa_space_pos)
 						insert_stream(b, ld, line, 0, pa_space, pa_space_pos);
 					/** 4.5.1 Insert the pa_spots[] stream if there is one. **/
 					if (pa_spots && pa_spots_pos)
@@ -537,7 +534,7 @@ int paragraph(buffer * const b) {
 
 				/** 5.4  Move following line's data starting with the first             **/
 				/** non-blank to the end of the current line.                           **/
-			
+
 				/**  We do this by first deleting the leading spaces                    **/
 				if (pos > 0) delete_stream(b, (line_desc *)ld->ld_node.next, line + 1, 0, pos);
 				/** 5.2 Cache the leading non-alphanumeric in pa_spots, then delete it,  **/
@@ -594,7 +591,7 @@ int paragraph(buffer * const b) {
 
 
 /* Centers the current line with respect to the right_margin parameter. If the
- line (without spaces) is longer than the right margin, nothing happens. */
+   line (without spaces) is longer than the right margin, nothing happens. */
 
 int center(buffer * const b) {
 
@@ -627,8 +624,8 @@ int center(buffer * const b) {
 
 
 /* Indents a line of the amount of whitespace present on the previous line, stopping
-	at a given column (use INT_MAX for not stopping). The number of
-	inserted bytes is returned. */
+   at a given column (use INT_MAX for not stopping). The number of
+   inserted bytes is returned. */
 
 int auto_indent_line(buffer * const b, const int line, line_desc * const ld, const int up_to_col) {
 
@@ -646,7 +643,7 @@ int auto_indent_line(buffer * const b, const int line, line_desc * const ld, con
 		if (col > up_to_col) break;
 		pos = next_pos(prev_ld->line, pos, b->encoding);
 	}
-	insert_stream(b, ld, line, 0, prev_ld->line, pos);
+	if (pos) insert_stream(b, ld, line, 0, prev_ld->line, pos);
 	return pos;
 }
 
@@ -720,6 +717,7 @@ int shift(buffer * const b, char *p, char *msg, int msg_size) {
 		start_undo_chain(b);
 		for (line=first_line; line<=last_line; line++) {
 			int pos, c_pos, c_col_orig, offset;
+			b->attr_len = -1;
 			goto_line(b,line);
 			ld = b->cur_line_desc;
 			if (line == first_line) start_line_desc = ld;
@@ -773,7 +771,9 @@ int shift(buffer * const b, char *p, char *msg, int msg_size) {
 					char c = ' ';
 					if (use_tabs && (b->opt.tab_size - calc_width(ld, pos, b->opt.tab_size, b->encoding) % b->opt.tab_size) <= -offset )
 						c = '\t';
-					insert_one_char(b, ld, b->cur_line, pos, c);
+					if (insert_one_char(b, ld, b->cur_line, pos, c)) {
+						break;
+					}
 					pos++;
 					c_pos++;
 				}
