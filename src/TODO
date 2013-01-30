@@ -1,2 +1,18 @@
 - Open files > 2G.
+
 - Increase coverage.
+
+0) Garbage collection. Under some extreme circumstances
+   in which the number of lost characters is
+   intolerably high, ne should allocate a new block of
+   memory and move contiguously the text into it.
+
+1) Fast large copying. When one pastes a *very large*
+   clip, we should create a pool entry just for that
+   copy and copy contiguously in it, instead of
+   allocating line by line.
+
+2) Loading from pipes. We should be able to read files
+   in which the length is not known. I think the best
+   thing to do would be to allocate exponentially
+   larger pools starting with the default size.

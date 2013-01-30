@@ -10,7 +10,7 @@
     any more when in free form mode and cursor or mark is beyond the
     end of a line.
 
-  * ReplaceOnce was returining a generic error code instead of success,
+  * ReplaceOnce was returning a generic error code instead of success,
     thus stopping macros.
  
 2.4
