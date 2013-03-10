@@ -589,3 +589,25 @@ int context_prefix(const buffer *b, unsigned char **p, int *prefix_pos, encoding
 	(*p)[b->cur_pos - *prefix_pos] = 0;
 	return OK;
 }
+
+
+/* Returns the line descriptor for line n of buffer b, or NULL if n is out of range. */
+line_desc *nth_line_desc(const buffer *b, const int n) {
+	line_desc *ld = b->cur_line_desc;
+	int i = b->cur_line - n;
+
+	if (n < 0 || n >= b->num_lines) return NULL;
+
+	/* Count relative to the current line, because we're usually looking for something close by. */
+	
+	while( i ) {
+		if (i > 0) {
+			ld = (line_desc *)ld->ld_node.prev;
+			i--;
+		} else {
+			ld = (line_desc *)ld->ld_node.next;
+			i++;
+		}
+	}
+	return ld;
+}

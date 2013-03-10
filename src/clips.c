@@ -382,7 +382,6 @@ int copy_vert_to_clip(buffer *b, int n, int cut) {
 	char *p = NULL;
 	clip_desc *cd, *new_cd;
 	line_desc *ld = b->cur_line_desc;
-	line_desc *bsld;
 
 	if (!b->marking) return MARK_BLOCK_FIRST;
 	if (b->block_start_line >= b->num_lines) return MARK_OUT_OF_BUFFER;
@@ -399,18 +398,7 @@ int copy_vert_to_clip(buffer *b, int n, int cut) {
 		return OK;
 	}
 
-	i = y - b->block_start_line;
-	bsld = ld;
-	while( i ) {
-		if (i > 0) {
-			bsld = (line_desc *)bsld->ld_node.prev;
-			i--;
-		} else {
-			bsld = (line_desc *)bsld->ld_node.next;
-			i++;
-		}
-	}
-	start_x = calc_width(bsld, b->block_start_pos, b->opt.tab_size, b->encoding);
+	start_x = calc_width(nth_line_desc(b, b->block_start_line), b->block_start_pos, b->opt.tab_size, b->encoding);
 	end_x = b->win_x + b->cur_x;
 
 	if (end_x < start_x) {
@@ -524,18 +512,7 @@ int erase_vert_block(buffer *b) {
 	   b->block_start_pos >= ld->line_len) 
 		return OK;
 
-	i = y - b->block_start_line;
-	bsld = ld;
-	while( i ) {
-		if (i > 0) {
-			bsld = (line_desc *)bsld->ld_node.prev;
-			i--;
-		} else {
-			bsld = (line_desc *)bsld->ld_node.next;
-			i++;
-		}
-	}
-	start_x = calc_width(bsld, b->block_start_pos, b->opt.tab_size, b->encoding);
+	start_x = calc_width(nth_line_desc(b, b->block_start_line), b->block_start_pos, b->opt.tab_size, b->encoding);
 	end_x = b->win_x + b->cur_x;
 
 	if (end_x < start_x) {
