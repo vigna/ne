@@ -1,5 +1,10 @@
 (This file, NEWS, lists new features and enhancements. See CHANGES for fixes.)
 
+2.6
+
+  * Document requester (F4) opens with cursor on the current document.
+    Docs with unsaved changes are bold, flagged with "*".
+
 2.5
 
   * New DelTabs flag, function separated from Tabs flag.

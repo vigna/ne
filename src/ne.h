@@ -137,6 +137,30 @@ enum {
 	NUM_BOOKMARKS
 };
 
+enum {
+	COMPLETE_NONE = 0,
+	COMPLETE_FILE,
+	COMPLETE_CMD_FILE,  /* Unimplemented ??? */
+	COMPLETE_SYNTAX
+};
+
+/* This provides a mechanism to easily create a list for request(). */
+
+typedef struct {
+	int (*cmpfnc)(const void *, const void *);
+	int allow_dupes;
+	char suffix;
+	
+	int cur_entries;
+	int alloc_entries;
+	int max_entry_len;
+	char **entries;
+	
+	int cur_chars;
+	int alloc_chars;
+	char *chars;
+} req_list;
+
 /* These are the list and node structures used throughout ne. See the exec.c
    source for some elaborations on the subject. */
 

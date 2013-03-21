@@ -365,7 +365,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		recording= b->recording;
 		b->recording = 0;
 		error = ERROR;
-		if (p || (p = request_string("String", NULL, FALSE, FALSE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
+		if (p || (p = request_string("String", NULL, FALSE, COMPLETE_NONE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
 			encoding_type encoding = detect_encoding(p, strlen(p));
 			error = OK;
 			start_undo_chain(b);
@@ -798,7 +798,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 
 	case FIND_A:
 	case FINDREGEXP_A:
-		if (p || (p = request_string(a == FIND_A ? "Find" : "Find RegExp", b->find_string, FALSE, FALSE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
+		if (p || (p = request_string(a == FIND_A ? "Find" : "Find RegExp", b->find_string, FALSE, COMPLETE_NONE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
 
 			const encoding_type encoding = detect_encoding(p, strlen(p));
 
@@ -826,7 +826,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			return FILE_IS_READ_ONLY;
 		}
 
-		if ((q = b->find_string) || (q = request_string(b->last_was_regexp ? "Find RegExp" : "Find", NULL, FALSE, FALSE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
+		if ((q = b->find_string) || (q = request_string(b->last_was_regexp ? "Find RegExp" : "Find", NULL, FALSE, COMPLETE_NONE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
 
 			const encoding_type search_encoding = detect_encoding(q, strlen(q));
 
@@ -842,7 +842,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 				b->find_string_changed = 1;
 			}
 
-			if (p || (p = request_string(b->last_was_regexp ? "Replace RegExp" : "Replace", b->replace_string, TRUE, FALSE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
+			if (p || (p = request_string(b->last_was_regexp ? "Replace RegExp" : "Replace", b->replace_string, TRUE, COMPLETE_NONE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
 				const encoding_type replace_encoding = detect_encoding(p, strlen(p));
 				int first_search = TRUE, num_replace = 0;
 
@@ -1327,7 +1327,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		return ERROR;
 
 	case EXEC_A:
-		if (p || (p = request_string("Command", b->command_line, FALSE, TRUE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
+		if (p || (p = request_string("Command", b->command_line, FALSE, COMPLETE_FILE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
 			free(b->command_line);
 			b->command_line = p;
 			return print_error(execute_command_line(b, p)) ? ERROR : 0;
@@ -1335,7 +1335,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		return ERROR;
 
 	case SYSTEM_A:
-		if (p || (p = request_string("Shell command", NULL, FALSE, TRUE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
+		if (p || (p = request_string("Shell command", NULL, FALSE, COMPLETE_FILE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
 
 			unset_interactive_mode();
 			if (system(p)) error = EXTERNAL_COMMAND_ERROR;
@@ -1355,7 +1355,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 
 		if (!b->marking) b->mark_is_vertical = 0;
 
-		if (p || (p = request_string("Filter", NULL, FALSE, TRUE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
+		if (p || (p = request_string("Filter", NULL, FALSE, COMPLETE_FILE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
 			int fin = -1, fout = -1;
 
 			char tmpnam1[strlen(P_tmpdir)+strlen(NE_TMP)+2], tmpnam2[strlen(P_tmpdir)+strlen(NE_TMP)+2], *command;
@@ -1498,7 +1498,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 
 	case SYNTAX_A:
 		if (!do_syntax) return SYNTAX_NOT_ENABLED;
-		if (p || (p = request_string("Syntax",  b->syn ? b->syn->name : NULL, TRUE, FALSE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
+		if (p || (p = request_string("Syntax",  b->syn ? b->syn->name : NULL, TRUE, COMPLETE_SYNTAX, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
 			if (!strcmp(p, "*")) b->syn = NULL;
 			else error = print_error(load_syntax_by_name(b, p));
 			if (error == OK) reset_window();

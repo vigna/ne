@@ -229,8 +229,11 @@ static void add_to_history(const unsigned char * const str) {
 	Note that presently this function always returns a pointer to a static
 	buffer, but this could change in the future.
 
-	completion_allowed has three possible values: 0 means no completion, 1
-	complete as a filename, 2 complete as a command followed by a filename.
+	completion_allowed has several possible values:
+	 0 means no completion,
+	 1 complete as a filename,
+	 2 complete as a command followed by a filename,
+	 3 complete as a recognized syntax name.
 
 	If prefer_utf8 is true, editing an ASCII line inserting an ISO-8859-1 character
 	will turn it into an UTF-8 line.
@@ -518,7 +521,7 @@ char *request(const char *prompt, const char * const default_string, const int a
 
 
 		case TAB:
-			if (completion_allowed) {
+			if (completion_allowed == COMPLETE_FILE) {
 				quoted = FALSE;
 				if (len && input_buffer[len - 1] == '"') {
 					input_buffer[len - 1] = 0;

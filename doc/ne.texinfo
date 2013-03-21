@@ -2413,8 +2413,10 @@ confirm the action.
 @noindent Abbreviation: @code{SD}
 
 @noindent displays a requester containing the names of all the
-documents in memory. You select whichever document you want to become
-the current document.
+documents in memory. Your cursor will be on your current document's
+name, and documents with unsaved changes will be indicated with
+asterisks (and bold if your terminal supports that). You select
+whichever document you want to become the current document.
 
 If you escape from the requester the requester goes away and you are
 returned to your original current document.

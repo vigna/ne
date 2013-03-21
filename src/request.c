@@ -26,17 +26,7 @@
 
 /* This is the expected max length of the current directory name. */
 
-#define CUR_DIR_MAX_SIZE		(16*1024)
-
-/* These are the default allocation sizes for the entry array and for the
-name array when reading a directory. The allocation sizes start with these
-values, and they are doubled each time more space is needed. This ensures a
-reasonable number of retries. */
-
-#define DEF_ENTRIES_ALLOC_SIZE	256
-#define DEF_NAMES_ALLOC_SIZE		(4*1024)
-
-
+#define CUR_DIR_MAX_SIZE    (16*1024)
 
 /* Prompts the user to choose one between several (num_entries) strings,
    contained in the entries array. The maximum string width is given as
@@ -67,9 +57,8 @@ static const char * const *entries;
    to consolidate as many of the tricky expressions into one small set of
    macros.
    
-   If true, the DISPLAYBYROW define should exibit the behavior of the older
-   versions of ne. If false, the second set of macros are used, and these implement
-   the by-column request display. For now, this may be considered experimental. */
+   If request_order is true you should get by-column request list. Otherwise it will
+   exibit the by-row behavior of the older versions of ne. */
 
 #define BR_NAMES_PER_LINE(p) max_names_per_line
 #define BR_NAMES_PER_COL(p) max_names_per_col
@@ -144,7 +133,7 @@ static void print_strings() {
 	for(row = 0; row < max_names_per_col; row++) {
 		move_cursor(row, 0);
 		clear_to_eol();
-      if (row < NAMES_PER_COL(page)) {
+		if (row < NAMES_PER_COL(page)) {
 			for(col = 0; col < NAMES_PER_LINE(page); col++) {
 				if (PXY2N(page,col,row) < num_entries) {
 					move_cursor(row, col * max_name_len);
@@ -184,7 +173,7 @@ static void request_move_to_sof(void) {
 }
 
 static void request_move_to_eof() {
-   normalize(num_entries - 1);
+	normalize(num_entries - 1);
 }
 
 
@@ -253,7 +242,7 @@ static void request_move_right(void) {
 		normalize(PXY2N(page,x,y) + DX(page));
 	}
 }
-			
+
 
 /* If mark_char is not '\0', we bold names ending with it. */
 int request_strings(const char * const * const _entries, const int _num_entries, int n, const int _max_name_len, int _mark_char) {
@@ -392,7 +381,7 @@ int request_strings(const char * const * const _entries, const int _num_entries,
 
 
 /* The completion function. Returns NULL if no file matches start_prefix, or
-	the longest prefix common to all files extending start_prefix. */
+   the longest prefix common to all files extending start_prefix. */
 
 char *complete(const char *start_prefix) {
 
@@ -402,7 +391,7 @@ char *complete(const char *start_prefix) {
 	struct dirent *de;
 	
 	/* This might be NULL if the current directory has been unlinked, or it is not readable.
-		in that case, we end up moving to the completion directory. */
+	   in that case, we end up moving to the completion directory. */
 	cur_dir_name = ne_getcwd(CUR_DIR_MAX_SIZE);
 
 	if (dir_name = str_dup(start_prefix)) {
@@ -448,7 +437,6 @@ char *complete(const char *start_prefix) {
 	return result;
 }
 
-
 /* This is the file requester. It reads the directory in which the filename
 lives, builds an array of strings and calls request_strings(). If a directory
 name is returned, it enters the directory. Returns NULL on error or escaping, a
@@ -460,11 +448,9 @@ check which key the user pressed). */
 
 char *request_files(const char * const filename, int use_prefix) {
 
-	int i, num_entries, name_len, max_name_len, total_len, next_dir, is_dir,
-		entries_alloc_size = DEF_ENTRIES_ALLOC_SIZE,
-		names_alloc_size = DEF_NAMES_ALLOC_SIZE;
-
-	char *dir_name, **entries = NULL, *names = NULL, *cur_dir_name, *result = NULL, *p;
+	int i, next_dir, is_dir;
+	char *dir_name, *cur_dir_name, *result = NULL, *p;
+	req_list rl;
 
 	DIR *d;
 	struct dirent *de;
@@ -481,88 +467,56 @@ char *request_files(const char * const filename, int use_prefix) {
 		if (i == -1) return NULL;
 	}
 
-	if (entries = malloc(sizeof(char *) * entries_alloc_size)) {
-		if (names = malloc(sizeof(char) * names_alloc_size)) {
-			do {
-				next_dir = FALSE;
+	do {
+		next_dir = FALSE;
+		if (req_list_init(&rl, NULL, TRUE, '/') != OK) break; 
 
-				if (d = opendir(CURDIR)) {
+		if (d = opendir(CURDIR)) {
 
-					num_entries = max_name_len = total_len = 0;
+			stop = FALSE;
 
-					stop = FALSE;
+			while(!stop && (de = readdir(d))) {
+				is_dir = is_directory(de->d_name);
+				if (use_prefix && !is_prefix(file_part(filename), de->d_name)) continue;
+				if (!req_list_add(&rl, de->d_name, is_dir)) break;
+			}
 
-					while(!stop && (de = readdir(d))) {
-						is_dir = is_directory(de->d_name);
-						if (use_prefix && !is_prefix(file_part(filename), de->d_name)) continue;
-						name_len = strlen(de->d_name) + is_dir + 1;
+			req_list_finalize(&rl);
 
-						if (name_len > max_name_len) max_name_len = name_len;
+			if (rl.cur_entries) {
+				qsort(rl.entries, rl.cur_entries, sizeof(char *), filenamecmpp);
 
-						if (total_len + name_len > names_alloc_size) {
-							char *t;
-							t = realloc(names, sizeof(char) * (names_alloc_size = names_alloc_size * 2 + name_len));
-							if (!t) break;
-							names = t;
-							/* Now adjust the entries to point to the newly reallocated strings */
-							entries[0] = names;
-							for (i = 1; i < num_entries; i++)
-							  entries[i] = entries[i - 1] + strlen(entries[i - 1]) + 1;
-						}
-
-						if (num_entries >= entries_alloc_size) {
-							char **t;
-							t = realloc(entries, sizeof(char *) * (entries_alloc_size *= 2));
-							if (!t) break;
-							entries = t;
-						}
-
-						strcpy(entries[num_entries] = names + total_len, de->d_name);
-						if (is_dir) strcpy(names + total_len + name_len - 2, "/");
-						total_len += name_len;
-						num_entries++;
+				if ((i = request_strings((const char * const *)rl.entries, rl.cur_entries, 0, rl.max_entry_len, rl.suffix)) != ERROR) {
+					p = rl.entries[i >= 0 ? i : -i - 2];
+					if (p[strlen(p) - 1] == '/' && i >= 0) {
+						p[strlen(p) - 1] = 0;
+						if (chdir(p)) alert();
+						else use_prefix = FALSE;
+						next_dir = TRUE;
 					}
-
-					if (num_entries) {
-						qsort(entries, num_entries, sizeof(char *), filenamecmpp);
-
-						if ((i = request_strings((const char * const *)entries, num_entries, 0, max_name_len, '/')) != ERROR) {
-							p = entries[i >= 0 ? i : -i - 2];
-							if (p[strlen(p) - 1] == '/' && i >= 0) {
-								p[strlen(p) - 1] = 0;
-								if (chdir(p)) alert();
-								else use_prefix = FALSE;
-								next_dir = TRUE;
-							}
-							else {
-								result = ne_getcwd(CUR_DIR_MAX_SIZE + strlen(p) + 2);
-								if (strcmp(result, "/")) strcat(result, "/");
-								strcat(result, p);
-								if (i < 0) {
-									memmove(result + 1, result, strlen(result) + 1);
-									result[0] = 0;
-								}
-							}
+					else {
+						result = ne_getcwd(CUR_DIR_MAX_SIZE + strlen(p) + 2);
+						if (strcmp(result, "/")) strcat(result, "/");
+						strcat(result, p);
+						if (i < 0) {
+							memmove(result + 1, result, strlen(result) + 1);
+							result[0] = 0;
 						}
 					}
-
-					closedir(d);
 				}
-				else alert();
+			}
 
-			} while(next_dir);
-
-			free(names);
+			closedir(d);
 		}
-		free(entries);
-	}
+		else alert();
+      req_list_free(&rl);
+	} while(next_dir);
 
 	chdir(cur_dir_name);
 	free(cur_dir_name);
 
 	return result;
 }
-
 
 
 /* Requests a file name. If no_file_req is FALSE, the file requester is firstly
@@ -592,50 +546,194 @@ char *request_file(const buffer *b, const char *prompt, const char *default_name
 
 int request_document(void) {
 
-	int i = -1, num_entries, max_name_len, total_len;
-	char **entries, *names, *p, unnamed_name[] = UNNAMED_NAME;
+	int i = -1, cur_entry = 0;
 	buffer *b = (buffer *)buffers.head;
+	req_list rl;
 
-	num_entries = max_name_len = total_len = 0;
-
-	while(b->b_node.next) {
-		p = b->filename ? b->filename : unnamed_name;
-
-		if (strlen(p)>max_name_len) max_name_len = strlen(p);
-
-		total_len += strlen(p) + 1;
-		num_entries++;
-
-		b = (buffer *)b->b_node.next;
-	}
-
-	max_name_len += 8;
-
-	if (num_entries) {
-
-		if (entries = malloc(sizeof(char *) * num_entries)) {
-			if (names = malloc(sizeof(char) * total_len)) {
-
-				p = names;
-
-				b = (buffer *)buffers.head;
-
-				for(i = 0; i < num_entries; i++) {
-					entries[i] = p;
-					strcpy(p, b->filename ? b->filename : unnamed_name);
-					p += strlen(p) + 1;
-
-					b = (buffer *)b->b_node.next;
-				}
-
-				i = request_strings((const char * const *)entries, num_entries, 0, max_name_len, '\0');
-				reset_window();
-
-				free(names);
-			}
-			free(entries);
+	if (b->b_node.next && req_list_init(&rl, NULL, TRUE, '*')==OK) {
+		i = 0;
+		while(b->b_node.next) {
+			if (b == cur_buffer) cur_entry = i;
+			req_list_add(&rl, b->filename ? b->filename : UNNAMED_NAME, b->is_modified);
+			b = (buffer *)b->b_node.next;
+			i++;
 		}
+		req_list_finalize(&rl);
+
+		i = request_strings((const char * const *)rl.entries, rl.cur_entries, cur_entry, rl.max_entry_len, rl.suffix);
+		reset_window();
+
+		req_list_free(&rl);
 	}
 
 	return i;
 }
+
+/* The req_list functions below provide a simple mechanism suitable for building
+   request lists for directory entries, syntax recognizers, etc. */
+   
+/* These are the default allocation sizes for the entry array and for the
+   name array when reading a directory. The allocation sizes start with these
+   values, and they are doubled each time more space is needed. This ensures a
+   reasonable number of retries. */
+
+#define DEF_ENTRIES_ALLOC_SIZE     256
+#define DEF_CHARS_ALLOC_SIZE   (4*1024)
+
+#if 0
+/* The req_list_del() function works just fine; we just don't need it yet. */
+
+/* Delete the nth string from the given request list. This will work regardelss of whether
+   the req_list has been finalized. */
+int req_list_del(req_list * const rl, int nth) {
+	char *str;
+	int len0, len, i;
+	if (nth < 0 || nth >= rl->cur_entries ) return ERROR;
+	str = rl->entries[nth];
+	len0 = len = strlen(str);
+	len +=  str[len+1] ? 3 : 2;  /* 'a b c \0 Suffix \0' or 'a b c \0 \0' or 'a b c Suffix \0 \0' */
+	memmove(str, str+len, sizeof(char)*(rl->cur_chars - ((str+len)-rl->chars)));
+	for(i=0; i<rl->cur_entries; i++)
+		if (rl->entries[i] > str )
+			rl->entries[i] -= len;
+	rl->cur_chars -= len;
+	memmove(&rl->entries[nth],&rl->entries[nth+1], sizeof(char *)*(rl->cur_entries - nth));
+	rl->cur_entries--;
+	/* did we just delete longest string? */
+	if (len0 == rl->max_entry_len) {
+		for (i = rl->max_entry_len = 0; i < rl->cur_entries; i++) {
+			if ((len = strlen(rl->entries[i])) > rl->max_entry_len)
+				rl->max_entry_len = len;
+		}
+	}
+	return rl->cur_entries;
+}
+#endif
+
+void req_list_free(req_list * const rl) {
+	if (rl->entries) free(rl->entries);
+	rl->entries = NULL;
+	if (rl->chars) free(rl->chars);
+	rl->chars = NULL;
+	rl->cur_entries = rl->alloc_entries = rl->max_entry_len = 0;
+	rl->cur_chars = rl->alloc_chars = 0;
+}
+
+/* Initialize a request list. A comparison function suitable for qsort() calls may be provided; if 
+   it is provided, that function will be used to keep the entries sorted. If NULL is provided instead,
+   entries are kept in the order they are added. The boolean allow_dupes determines whether duplicate
+   entries are allowed. If not, and if cmpfnc is NULL, then each addition requires a linear search over
+   the current entries. If a suffix character is provided, it can optionally be added to individual
+   entries as they are added, in which case req_list_finalize() should be called before the entries
+   are used in a request_strings() call. */
+int req_list_init( req_list * const rl, int cmpfnc(const void *, const void *), const int allow_dupes, const char suffix) {
+	rl->cmpfnc = cmpfnc;
+	rl->allow_dupes = allow_dupes;
+	rl->suffix = suffix;	
+	rl->cur_entries = rl->alloc_entries = rl->max_entry_len = 0;
+	rl->cur_chars = rl->alloc_chars = 0;
+	if (rl->entries = malloc(sizeof(char *) * DEF_ENTRIES_ALLOC_SIZE)) {
+		if (rl->chars = malloc(sizeof(char) * DEF_CHARS_ALLOC_SIZE)) {
+			rl->alloc_entries = DEF_ENTRIES_ALLOC_SIZE;
+			rl->alloc_chars = DEF_CHARS_ALLOC_SIZE;
+			return OK;
+		}
+		free(rl->entries);
+		rl->entries = NULL;
+	}
+	return OUT_OF_MEMORY;
+}
+
+/* req_list strings are stored with a trailing '\0', followed by an optional suffix
+   character, and an additional trailing '\0'. This allows comparing strings w/o
+   having to consider the optional suffexes. Finalizing the req_list effectively
+   shifts the suffixes left, exchanging them for the preceeding '\0'. After this
+   operation, all the strings will be just strings, some of which happen to end
+   with the suffix character, and all of which are followed by two null bytes. */ 
+void req_list_finalize(req_list * const rl) {
+	int i, len;
+	for (i=0; i<rl->cur_entries; i++) {
+		len = strlen(rl->entries[i]);
+		*(rl->entries[i]+len) = *(rl->entries[i]+len+1);
+		*(rl->entries[i]+len+1) = '\0';
+	}
+}
+
+/* Add a string plus an optional suffix to a request list. 
+   We really add two null-terminated strings: the actual entry, and a
+   possibly empty suffix. These pairs should be merged later by
+   req_list_finalize(). If duplicates are not allowed (see req_list_init()) and
+   the str already exists in the table (according to the comparison function or
+   by strcmp if there is not comparison function), then the conflicting entry
+   is returned. */
+char *req_list_add(req_list * const rl, char * const str, const int suffix) {
+	int i, ins;
+	char *newstr, *p;
+	int len = strlen(str);
+	int lentot = len + ((rl->suffix && suffix) ? 3 : 2); /* 'a b c \0 Suffix \0' or 'a b c \0 \0' */
+
+	if (rl->cmpfnc) { /* implies the entries are sorted */
+		int l=0;
+		int r=rl->cur_entries - 1;
+		while(l <= r) {
+			i=(r+l)/2;
+			int cmp = rl->cmpfnc((void *)&str, (void *)&rl->entries[i]);
+			if (cmp < 0 )
+				r = i - 1;
+			else if (cmp > 0)
+				l = i + 1;
+			else {
+				i = - i - 1;
+				break;
+			}
+		}
+		if (i < 0) { /* found a match at -i - 1 */
+			if (!rl->allow_dupes) return rl->entries[-i-1];
+			ins = -i;
+		}
+		else if (r < i ) { ins = i; /* insert at i */ }
+		else if (l > i ) { ins = i + 1; /* insert at i + 1 */ }
+		else { /* impossible! */ ins = rl->cur_entries; } 
+	} 
+	else /* not ordered */
+		if (!rl->allow_dupes) {
+			for(i=0; i<rl->cur_entries; i++)
+				if(!strcmp(rl->entries[i],newstr)) return rl->entries[i];
+	}
+	else ins = rl->cur_entries; /* append to end */
+
+	if (len > rl->max_entry_len) rl->max_entry_len = len;
+	
+	/* make enough space to store the new string */
+	if (rl->cur_chars + lentot > rl->alloc_chars) {
+		char * p0 = rl->chars;
+		char * p1;
+		p1 = realloc(rl->chars, sizeof(char) * (rl->alloc_chars * 2 + lentot));
+		if (!p1) return NULL;
+		rl->alloc_chars = rl->alloc_chars * 2 + lentot;
+		rl->chars = p1;
+		/* all the strings just moved from *p0 to *p1, so adjust accordingly */
+		for (i=0; i<rl->cur_entries; i++)
+			rl->entries[i] += ( p1 - p0 );
+	}
+	/* make enough slots to hold the string pointer */
+	if (rl->cur_entries >= rl->alloc_entries) {
+		char **t;
+		t = realloc(rl->entries, sizeof(char *) * (rl->alloc_entries * 2 + 1));
+		if (!t) return NULL;
+		rl->alloc_entries = rl->alloc_entries * 2 + 1;
+		rl->entries = t;
+	}
+
+	newstr = &rl->chars[rl->cur_chars];
+	p=strcpy(newstr,str)+len+1;
+	if (rl->suffix && suffix) *p++ = rl->suffix;
+	*p = '\0';
+	rl->cur_chars += lentot;
+	if (ins < rl->cur_entries)
+		memmove(&rl->entries[ins+1], &rl->entries[ins], sizeof(char *)*(rl->cur_entries - ins));
+	rl->entries[ins] = newstr;
+	rl->cur_entries++;
+	return newstr;
+}
+

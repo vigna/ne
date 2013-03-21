@@ -250,9 +250,13 @@ int strdictcmp(const void *a, const void *b)	{
 int filenamecmpp(const void *a, const void *b) {
 	const char * const s = *(const char **)a, * const t = *(const char **)b; 
 	if (strcmp(s, "../")==0) return strcmp(t, "../") == 0 ? 0 : -1;
+	if (strcmp(s, "..")==0)  return strcmp(t, "..")  == 0 ? 0 : -1;
 	if (strcmp(t, "../")==0) return 1;
+	if (strcmp(t, "..")==0) return 1;
 	if (strcmp(s, "./")==0) return strcmp(t, "./") == 0 ? 0 : -1;
+	if (strcmp(s, ".")==0) return strcmp(t, ".") == 0 ? 0 : -1;
 	if (strcmp(t, "./")==0) return 1;
+	if (strcmp(t, ".")==0) return 1;
 	/* return strcmp(s, t); */
 	return strdictcmp(a, b);
 }
@@ -611,3 +615,4 @@ line_desc *nth_line_desc(const buffer *b, const int n) {
 	}
 	return ld;
 }
+
