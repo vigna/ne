@@ -3,6 +3,8 @@
 2.6
 
   * Ancient bug with vertical clip edges fixed.
+  
+  * AutoComplete occasionally would omit some completions.
 
 2.5
 
