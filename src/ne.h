@@ -147,7 +147,7 @@ enum {
 /* This provides a mechanism to easily create a list for request(). */
 
 typedef struct {
-	int (*cmpfnc)(const void *, const void *);
+	int (*cmpfnc)(const char *, const char *);
 	int allow_dupes;
 	char suffix;
 	

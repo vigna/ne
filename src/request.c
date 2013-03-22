@@ -469,7 +469,7 @@ char *request_files(const char * const filename, int use_prefix) {
 
 	do {
 		next_dir = FALSE;
-		if (req_list_init(&rl, NULL, TRUE, '/') != OK) break; 
+		if (req_list_init(&rl, filenamecmp, TRUE, '/') != OK) break; 
 
 		if (d = opendir(CURDIR)) {
 
@@ -484,7 +484,7 @@ char *request_files(const char * const filename, int use_prefix) {
 			req_list_finalize(&rl);
 
 			if (rl.cur_entries) {
-				qsort(rl.entries, rl.cur_entries, sizeof(char *), filenamecmpp);
+				/* qsort(rl.entries, rl.cur_entries, sizeof(char *), filenamecmpp); */
 
 				if ((i = request_strings((const char * const *)rl.entries, rl.cur_entries, 0, rl.max_entry_len, rl.suffix)) != ERROR) {
 					p = rl.entries[i >= 0 ? i : -i - 2];
@@ -619,14 +619,16 @@ void req_list_free(req_list * const rl) {
 	rl->cur_chars = rl->alloc_chars = 0;
 }
 
-/* Initialize a request list. A comparison function suitable for qsort() calls may be provided; if 
-   it is provided, that function will be used to keep the entries sorted. If NULL is provided instead,
-   entries are kept in the order they are added. The boolean allow_dupes determines whether duplicate
-   entries are allowed. If not, and if cmpfnc is NULL, then each addition requires a linear search over
-   the current entries. If a suffix character is provided, it can optionally be added to individual
-   entries as they are added, in which case req_list_finalize() should be called before the entries
-   are used in a request_strings() call. */
-int req_list_init( req_list * const rl, int cmpfnc(const void *, const void *), const int allow_dupes, const char suffix) {
+/* Initialize a request list. A comparison function may be provided; if it is provided,
+   that function will be used to keep the entries sorted. If NULL is provided instead,
+   entries are kept in the order they are added. The boolean allow_dupes determines
+   whether duplicate entries are allowed. If not, and if cmpfnc is NULL, then each
+   addition requires a linear search over the current entries. If a suffix character is
+   provided, it can optionally be added to individual entries as they are added, in which
+   case req_list_finalize() should be called before the entries are used in a
+   request_strings() call. */
+
+int req_list_init( req_list * const rl, int cmpfnc(const char *, const char *), const int allow_dupes, const char suffix) {
 	rl->cmpfnc = cmpfnc;
 	rl->allow_dupes = allow_dupes;
 	rl->suffix = suffix;	
@@ -667,17 +669,17 @@ void req_list_finalize(req_list * const rl) {
    by strcmp if there is not comparison function), then the conflicting entry
    is returned. */
 char *req_list_add(req_list * const rl, char * const str, const int suffix) {
-	int i, ins;
+	int i, ins, cmp;
 	char *newstr, *p;
 	int len = strlen(str);
 	int lentot = len + ((rl->suffix && suffix) ? 3 : 2); /* 'a b c \0 Suffix \0' or 'a b c \0 \0' */
 
 	if (rl->cmpfnc) { /* implies the entries are sorted */
-		int l=0;
+		int l=i=0;
 		int r=rl->cur_entries - 1;
 		while(l <= r) {
 			i=(r+l)/2;
-			int cmp = rl->cmpfnc((void *)&str, (void *)&rl->entries[i]);
+			cmp = (*rl->cmpfnc)(str, rl->entries[i]);
 			if (cmp < 0 )
 				r = i - 1;
 			else if (cmp > 0)
@@ -695,13 +697,14 @@ char *req_list_add(req_list * const rl, char * const str, const int suffix) {
 		else if (l > i ) { ins = i + 1; /* insert at i + 1 */ }
 		else { /* impossible! */ ins = rl->cur_entries; } 
 	} 
-	else /* not ordered */
+	else {/* not ordered */
+		ins = rl->cur_entries; /* append to end */
 		if (!rl->allow_dupes) {
 			for(i=0; i<rl->cur_entries; i++)
 				if(!strcmp(rl->entries[i],newstr)) return rl->entries[i];
-	}
-	else ins = rl->cur_entries; /* append to end */
-
+		}
+   }
+	
 	if (len > rl->max_entry_len) rl->max_entry_len = len;
 	
 	/* make enough space to store the new string */

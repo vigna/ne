@@ -230,7 +230,7 @@ char *request_file(const buffer *b, const char *prompt, const char *default_name
 int   request_document(void);
 /* int   req_list_del(req_list * const rl, int nth); */
 void  req_list_free(req_list * const rl);
-int   req_list_init(req_list * const rl, int cmpfnc(const void *, const void *), const int allow_dupes, const char suffix);
+int   req_list_init(req_list * const rl, int cmpfnc(const char *, const char *), const int allow_dupes, const char suffix);
 char *req_list_add(req_list * const rl, char * const str, const int suffix);
 void  req_list_finalize(req_list * const rl);
 
@@ -274,8 +274,10 @@ const char *file_part(const char *pathname);
 char *str_dup(const char *s);
 int strnlen_ne(const char *s, int n);
 int strcmpp(const void *a, const void *b);
-int strdictcmp(const void *a, const void *b);
+int strdictcmpp(const void *a, const void *b);
+int strdictcmp(const char *a, const char *b);
 int filenamecmpp(const void *a, const void *b);
+int filenamecmp(const char *a, const char *b);
 void set_interactive_mode(void);
 void unset_interactive_mode(void);
 int calc_width(const line_desc *ld, int n, int tab_size, encoding_type encoding);

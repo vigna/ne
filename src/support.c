@@ -227,6 +227,10 @@ int is_prefix(const char * const p, const char * const s) {
 }
 
 
+/* The following *cmpp() functions are suitable for use with qsort().
+   They front comparison functions with "normal" (i.e., like strcmp())
+   calling conventions. */
+   
 /* A string pointer comparison function for qsort(). */
 
 int strcmpp(const void *a, const void *b) {
@@ -236,11 +240,15 @@ int strcmpp(const void *a, const void *b) {
 
 /* Another comparison for qsort, this one does dictionary order. */
 
-int strdictcmp(const void *a, const void *b)	{
+int strdictcmpp(const void *a, const void *b)	{
+	return strdictcmp(*(const char **)a, *(const char **)b);
+}
+
+int strdictcmp(const char *a, const char *b)	{
 	int ci;
 	
-	if ( ci = strcasecmp(*(char * const *)a, *(char * const *)b) ) return ci;
-	return strcmp(*(char * const *) a, * (char * const *) b);
+	if ( ci = strcasecmp(a, b) ) return ci;
+	return strcmp(a, b);
 }
                                                                        
 
@@ -248,7 +256,10 @@ int strdictcmp(const void *a, const void *b)	{
    and then orders lexicographically. */
 
 int filenamecmpp(const void *a, const void *b) {
-	const char * const s = *(const char **)a, * const t = *(const char **)b; 
+	return filenamecmp(*(const char **)a, *(const char **)b);
+}
+
+int filenamecmp(const char * s, const char * t) {
 	if (strcmp(s, "../")==0) return strcmp(t, "../") == 0 ? 0 : -1;
 	if (strcmp(s, "..")==0)  return strcmp(t, "..")  == 0 ? 0 : -1;
 	if (strcmp(t, "../")==0) return 1;
@@ -257,8 +268,7 @@ int filenamecmpp(const void *a, const void *b) {
 	if (strcmp(s, ".")==0) return strcmp(t, ".") == 0 ? 0 : -1;
 	if (strcmp(t, "./")==0) return 1;
 	if (strcmp(t, ".")==0) return 1;
-	/* return strcmp(s, t); */
-	return strdictcmp(a, b);
+	return strdictcmpp(s, t);
 }
 
 

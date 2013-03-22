@@ -20,92 +20,32 @@
 
 #include "ne.h"
 
-#define INITIAL_HASH_TABLE_SIZE (1024)
-#define INITIAL_BUFFER_SIZE (16*1024)
 #define EXTERNAL_FLAG_CHAR '*'
 
-/* The string buffer. Contains all strings found so far, concatenated. 
-   Each string has an additional NUL at its end to make room for an EXTERNAL_FLAG_CHAR. */
-static unsigned char *strings;
-
-/* The size of the string buffer, and the first free location. */
-static int strings_size, strings_first_free;
-
-/* The hash table. Entries are offsets into strings. */
-static int *hash_table;
-
-/* The allocated size of the table, the mask to compute the modulo (i.e., size - 1) and the number of entries in the table. */
-static int size, mask, n;
-
-static int hash2(unsigned char *s, int len) {
-		unsigned long h = 42;
-		while(len-- != 0) h ^= ( h << 5 ) + s[len] + ( h >> 2 );
-		return h & mask;
-}
-
-static void init_hash_table(void) {
-	hash_table = calloc(size = INITIAL_HASH_TABLE_SIZE, sizeof *hash_table);
-	mask = size - 1;
-	n = 0;
-	strings = malloc(strings_size = INITIAL_BUFFER_SIZE);
-	strings_first_free = 1; /* We want to use 0 to denote empty slots. */
-}
-
-static void delete_hash_table(void) {
-	free(strings);
-	free(hash_table);
-}
-
-/* Add a given string, with specified length, to the string buffer, returning a pointer to the copy. */
-static unsigned char *add_to_strings(const unsigned char * const s, int len) {
-	if (strings_size - strings_first_free < len + 2) {
-		if ( (strings_size *= 2) - strings_first_free < len + 2 ) strings_size += len + 2;
-		strings = realloc(strings, strings_size);
-	}
-	strncpy(strings + strings_first_free, s, len);
-	strings[strings_first_free + len] = 0;
-	strings[strings_first_free + len + 1] = 0;
-	strings_first_free += len + 2;
-	return strings + strings_first_free - len - 2;
-}
-
-
-static int code(const int hash, const int ext) {
-	return ext ? -hash: hash;
-}
-
-static int decode(const int hash) {
-	return hash < 0 ? -hash : hash;
-}
-
+static req_list rl;
 
 static void add_string(unsigned char * const s, const int len, const int ext) {
-	int hash = hash2(s, len);
+	static char *buf = NULL;
+	static int   buflen = 0;
+	char *buf_new;
+	int   cplen = len;
 
-	while(hash_table[hash] && strncmp(&strings[decode(hash_table[hash])], s, len)) hash = ( hash + 1 ) & mask;
-	if (hash_table[hash]) return;
-
-	n++;
-	hash_table[hash] = code(add_to_strings(s, len) - strings, ext);
-	if ( size < ( ( n * 4 ) / 3 ) ) {
-		int i, l;
-		unsigned char *p;
-		int *new_hash_table = calloc(size *= 2, sizeof *hash_table);
-		mask = size - 1;
-		for(i = 0; i < size / 2; i++) {
-			if (hash_table[i]) {
-				p = &strings[decode(hash_table[i])];
-				l = strlen(p);
-				hash = hash2(p, l);
-				while(new_hash_table[hash] && strncmp(&strings[decode(new_hash_table[hash])], p, l)) hash = ( hash + 1 ) & mask;
-				new_hash_table[hash] = code(p - strings, hash_table[i] < 0);
-				p += l + 2;
-			}
-		}
-		
-		free(hash_table);
-		hash_table = new_hash_table;
-	}
+   if (len < 1) {
+   	if (buf) free(buf);
+   	buf = NULL;
+   	buflen = 0;
+   	return;
+   }
+   if (len > buflen) {
+   	if (buf_new = realloc(buf,len * 2 + 1)) {
+   		buflen = len * 2 + 1;
+   		buf = buf_new;
+   	}
+   	else cplen = buflen - 1;
+   }
+   strncpy(buf,s,cplen);
+   buf[cplen] = '\0';
+   req_list_add(&rl,buf,ext);
 }
 
 static void search_buff(const buffer *b, const unsigned char *p, const int encoding, const int case_search, const int ext) {
@@ -130,11 +70,15 @@ static void search_buff(const buffer *b, const unsigned char *p, const int encod
 				l = r;
 			}
 			assert(l <= ld->line_len);
-			if (stop) return;
+			if (stop) {
+				add_string(NULL,-1,0);
+				return;
+			}
 		} while (l < ld->line_len - p_len);
 		
 		ld = next;
 	}
+	add_string(NULL,-1,0);
 }
 
 /* Returns a completion for the (non-NULL) prefix p, showing suffixes from
@@ -152,11 +96,11 @@ unsigned char *autocomplete(unsigned char *p, char *req_msg, const int ext, int 
 			
 	assert(p);
 	
-	init_hash_table();
+	req_list_init(&rl, (cur_buffer->opt.case_search ? strcmp : strdictcmp), FALSE, EXTERNAL_FLAG_CHAR);
 
 	search_buff(cur_buffer, p, cur_buffer->encoding, cur_buffer->opt.case_search, FALSE);
 	if (stop) {
-		delete_hash_table();
+		req_list_free(&rl);
 		free(p);
 		return NULL;
 	}
@@ -167,7 +111,7 @@ unsigned char *autocomplete(unsigned char *p, char *req_msg, const int ext, int 
 			if (b != cur_buffer) {
 				search_buff(b, p, cur_buffer->encoding, cur_buffer->opt.case_search, TRUE);
 				if (stop) {
-					delete_hash_table();
+					req_list_free(&rl);
 					free(p);
 					return NULL;
 				}
@@ -176,18 +120,14 @@ unsigned char *autocomplete(unsigned char *p, char *req_msg, const int ext, int 
 		}
  	}
 
+	for(i = 0; i < rl.cur_entries; i++) {
+		l = strlen(rl.entries[i]);
+		if (max_len < l) max_len = l;
+		if (min_len > l) min_len = l;
+	}
 	/* We compact the table into a vector of char pointers. */
-	entries = malloc(n * sizeof *entries);
-	for(i = j = 0; i < size; i++) 
-		if (hash_table[i]) {
-			entries[j] = &strings[decode(hash_table[i])];
-			l = strlen(entries[j]);
-			if (max_len < l) max_len = l;
-			if (min_len > l) min_len = l;
-			if (hash_table[i] < 0) entries[j][strlen(entries[j])] = EXTERNAL_FLAG_CHAR;
-			j++;
-		}
-	assert(j == n);
+	req_list_finalize(&rl);
+
 
 	free(p);
 	p = NULL;
@@ -200,36 +140,36 @@ unsigned char *autocomplete(unsigned char *p, char *req_msg, const int ext, int 
 	}
 	*error = AUTOCOMPLETE_COMPLETED;
 	free(entries);
-	delete_hash_table();
+	req_list_free(&rl);
 	return p;
 #endif
 
-	if (n != 0) {
-		qsort(entries, n, sizeof *entries, strdictcmp);  
+	if (rl.cur_entries > 0) {
+		qsort(rl.entries, rl.cur_entries, sizeof(char *), strdictcmpp);
 		/* Find maximum common prefix. */
-		m = strlen(entries[0]);
-		if (entries[0][m-1] == EXTERNAL_FLAG_CHAR) m--;
-		for(i = 1; i < n; i++) {
+		m = strlen(rl.entries[0]);
+		if (rl.entries[0][m-1] == EXTERNAL_FLAG_CHAR) m--;
+		for(i = 1; i < rl.cur_entries; i++) {
 			for(j = 0; j < m; j++) 
-				if (entries[i][j] != entries[0][j]) break;
+				if (rl.entries[i][j] != rl.entries[0][j]) break;
 			m = j;
 		}
 
-		/* If we can output more character than the prefix len, we do so without
+		/* If we can output more characters than the prefix len, we do so without
 			starting the requester. */
 		if (m > prefix_len) {
 			p = malloc(m + 1);
-			strncpy(p, entries[0], m);
+			strncpy(p, rl.entries[0], m);
 			p[m] = 0;
 			*error = min_len == m ? AUTOCOMPLETE_COMPLETED : AUTOCOMPLETE_PARTIAL;
 		}
 		else {
 			print_message(req_msg);
-			if ((i = request_strings((const char * const *)entries, n, 0, max_len + 1, EXTERNAL_FLAG_CHAR)) != ERROR) {
+			if ((i = request_strings((const char * const *)rl.entries, rl.cur_entries, 0, rl.max_entry_len + 1, EXTERNAL_FLAG_CHAR)) != ERROR) {
 				i = i >= 0 ? i : -i - 2;
 				/* Delete EXTERNAL_FLAG_CHAR at the end of the strings if necessary. */
-				if (entries[i][strlen(entries[i]) - 1] == EXTERNAL_FLAG_CHAR) entries[i][strlen(entries[i]) - 1] = 0;
-				p = str_dup(entries[i]);
+				if (rl.entries[i][strlen(rl.entries[i]) - 1] == EXTERNAL_FLAG_CHAR) rl.entries[i][strlen(rl.entries[i]) - 1] = 0;
+				p = str_dup(rl.entries[i]);
 				*error = AUTOCOMPLETE_COMPLETED;
 			}
 			else *error = AUTOCOMPLETE_CANCELLED;
@@ -238,8 +178,7 @@ unsigned char *autocomplete(unsigned char *p, char *req_msg, const int ext, int 
 	}
 	else *error = AUTOCOMPLETE_NO_MATCH;
 
-	free(entries);
-	delete_hash_table();
+	req_list_free(&rl);
 	D(fprintf(stderr,"autocomp returning '%s', entries: %d\n", p, n);)
 	return p;
 }
