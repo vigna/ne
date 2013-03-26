@@ -268,7 +268,7 @@ int filenamecmp(const char * s, const char * t) {
 	if (strcmp(s, ".")==0) return strcmp(t, ".") == 0 ? 0 : -1;
 	if (strcmp(t, "./")==0) return 1;
 	if (strcmp(t, ".")==0) return 1;
-	return strdictcmpp(s, t);
+	return strdictcmp(s, t);
 }
 
 
