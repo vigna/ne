@@ -1257,6 +1257,8 @@ file. @xref{Arguments}.
 
 With no parameter, the @code{Syntax} command prompts you for a syntax
 to load, the offered default being the currently loaded syntax if there is one.
+Use the @key{Tab} key at that prompt to get a list of available syntax
+recognizers.
 
 One syntax definition you may find useful for any type of text file is
 called simply @samp{tabs}. It highlights the @sc{tab}s in your text so
@@ -1270,6 +1272,11 @@ but the existing definition files should prove to be useful examples. In
 particular, the @file{syntax/c.jsf} file contains some particularly
 helpful comments. Syntax definition files have a @samp{.jsf} extension. Do
 not include that extension when using the @code{Syntax} command.
+
+Your own syntax recognizers will be preferred over the global recognizers.
+If you use the @key{Tab} key at the syntax prompt to display the requester
+of extant recognizers, yours will be marked with an asterisk and bold if
+your terminal supports that.
 
 Syntax highlighting does incur a slight penalty in memory used per line of
 text, and it also consumes some CPU resources. For small to medium sized
@@ -4153,7 +4160,8 @@ current buffer accordingly.
 
 If the optional @var{name} argument is not specified, you are
 prompted for one. The current one, if set, is suggested as the
-default. The special @var{name} * turns off syntax highlighting for
+default. Use the @key{Tab} key for a requester of the extant
+syntax recognizers. The special @var{name} * turns off syntax highlighting for
 the current document. Otherwise, @var{name} must match a syntax
 definition either in your @file{~/.ne/syntax} directory or in a
 directory named @samp{syntax} inside @code{ne}'s global directory.

@@ -225,9 +225,11 @@ char *request(const char *prompt, const char *default_string, int alpha_allowed,
 
 /* request.c */
 int   request_strings(const char * const * const entries, int num_entries, int default_entry, int max_name_len, int mark_char);
+char *request_syntax(const char *syntax, int use_prefix);
 char *request_files(const char *filename, int use_prefix);
 char *request_file(const buffer *b, const char *prompt, const char *default_name);
 int   request_document(void);
+char *complete_filename(const char *start_prefix);
 /* int   req_list_del(req_list * const rl, int nth); */
 void  req_list_free(req_list * const rl);
 int   req_list_init(req_list * const rl, int cmpfnc(const char *, const char *), const int allow_dupes, const char suffix);
@@ -286,7 +288,6 @@ int calc_pos(const line_desc *ld, int n, int tab_size, encoding_type encoding);
 int get_string_width(const unsigned char * const s, const int len, const encoding_type encoding);
 int max_prefix(const char *s, const char *t);
 int is_prefix(const char *p, const char *s);
-char *complete(const char *start_prefix);
 int is_migrated(const char *name);
 int is_directory(const char *name);
 int is_ascii(const unsigned char *s, int len);

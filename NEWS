@@ -5,6 +5,8 @@
   * Document requester (F4) opens with cursor on the current document.
     Docs with unsaved changes are bold, flagged with "*".
 
+  * Tab in Syntax command displays requester of extant syntax recognizers.
+
 2.5
 
   * New DelTabs flag, function separated from Tabs flag.

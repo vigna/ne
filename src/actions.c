@@ -1501,7 +1501,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		if (p || (p = request_string("Syntax",  b->syn ? b->syn->name : NULL, TRUE, COMPLETE_SYNTAX, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
 			if (!strcmp(p, "*")) b->syn = NULL;
 			else error = print_error(load_syntax_by_name(b, p));
-			if (error == OK) reset_window();
+			reset_window();
 			free(p);
 			return error ? ERROR : OK;
 		}

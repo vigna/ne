@@ -244,7 +244,13 @@ static void request_move_right(void) {
 }
 
 
-/* If mark_char is not '\0', we bold names ending with it. */
+/* Given a list os strings, let the user pick one. If _mark_char is not '\0', we bold names ending with it.
+   The integer returned is one of the following:
+   n >= 0  User selected string n with the enter key. 
+   -1      Error or abort; no selection made.
+   -n - 2  User selected string n with the TAB key. 
+   (Yes, it's kind of evil, but it's nothing compared to what request() does!) */
+
 int request_strings(const char * const * const _entries, const int _num_entries, int n, const int _max_name_len, int _mark_char) {
 
 	action a;
@@ -383,7 +389,7 @@ int request_strings(const char * const * const _entries, const int _num_entries,
 /* The completion function. Returns NULL if no file matches start_prefix, or
    the longest prefix common to all files extending start_prefix. */
 
-char *complete(const char *start_prefix) {
+char *complete_filename(const char *start_prefix) {
 
 	int is_dir, unique = TRUE;
 	char *p, *dir_name, *cur_dir_name, *cur_prefix = NULL, *result = NULL;
@@ -437,13 +443,79 @@ char *complete(const char *start_prefix) {
 	return result;
 }
 
+static void load_syntax_names(req_list *rl, DIR *d, int flag) {
+	struct dirent *de;
+	int len, extlen = strlen(SYNTAX_EXT);
+
+	stop = FALSE;
+
+	while(!stop && (de = readdir(d))) {
+		if (is_directory(de->d_name)) continue;
+		len = strlen(de->d_name);
+		if (len > extlen && !strcmp(de->d_name+len - extlen, SYNTAX_EXT)) {
+			char ch = de->d_name[len-extlen];
+			de->d_name[len-extlen] = '\0';
+			if (!req_list_add(rl, de->d_name, flag)) break;
+			de->d_name[len-extlen] = ch;
+		}
+	}
+}
+
+/* This is the syntax requester. It reads the user's syntax directory and the
+   global syntax directory, builds an array of strings and calls request_strings().
+   Returns NULL on error or escaping, or a pointer to the selected syntax name sans
+   extension if RETURN or TAB key was pressed. As per request_files(), if the
+   selection was made with the TAB key, the first character of the returned string
+   is a NUL, so callers (currently only request()) must take care to handle this
+   case. */
+
+char *request_syntax(const char * const prefix, int use_prefix) {
+	unsigned char syn_dir_name[512];
+	unsigned char *p, *q;
+	req_list rl;
+	DIR *d;
+	int i;
+
+	if (req_list_init(&rl, filenamecmp, FALSE, '*') != OK) return NULL;
+	if ((p = exists_prefs_dir()) && strlen(p) + 2 + strlen(SYNTAX_DIR) < sizeof syn_dir_name) {
+		strcat(strcpy(syn_dir_name, p), SYNTAX_DIR);
+		if (d = opendir(syn_dir_name)) {
+			load_syntax_names(&rl,d,TRUE);
+			closedir(d);
+		}
+	}
+	if ((p = exists_gprefs_dir()) && strlen(p) + 2 + strlen(SYNTAX_DIR) < sizeof syn_dir_name) {
+		strcat(strcpy(syn_dir_name, p), SYNTAX_DIR);
+		if (d = opendir(syn_dir_name)) {
+			load_syntax_names(&rl,d,FALSE);
+			closedir(d);
+		}
+	}
+	req_list_finalize(&rl);
+	p = NULL;
+	if (rl.cur_entries && (i = request_strings((const char * const *)rl.entries, rl.cur_entries, 0, rl.max_entry_len, rl.suffix)) != ERROR) {
+		q = rl.entries[i >= 0 ? i : -i - 2];
+		if (p = malloc(strlen(q)+3)) {
+			strcpy(p,q);
+			if (p[strlen(p)-1] == rl.suffix) p[strlen(p)-1] = '\0';
+			if (i < 0) {
+				memmove(p + 1, p, strlen(p) + 1);
+				p[0] = '\0';
+			}
+		}
+	}
+	req_list_free(&rl);
+	return p;
+}
+
+
 /* This is the file requester. It reads the directory in which the filename
-lives, builds an array of strings and calls request_strings(). If a directory
-name is returned, it enters the directory. Returns NULL on error or escaping, a
-pointer to the selected filename if RETURN is pressed, or a pointer to the
-selected filename (or directory) preceeded by a NUL if TAB is pressed (so by
-checking whether the first character of the returned string is NUL you can
-check which key the user pressed). */
+   lives, builds an array of strings and calls request_strings(). If a directory
+   name is returned, it enters the directory. Returns NULL on error or escaping, a
+   pointer to the selected filename if RETURN is pressed, or a pointer to the
+   selected filename (or directory) preceeded by a NUL if TAB is pressed (so by
+   checking whether the first character of the returned string is NUL you can
+   check which key the user pressed). */
 
 
 char *request_files(const char * const filename, int use_prefix) {
@@ -535,7 +607,7 @@ char *request_file(const buffer *b, const char *prompt, const char *default_name
 		if (p && *p) return p;
 	}
 
-	if (p = request_string(prompt, p ? p + 1 : default_name, FALSE, TRUE, io_utf8)) return p;
+	if (p = request_string(prompt, p ? p + 1 : default_name, FALSE, COMPLETE_FILE, io_utf8)) return p;
 
 	return NULL;
 }
@@ -631,7 +703,7 @@ void req_list_free(req_list * const rl) {
 int req_list_init( req_list * const rl, int cmpfnc(const char *, const char *), const int allow_dupes, const char suffix) {
 	rl->cmpfnc = cmpfnc;
 	rl->allow_dupes = allow_dupes;
-	rl->suffix = suffix;	
+	rl->suffix = suffix;
 	rl->cur_entries = rl->alloc_entries = rl->max_entry_len = 0;
 	rl->cur_chars = rl->alloc_chars = 0;
 	if (rl->entries = malloc(sizeof(char *) * DEF_ENTRIES_ALLOC_SIZE)) {
@@ -703,7 +775,7 @@ char *req_list_add(req_list * const rl, char * const str, const int suffix) {
 			for(i=0; i<rl->cur_entries; i++)
 				if(!strcmp(rl->entries[i],newstr)) return rl->entries[i];
 		}
-   }
+	}
 	
 	if (len > rl->max_entry_len) rl->max_entry_len = len;
 	
