@@ -164,7 +164,7 @@ unsigned char *autocomplete(unsigned char *p, char *req_msg, const int ext, int 
 			*error = min_len == m ? AUTOCOMPLETE_COMPLETED : AUTOCOMPLETE_PARTIAL;
 		}
 		else {
-			print_message(req_msg);
+			if (req_msg) print_message(req_msg);
 			if ((i = request_strings((const char * const *)rl.entries, rl.cur_entries, 0, rl.max_entry_len + 1, EXTERNAL_FLAG_CHAR)) != ERROR) {
 				i = i >= 0 ? i : -i - 2;
 				/* Delete EXTERNAL_FLAG_CHAR at the end of the strings if necessary. */

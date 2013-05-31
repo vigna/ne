@@ -7,6 +7,8 @@
 
   * Tab in Syntax command displays requester of extant syntax recognizers.
 
+  * You can now use AutoComplete in command line prompts.
+
 2.5
 
   * New DelTabs flag, function separated from Tabs flag.

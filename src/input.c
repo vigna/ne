@@ -249,9 +249,9 @@ static unsigned char input_buffer[MAX_INPUT_LINE_LEN + 1];
 
 static encoding_type encoding;
 
-/* start_x  is the first usable x position for editing;
+/* start_x  is the first usable screen x position for editing;
    len      is the current raw length of the input buffer (input_buffer[len] is always a NULL);
-   x        is the x position of the cursor;
+   x        is the screen x position of the cursor;
    pos      is the position of the cursor inside the input buffer;
    offset   is the first displayed buffer character. 
 */
@@ -273,6 +273,60 @@ static void input_refresh(void) {
 	}
 	clear_to_eol();
 	fflush(stdout);
+}
+
+static void input_autocomplete(void) {
+	int ac_err, ac_len, dx=0, cw, prefix_pos = pos;
+	unsigned char *p;
+	/* find a usable prefix */
+	if (prefix_pos && prefix_pos <= len) {
+		prefix_pos = prev_pos(input_buffer, prefix_pos, encoding);
+		dx--;
+		while (prefix_pos && ne_isword(get_char(&input_buffer[prefix_pos], encoding), encoding)) {
+			dx--;
+			prefix_pos = prev_pos(input_buffer, prefix_pos, encoding);
+		}
+		if (! ne_isword(get_char(&input_buffer[prefix_pos], encoding), encoding)) {
+			dx++;
+			prefix_pos = next_pos(input_buffer, prefix_pos, encoding);
+		}
+		p = malloc(pos - prefix_pos + 1);
+		if (!p) {
+			alert(); /* OUT_OF_MEMORY */
+			return;
+		}
+		strncpy(p, &input_buffer[prefix_pos], pos - prefix_pos);
+	}
+	else p = malloc(1); /* no prefix left of the cursor; we'll give an empty one. */
+	p[pos - prefix_pos] = 0;
+   if (p = autocomplete(p, NULL, TRUE, &ac_err)) {
+   	if (prefix_pos < pos) {
+   		memmove(&input_buffer[prefix_pos], &input_buffer[pos], len - pos + 1);
+			len -= pos - prefix_pos;
+			pos = prefix_pos;
+   	}
+   	ac_len = strlen(p);
+   	if (ac_len + len >= MAX_INPUT_LINE_LEN) ac_len = MAX_INPUT_LINE_LEN - len;
+   	memmove(&input_buffer[pos + ac_len], &input_buffer[pos], len - pos + 1);
+   	memmove(&input_buffer[pos], p, ac_len);
+   	len += ac_len;
+   	while (ac_len > 0) {
+   		cw = get_char_width(&input_buffer[pos],encoding);
+			pos = next_pos(input_buffer, pos, encoding);
+   		ac_len -= cw;
+   		dx++;
+   	}
+   	free(p); 
+   	x += dx;
+   	if (x >= ne_columns) {
+   		dx = x - ne_columns + 1;
+   		while (dx--) {
+   			offset = next_pos(input_buffer, offset, encoding);
+   		}
+   		x = ne_columns - 1;
+   	}
+   }
+	input_refresh();
 }
 
 
@@ -438,7 +492,6 @@ static void input_paste(void) {
 		input_refresh();
 	}
 }
-
 
 char *request(const char *prompt, const char * const default_string, const int alpha_allowed, const int completion_allowed, const int prefer_utf8) {
 
@@ -733,6 +786,10 @@ char *request(const char *prompt, const char * const default_string, const int a
 
 				case PASTE_A:
 					input_paste();
+					break;
+
+				case AUTOCOMPLETE_A:
+					input_autocomplete();
 					break;
 
 				case ESCAPE_A:
