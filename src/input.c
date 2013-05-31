@@ -35,8 +35,10 @@
 	reset, so that it will be updated. */
 
 static unsigned int print_prompt(const unsigned char * const prompt) {
-
-	assert(prompt != NULL);
+	static unsigned char *prior_prompt;
+	assert(prompt != NULL || prior_prompt);
+	
+	if (prompt) prior_prompt = (unsigned char *)prompt;
 
 	move_cursor(ne_lines - 1, 0);
 
@@ -44,7 +46,7 @@ static unsigned int print_prompt(const unsigned char * const prompt) {
 
 	standout_on();
 
-	output_string(prompt, FALSE);
+	output_string(prior_prompt, FALSE);
 	output_string(":", FALSE);
 
 	standout_off();
@@ -53,7 +55,7 @@ static unsigned int print_prompt(const unsigned char * const prompt) {
 
 	reset_status_bar();
 
-	return strlen(prompt) + 2;
+	return strlen(prior_prompt) + 2;
 }
 
 
@@ -300,31 +302,44 @@ static void input_autocomplete(void) {
 	else p = malloc(1); /* no prefix left of the cursor; we'll give an empty one. */
 	p[pos - prefix_pos] = 0;
    if (p = autocomplete(p, NULL, TRUE, &ac_err)) {
-   	if (prefix_pos < pos) {
-   		memmove(&input_buffer[prefix_pos], &input_buffer[pos], len - pos + 1);
-			len -= pos - prefix_pos;
-			pos = prefix_pos;
+   	encoding_type ac_encoding = detect_encoding(p, strlen(p));
+		if (ac_encoding != ENC_ASCII && encoding != ENC_ASCII && ac_encoding != encoding) {
+		   free(p);
+			alert();
+		} else {
+			encoding = ac_encoding;
+      	
+      	if (prefix_pos < pos) {
+      		memmove(&input_buffer[prefix_pos], &input_buffer[pos], len - pos + 1);
+				len -= pos - prefix_pos;
+				pos = prefix_pos;
+      	}
+      	ac_len = strlen(p);
+      	if (ac_len + len >= MAX_INPUT_LINE_LEN) ac_len = MAX_INPUT_LINE_LEN - len;
+      	memmove(&input_buffer[pos + ac_len], &input_buffer[pos], len - pos + 1);
+      	memmove(&input_buffer[pos], p, ac_len);
+      	len += ac_len;
+      	while (ac_len > 0) {
+      		cw = get_char_width(&input_buffer[pos],encoding);
+				pos = next_pos(input_buffer, pos, encoding);
+      		ac_len -= cw;
+      		dx++;
+      	}
+      	free(p); 
+      	x += dx;
+      	if (x >= ne_columns) {
+      		dx = x - ne_columns + 1;
+      		while (dx--) {
+      			offset = next_pos(input_buffer, offset, encoding);
+      		}
+      		x = ne_columns - 1;
+      	}
    	}
-   	ac_len = strlen(p);
-   	if (ac_len + len >= MAX_INPUT_LINE_LEN) ac_len = MAX_INPUT_LINE_LEN - len;
-   	memmove(&input_buffer[pos + ac_len], &input_buffer[pos], len - pos + 1);
-   	memmove(&input_buffer[pos], p, ac_len);
-   	len += ac_len;
-   	while (ac_len > 0) {
-   		cw = get_char_width(&input_buffer[pos],encoding);
-			pos = next_pos(input_buffer, pos, encoding);
-   		ac_len -= cw;
-   		dx++;
-   	}
-   	free(p); 
-   	x += dx;
-   	if (x >= ne_columns) {
-   		dx = x - ne_columns + 1;
-   		while (dx--) {
-   			offset = next_pos(input_buffer, offset, encoding);
-   		}
-   		x = ne_columns - 1;
-   	}
+   }
+   if (ac_err == AUTOCOMPLETE_COMPLETED || ac_err == AUTOCOMPLETE_CANCELLED) {
+   	do_action(cur_buffer, REFRESH_A, 0, NULL);
+   	refresh_window(cur_buffer);
+   	print_prompt(NULL);
    }
 	input_refresh();
 }
