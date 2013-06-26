@@ -371,8 +371,8 @@ modifications.  (You will be requested to confirm your choice in case the
 current document has been modified since the last save.)
 
 There is also a @code{Quit} command, which closes all the documents
-without saving any modifications, and a @code{Save&Exit} (@kbd{@key{Meta}-X}) command, which saves
-the modified documents before quitting.
+without saving any modifications, and a @code{Save&Exit} (@kbd{@key{Meta}-X})
+command, which saves the modified documents before quitting.
 
 This choice of shortcuts could surprise you. Wouldn't @samp{Quit} be a
 much better candidate for @kbd{@key{Control}-Q}? Well, experience shows that
@@ -400,14 +400,15 @@ You can also escape with @key{f1}, @key{Escape} or
 @key{Escape}-@key{Escape}  and manually type the file name on the command
 line (or escape again, and abort the @code{Open} operation). If you escape
 with @key{Tab} instead, the file or directory under the cursor will be
-copied in the input line, where you can modify it manually. @code{ne} has
-also file name completion features activated by @key{Tab} (@pxref{The Input
+copied in the input line, where you can modify it manually. @code{ne} also
+has file name completion features activated by @key{Tab} (@pxref{The Input
 Line}).
 
 When you want to save a file, just use the command @code{Save}
 (@kbd{@key{Control}-S}). It will use the current document name or will
 ask you for one if the current document has no name. @code{SaveAs}, on the
 other hand, will always ask for a new name before saving the file.
+@code{SaveAll} will save all modified documents.
 
 If @code{ne} is interrupted by an external signal (for instance, if your
 terminal crashes), it will try to save your work in some emergency files.
@@ -464,7 +465,7 @@ has been set, either an @samp{M} appears on the command line or a
 is currently, you can use the @samp{Goto Mark} menu item of the
 @samp{Search} menu to move the cursor to it.
 
-When you cut or copy a block, you can save it with the @samp{Save Clip...} menu
+When you cut or copy a block, you can save it to a file with the @samp{Save Clip...} menu
 item of the @samp{Edit} menu. You can also load a file into a clip with
 @samp{Open Clip...}, and paste it anywhere. All such operations act on the
 @dfn{current clip}, which is by default the clip 0. You can change the current
@@ -483,7 +484,8 @@ in memory with @key{f2} and @key{f3}, which are bound to the
 @code{PrevDoc} and @code{NextDoc} commands. If you have a lot of
 documents, the @samp{Select...} menu item (@key{f4}) prompts you with
 the list of names of currently loaded documents and allows you to
-choose directly what to edit.
+choose directly which to edit. In that list, names of documents with
+unsaved changes will be bold.
 
 
 @node Basic Preferences
@@ -496,7 +498,7 @@ choose directly what to edit.
 @code{ne} has a number of @dfn{flags} that specify alternative
 behaviors, the most prototypical example being the @dfn{insert} flag,
 which specifies whether the text you type is inserted into the existing text
-or overwrites it. You can toggle this flag with the @samp{Insert} menu
+or replaces it. You can toggle this flag with the @samp{Insert} menu
 item of the @samp{Prefs} menu, or with the @key{Insert} key of your
 keyboard. (@dfn{Toggle} means to change the value of a flag from true to
 false, or from false to true; @pxref{Insert}.)
@@ -657,7 +659,7 @@ Subsequent invocations of the macro will used the cached version.
 @noindent @strong{Warning:} while path and file names are case sensitive
 when initially loading macros, loaded macro names are @emph{not} case
 sensitive or path sensitive. @code{ne} only caches the file name of an
-already loaded macro, not the path name, and uses a case insensitive
+already loaded macro, not the path, and uses a case insensitive
 comparison. That is, if you invoke @file{~/foobar/MyMacro}, @code{ne}
 remembers it with the case-insensitive name @file{mymacro}; a subsequent
 call for @file{/usr/MYMACRO} will instead find and use the cached version
@@ -715,7 +717,7 @@ frequently between a small number of positions. In this case, you can use
 designated by a single digit, with the default being @samp{0}. You can set
 them with the @code{SetBookmark} command, and you can return to any set
 bookmark with the @code{GotoBookmark} command. Also, @code{ne} sets an
-automatic bookmark (designated by @samp{-}) to your current position in a
+automatic bookmark (designated by @samp{-}) at your current position in a
 document whenever you use the @code{GotoBookmark} command. You can use
 this automatic bookmark to return to that previous location with a
 @code{GotoBookmark -} command. Doing so will reset the automatic bookmark,
@@ -1358,6 +1360,9 @@ files. Quitting @code{ne} (which doesn't save changes) or exiting
 
 @item Save As@dots{}
 @xref{SaveAs}.
+
+@item Save All
+@xref{SaveAll}.
 
 @item Quit Now
 @xref{Quit}.
@@ -2224,6 +2229,7 @@ command is issued).
 * OpenNew::
 * Save::
 * SaveAs::
+* SaveAll::
 @end menu
 
 
@@ -2303,6 +2309,20 @@ input line, the default being the current document name, if available.
 
 
 
+@node SaveAll
+@subsection SaveAll
+@cmindex SaveAll
+
+@noindent Syntax: @code{SaveAll}@*
+@noindent Abbreviation: @code{SL}
+
+@noindent saves all modified documents. If any modified documents cannot be
+saved, the action is suspended and an error message is issued. Note that
+only named buffers can be saved, so @code{SaveAll}, will report an error
+if you have any modified unnamed buffers.
+
+
+
 @node Document Commands
 @section Document Commands
 
@@ -2343,7 +2363,8 @@ have to confirm the action.
 
 @noindent saves all modified documents, closes them and exits. If
 any documents cannot be saved, the action is suspended and an error message
-is issued.
+is issued. Note that only named buffers can be saved, so @code{SaveAll}, will
+report an error if you have any modified unnamed buffers.
 
 
 

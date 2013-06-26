@@ -105,6 +105,14 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		}
 		return OK;
 
+	case SAVEALL_A:
+		if (save_all_modified_buffers()) {
+			print_error(CANT_SAVE_ALL);
+			return ERROR;
+		}
+		else print_message(info_msg[MODIFIED_SAVED]);
+		return OK;
+
 	case PUSHPREFS_A:
 		NORMALIZE(c);
 		for (i = 0; i < c && !(error = push_prefs(b)) && !stop; i++);

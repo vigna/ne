@@ -163,6 +163,7 @@ static const command commands[ACTION_COUNT] = {
 	{ NAHL(REQUESTORDER  ),                           IS_OPTION                                   },
 	{ NAHL(RIGHTMARGIN   ),                           IS_OPTION                                   },
 	{ NAHL(SAVE          ), NO_ARGS                                                               },
+	{ NAHL(SAVEALL       ), NO_ARGS                                                               },
 	{ NAHL(SAVEAS        ),           ARG_IS_STRING                                               },
 	{ NAHL(SAVEAUTOPREFS ), NO_ARGS                                                               },
 	{ NAHL(SAVECLIP      ),           ARG_IS_STRING                                               },

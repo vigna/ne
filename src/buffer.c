@@ -391,14 +391,15 @@ int modified_buffers(void) {
 
 int save_all_modified_buffers(void) {
 
+	int rc = 0;
 	buffer *b = (buffer *)buffers.head;
 
 	while(b->b_node.next) {
 		if (b->is_modified)
-			if (save_buffer_to_file(b, NULL)) return ERROR;
+			if (save_buffer_to_file(b, NULL)) rc = ERROR;
 		b = (buffer *)b->b_node.next;
 	}
-	return 0;
+	return rc;
 }
 
 

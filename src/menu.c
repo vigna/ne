@@ -97,6 +97,7 @@ static menu_item file_item[] =
 		{ "Open New... [N", OPENNEW_ABBREV },
 		{ "Save        ^S", SAVE_ABBREV },
 		{ "Save As...    ", SAVEAS_ABBREV },
+		{ "Save All      ", SAVEALL_ABBREV },
 		{ "Quit Now    [Q", QUIT_ABBREV },
 		{ "Save&Exit   [X", EXIT_ABBREV },
 		{ "About         ", ABOUT_ABBREV }

@@ -9,6 +9,8 @@
 
   * You can now use AutoComplete in command line prompts.
 
+  * New SaveAll command saves all modified documents.
+
 2.5
 
   * New DelTabs flag, function separated from Tabs flag.
