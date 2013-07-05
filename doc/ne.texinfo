@@ -5865,14 +5865,14 @@ Comments, complaints, desiderata are welcome.
 @page
 
 @page
-@node Command Index
-@unnumbered Command Index
-@printindex cm
-
-@page
 @node Concept Index
 @unnumbered Concept Index
 @printindex cp
+
+@page
+@node Command Index
+@unnumbered Command Index
+@printindex cm
 
 @contents
 @bye
