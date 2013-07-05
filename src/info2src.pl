@@ -74,7 +74,7 @@ foreach ( @infofiles )
         chomp;
         if ( $state eq 'searching' )
             {
-              next unless ( m/^(Syntax: )`(([^ ]+).*)'\s*$/ );
+              next unless ( m/^(Syntax: )['`](([^ ]+).*)'\s*$/ );
               $command = uc $3;
               $commands{$command}->{"cmd"}     = "$3";
               $commands{$command}->{"text"}[0] = "$1$2";
@@ -93,7 +93,7 @@ foreach ( @infofiles )
     
               # print "---2 read \"$_\"\n";
     
-              if ( m/^(Abbreviation: )`(.+)'/ )
+              if ( m/^(Abbreviation: )['`](.+)'/ )
                   {
                     $commands{$command}->{"abbr"} = "$2";
                     push @{$commands{$command}->{"text"}}, "$1$2";
