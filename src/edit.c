@@ -22,8 +22,11 @@
 #include "ne.h"
 
 /* The number of type of brackets we recognize. */
-
-#define NUM_BRACKETS 4
+#ifdef M4QUOTES
+	#define NUM_BRACKETS 5
+#else
+	#define NUM_BRACKETS 4
+#endif
 
 /* Applies a given to_first() function to the first letter of the starting at the cursor, and to_rest() to
 	the following alphabetical letter (see the functions below). */
@@ -135,13 +138,17 @@ int match_bracket(buffer *b) {
 		goto_line(b, match_line);
 		goto_pos(b, match_pos);
 		return OK;
-	}	
+	}
 	return rc;
 }
 
 int find_matching_bracket(buffer *b, const int min_line, int max_line, int *match_line, int *match_pos, int *c, line_desc ** match_ld) {
 
-	static unsigned char bracket_table[NUM_BRACKETS][2] = { { '(',')' }, { '[',']' }, { '{','}' }, { '<','>' } };
+	static unsigned char bracket_table[NUM_BRACKETS][2] = { { '(',')' }, { '[',']' }, { '{','}' }, { '<','>' }
+#ifdef M4QUOTES
+	                                                       , { '`','\'' }
+#endif                                                       
+	                                                      };
 
 	int i, j, n, y, dir, pos;
 	line_desc *ld = b->cur_line_desc;
