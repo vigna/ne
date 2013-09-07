@@ -766,8 +766,8 @@ exist somewhere in your current document. @xref{AutoComplete}, and
 Unless you tell it not to (with the @code{AutoMatchBracket} command),
 @code{ne} will highlight any recognized bracket that matches the
 bracket your cursor is on if that matching bracket is currently visible on
-your screen. Recognized brackets are @samp{@{@}}, @samp{()}, @samp{[]} and
-@samp{<>}. @xref{AutoMatchBracket}.
+your screen. Recognized brackets are @samp{@{@}}, @samp{()}, @samp{[]},
+@samp{<>}, and @samp{`'}. @xref{AutoMatchBracket}.
 
 @subsection MS-DOS files
 @code{ne} will detect automagically the presence of MS-DOS line terminators
@@ -2916,7 +2916,7 @@ provided.
 @noindent moves the cursor to the bracket associated with the bracket the
 cursor is on. If the cursor is not on a bracket, or there is no bracket
 associated with the current one, an error message is issued. Recognized
-brackets are @samp{@{@}}, @samp{()}, @samp{[]} and @samp{<>}.
+brackets are @samp{@{@}}, @samp{()}, @samp{[]} @samp{<>}, and @samp{`'}.
 See @ref{AutoMatchBracket}.
 
 @node AutoMatchBracket
@@ -2927,12 +2927,12 @@ See @ref{AutoMatchBracket}.
 @noindent Abbreviation: @code{AMB}
 
 @noindent sets the auto match bracket mode. When the cursor is on a
-recognized bracket (@samp{@{@}}, @samp{()}, @samp{[]} or @samp{<>}) and
+recognized bracket (@samp{@{@}}, @samp{()}, @samp{[]}, @samp{<>}, or @samp{`'}) and
 the associated matching bracket is on the screen, that matching bracket
 will be indicated according to the mode. The mode is either zero for no
 bracket matching, or the sum of 1 (altered foreground and background
 brightness), 2 (inverse), 4 (bold), and 8 (underline). If no mode is specified,
-@code{ne} prompts your for one. The default mode is 1. See @ref{MatchBracket}.
+@code{ne} prompts you for one. The default mode is 1. See @ref{MatchBracket}.
 
 
 

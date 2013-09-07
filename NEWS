@@ -11,6 +11,8 @@
 
   * New SaveAll command saves all modified documents.
 
+  * `' joins (), {}, [], and <> as character pairs known to MatchBracket.
+
 2.5
 
   * New DelTabs flag, function separated from Tabs flag.
