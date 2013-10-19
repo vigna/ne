@@ -107,7 +107,7 @@ extern const char *input_class_names[];
 
 #define COMMAND_MASK       0x80000000
 
-#define CHAR_CLASS(c) ( ((c)<0) ? (((-c - 1) == INVALID_CHAR) ? INVALID : COMMAND) : ((c)>0xFF) ? ALPHA : char_class[c] )
+#define CHAR_CLASS(c) ( ((c)<0) ? (((c) == INVALID_CHAR) ? INVALID : COMMAND) : ((c)>0xFF) ? ALPHA : char_class[(c)] )
 
 /* This number is used throughout ne when an integer has to be expanded in
    characters. It is expected that sprintf("%d")ing an integer will produce a

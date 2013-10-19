@@ -9,6 +9,8 @@
   * Exit attempts to save all modified document even if one cannot be saved.
     (It use to give up on the first error.)
 
+  * Avoid crash when resizing window while command prompt is active.
+
 2.5
 
   * Pathologically long-running PARAGRAPH commands are now stoppable (^-\).
