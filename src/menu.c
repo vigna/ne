@@ -200,8 +200,8 @@ PICK(   "Page Down       ", PAGEDOWN_ABBREV    , "Page Down     ^N", PAGEDOWN_AB
 		{ "End Of Line   ^E", MOVEEOL_ABBREV },
 		{ "Top Of Screen   ", MOVETOS_ABBREV },
 		{ "Bottom Of Screen", MOVEBOS_ABBREV },
-		{ "Incr Up     Home", MOVEINCUP_ABBREV },
-		{ "Incr Down    End", MOVEINCDOWN_ABBREV },
+PICK(   "Incr Up     Home", MOVEINCUP_ABBREV   , "Incr Up         ", MOVEINCUP_ABBREV)
+PICK(   "Incr Down    End", MOVEINCDOWN_ABBREV , "Incr Down       ", MOVEINCDOWN_ABBREV)
 		{ "Prev Word  f7/[B", PREVWORD_ABBREV },
 		{ "Next Word  f8/[F", NEXTWORD_ABBREV }
 	};
