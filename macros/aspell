@@ -1,0 +1,16 @@
+# This example macro works with your system's aspell
+# command to spell-check the selected block of text.
+# The AtomicUndo commands at the beginning and end make
+# it possible to undo/redo the entire operation in one
+# go. Otherwise the Cut and Paste would each require
+# their own undo/redo. Indentation is just for clarity;
+# it doesn't affect operation.
+
+AtomicUndo +
+  Cut
+    SaveClip ~/.ne/ne-aspell.txt
+      System aspell --check ~/.ne/ne-aspell.txt
+    OpenClip ~/.ne/ne-aspell.txt
+    System rm -f ~/.ne/ne-aspell.txt ~/.ne/ne-aspell.txt.bak
+  Paste
+AtomicUndo -

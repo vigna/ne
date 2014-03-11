@@ -13,6 +13,8 @@
 
   * `' joins (), {}, [], and <> as character pairs known to MatchBracket.
 
+  * New example macros: aspell, DeleteSOL.
+
 2.5
 
   * New DelTabs flag, function separated from Tabs flag.
