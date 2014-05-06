@@ -15,6 +15,11 @@
 
   * New example macros: aspell, DeleteSOL.
 
+  * Add % to special leading characters for re-wrapping Paragraphs.
+
+  * WordWrap no longer waits for the cursor to hit the right margin. Wraps
+    on insertions and deletions now.
+
 2.5
 
   * New DelTabs flag, function separated from Tabs flag.
