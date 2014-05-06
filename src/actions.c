@@ -477,7 +477,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		/* Note the use of ne_columns-1. This avoids a double horizontal scrolling each time a
 		   word wrap happens with b->opt.right_margin = 0. */
 
-		if (b->opt.word_wrap && b->win_x + b->cur_x >= (b->opt.right_margin ? b->opt.right_margin : ne_columns - 1)) word_wrap(b);
+		if (b->opt.word_wrap) word_wrap(b);
 		if (b->syn) update_line(b, b->cur_y, TRUE, FALSE);
 		assert_buffer_content(b);
 		return OK;
@@ -585,6 +585,9 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			}
 		}
 		need_attr_update = TRUE;
+		if (b->opt.word_wrap) word_wrap(b);
+		if (b->syn) update_line(b, b->cur_y, TRUE, FALSE);
+		assert_buffer_content(b);
 		end_undo_chain(b);
 		return stop ? STOPPED : 0;
 

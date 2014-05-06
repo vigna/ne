@@ -24,8 +24,8 @@
 /* The number of type of brackets we recognize. */
 #define NUM_BRACKETS 5
 
-/* Applies a given to_first() function to the first letter of the starting at the cursor, and to_rest() to
-	the following alphabetical letter (see the functions below). */
+/* Applies a given to_first() function to the first letter of the text starting at the cursor,
+   and to_rest() to the following alphabetical letters (see the functions below). */
 
 static int to_something(buffer *b, int (to_first)(int), int (to_rest)(int)) {
 
@@ -214,27 +214,22 @@ int find_matching_bracket(buffer *b, const int min_line, int max_line, int *matc
 
 int word_wrap(buffer * const b) {
 	static char avcmd[16];
-	int non_blank_added, pos;
+	int non_blank_added = 0;
 	unsigned char * line = b->cur_line_desc->line;
-	int avshift;
+	int avshift, pos;
 
-	if (!b->cur_pos || b->cur_pos > b->cur_line_desc->line_len) return ERROR;
+	if (b->cur_pos > b->cur_line_desc->line_len) return ERROR;
 	/* If the char to our left is a space, we need to insert
-	   something else to attach our WORDWRAP_BOOKMARK to because
+	   a non-space to attach our WORDWRAP_BOOKMARK to because
 	   spaces at the split point get removed, which effectively
 	   leaves our bookmark on the current line. */
 	delay_update();
 	pos = prev_pos(line, b->cur_pos, b->encoding);
-	if (non_blank_added = ne_isspace(get_char(&line[pos], b->encoding), b->encoding)) {
+	if (pos >= 0 && (non_blank_added = ne_isspace(get_char(&line[pos], b->encoding), b->encoding))) {
 		start_undo_chain(b);
 		insert_one_char(b, b->cur_line_desc, b->cur_line, b->cur_pos, 'X');
 		line = b->cur_line_desc->line;
 		goto_pos(b, next_pos(line, b->cur_pos, b->encoding));
-		/* Get rid of any spaces starting at cur_pos */
-		pos = b->cur_pos;
-		while (pos < b->cur_line_desc->line_len && ne_isspace(get_char(&line[pos       ], b->encoding), b->encoding))
-			pos = next_pos(line, pos, b->encoding);
-		if (pos > b->cur_pos) delete_stream(b, b->cur_line_desc, b->cur_line, b->cur_pos, pos - b->cur_pos);
 	}
 	b->bookmark[WORDWRAP_BOOKMARK].pos   = b->cur_pos;
 	b->bookmark[WORDWRAP_BOOKMARK].line  = b->cur_line;
