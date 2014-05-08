@@ -4218,6 +4218,7 @@ a list of common extensions. Don't get fancy with this format.
    pascal: p, pas
    perl: pl, pm
    ps: eps
+   puppet: pp
    python: py, sage
    rexx: rex
    ruby: rb

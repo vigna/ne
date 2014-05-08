@@ -1,0 +1,161 @@
+# JOE syntax highlight file for Puppet
+
+# From https://github.com/cmur2/joe-syntax
+
+=Idle
+=Comment	green
+=CommentLabel	bold green
+=Constant	cyan
+=Escape		bold cyan
+=Type		bold
+=Keyword	bold
+=Bad		bold red
+=Var		fg_310 # brown
+=Brace		magenta
+
+=KeywordAttr	bold
+
+:idle Idle
+	*		idle
+	"\n"		idle
+	"#"		line_comment	recolor=-1
+	"{[]}"		brace		recolor=-1
+	"0"		first_digit	recolor=-1
+	"1-9"		decimal		recolor=-1
+	"\""		string		recolor=-1
+	"'"		char		recolor=-1
+	"/"		slash
+	"$"		variable	recolor=-1
+	"A-Z"		type		recolor=-1
+	"a-z"		ident		buffer
+	
+:line_comment Comment
+	*		line_comment
+	"\n"		idle
+
+:comment Comment
+	*		comment
+	"*"		maybe_end_comment
+
+:maybe_end_comment Comment
+	*		comment		noeat
+	"/"		idle
+	"*"		maybe_end_comment
+
+:brace Brace
+	*		idle		noeat
+
+# that's not completely accurate since a regex may start with a * too
+:slash Idle
+	*		regex		noeat recolor=-2
+	"*"		comment		recolor=-2
+
+:first_digit Constant
+	*		idle		noeat
+	"0-7"		octal
+	"89"		bad_number	recolor=-1
+
+:bad_number Bad
+	*		idle		noeat
+	"0-9"		bad_number
+
+:octal Constant
+	*		idle		noeat
+	"0-7_"		octal
+	"89"		bad_number	recolor=-1
+
+:decimal Constant
+	*		idle		noeat
+	"0-9_"		decimal
+
+:char Constant
+	*		char
+	"'"		idle
+
+:string Constant
+	*		string
+	"\""		idle
+	"$"		maybe_string_subst	recolor=-1
+
+:maybe_string_subst Constant
+	*		string		noeat
+	"{"		string_subst	recolor=-2
+
+:string_subst Escape
+	*		string_subst
+	"}"		string
+
+:regex Constant
+	*		regex
+	"\\"		regex_quote	recolor=-1
+	"/"		idle
+
+:regex_quote Escape
+	*		regex
+
+:variable Var
+	*		idle		noeat
+	"a-zA-Z0-9_"	variable
+
+:type Type
+	*		idle		noeat
+	"a-zA-Z0-9_"	type
+
+:ident Idle
+	*		idle		noeat strings
+	"case"		kw
+	"class"		kw
+	"define"	kw
+	"else"		kw
+	"elsif"		kw
+	"false"		kw
+	"if"		kw
+	"in"		kw
+	"inherits"	kw
+	"true"		kw
+	"undef"		kw
+	# prominent attrs
+	"ensure"	kw_attr
+	"default"	kw_attr
+	# methods
+	"alert"		method
+	"create_resources"	method
+	"crit"		method
+	"debug"		method
+	"defined"	method
+	"emerg"		method
+	"err"		method
+	"extlookup"	method
+	"fail"		method
+	"file"		method
+	"fqdn_rand"	method
+	"generate"	method
+	"include"	method
+	"info"		method
+	"inline_template"	method
+	"md5"		method
+	"notice"	method
+	"realize"	method
+	"regsubst"	method
+	"require"	method
+	"search"	method
+	"sha1"		method
+	"shellquote"	method
+	"split"		method
+	"sprintf"	method
+	"tag"		method
+	"tagged"	method
+	"template"	method
+	"versioncmp"	method
+	"warning"	method
+done
+	"a-zA-Z0-9_"	ident
+
+:kw Keyword
+	*		idle		noeat
+
+:kw_attr KeywordAttr
+	*		idle		noeat
+
+:method Keyword
+	*		idle		noeat
