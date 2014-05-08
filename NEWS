@@ -20,6 +20,8 @@
   * WordWrap no longer waits for the cursor to hit the right margin. Wraps
     on insertions and deletions now.
 
+  * Added syntax support for puppet files with a ".pp" extension.
+
 2.5
 
   * New DelTabs flag, function separated from Tabs flag.
