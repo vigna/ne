@@ -1197,9 +1197,11 @@ possibility: by escaping with the @key{Tab} key, the file or directory
 name that the cursor is currently on will be copied on the input
 line. This allows you to choose an existing name and modify it.
 
-A special feature is bound to alphabetic characters: they move you to the next
-entry starting with the letter you typed. The search is case insensitive, and
-it continues on to the first string after having passed the last one.
+A special feature is bound to printing characters: the requester
+progressively filters out entries that don't match the characters you
+type without regard to case. You can use @key{Backspace} to
+progressively return filtered out entries to the list. This lets you
+quickly navigate large lists to get to the entries you really want.
 
 An example of a requester is the list of commands appearing when you use
 the @code{Help} command. Another is the list of document words matching

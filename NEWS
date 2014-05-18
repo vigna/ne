@@ -22,6 +22,9 @@
 
   * Added syntax support for puppet files with a ".pp" extension.
 
+  * Requesters (filenames, help, autocompletions, etc.) do progressive
+    "fuzzy match" by typed characters, backspace.
+
 2.5
 
   * New DelTabs flag, function separated from Tabs flag.

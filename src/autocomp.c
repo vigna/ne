@@ -165,7 +165,7 @@ unsigned char *autocomplete(unsigned char *p, char *req_msg, const int ext, int 
 		}
 		else {
 			if (req_msg) print_message(req_msg);
-			if ((i = request_strings((const char * const *)rl.entries, rl.cur_entries, 0, rl.max_entry_len + 1, EXTERNAL_FLAG_CHAR)) != ERROR) {
+			if ((i = request_strings(&rl, 0)) != ERROR) {
 				i = i >= 0 ? i : -i - 2;
 				/* Delete EXTERNAL_FLAG_CHAR at the end of the strings if necessary. */
 				if (rl.entries[i][strlen(rl.entries[i]) - 1] == EXTERNAL_FLAG_CHAR) rl.entries[i][strlen(rl.entries[i]) - 1] = 0;

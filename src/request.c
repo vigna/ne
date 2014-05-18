@@ -28,18 +28,18 @@
 
 #define CUR_DIR_MAX_SIZE    (16*1024)
 
-/* Prompts the user to choose one between several (num_entries) strings,
+/* request_strings() prompts the user to choose one between several (cur_entries) strings,
    contained in the entries array. The maximum string width is given as
    max_name_len. The strings are displayed as an array. More than one page will
    be available if there are many strings. If string n was selected with
    RETURN, n is returned; if string n was selected with TAB, -n-2 is returned.
    On escaping, ERROR is returned.
 
-We rely on a series of auxiliary functions. */
+   We rely on a series of auxiliary functions and a few static variables. */
 
-static int x, y, page, max_names_per_line, max_names_per_col, names_per_page, num_entries, max_name_len, mark_char;
+static req_list rl, *rl0; /* working and original * req_list */
 
-static const char * const *entries;
+static int x, y, page, max_names_per_line, max_names_per_col, names_per_page, fuzz_len;
 
 /* ne traditionally has displayed request entries by row, i.e.
       a   b   c
@@ -52,11 +52,11 @@ static const char * const *entries;
    which, while easier to program, is somewhat harder to read.
    The request code was also full of tricky expressions like those in
    the macros below.
-   
+
    This version attempts to switch to a by-row request display, and also
    to consolidate as many of the tricky expressions into one small set of
    macros.
-   
+
    If request_order is true you should get by-column request list. Otherwise it will
    exibit the by-row behavior of the older versions of ne. */
 
@@ -74,16 +74,16 @@ static const char * const *entries;
     the complexity on the last page is to use a rectangle in the upper-left part of the window that's
     roughly proportional to the window itself. (Prior pages use the entire window of course.)
     Calculating $x first gives slight priority to taller columns rather than wider lines.
-    
+
     Translating the Perl "$x =" and "$y =" to the C macros NAMES_PER_LINE and NAMES_PER_COL,
     respectively, is a matter of substituting the following:
       $N  ($M - $n)
-      $n  (num_entries % names_per_page)    The number of actual entries on the last page.
+      $n  (rl.cur_entries % names_per_page)    The number of actual entries on the last page.
       $X  max_names_per_line
       $Y  max_names_per_col
       $M  names_per_page
       $x  NAMES_PER_LINE(p)
-      
+
 #!/usr/bin/perl -w
 use strict;
 my ($X,$Y,$M,$N,$x,$y,$n);
@@ -99,10 +99,10 @@ for $n ( 1 .. $M ) {
 }
 
 */
-#define LASTPAGE(p)      ((num_entries / names_per_page) > p ? 0 : 1 )
+#define LASTPAGE(p)      ((rl.cur_entries / names_per_page) > p ? 0 : 1 )
 
-#define BC_NAMES_PER_LINE(p) (LASTPAGE(p) ? (max_names_per_line - (max_names_per_line*((names_per_page - (num_entries % names_per_page))-1)*((names_per_page - (num_entries % names_per_page))-1)-names_per_page)/(names_per_page*names_per_page)) : max_names_per_line )
-#define BC_NAMES_PER_COL(p)  (LASTPAGE(p) ? (((num_entries % names_per_page)+NAMES_PER_LINE(p)-1) / NAMES_PER_LINE(p)) : max_names_per_col)
+#define BC_NAMES_PER_LINE(p) (LASTPAGE(p) ? (max_names_per_line - (max_names_per_line*((names_per_page - (rl.cur_entries % names_per_page))-1)*((names_per_page - (rl.cur_entries % names_per_page))-1)-names_per_page)/(names_per_page*names_per_page)) : max_names_per_line )
+#define BC_NAMES_PER_COL(p)  (LASTPAGE(p) ? (((rl.cur_entries % names_per_page)+NAMES_PER_LINE(p)-1) / NAMES_PER_LINE(p)) : max_names_per_col)
 #define BC_PXY2N(p,x,y)   ((p) * names_per_page + (x) * NAMES_PER_COL(p) + (y))
 #define BC_N2P(n)         ((n) / names_per_page)
 #define BC_N2X(n)        (((n) % names_per_page) / NAMES_PER_COL(N2P(n))) 
@@ -120,9 +120,22 @@ for $n ( 1 .. $M ) {
 #define DX(p)             (req_order ? BC_DX(p)             : BR_DX(p)            )
 #define DY                (req_order ? BC_DY                : BR_DY               )
 
+int common_prefix_len(req_list *rlp) {
+	int len, i;
+	char *p0, *p1;
+	p0 = rlp->entries[0];
+	len = strlen(p0);
+	for (i = 0; len && i < rlp->cur_entries; i++) {
+		p1 = rlp->entries[i];
+		for ( ; len && strncasecmp(p0, p1, len); len--)
+			;
+	}
+	return len;
+}
+
 /* This is the printing function used by the requester. It prints the
 strings from the entries array existing in a certain page (a page contains
-(lines-1)*max_names_per_line items) with max_name_len maximum width. */
+(lines-1)*max_names_per_line items) with rl.max_entry_len maximum width. */
 
 static void print_strings() {
 
@@ -135,10 +148,10 @@ static void print_strings() {
 		clear_to_eol();
 		if (row < NAMES_PER_COL(page)) {
 			for(col = 0; col < NAMES_PER_LINE(page); col++) {
-				if (PXY2N(page,col,row) < num_entries) {
-					move_cursor(row, col * max_name_len);
-					p = entries[PXY2N(page,col,row)];
-					if (mark_char) set_attr(p[strlen(p) - 1] == mark_char ? BOLD : 0);
+				if (PXY2N(page,col,row) < rl.cur_entries) {
+					move_cursor(row, col * (rl.max_entry_len+1));
+					p = rl.entries[PXY2N(page,col,row)];
+					if (rl.suffix) set_attr(p[strlen(p) - 1] == rl.suffix ? BOLD : 0);
 					output_string(p, io_utf8);
 				}
 			}
@@ -150,20 +163,20 @@ static void normalize(int n) {
 	int p = page;
 
 	if (n < 0 ) n = 0;
-	if (n >= num_entries ) n = num_entries - 1;
+	if (n >= rl.cur_entries ) n = rl.cur_entries - 1;
 	x = N2X(n);
 	y = N2Y(n);
 	page = N2P(n);
 	if ( p != page ) print_strings();
 }
-	
+
 static void request_move_to_sol(void) {
 	x = 0;
 }
 
 
 static void request_move_to_eol(void) {
-	while (x < NAMES_PER_LINE(page) - 1 && PXY2N(page,x+1,y) < num_entries) {
+	while (x < NAMES_PER_LINE(page) - 1 && PXY2N(page,x+1,y) < rl.cur_entries) {
 		x++;
 	}
 }
@@ -173,9 +186,8 @@ static void request_move_to_sof(void) {
 }
 
 static void request_move_to_eof() {
-	normalize(num_entries - 1);
+	normalize(rl.cur_entries - 1);
 }
-
 
 static void request_toggle_seof(void) {
 	if (x + y+page == 0) request_move_to_eof();
@@ -230,45 +242,126 @@ static void request_move_left(void) {
 
 
 static void request_move_right(void) {
-	if (y < NAMES_PER_COL(page) - 1 && PXY2N(page,0,y+1) < num_entries && 
-	    (x == NAMES_PER_LINE(page) - 1 || PXY2N(page,x+1,y) > num_entries -1)  ) {
+	if (y < NAMES_PER_COL(page) - 1 && PXY2N(page,0,y+1) < rl.cur_entries && 
+	    (x == NAMES_PER_LINE(page) - 1 || PXY2N(page,x+1,y) > rl.cur_entries -1)  ) {
 		request_move_to_sol();
 		request_move_down();
 	}
-	else if (y == NAMES_PER_COL(page) - 1 && x == NAMES_PER_LINE(page) - 1 && PXY2N(page+1,0,0) < num_entries) {
+	else if (y == NAMES_PER_COL(page) - 1 && x == NAMES_PER_LINE(page) - 1 && PXY2N(page+1,0,0) < rl.cur_entries) {
 		normalize(PXY2N(page+1,0,0));
 	}
-	else if (PXY2N(page,x,y) + DX(page) < num_entries ) {
+	else if (PXY2N(page,x,y) + DX(page) < rl.cur_entries ) {
 		normalize(PXY2N(page,x,y) + DX(page));
 	}
 }
 
+/* Back up to the first entry with a common prefix, pulling in matching entries
+   from the original req_list *rl0 in such a way as to preserve original order. */
 
-/* Given a list os strings, let the user pick one. If _mark_char is not '\0', we bold names ending with it.
+static void fuzz_back() {
+	int cmp, i, j, n1, n0 = PXY2N(page,x,y);
+	const char *p1, *p0 = rl.entries[n0];
+
+	if (fuzz_len == 0) return;
+
+	fuzz_len = max(0,fuzz_len-1);
+
+	for (n1=i=j=0; j<rl0->cur_entries; j++) {
+		p1 = rl0->entries[j];
+		if ( ! strncasecmp(p0, p1, fuzz_len) ) {
+			if (p1 == p0)
+				n1 = i;
+			rl.entries[i++] = (char *)p1;
+		}
+	}
+	rl.cur_entries = i;
+	page = -1; /* causes normalize() to call print_strings() */
+	normalize(n1);
+}
+
+/* given a localised_up_case character c, keep only entries that
+   matches our current fuzz_len prefix plus this additional character. 
+   Note that relative order of rl.entries[] is preserved. */
+
+static void fuzz_forward(const int c) {
+	int cmp, i, j, n1, n0 = PXY2N(page,x,y);
+	const char *p1, *p0 = rl.entries[n0];
+
+	assert(fuzz_len >= 0);
+
+	for (n1=i=j=0; j<rl.cur_entries; j++) {
+		p1 = rl.entries[j];
+		cmp = strncasecmp(p0, p1, fuzz_len);
+		if (! cmp && strlen(p1) > fuzz_len && localised_up_case[(unsigned char)p1[fuzz_len]] == c) {
+			if (p1 == p0)
+				n1 = i;
+			rl.entries[i++] = (char *)p1;
+		}
+	}
+	if (i) {
+		rl.cur_entries = i;
+		fuzz_len = common_prefix_len(&rl);
+		page = -1; /* causes normalize() to call print_strings() */
+		normalize(n1);
+	}
+}
+
+/* The original master list of strings is described by *rlp0. We make a working copy
+   described by rl, which has an allocated buffer large enough to hold all the
+   original char pointers, but may at any time have fewer entries due to fuzzy
+   matching. request_strings_init() sets up this copy, and request_strings_cleanup()
+   cleans up the allocations. A small handful of static variables keep up with
+   common prefix size, default entry index, etc. */
+
+int request_strings_init(req_list *rlp0) {
+	rl.cur_entries = rlp0->cur_entries;
+	rl.max_entry_len = rlp0->max_entry_len;
+	rl.suffix = rlp0->suffix;
+	if (!(rl.entries = calloc(rlp0->cur_entries, sizeof(char *))))
+		return 0;
+	memcpy(rl.entries, rlp0->entries, rl.cur_entries * sizeof(char *));
+	rl0 = rlp0;
+	fuzz_len = common_prefix_len(&rl);
+	return rl.cur_entries;
+}
+
+int request_strings_cleanup() {
+	int i, n = PXY2N(page,x,y);
+	char *p0 = rl.entries[n];
+	for (i=0; i<rl0->cur_entries; i++) {
+		if (rl0->entries[i] == p0) {
+			n = i;
+			break;
+		}
+	}
+	if (rl.entries)
+		free(rl.entries);
+	rl.entries = NULL;
+	return n;
+}
+
+/* Given a list of strings, let the user pick one. If _rl->suffix is not '\0', we bold names ending with it.
    The integer returned is one of the following:
    n >= 0  User selected string n with the enter key. 
    -1      Error or abort; no selection made.
    -n - 2  User selected string n with the TAB key. 
    (Yes, it's kind of evil, but it's nothing compared to what request() does!) */
 
-int request_strings(const char * const * const _entries, const int _num_entries, int n, const int _max_name_len, int _mark_char) {
+int request_strings(req_list *rlp0, int n ) {
 
 	action a;
 	input_class ic;
 	int c, i, ne_lines0, ne_columns0;
 
-	assert(_num_entries > 0);
+	assert(rlp0->rl.cur_entries > 0);
 
-	ne_lines0 = ne_columns0 = max_names_per_line = max_names_per_col = x = y = page = 0;
-	entries = _entries;
-	num_entries = _num_entries;
-	max_name_len = _max_name_len + 1;
-	mark_char = _mark_char;
+	ne_lines0 = ne_columns0 = max_names_per_line = max_names_per_col = x = y = page = fuzz_len = 0;
+	if ( ! request_strings_init(rlp0) ) return ERROR;
 
 	while(TRUE) {
 		if (ne_lines0 != ne_lines || ne_columns0 != ne_columns) {
 			if (ne_lines0 && ne_columns0 ) n = PXY2N(page,x,y);
-			if (!(max_names_per_line = ne_columns / (max_name_len))) max_names_per_line = 1;
+			if (!(max_names_per_line = ne_columns / (rl.max_entry_len+1))) max_names_per_line = 1;
 			max_names_per_col = ne_lines - 1;
 			names_per_page = max_names_per_line * max_names_per_col;
 			ne_lines0 = ne_lines;
@@ -280,37 +373,44 @@ int request_strings(const char * const * const _entries, const int _num_entries,
 			print_message(NULL);
 		}
 
-		move_cursor(y, x * max_name_len);
+		n = PXY2N(page,x,y);
+
+      assert(fuzz_len >= 0);
+
+      fuzz_len = min(fuzz_len, strlen(rl.entries[n]));
+
+		move_cursor(y, x * (rl.max_entry_len+1) + fuzz_len);
 
 		do c = get_key_code(); while((ic = CHAR_CLASS(c)) == IGNORE || ic == INVALID);
 
-		n = PXY2N(page,x,y);
-
 		switch(ic) {
 			case ALPHA:
-				if (n >= num_entries) n = num_entries - 1;
+				if (n >= rl.cur_entries) n = rl.cur_entries - 1;
 
 				c = localised_up_case[(unsigned char)c];
 
-				for(i = 1; i < num_entries; i++)
-					if (localised_up_case[(unsigned char)entries[(n + i) % num_entries][0]] == c) {
-						normalize((n + i) % num_entries);
-						break;
-					}
+				fuzz_forward( c );
+
 				break;
 
 			case TAB:
-				if (n >= num_entries) return ERROR;
+				n = request_strings_cleanup();
+				if (n >= rlp0->cur_entries) return ERROR;
 				else return -n - 2;
 
 			case RETURN:
-				if (n >= num_entries) return ERROR;
+				n = request_strings_cleanup();
+				if (n >= rlp0->cur_entries) return ERROR;
 				else return n;
 
 			case COMMAND:
 				if (c < 0) c = -c - 1;
 				if ((a = parse_command_line(key_binding[c], NULL, NULL, FALSE))>=0) {
 					switch(a) {
+					case BACKSPACE_A:
+						fuzz_back();
+						break;
+
 					case MOVERIGHT_A:
 						request_move_right();
 						break;
@@ -373,6 +473,7 @@ int request_strings(const char * const * const _entries, const int _num_entries,
 					case CLOSEDOC_A: 
 					case QUIT_A:
 					case ESCAPE_A:
+						request_strings_cleanup();
 						return -1;
 					}
 				}
@@ -395,7 +496,7 @@ char *complete_filename(const char *start_prefix) {
 	char *p, *dir_name, *cur_dir_name, *cur_prefix = NULL, *result = NULL;
 	DIR *d;
 	struct dirent *de;
-	
+
 	/* This might be NULL if the current directory has been unlinked, or it is not readable.
 	   in that case, we end up moving to the completion directory. */
 	cur_dir_name = ne_getcwd(CUR_DIR_MAX_SIZE);
@@ -411,7 +512,7 @@ char *complete_filename(const char *start_prefix) {
 	start_prefix = file_part(start_prefix);
 
 	if (d = opendir(CURDIR)) {
-		
+
 		while(!stop && (de = readdir(d))) {
 
 			if (is_prefix(start_prefix, de->d_name)) 
@@ -424,10 +525,10 @@ char *complete_filename(const char *start_prefix) {
 					is_dir = is_directory(de->d_name);
 				}
 		}
-		
+
 		closedir(d);
 	}
-	
+
 	if (cur_prefix) {
 	   result = malloc(strlen(dir_name) + strlen(cur_prefix) + 2);
 	   strcat(strcat(strcpy(result, dir_name), cur_prefix), unique && is_dir ? "/" : "");
@@ -493,7 +594,7 @@ char *request_syntax(const char * const prefix, int use_prefix) {
 	}
 	req_list_finalize(&rl);
 	p = NULL;
-	if (rl.cur_entries && (i = request_strings((const char * const *)rl.entries, rl.cur_entries, 0, rl.max_entry_len, rl.suffix)) != ERROR) {
+	if (rl.cur_entries && (i = request_strings(&rl, 0)) != ERROR) {
 		q = rl.entries[i >= 0 ? i : -i - 2];
 		if (p = malloc(strlen(q)+3)) {
 			strcpy(p,q);
@@ -558,7 +659,7 @@ char *request_files(const char * const filename, int use_prefix) {
 			if (rl.cur_entries) {
 				/* qsort(rl.entries, rl.cur_entries, sizeof(char *), filenamecmpp); */
 
-				if ((i = request_strings((const char * const *)rl.entries, rl.cur_entries, 0, rl.max_entry_len, rl.suffix)) != ERROR) {
+				if ((i = request_strings(&rl, 0)) != ERROR) {
 					p = rl.entries[i >= 0 ? i : -i - 2];
 					if (p[strlen(p) - 1] == '/' && i >= 0) {
 						p[strlen(p) - 1] = 0;
@@ -632,7 +733,7 @@ int request_document(void) {
 		}
 		req_list_finalize(&rl);
 
-		i = request_strings((const char * const *)rl.entries, rl.cur_entries, cur_entry, rl.max_entry_len, rl.suffix);
+		i = request_strings(&rl, cur_entry);
 		reset_window();
 
 		req_list_free(&rl);
@@ -643,7 +744,7 @@ int request_document(void) {
 
 /* The req_list functions below provide a simple mechanism suitable for building
    request lists for directory entries, syntax recognizers, etc. */
-   
+
 /* These are the default allocation sizes for the entry array and for the
    name array when reading a directory. The allocation sizes start with these
    values, and they are doubled each time more space is needed. This ensures a
@@ -653,7 +754,7 @@ int request_document(void) {
 #define DEF_CHARS_ALLOC_SIZE   (4*1024)
 
 #if 0
-/* The req_list_del() function works just fine; we just don't need it yet. */
+/* The req_list_del() function works just fine; we just don't need it yet/any more. */
 
 /* Delete the nth string from the given request list. This will work regardelss of whether
    the req_list has been finalized. */
@@ -776,9 +877,9 @@ char *req_list_add(req_list * const rl, char * const str, const int suffix) {
 				if(!strcmp(rl->entries[i],newstr)) return rl->entries[i];
 		}
 	}
-	
+
 	if (len > rl->max_entry_len) rl->max_entry_len = len;
-	
+
 	/* make enough space to store the new string */
 	if (rl->cur_chars + lentot > rl->alloc_chars) {
 		char * p0 = rl->chars;

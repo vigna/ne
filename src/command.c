@@ -719,10 +719,24 @@ void help(char *p) {
 	char *key_strokes;
 	char **tmphelp;
 	int j, i = 0;
+	req_list rl;
+	
+	rl.cmpfnc = NULL;
+	rl.allow_dupes = 0;
+	rl.suffix = 0;
+	
+	rl.cur_chars = 0;
+	rl.alloc_chars = 0;
+	rl.chars = NULL;
+
 	D(fprintf(stderr,"Help Called with parm %p.\n",p);)
 	do {
 		print_message("Help: select Command and press Enter, or F1 or Escape or Escape-Escape");
-		if (p || (i = request_strings(command_names, ACTION_COUNT, i, MAX_COMMAND_WIDTH, FALSE)) >= 0) {
+		rl.cur_entries = ACTION_COUNT;
+		rl.alloc_entries = 0;
+		rl.max_entry_len = MAX_COMMAND_WIDTH;
+		rl.entries = (char **)command_names;
+      if (p || (i = request_strings(&rl, i)) >= 0) {
          D(fprintf(stderr,"Help check #2: p=%p, i=%d\n",p,i);)
 			if (p) {
 				for(i = 0; i < strlen(p); i++) if (isasciispace((unsigned char)p[i])) break;
@@ -754,10 +768,18 @@ void help(char *p) {
 				tmphelp[1] = (char *)commands[i].help[1];
 				tmphelp[2] = key_strokes;
 				memcpy(&tmphelp[3], &commands[i].help[2], sizeof(char *) * (commands[i].help_len-2)); 
-				if ((j = request_strings((const char * const* const)tmphelp, commands[i].help_len+1, 0, ne_columns, FALSE)) < 0 ) i = j;
+				rl.cur_entries = commands[i].help_len+1;
+				rl.alloc_entries = 0;
+				rl.max_entry_len = ne_columns;
+				rl.entries = tmphelp;
+				if ((j = request_strings(&rl, 0)) < 0 ) i = j;
 				free(tmphelp);
 			} else {
-				if ((j = request_strings(commands[i].help, commands[i].help_len, 0, ne_columns, FALSE)) < 0 ) i = j;
+				rl.cur_entries = commands[i].help_len;
+				rl.alloc_entries = 0;
+				rl.max_entry_len = ne_columns;
+				rl.entries = (char **)commands[i].help;
+				if ((j = request_strings(&rl, 0)) < 0 ) i = j;
 			}
 			if (key_strokes)
 				free(key_strokes);
