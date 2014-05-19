@@ -139,7 +139,7 @@ strings from the entries array existing in a certain page (a page contains
 
 static void print_strings() {
 
-	int row,col;
+	int row,col,dx = rl.max_entry_len + 1 + (rl.suffix ? 1 : 0);
 	const char *p;
 
 	set_attr(0);
@@ -149,7 +149,7 @@ static void print_strings() {
 		if (row < NAMES_PER_COL(page)) {
 			for(col = 0; col < NAMES_PER_LINE(page); col++) {
 				if (PXY2N(page,col,row) < rl.cur_entries) {
-					move_cursor(row, col * (rl.max_entry_len+1));
+					move_cursor(row, col * dx);
 					p = rl.entries[PXY2N(page,col,row)];
 					if (rl.suffix) set_attr(p[strlen(p) - 1] == rl.suffix ? BOLD : 0);
 					output_string(p, io_utf8);
@@ -353,17 +353,19 @@ int request_strings(req_list *rlp0, int n ) {
 
 	action a;
 	input_class ic;
-	int c, i, ne_lines0, ne_columns0;
+	int c, i, ne_lines0, ne_columns0, dx;
 
 	assert(rlp0->rl.cur_entries > 0);
 
 	ne_lines0 = ne_columns0 = max_names_per_line = max_names_per_col = x = y = page = fuzz_len = 0;
 	if ( ! request_strings_init(rlp0) ) return ERROR;
 
+	dx = rl.max_entry_len + 1 + (rl.suffix ? 1 : 0);
+
 	while(TRUE) {
 		if (ne_lines0 != ne_lines || ne_columns0 != ne_columns) {
 			if (ne_lines0 && ne_columns0 ) n = PXY2N(page,x,y);
-			if (!(max_names_per_line = ne_columns / (rl.max_entry_len+1))) max_names_per_line = 1;
+			if (!(max_names_per_line = ne_columns / dx)) max_names_per_line = 1;
 			max_names_per_col = ne_lines - 1;
 			names_per_page = max_names_per_line * max_names_per_col;
 			ne_lines0 = ne_lines;
@@ -381,7 +383,7 @@ int request_strings(req_list *rlp0, int n ) {
 
       fuzz_len = min(fuzz_len, strlen(rl.entries[n]));
 
-		move_cursor(y, x * (rl.max_entry_len+1) + fuzz_len);
+		move_cursor(y, x * dx + fuzz_len);
 
 		do c = get_key_code(); while((ic = CHAR_CLASS(c)) == IGNORE || ic == INVALID);
 
