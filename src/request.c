@@ -260,21 +260,23 @@ static void request_move_right(void) {
 
 static void fuzz_back() {
 	int cmp, i, j, n1, n0 = PXY2N(page,x,y);
+	int orig_entries = rl.cur_entries;
 	const char *p1, *p0 = rl.entries[n0];
 
-	if (fuzz_len == 0) return;
+	if (fuzz_len == 0 || orig_entries == rl0->cur_entries) return;
 
-	fuzz_len = max(0,fuzz_len-1);
-
-	for (n1=i=j=0; j<rl0->cur_entries; j++) {
-		p1 = rl0->entries[j];
-		if ( ! strncasecmp(p0, p1, fuzz_len) ) {
-			if (p1 == p0)
-				n1 = i;
-			rl.entries[i++] = (char *)p1;
+	while (rl.cur_entries == orig_entries) {
+		fuzz_len = max(0,fuzz_len-1);
+		for (n1=i=j=0; j<rl0->cur_entries; j++) {
+			p1 = rl0->entries[j];
+			if ( ! strncasecmp(p0, p1, fuzz_len) ) {
+				if (p1 == p0)
+					n1 = i;
+				rl.entries[i++] = (char *)p1;
+			}
 		}
+		rl.cur_entries = i;
 	}
-	rl.cur_entries = i;
 	page = -1; /* causes normalize() to call print_strings() */
 	normalize(n1);
 }
