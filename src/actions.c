@@ -463,7 +463,6 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		
 		insert_one_char(b, b->cur_line_desc, b->cur_line, b->cur_pos, c);
 		
-		end_undo_chain(b); 
 		need_attr_update = TRUE;
 		
 		/* At this point the line has been modified: note that if we are in overwrite mode and write a character
@@ -479,6 +478,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 
 		if (b->opt.word_wrap) word_wrap(b);
 		if (b->syn) update_line(b, b->cur_y, TRUE, FALSE);
+		end_undo_chain(b); 
 		assert_buffer_content(b);
 		return OK;
 	}

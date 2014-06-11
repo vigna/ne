@@ -239,7 +239,7 @@ int word_wrap(buffer * const b) {
 	goto_line(b, b->bookmark[WORDWRAP_BOOKMARK].line);
 	goto_pos( b, b->bookmark[WORDWRAP_BOOKMARK].pos);
 	line = b->cur_line_desc->line;
-	if (avshift = b->cur_y - b->bookmark[WORDWRAP_BOOKMARK].cur_y-1) {
+	if (avshift = b->cur_y - b->bookmark[WORDWRAP_BOOKMARK].cur_y) {
 		snprintf(avcmd, 16, "%c%d", avshift > 0 ? 'T' :'B', avshift > 0 ? avshift : -avshift);
 		adjust_view(b,avcmd);
 	}
