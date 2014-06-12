@@ -355,7 +355,7 @@ int request_strings(req_list *rlp0, int n ) {
 	input_class ic;
 	int c, i, ne_lines0, ne_columns0, dx;
 
-	assert(rlp0->rl.cur_entries > 0);
+	assert(rlp0->cur_entries > 0);
 
 	ne_lines0 = ne_columns0 = max_names_per_line = max_names_per_col = x = y = page = fuzz_len = 0;
 	if ( ! request_strings_init(rlp0) ) return ERROR;
