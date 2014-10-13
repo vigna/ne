@@ -1,0 +1,30 @@
+# JOE syntax highlight file for plain ERB
+=Idle
+=Keyword bold
+=Bad bold red
+=Brace magenta
+
+=ERB yellow
+
+:content Idle
+	*		content
+	"<"		maybe_erb_start
+
+:maybe_erb_start Idle
+	*		content noeat
+	"%"		maybe_erb_eq recolor=-2
+
+:maybe_erb_eq ERB
+	*		rtn_ruby noeat call=ruby.ruby(erb)
+	"="		rtn_ruby call=ruby.ruby(erb)
+
+:rtn_ruby ERB
+	*		content noeat
+
+:erb ERB
+	*		erb
+	"%"		maybe_erb_end
+
+:maybe_erb_end ERB
+	*		erb
+	">"		content
