@@ -6,17 +6,30 @@
 # EOF2.
 
 =Idle
-=Preproc blue
-=Comment green
-=POD green
-=Constant cyan
-=Escape bold cyan
-=Type bold
-=Keyword bold
-=Bad bold red
-=Var yellow
+=Comment	green
+=CommentLabel	bold green
+=POD		green
+=Constant	cyan
+=Escape		bold cyan
+=Type		bold
+=Keyword	bold
+=Bad		bold red
+=Var		yellow
+=Brace		magenta
+
+=Symbol		red
+=SymbolEscape	bold red
+=ProcArg	#yellow
+=ClassMember	fg_310 # brown
+=GlobalVar	yellow
+=ClassDecl	bold blue
 
 # Detect pod
+
+:pre_idle Idle
+	*		NULL		noeat call=.ruby()
+
+.subr ruby
 
 :idle Idle
 	*		rest		noeat
@@ -26,11 +39,16 @@
 
 :rest Idle
 	*		rest
-	"#"		line_comment_i	recolor=-1
+	"#"		line_comment	recolor=-1
+.ifdef haml
+	"\n"		NULL		return
+.else
 	"\n"		idle
+.endif
+	"{}"		brace		recolor=-1
 	"0"		first_digit	recolor=-1
-	"1-9"		decimal	recolor=-1
-	"."		maybe_float
+	"1-9"		decimal		recolor=-1
+	"."		ident_no_kw
 	"\""		string		recolor=-1
 	"'"		char		recolor=-1
 	"`"		backtick	recolor=-1
@@ -40,12 +58,26 @@
 	"%"		pstring
 	"a-zA-Z_"	ident		buffer
 
+	# higher level, ruby specific
+	":"		maybe_symbol
+#	"|"		proc_arg
+	"@"		class_member1
+
 # / / regex not allowed after terms
 
 :after_term Idle
-	*		rest	noeat
-	" 	)]"	after_term
+	*		rest		noeat
+	" \t)"		after_term
+.ifdef erb
+	"/"		rest
+	"%"		after_term_erb_end
+.else
 	"/%"		rest
+.endif
+
+:after_term_erb_end Idle
+	*		rest		noeat
+	">"		NULL		recolor=-2 return
 
 :pod_start Idle
 	*		pod_start
@@ -62,19 +94,19 @@ done
 	"a-zA-Z0-9_"	pod_ident
 
 :maybe_inc Idle
-	*		after_term		noeat
+	*		after_term	noeat
 	"<"		maybe_inc1
 
 :maybe_inc1 Idle
-	*		after_term		noeat
+	*		after_term	noeat
 	"-"		allow_space
 	"'\""		quoted_inc_start	save_c recolor=-1
 	"A-Za-z_"	inc		buffer noeat
 
 :allow_space Idle
-	*		after_term		noeat
+	*		after_term	noeat
 	"'\""		quoted_inc_start_allow	save_c recolor=-1
-	"A-Za-z_"	inc_allow		buffer noeat
+	"A-Za-z_"	inc_allow	buffer noeat
 
 :quoted_inc_start Var
 	*		quoted_inc	buffer
@@ -127,7 +159,7 @@ done
 
 :next_line_allow Constant
 	*		todelim_allow	buffer
-	" 	\n"	next_line_allow
+	" \t\n"		next_line_allow
 
 :founddelim Var
 	*		idle		noeat
@@ -141,17 +173,28 @@ done
 	*		regex
 
 :not_string Idle
-	*		rest noeat
-	"A-Za-z_"	ident
+	*		rest		noeat
+	"a-zA-Z0-9_"	global_var	recolor=-2
 	"\"'`#/"	rest
+
+:brace Brace
+	*		rest		noeat
 
 :line_comment Comment
 	*		line_comment
-	"\n"		rest
-
-:line_comment_i Comment
-	*		line_comment_i
+.ifdef erb
+	"%"		line_comment_maybe_erb_end
+.endif
+	# might be TODO label
+	"BFHNTX"	line_comment	noeat call=.comment_todo()
+.ifdef haml
+	"\n"		NULL		return
+.else
 	"\n"		idle
+.endif
+
+:line_comment_maybe_erb_end Comment
+	">"		NULL		recolor=-2 return
 
 :end_of_file_comment Comment
 	*		end_of_file_comment
@@ -189,10 +232,6 @@ done
 	"eE"		epart
 	"."		float
 
-:maybe_float Constant
-	*		after_term	recolor=-2	noeat
-	"0-9"		float		recolor=-2
-
 :float Constant
 	*		after_term	noeat
 	"eE"		epart
@@ -210,12 +249,16 @@ done
 	*		string
 	"\""		after_term
 	"\\"		string_escape	recolor=-1
-	"$@"		string_subst	recolor=-1
+	"#"		maybe_string_subst	recolor=-1
+
+:maybe_string_subst Constant
+	*		string		noeat
+	"{"		string_subst	recolor=-2
 
 :string_subst Escape
-	*		string	noeat recolor=-1
-	"a-zA-Z_0-9"	string_subst
-
+	*		string_subst
+	"}"		string
+	
 :string_escape Escape
 	*		string
 	"x"		string_hex1
@@ -272,7 +315,7 @@ done
 	*		backtick
 	"`"		after_term
 	"\\"		backtick_escape	recolor=-1
-	"$@"		backtick_subst recolor=-1
+	"$@"		backtick_subst	recolor=-1
 
 :backtick_subst Escape
 	*		backtick	noeat recolor=-1
@@ -284,7 +327,7 @@ done
 	"c"		backtick_ctrl
 	"N"		backtick_named
 	"0-7"		backtick_octal2
-	"\n"		backtick		recolor=-2
+	"\n"		backtick	recolor=-2
 
 :backtick_named Escape
 	*		backtick
@@ -298,7 +341,7 @@ done
 	*		backtick
 
 :backtick_hex1 Escape
-	*		backtick		noeat
+	*		backtick	noeat
 	"{"		backtick_unicode
 	"0-9a-fA-F"	backtick_hex2
 
@@ -307,18 +350,28 @@ done
 	"}"		backtick
 
 :backtick_hex2 Escape
-	*		backtick		noeat
+	*		backtick	noeat
 	"0-9a-fA-F"	backtick
 
 :backtick_octal2 Escape
-	*		backtick		noeat
+	*		backtick	noeat
 	"0-7"		backtick_octal3
 
 :backtick_octal3 Escape
-	*		backtick		noeat
+	*		backtick	noeat
 	"0-7"		backtick
 
-:ident	Idle
+:ident_no_kw Idle
+	*		after_term	noeat
+	"0"		first_digit	recolor=-1
+	"1-9"		decimal		recolor=-1
+	"a-zA-Z_"	ident_no_kw1
+
+:ident_no_kw1 Idle
+	*		after_term	noeat
+	"a-zA-Z0-9_?!"	ident_no_kw1
+
+:ident Idle
 	*		after_term	noeat strings
 	"BEGIN"		kw
 	"END"		kw
@@ -327,7 +380,8 @@ done
 	"begin"		kw
 	"break"		kw
 	"case"		kw
-	"class"		kw
+	"catch"		kw
+	"class"		kw_class
 	"def"		kw
 	"defined"	kw
 	"do"		kw
@@ -335,16 +389,22 @@ done
 	"elsif"		kw
 	"end"		kw
 	"ensure"	kw
+	"fail"		kw
 	"false"		kw
 	"for"		kw
 	"if"		kw
 	"in"		kw
-	"loop"		kw
+	"lambda"	kw
 	"module"	kw
 	"next"		kw
 	"nil"		kw
 	"not"		kw
 	"or"		kw
+	"private"	kw
+	"proc"		kw
+	"protected"	kw
+	"public"	kw
+	"raise"		kw
 	"redo"		kw
 	"rescue"	kw
 	"retry"		kw
@@ -352,6 +412,7 @@ done
 	"self"		kw
 	"super"		kw
 	"then"		kw
+	"throw"		kw
 	"true"		kw
 	"undef"		kw
 	"unless"	kw
@@ -359,20 +420,50 @@ done
 	"when"		kw
 	"while"		kw
 	"yield"		kw
+	# quasi-keywords (Module or Kernel methods)
+	"require"	kw
+	"autoload"	kw
+	"extend"	kw
+	"include"	kw
+	"puts"		kw
+	"exit"		kw
+	"attr_accessor"	kw
+	"attr_reader"	kw
+	"attr_writer"	kw
+	"module_function"	kw
 done
-	"a-zA-Z0-9_"	ident
+	# allowing ?! is not nearly correct but fixes more than
+	# it destructs
+	"a-zA-Z0-9_?!"	ident
 
 :kw Keyword
-	*	rest	noeat
+	*		rest		noeat
+
+:kw_class Keyword
+	*		rest		noeat
+	" \t\n"		kw_class_space
+
+:kw_class_space Idle
+	*		rest		noeat
+	# first char should be uppercase letter
+	"a-zA-Z_"	kw_class_decl	noeat
+	" \t\n"		kw_class_space
+
+:kw_class_decl ClassDecl
+	*		rest		noeat
+	"a-zA-Z0-9_"	kw_class_decl
 
 :pstring Idle
-	*	match noeat
-	"	 " after_term noeat
-	"xrqQw"	match
+	*		match		noeat
+	" \t"		after_term	noeat
+	"xrqQwW"	match
+.ifdef erb
+	">"		NULL		recolor=-2 return
+.endif
 
 :match Idle
 	*		inmatch		save_c recolor=-1
-	" 	"	match
+	" \t"		match
 
 :inmatch Constant
 	*		inmatch
@@ -385,7 +476,7 @@ done
 :subst Idle
 	*		insubst		save_c recolor=-1
 	"<([{`"		delim_insubst	save_c recolor=-1
-	" 	"	subst
+	" \t"		subst
 
 :insubst Constant
 	*		insubst
@@ -413,7 +504,7 @@ done
 
 :delim_repl Constant
 	*		repl		save_c recolor=-1
-	" 	"	delim_repl
+	" \t"		delim_repl
 
 :repl Constant
 	*		repl
@@ -422,3 +513,84 @@ done
 
 :repl_quote Escape
 	*		repl
+
+:maybe_symbol Idle
+	*		rest		noeat
+	# prevent wrong Module::Member detection
+	":"		rest
+	# first char mustn't be 0-9
+	"a-zA-Z_"	symbol		recolor=-2
+	"\""		symbol_str	recolor=-2
+	"'"		symbol_str_sq	recolor=-2
+
+:symbol Symbol
+	*		rest		noeat
+	"a-zA-Z0-9_?!"	symbol
+
+:symbol_str Symbol
+	*		symbol_str
+	"\""		after_term
+	"#"		symbol_maybe_str_subst	recolor=-1
+
+:symbol_maybe_str_subst Symbol
+	*		symbol_str
+	"{"		symbol_str_subst	recolor=-2
+
+:symbol_str_subst SymbolEscape
+	*		symbol_str_subst
+	"}"		symbol_str
+
+:symbol_str_sq Symbol
+	*		symbol_str_sq
+	"'"		after_term
+
+:proc_arg ProcArg
+	*		rest		noeat
+	","		proc_arg_sep 	noeat
+	"a-zA-Z_"	proc_arg
+	
+:proc_arg_sep Idle
+	*		proc_arg
+	
+:class_member1 Idle
+	*		rest		noeat
+	"a-zA-Z_"	class_member	recolor=-2
+	"@"		class_member2
+
+:class_member2 ClassMember
+	*		rest		noeat
+	"a-zA-Z_"	class_member	recolor=-3
+
+:class_member ClassMember
+	*		rest		noeat
+	"a-zA-Z0-9_"	class_member
+
+:global_var GlobalVar
+	*		rest		noeat
+	"a-zA-Z0-9_"	global_var
+
+.end
+
+.subr comment_todo
+# initial state
+:comment_todo_init Comment
+	*		comment_todo_guess	buffer
+
+# highlight common TODO labels
+:comment_todo_guess Comment
+	*		comment_todo_unknown	noeat strings
+	"BUG"		comment_todo
+	"FIXME"		comment_todo
+	"HACK"		comment_todo
+	"NOTE"		comment_todo
+	"TODO"		comment_todo
+	"XXX"		comment_todo
+done
+	"A-Z"		comment_todo_guess
+
+:comment_todo_unknown Comment
+	*		NULL		noeat return
+
+:comment_todo CommentLabel
+	*		NULL		noeat return
+.end

@@ -20,10 +20,11 @@
   * WordWrap no longer waits for the cursor to hit the right margin. Wraps
     on insertions and deletions now.
 
-  * Added syntax support for puppet files with a ".pp" extension.
-
   * Requesters (filenames, help, autocompletions, etc.) do progressive
     "fuzzy match" by typed characters, backspace.
+
+  * Added syntax support for puppet files with a ".pp" extension, and
+    updates to .ruby, .erb, and .conf syntax recognizers.
 
 2.5
 

@@ -5,6 +5,7 @@
 =String 	cyan
 =Escape 	bold red
 =Backtick	blue
+=ERB		yellow
 
 :idle Idle
 	*		idle
@@ -13,6 +14,28 @@
 	"'"		single		recolor=-1
 	"\`"		backtick	recolor=-1
 	"\\"		escape		recolor=-1
+# start of possible embeded erb
+	"<"		maybe_erb_start recolor=-1
+
+:maybe_erb_start Idle
+	*		idle noeat
+	"%"		maybe_erb_eq recolor=-2
+
+:maybe_erb_eq ERB
+	*		rtn_ruby noeat call=ruby.ruby(erb)
+	"="		rtn_ruby call=ruby.ruby(erb)
+
+:rtn_ruby ERB
+	*		idle noeat
+
+:erb ERB
+	*		erb
+	"%"		maybe_erb_end
+
+:maybe_erb_end ERB
+	*		erb
+	">"		idle
+# end of possible embeded erb
 
 :escape Escape
 	*		idle

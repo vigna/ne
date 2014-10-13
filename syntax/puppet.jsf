@@ -1,7 +1,5 @@
 # JOE syntax highlight file for Puppet
 
-# From https://github.com/cmur2/joe-syntax
-
 =Idle
 =Comment	green
 =CommentLabel	bold green
