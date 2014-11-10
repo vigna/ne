@@ -6,11 +6,18 @@
 
 =Idle
 =Comment 	green
-=Docstring	cyan
+=CommentLabel	bold green
+=Docstring	green
+=DocstringLabel	bold green
 =DocEscape	bold cyan
 =Constant 	cyan
 =Escape 	bold cyan
 =Keyword 	bold
+=Bad		bold red
+=Brace		magenta
+
+=PrivateMember	fg_310 # brown
+=Decorator	red
 
 :idle Idle
 	*		idle
@@ -18,10 +25,23 @@
 	"0-9"		first_digit	recolor=-1
 	"'"		string_sq_1	recolor=-1
 	"\""		string_dq_1	recolor=-1
-	"a-zA-Z_"	ident		buffer
+	"a-zA-Z_"	ident		noeat
+	"{}"		brace		recolor=-1
+	"@"		decorator	recolor=-1
+
+:brace Brace
+	*		idle		noeat
+
+# annotations
+:decorator Decorator
+	*		decorator
+	"\"'"		string_sq	recolor=-1
+	"(\t\r\n"	idle		noeat
 
 :comment Comment
 	*		comment
+	# might be TODO label
+	"BFHNTX"	comment		noeat call=.comment_todo()
 	"\n"		idle
 
 :string_sq_1 Constant
@@ -43,6 +63,8 @@
 
 :docstr_sq Docstring
 	*		docstr_sq
+	# might be TODO label
+	"BFHNTX"	docstr_sq	noeat call=.comment_todo_docstr()
 	"\\"		docstr_sq_esc	recolor=-1
 	"'"		docstr_sq_1
 
@@ -77,6 +99,8 @@
 
 :docstr_dq Docstring
 	*		docstr_dq
+	# might be TODO label
+	"BFHNTX"	docstr_dq	noeat call=.comment_todo_docstr()
 	"\\"		docstr_dq_esc	recolor=-1
 	"\""		docstr_dq_1
 
@@ -125,6 +149,10 @@
 	"0-9"		enum
 
 :ident Idle
+	*		ident1		noeat buffer
+	"_"		priv_member	recolor=-1
+
+:ident1 Idle
 	*		idle		noeat strings
 	"and"		kw
 	"assert"	kw
@@ -155,8 +183,67 @@
 	"try"		kw
 	"while"		kw
 	"yield"		kw
+	# quasi-keywords
+	"False"		lit
+	"None"		lit
+	"True"		lit
 done
-	"a-zA-Z0-9_"	ident
+	"a-zA-Z0-9_"	ident1
 
 :kw Keyword
-	*	idle	noeat
+	*		idle		noeat
+
+:lit Keyword
+	*		idle		noeat
+
+:priv_member PrivateMember
+	*		idle		noeat
+	"a-zA-Z0-9_"	priv_member
+
+.subr comment_todo
+# initial state
+:comment_todo_init Comment
+	*		comment_todo_guess	buffer
+
+# highlight common TODO labels
+:comment_todo_guess Comment
+	*		comment_todo_unknown	noeat strings
+	"BUG"		comment_todo
+	"FIXME"		comment_todo
+	"HACK"		comment_todo
+	"NOTE"		comment_todo
+	"TODO"		comment_todo
+	"XXX"		comment_todo
+done
+	"A-Z"		comment_todo_guess
+
+:comment_todo_unknown Comment
+	*		NULL		noeat return
+
+:comment_todo CommentLabel
+	*		NULL		noeat return
+.end
+
+.subr comment_todo_docstr
+# initial state
+:comment_todo_init Docstring
+	*		comment_todo_guess	buffer
+
+# highlight common TODO labels
+:comment_todo_guess Docstring
+	*		comment_todo_unknown	noeat strings
+	"BUG"		comment_todo
+	"FIXME"		comment_todo
+	"HACK"		comment_todo
+	"NOTE"		comment_todo
+	"TODO"		comment_todo
+	"XXX"		comment_todo
+done
+	"A-Z"		comment_todo_guess
+
+:comment_todo_unknown Docstring
+	*		NULL		noeat return
+
+:comment_todo DocstringLabel
+	*		NULL		noeat return
+.end

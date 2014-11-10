@@ -24,7 +24,7 @@
     "fuzzy match" by typed characters, backspace.
 
   * Added syntax support for puppet files with a ".pp" extension, and
-    updates to .ruby, .erb, and .conf syntax recognizers.
+    updates to ruby, erb, python and conf syntax recognizers.
 
 2.5
 
