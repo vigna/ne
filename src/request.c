@@ -379,9 +379,9 @@ int request_strings(req_list *rlp0, int n ) {
 
 		n = PXY2N(page,x,y);
 
-      assert(fuzz_len >= 0);
+		assert(fuzz_len >= 0);
 
-      fuzz_len = min(fuzz_len, strlen(rl.entries[n]));
+		fuzz_len = min(fuzz_len, strlen(rl.entries[n]));
 
 		move_cursor(y, x * dx + fuzz_len);
 
@@ -686,7 +686,7 @@ char *request_files(const char * const filename, int use_prefix) {
 			closedir(d);
 		}
 		else alert();
-      req_list_free(&rl);
+		req_list_free(&rl);
 	} while(next_dir);
 
 	chdir(cur_dir_name);
