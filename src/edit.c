@@ -216,7 +216,7 @@ int word_wrap(buffer * const b) {
 	static char avcmd[16];
 	int non_blank_added = 0;
 	unsigned char * line = b->cur_line_desc->line;
-	int avshift, pos;
+	int avshift, pos, original_line;
 
 	if (b->cur_pos > b->cur_line_desc->line_len) return ERROR;
 	/* If the char to our left is a space, we need to insert
@@ -232,13 +232,14 @@ int word_wrap(buffer * const b) {
 		goto_pos(b, next_pos(line, b->cur_pos, b->encoding));
 	}
 	b->bookmark[WORDWRAP_BOOKMARK].pos   = b->cur_pos;
-	b->bookmark[WORDWRAP_BOOKMARK].line  = b->cur_line;
+	b->bookmark[WORDWRAP_BOOKMARK].line  = original_line = b->cur_line;
 	b->bookmark[WORDWRAP_BOOKMARK].cur_y = b->cur_y;
 	b->bookmark_mask |= (1 << WORDWRAP_BOOKMARK);
 	paragraph(b);
 	goto_line(b, b->bookmark[WORDWRAP_BOOKMARK].line);
 	goto_pos( b, b->bookmark[WORDWRAP_BOOKMARK].pos);
 	line = b->cur_line_desc->line;
+	b->bookmark[WORDWRAP_BOOKMARK].cur_y += b->bookmark[WORDWRAP_BOOKMARK].line - original_line;
 	if (avshift = b->cur_y - b->bookmark[WORDWRAP_BOOKMARK].cur_y) {
 		snprintf(avcmd, 16, "%c%d", avshift > 0 ? 'T' :'B', avshift > 0 ? avshift : -avshift);
 		adjust_view(b,avcmd);
