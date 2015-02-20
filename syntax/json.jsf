@@ -1,0 +1,261 @@
+# JSON highlighter per json.org
+
+# Written by Rebecca Turner (@ReBecaOrg)
+
+# Define colors
+
+=Idle
+=Comma
+=PairSep
+=Bracket	magenta
+=Brace		magenta
+=Number		cyan
+=String		cyan
+=StringEscape	cyan bold
+=Boolean	cyan
+=Null		cyan
+
+=Bad		red bold inverse # Syntax errors detected by the highlighter
+
+=ERROR		bold yellow bg_red # Errors in the highlighter itself
+
+:json Idle
+	*			end		noeat call=.value()
+	" \t\n"			json
+
+:end Idle
+	*			endBAD		noeat
+	" \t\n"			end
+
+:endBAD Bad
+	*			end
+
+.subr value
+
+:value Idle
+	*			valueBAD	noeat
+	"\""			end		noeat call=.string()
+	"-0-9"			end		noeat call=.number()
+	"tfn"			end		noeat call=.bareword()
+	"{"			end		noeat call=.object()
+	"["			end		noeat call=.array()
+
+:valueBAD Bad
+	*			value
+
+:end Idle
+	*			NULL		noeat return
+
+.end
+
+.subr object
+
+:object Brace
+	*			objectBAD	noeat
+	"{"			maybeempty
+
+:objectBAD ERROR
+	*			end
+
+:maybeempty Brace
+	*			key		noeat
+	" \t\n"			maybeempty
+	"}"			end		recolor=-1
+
+:key Idle
+	*			keyBAD		noeat
+	"\""			pairsep		noeat call=.string()
+	" \t\n"			key
+
+:keyBAD Bad
+	*			key
+
+:pairsep PairSep
+	*			pairsepBAD	noeat
+	":"			value
+	" \t\n"			pairsep
+
+:pairsepBAD Bad
+	*			pairsep
+
+:value Idle
+	*			nextpair	noeat call=.value()
+	" \t\n"			value
+
+:nextpair Comma
+	*			nextpairBAD	noeat
+	"}"			end		recolor=-1
+	","			key
+	" \t\n"			nextpair
+
+:nextpairBAD Bad
+	*			nextpair
+
+:end Brace
+	*			NULL		noeat return
+.end
+
+.subr array
+
+:array Bracket
+	*			arrayBAD	noeat
+	"["			maybeempty
+
+:arrayBAD ERROR
+	*			end
+
+:maybeempty Bracket
+	*			value		noeat
+	" \t\n"			maybeempty
+	"]"			end		recolor=-1
+
+:value Idle
+	*			nextvalue	noeat call=.value()
+	" \t\n"			value
+
+:nextvalue Comma
+	*			nextvalueBAD	noeat
+	"]"			end		recolor=-1
+	","			value
+	" \t\n"			nextvalue
+
+:nextvalueBAD Bad
+	*			nextvalue
+
+:end Bracket
+	*			NULL		noeat return
+
+.end
+
+.subr string
+
+:string String
+	*			stringBAD	noeat
+	"\""			body
+
+:stringBAD ERROR
+	*			end
+
+:body String
+	*			body
+	"\""			end
+	"\\"			escape		recolor=-1
+
+:escape StringEscape
+	*			escapeBAD	recolor=-2 noeat
+	"\"/bfnrt\\"		body
+	"u"			unicode1
+
+:escapeBAD Bad
+	*			body
+
+:unicode1 StringEscape
+	*			unicodeBAD	recolor=-3 noeat
+	"0-9a-fA-F"		unicode2
+
+:unicode2 StringEscape
+	*			unicodeBAD	recolor=-4 noeat
+	"0-9a-fA-F"		unicode3
+
+:unicode3 StringEscape
+	*			unicodeBAD	recolor=-5 noeat
+	"0-9a-fA-F"		unicode4
+
+:unicode4 StringEscape
+	*			unicodeBAD	recolor=-6 noeat
+	"0-9a-fA-F"		body
+
+:unicodeBAD Bad
+	*			body
+
+:end Idle
+	*			NULL		noeat return
+
+.end
+
+.subr bareword
+
+:bareword Idle
+	*			body		noeat mark buffer
+
+:body Bad
+	*			end		noeat markend strings
+	"true"			boolean
+	"false"			boolean
+	"null"			null
+	
+done
+	"truefalsn"		body
+
+:boolean Boolean
+	*			end		noeat
+
+:null Null
+	*			end		noeat
+
+:end Idle
+	*			NULL		noeat return
+
+.end
+
+.subr number
+
+:number Number
+	*			numberBAD
+	"0-9"			numberA		noeat
+	"-"			numberA
+
+:numberBAD ERROR
+	*			end
+
+:numberA Number
+	"0"			decimalpoint
+	"1-9"			integer
+
+:integer Number
+	*			end		noeat
+	"0-9"			integer
+	"."			decimalpoint
+	"eE"			exponentpart
+
+:decimalpoint Number
+	*			end
+	"0-9"			decimalpointBAD
+	"eE"			exponentpart
+	"."			decimalpart
+
+:decimalpointBAD Bad
+	*			end
+
+:decimalpart Number
+	*			decimalpartBAD
+	"0-9"			decimalpartA
+
+:decimalpartBAD Bad
+	*			end
+
+:decimalpartA Number
+	*			end		noeat
+	"0-9"			decimalpartA
+	"eE"			exponentpart
+
+:exponentpart Number
+	*			exponentpartBAD
+	"-+"			exponentpartA
+	"0-9"			exponentpartB
+
+:exponentpartBAD Bad
+	*			end
+
+:exponentpartA Number
+	*			exponentpartBAD
+	"0-9"			exponentpartB
+
+:exponentpartB Number
+	*			end		noeat
+	"0-9"			exponentpartB
+
+:end Idle
+	*			NULL		noeat return
+
+.end
