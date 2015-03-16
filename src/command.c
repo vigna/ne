@@ -456,6 +456,28 @@ static int insertchar_val(const unsigned char *p) {
 	return 0;
 }
 
+/* Optimizing macros is not safe if there are any subsequent undo commands
+   calls to macros (which may themselves contain undo commands). This function
+   looks through a stream for undo or non-built in commands, and returns 0
+   if any are found; returns 1 otherwise. */
+   
+int vet_optimize_macro_stream(char_stream *cs, int pos) {
+	int n, a;
+	unsigned char *p;
+
+	while (pos < cs->len ) {
+		if ((a = parse_command_line(&cs->stream[pos], &n, &p, 0)) >= 0) {
+			if (p) free(p);
+			if (a == UNDO_A) return 0; /* optimization is not safe */
+		} else {
+			a = -a;
+			if (a == NO_SUCH_COMMAND) return 0; /* possibly a macro invocation */
+		}
+		pos += strlen(&cs->stream[pos]) + 1;
+	}
+	return 1;
+}
+
 /* Looks through the macro stream for consecutive runs of InsertChar commands
 	and replaces them with appropriate InsertString commands. This makes macros
 	much easier to read if and when they have to be edited. Note that if the
@@ -467,13 +489,14 @@ void optimize_macro(char_stream *cs, int verbose) {
 	int pos;
 	int chr;
 	int building = 0;
+	int safe_to_optimize = 0;
 	 
 	if (!cs || !cs->len) return;
 
 	for (pos = 0; pos < cs->len; pos += strlen(&cs->stream[pos]) + 1) {
 		cmd = &cs->stream[pos];
 		chr = insertchar_val(cmd);
-		if (chr < 0x80 && isprint(chr)) {
+		if (chr < 0x80 && isprint(chr) && (safe_to_optimize = vet_optimize_macro_stream(cs,pos))) {
 			char two[2] = " ";
 			two[0] = chr;
 			delete_from_stream(cs, pos, strlen(cmd) + 1);

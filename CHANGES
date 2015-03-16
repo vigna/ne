@@ -3,7 +3,7 @@
 2.6
 
   * Ancient bug with vertical clip edges fixed.
-  
+
   * AutoComplete occasionally would omit some completions.
 
   * Exit attempts to save all modified documents even if one cannot be saved.
@@ -11,10 +11,12 @@
 
   * Avoid crash when resizing window while command prompt is active.
 
+  * Avoid SaveMacro optimization before Undo, called macros.
+
 2.5
 
   * Pathologically long-running PARAGRAPH commands are now stoppable (^-\).
-  
+
   * Moved modified flag '*' to right end of status line to be easier to see.
 
   * COPY, CUT, ERASE copy the correct text to the clip and do not crash
@@ -23,7 +25,7 @@
 
   * ReplaceOnce was returning a generic error code instead of success,
     thus stopping macros.
- 
+
 2.4
 
   * CLOSEDOC and QUIT (^Q and Alt-Q) now close string requesters just like Esc.
