@@ -211,6 +211,7 @@
 	"inverse"	color_color
 	"underline"	color_color
 	"bold"		color_color
+	"italic"	color_color
 	"blink"		color_color
 	"dim"		color_color
 	"white"		color_color

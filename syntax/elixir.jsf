@@ -1,0 +1,262 @@
+# JOE syntax highlight file for Elixir
+
+# Written by Andrey Lisin (at gmail.com)
+
+# TODO
+# - test attributes and docstrings highlighting
+# - maybe highlight arithmetical operations
+# - comprehensions highlighting
+
+# Changes
+# - fix atom with underscore highlighting
+# - distinct docstrings and module attributes
+
+=Idle
+=Comment	green
+=Keyword	bold
+=Bif		#fg_501
+=String		cyan
+=Extrapolation  cyan bold
+=Atom		red
+=Attribute	#fg_505
+=ModAttr	yellow #fg_141
+=Brace		magenta #fg_440
+=Brack		magenta #fg_311
+=Int		cyan
+=Def		
+=ModDef		blue bold
+=Underscore	blue #fg_310 #brown
+
+
+:idle Idle
+	*		idle
+	"#"		line_comment	noeat
+	"a-zA-Z"	ident		noeat
+	"_"		underscore	recolor=-1
+	"'"		single_quoted	recolor=-1
+	"\""		double_quoted	recolor=-1
+	":"		atom		recolor=-1
+	"@"		modattr		recolor=-1
+	"[]"            brack           recolor=-1
+	"{}"		brace		recolor=-1
+	"|"		maybe_pipe
+	"\\"		maybe_opt
+	"0-9"		decimal		recolor=-1
+	
+:line_comment Comment
+	*		line_comment
+	"\n"		idle
+	
+:single_quoted String
+	*		single_quoted
+	"'"		idle
+	
+:double_quoted String
+	*		double_quoted
+	"#"		maybe_extrapolation
+	"\""		idle
+	
+:maybe_extrapolation String
+	*		double_quoted   noeat
+	"{"		extrapolation	recolor=-2
+	
+:extrapolation Extrapolation
+	*		extrapolation
+	"}"		double_quoted
+	"\""		double_quoted	noeat
+	
+:atom Atom
+	*		idle		noeat
+	"a-zA-Z0-9_"	atom
+	
+:modattr ModAttr
+	*		idle
+	"a-zA-Z0-9_"	modattr
+	" "		maybe_edoc
+	
+:maybe_edoc Idle
+	*		idle
+	" "		maybe_edoc
+	"\""		string_dq_1 	recolor=-1
+	
+:string_dq_1 String
+	*		double_quoted	recolor=-1
+	"\""		string_dq_2
+	
+:string_dq_2 Comment
+	*		idle
+	"\""		docstr_dq	recolor=-3
+	
+:docstr_dq Comment
+	*		docstr_dq
+	"\""		docstr_dq_1
+	
+:docstr_dq_1 Comment
+	*		docstr_dq
+	"\""		docstr_dq_2
+	
+:docstr_dq_2 Comment
+	*		docstr_dq
+	"\""		idle
+	
+	
+	
+:brace Brace
+	*		idle		noeat
+	
+:brack Brack
+	*		idle		noeat
+	
+:maybe_pipe Idle
+	*		idle
+	">"		pipe		recolor=-2
+	
+:pipe Keyword
+	*		idle		noeat
+	
+:maybe_opt Idle
+	*		idle
+	"\\"		opt		recolor=-2
+	
+:opt Keyword
+	*		idle		noeat
+	
+:decimal Int
+	*		idle		noeat
+	"0-9_"		decimal
+	"."		float
+	
+:float Int
+	*		idle		noeat
+	"0-9"		float
+	
+	
+
+	
+:underscore Underscore
+	*		idle		noeat
+	"a-zA-Z0-9?_"	underscore
+	
+	
+:ident Idle
+	*		ident1		noeat buffer mark
+	
+:ident1 Idle
+	*		idle		noeat strings
+	"def"					start_def
+	"defp"					start_def
+	"defmodule" 				start_mod_def
+	"defprotocol"				start_def
+	"defmacro"				start_def
+	"defmacrop" 				start_def
+	"defdelegate"				start_def
+	"defexception" 				start_def
+	"defstruct" 				start_def
+	"defimpl"				start_def
+	"defcallback"				start_def
+	"import"				start_mod_def
+	"require"				start_mod_def
+	"test"					start_def
+	"use"					start_mod_def
+	"alias"					start_mod_def
+	"end"					kw
+	"do"					kw
+	"if"					kw
+	"else"					kw
+	"unless"				kw
+	"case"					kw
+	"cond"					kw
+	"true"					kw
+	"false"					kw
+	"Agent"					bif
+	"Application"				bif
+	"Atom"					bif
+	"Base"					bif
+	"Behaviour"				bif
+	"Bitwise"				bif
+	"Builtin"				bif
+	"Code"					bif
+	"Dict"					bif
+	"EEx"					bif
+	"Elixir"				bif
+	"Enum"					bif
+	"ExUnit"				bif
+	"Exception"				bif
+	"File"					bif
+	"File.Stat"				bif
+	"File.Stream"				bif
+	"Float"					bif
+	"Function"				bif
+	"GenEvent"				bif
+	"GenServer"				bif
+	"GenTCP"				bif
+	"HashDict"				bif
+	"HashSet"				bif
+	"IO"					bif
+	"IO.ANSI"				bif
+	"IO.Stream"				bif
+	"Inspect.Algebra"			bif
+	"Inspect.Opts"				bif
+	"Integer"				bif
+	"Kernel"				bif
+	"Kernel.ParallelCompiler"		bif
+	"Kernel.ParallelRequire"		bif
+	"Kernel.SpecialForms"			bif
+	"Kernel.Typespec" 			bif
+	"Keyword"				bif
+	"List"					bif
+	"Macro"					bif
+	"Macro.Env"				bif
+	"Map"					bif
+	"Math"					bif
+	"Module"				bif
+	"Node"					bif
+	"OptionParser"				bif
+	"OrdDict"				bif
+	"Path"					bif
+	"Port"					bif
+	"Process"				bif
+	"Protocol"				bif
+	"Range"					bif
+	"Record"				bif
+	"Regex"					bif
+	"Set"					bif
+	"Stream"				bif
+	"String"				bif
+	"StringIO"				bif
+	"Supervisor"				bif
+	"Supervisor.Spec"			bif
+	"System"				bif
+	"Task"					bif
+	"Task.Supervisor"			bif
+	"Tuple"					bif
+	"URI"					bif
+	"UnboundMethod"				bif
+	"Version"				bif
+done
+	"a-zA-Z_0-9"	ident1
+	":"		attr		noeat recolormark
+	
+:attr Attribute
+	*		idle
+	
+:kw Keyword
+	*		idle		noeat
+	
+:bif Bif
+	*		idle		noeat
+	
+:start_def Keyword
+	*		def
+	
+:def Def
+	*		def
+	" ("		idle		recolor=-1	
+	
+:start_mod_def Keyword
+	*		moddef
+	
+:moddef ModDef
+	*		moddef
+	" "		idle		recolor=-1
+	"\n"		idle

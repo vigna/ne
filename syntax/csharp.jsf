@@ -1,0 +1,459 @@
+# JOE syntax highlight file for C#
+# Based on Java highlighter
+
+=Idle
+=Preproc 	yellow
+=Comment 	green
+=DocComment	bold blue
+=Constant 	cyan
+=Escape 	bold cyan
+=Type 		bold blue
+=Keyword 	blue
+=Operator	blue
+=Bad		bold red
+=Brace		magenta
+=Control
+
+:begin Idle
+	*	begin	noeat call=.csharp()
+
+.subr csharp
+
+:reset Idle
+	*		first		noeat
+	" \t"		reset
+
+:first Idle
+	*		idle		noeat
+	"#"		pre		recolor=-1
+
+:pre Preproc
+	*		pre		noeat
+	"a-zA-Z"	preident	recolor=-1 buffer
+	" \t"		pre
+	"\n"		reset
+
+:preident Preproc
+	*		preunknown	strings
+	"if"		prebody
+	"else"		prebody
+	"elif"		prebody
+	"endif"		prebody
+	"region"	preregion
+	"endregion"	preregion
+	"define"	predefine
+	"undef"		predefine
+	"warning"	preregion
+	"error"		preregion
+	"line"		prebody
+done
+	"a-z"		preident
+
+:prebody Preproc
+	*		prebody
+	"\n"		reset
+
+:preregion Preproc
+	*		preregion_text
+	"\n"		reset
+
+:preregion_text Constant
+	*		preregion_text
+	"\n"		reset
+
+:predefine Preproc
+	*		predefine_text	noeat
+	" \t"		predefine
+	"\n"		reset
+
+:predefine_text Constant
+	*		predefine_text
+	" \t"		predefine_value
+	"\n"		reset
+
+:predefine_value Idle
+	*		predefine_value
+	"\n"		reset
+
+:preunknown Preproc
+	*		preunknown
+	"\n"		reset
+
+:idle Idle
+	*		idle
+	"\n"		reset
+	"/"		slash
+	"0"		first_digit	recolor=-1
+	"1-9"		decimal		recolor=-1
+	"."		maybe_float
+	"\""		string		recolor=-1
+	"@"		forcedliteral	recolor=-1
+	"'"		char		recolor=-1
+	"a-zA-Z_"	ident		buffer
+	"{}"		brace		recolor=-1
+	",:;=()><[]*&|!~+\-%^"	control	recolor=-1
+
+:maybe_done Control
+	*	idle	noeat
+	"/"	idle	noeat return recolor=-2
+
+:brace Brace
+	*	idle	noeat
+
+:control Control
+	*	idle	noeat
+
+:forcedliteral Idle
+	*		idle		noeat
+	"a-zA-Z_"	ident		recolor=-2
+	"\""		forcedstring	recolor=-2
+
+:forcedstring Constant
+	*		forcedstring
+	"\""		forcedstringquot
+
+:forcedstringquot Constant
+	*		idle			noeat
+	"\""		forcedstring			# @"This -> "" <- is a literal quote"
+
+:slash Idle
+	*		idle			noeat
+	"*"		comment			recolor=-2
+	"/"		maybe_line_comment	recolor=-2
+
+:comment Comment
+	*		comment
+	"*"		maybe_end_comment
+
+:maybe_end_comment Comment
+	*		comment
+	"/"		idle
+	"*"		maybe_end_comment
+
+:maybe_line_comment Comment
+	*		line_comment		noeat recolor=-1
+	"/"		doc_comment		recolor=-3
+
+:line_comment Comment
+	*		line_comment
+	"\n"		reset
+
+:doc_comment DocComment
+	*		doc_comment
+	"\n"		reset
+
+:first_digit Constant
+	*		idle	noeat
+	"xX"		hex
+	"."		float
+	"eE"		epart
+	"0-7"		octal
+	"89"		bad_number	recolor=-1
+
+:bad_number Bad
+	*		idle	noeat
+	"0-9"		bad_number
+
+:octal Constant
+	*		idle	noeat
+	"0-7"		octal
+	"89"		bad_number	recolor=-1
+
+:hex Constant
+	*		idle	noeat
+	"0-9A-Fa-f"	hex
+
+:decimal Constant
+	*		idle	noeat
+	"0-9"		decimal
+	"eE"		epart
+	"."		float
+
+:maybe_float Constant
+	*		idle	recolor=-2	noeat
+	"0-9"		float		recolor=-2
+
+:float Constant
+	*		idle	noeat
+	"eE"		epart
+	"0-9"		float
+
+:epart Constant
+	*		idle	noeat
+	"0-9+\-"	enum
+
+:enum Constant
+	*		idle	noeat
+	"0-9"		enum
+
+:string	Constant
+	*		string
+	"\""		idle
+	"\\"		string_escape		recolor=-1
+	"{"		maybe_string_control	recolor=-1
+	"}"		maybe_control_end	recolor=-1
+
+:string_escape Escape
+	*		string
+	"xu"		string_hex_4  # Yes, \x has up to 4 numbers in C#
+	"U"		string_hex_8
+	"0-7"		string_octal2
+	"\n"		string		recolor=-2
+
+# Eight all-purpose (hex/unicode short/unicode long) states for hexadecimal
+# escape sequences
+
+:string_hex_8 Escape
+	*		string		noeat
+	"0-9a-fA-F"	string_hex_7
+
+:string_hex_7 Escape
+	*		string		noeat
+	"0-9a-fA-F"	string_hex_6
+
+:string_hex_6 Escape
+	*		string		noeat
+	"0-9a-fA-F"	string_hex_5
+
+:string_hex_5 Escape
+	*		string		noeat
+	"0-9a-fA-F"	string_hex_4
+
+:string_hex_4 Escape
+	*		string		noeat
+	"0-9a-fA-F"	string_hex_3
+
+:string_hex_3 Escape
+	*		string		noeat
+	"0-9a-fA-F"	string_hex_2
+
+:string_hex_2 Escape
+	*		string		noeat
+	"0-9a-fA-F"	string_hex_1
+
+:string_hex_1 Escape
+	*		string		noeat
+	"0-9a-fA-F"	string
+
+:string_octal2 Escape
+	*		string		noeat
+	"0-7"		string_octal3
+
+:string_octal3 Escape
+	*		string		noeat
+	"0-7"		string
+
+:maybe_string_control Escape
+	*		string 		noeat recolor=-2
+	"0-9"		string_control
+	"{"		string
+
+:string_control Escape
+	*		string_control
+	"\""		string		noeat
+	"}"		string
+
+:maybe_control_end Escape
+	*		string		noeat recolor=-2
+	"}"		string
+
+:char Constant
+	*		char
+	"\n"		reset
+	"'"		idle
+	"\\"		char_escape	recolor=-1
+
+:char_escape	Escape
+	*		char
+	"xu"		char_hex4
+	"U"		char_hex8
+	"0-7"		char_octal2
+	"\n"		char		recolor=-2
+
+:char_hex8 Escape
+	*		char		noeat
+	"0-9a-fA-F"	char_hex7
+
+:char_hex7 Escape
+	*		char		noeat
+	"0-9a-fA-F"	char_hex6
+
+:char_hex6 Escape
+	*		char		noeat
+	"0-9a-fA-F"	char_hex5
+
+:char_hex5 Escape
+	*		char		noeat
+	"0-9a-fA-F"	char_hex4
+
+:char_hex4 Escape
+	*		char		noeat
+	"0-9a-fA-F"	char_hex3
+
+:char_hex3 Escape
+	*		char		noeat
+	"0-9a-fA-F"	char_hex2
+
+:char_hex2 Escape
+	*		char		noeat
+	"0-9a-fA-F"	char_hex1
+
+:char_hex1 Escape
+	*		char		noeat
+	"0-9a-fA-F"	char
+
+:char_octal2 Escape
+	*		char		noeat
+	"0-7"		char_octal3
+
+:char_octal3 Escape
+	*		char		noeat
+	"0-7"		char
+
+:ident Idle		# http://msdn.microsoft.com/en-us/library/x53a06bb.aspx
+	*		idle		noeat strings
+	"abstract"	kw
+	"as"		operator
+	"base"		kw
+	"break"		kw
+	"case"		kw
+	"catch"		kw
+	"checked"	operator
+	"class"		kw
+	"const"		kw
+	"continue"	kw
+	"default"	kw
+	"delegate"	kw
+	"do"		kw
+	"else"		kw
+	"enum"		kw
+	"event"		kw
+	"explicit"	kw
+	"extern"	kw
+	"finally"	kw
+	"fixed"		kw
+	"for"		kw
+	"foreach"	kw
+	"goto"		kw
+	"if"		kw
+	"implicit"	kw
+	"in"		operator
+	"interface"	kw
+	"internal"	kw
+	"is"		kw
+	"lock"		kw
+	"namespace"	kw
+	"new"		operator
+	"operator"	kw
+	"out"		kw
+	"override"	kw
+	"params"	kw
+	"private"	kw
+	"protected"	kw
+	"public"	kw
+	"readonly"	kw
+	"ref"		kw
+	"return"	kw
+	"sealed"	kw
+	"sizeof"	operator
+	"stackalloc"	kw
+	"static"	kw
+	"struct"	kw
+	"switch"	kw
+	"this"		kw
+	"throw"		kw
+	"try"		kw
+	"typeof"	operator
+	"unchecked"	operator
+	"unsafe"	kw
+	"using"		kw
+	"virtual"	kw
+	"volatile"	kw
+	"while"		kw
+	
+	# Types
+	
+	"bool"		type
+	"Boolean"	type
+	"byte"		type
+	"Byte"		type
+	"char"		type
+	"Character"	type
+	"decimal"	type
+	"double"	type
+	"Double"	type
+	"float"		type
+	"Float"		type
+	"int"		type
+	"Integer"	type
+	"int16"		type
+	"Int16"		type
+	"int32"		type
+	"Int32"		type
+	"int64"		type
+	"Int64"		type
+	"long"		type
+	"object"	type
+	"Object"	type
+	"sbyte"		type
+	"short"		type
+	"string"	type
+	"String"	type
+	"uint"		type
+	"uint16"	type
+	"uint32"	type
+	"uint64"	type
+	"ulong"		type
+	"ushort"	type
+	"void"		type
+	
+	
+	# These are "contextual" keywords.  Should try to do a better and
+	# and find the context (most are LINQ), but it may not be possible
+	# in all cases:
+	
+	"add"		kw
+	"alias"		kw
+	"ascending"	kw
+	"async"		kw
+	"await"		kw
+	"descending"	kw
+	"dynamic"	type
+	"from"		kw
+	"get"		kw
+	"global"	kw
+	"group"		kw
+	"into"		kw
+	"join"		kw
+	"let"		kw
+	"orderby"	kw
+	"partial"	kw
+	"remove"	kw
+	"select"	kw
+	"set"		kw
+	"value"		kw
+	"var"		type
+	"where"		kw
+	"yield"		kw
+	
+	# Literals
+	
+	"true"		lit
+	"false"		lit
+	"null"		lit
+done
+	"a-zA-Z0-9_"	ident
+
+:type Type
+	*	idle	noeat
+
+:kw Keyword
+	*	idle	noeat
+
+:lit Constant
+	*	idle	noeat
+
+:operator Operator
+	*	idle	noeat
+
+.end

@@ -1,0 +1,500 @@
+# JOE syntax highlight file for Erlang
+# by Christian Nicolai (http://mycrobase.de)
+# with contributions from Jonas Rosling and Andrew Lisin
+
+# TODO Handle type information ::
+# TODO implement subroutines for cleaner and more correct implementation.
+# TODO Probably use less colors to be less distractive.
+
+
+=Idle
+=Comment	green
+=String		cyan #fg_110
+=String_mod	cyan bold #fg_200 bold
+=String_esc	cyan bold #fg_000 bold
+=Int		cyan #fg_033
+=Record		blue #fg_530
+=Recatt		
+=Fun		
+=Module		#fg_101
+=Keyword	bold
+=Guard		#fg_200
+=Bif		#fg_501
+=Type		bold #fg_141
+=Brace		magenta #fg_440
+=Brack		magenta #fg_311
+=Macro		#fg_330
+=Variable	yellow #fg_310
+=Attribute	red #fg_505
+=Char		cyan #fg_330 bold
+
+:idle Idle
+	*		idle
+	"A-Z_"		variable	noeat
+	"%"		line_comment	noeat
+	"\""		string		recolor=-1
+	"'"		quoted_atom	mark
+	"0-9"		decimal		recolor=-1
+        "[]"            brack           recolor=-1
+	"{}"		brace		recolor=-1
+	"-"		maybe_attribute	buffer
+	"a-z"		atom		buffer mark noeat
+	"#"		record		recolor=-1
+	"$"		char		recolor=-1
+	"?"		is_macro	mark
+	"<|"		lc		buffer
+
+:lc Idle
+	*		idle		noeat strings
+	"<-"		kw
+	"||"		kw
+done
+	"-<|"		lc
+
+:pipe Idle
+	*		idle		noeat
+	"|"		kw		recolormark
+	
+:is_macro Idle
+	*		macro		recolormark noeat
+	"a-zA-Z0-9_@"	is_macro
+
+:macro Macro
+	*		idle		noeat
+
+:char Char
+	*		idle
+	"\\"		charesc
+
+:charesc Char
+	*		idle
+
+:line_comment Comment
+	*		line_comment
+	"@"		is_edoc		noeat buffer 
+	"\n"		idle
+
+:is_edoc Comment
+	*		line_comment	noeat strings
+	"@clear"	edoc
+	"@docfile"	edoc
+	"@headerfle"	edoc
+	"@todo"		edoc
+	"@TODO"		edoc
+	"@type"		edoc
+	"@reference"	edoc
+	"@see"		edoc
+	"@since"	edoc
+	"@deprecated"	edoc
+	"@hidden"	edoc
+	"@private"	edoc
+	"@equiv"	edoc
+	"@throws"	edoc
+	"@author"	edoc
+	"@copyright"	edoc
+	"@version"	edoc
+	"@title"	edoc
+	"@spec"		edoc
+	"@doc"		edoc
+	"@end"		edoc
+done
+	"A-Za-z@"	is_edoc
+
+:edoc Keyword
+	*		line_comment	noeat
+
+:variable Variable
+	*		idle		noeat
+	"a-zA-Z0-9_"	variable
+
+:record Record
+	*		idle		noeat
+	"a-z"		rec		noeat
+	"'"		qtrec		recolor=-1
+
+:rec Record
+	*		idle		noeat
+	"a-zA-Z0-9_@"	rec
+	"."		recatt		recolor=-1
+
+:qtrec Record
+	*		qtrec
+	"'"		rec
+
+:recatt Recatt
+	*		idle		noeat
+	"a-zA-Z_"	recatt
+	"#"		record
+
+# STRINGS
+:string String
+	*		string
+	"\\"		string_escape	recolor=-1
+	"~"		string_		mark
+	"\""		idle
+
+:string_escape String_esc
+	*		string
+
+:string_ String
+	*		string_mod	noeat
+	"0-9"		string_f
+	"t"		string_mod
+:string_f String
+	*		string_mod	noeat          
+	"0-9*"		string_f
+	"."		string_p
+
+:string_p String
+	*		string_mod	noeat
+	"0-9*"		string_p
+
+:string_mod String
+	*		string
+	"cfegswpWPBX#bx+ni"	string_modifier recolormark noeat
+
+:string_modifier String_mod
+	*		string
+# END STRINGS
+:decimal Int
+	*		idle		noeat
+	"0-9"		decimal
+	"."		float
+	"#"		base
+
+:float Int
+	*		idle		noeat
+	"0-9"		float
+	"Ee"		eintval
+
+:base Int
+	*		idle		noeat
+	"0-9A-Fa-f"	base
+
+:eintval Int
+	*		eint		noeat
+	"-"		eint
+
+:eint Int
+	*		idle		noeat
+	"0-9"		eint
+
+:brace Brace
+	*		idle		noeat
+
+:brack Brack
+	*		idle		noeat
+
+:maybe_attribute Idle
+	*		idle		noeat strings
+	"-module"	attribute
+	"-export"	attribute
+	"-import"	attribute
+	"-compile"	attribute
+	"-ifdef"	attribute
+	"-endif"	attribute
+	"-define"	attribute
+	"-file"		attribute
+	"-type"		attribute
+	"-opaque"	attribute
+	"-export_type"	attribute
+	"-spec"		attribute
+	"-author"	attribute
+	"-copyright"	attribute
+	"-include"	attribute
+	"-include_lib"	attribute
+	"-vsn"		attribute
+	"-behaviour"	attribute
+	"-behavior"	attribute
+	"-record"	attribute
+	"-on_load"	attribute
+	"-connect_all"	attribute
+	"-hidden"	attribute
+	"-name"		attribute
+	"-setcookie"	attribute
+	"-sname"	attribute
+	"-mode"		attribute
+done
+	"a-z_"		maybe_attribute
+
+:attribute Attribute
+	*		idle		noeat
+
+:no_atom Idle
+	*		idle		noeat
+	" "		no_atom
+	"("		function	recolormark noeat
+	":"		module		recolormark noeat
+	"/"		funarity
+
+:module Module
+	*		idle		noeat
+
+:function Fun
+	*		idle		noeat
+
+:funarity Fun
+	*		function	recolormark noeat
+	"0-9"		idle
+
+:kw Keyword
+	*		idle		noeat
+
+:guard Guard
+	*		idle		noeat
+
+:rterr Guard
+	*		idle		noeat
+
+:bif Bif
+	*		idle		recolormark noeat
+	" "		bif
+	"("		idle		noeat
+
+:type Type
+	*		idle		recolormark noeat
+	"("		idle		noeat
+	":"		module		recolormark noeat
+
+:quoted_atom Idle
+	*		quoted_atom
+	"'"		no_atom
+
+# This implementation is sort of funky.
+# Most of the cases it's correct but some highlighting may be wrong.
+# Should be looked over...
+:atom Idle
+	*		no_atom		noeat strings
+	"after"		kw
+	"and"		kw
+	"andalso"	kw
+	"band"		kw
+	"begin"		kw
+	"bnot"		kw
+	"bor"		kw
+	"bsl"		kw
+	"bsr"		kw
+	"bxor"		kw
+	"case"		kw
+	"catch"		kw
+	"cond"		kw
+	"div"		kw
+	"end"		kw
+	"fun"		kw
+	"if"		kw
+	"let"		kw
+	"not"		kw
+	"of"		kw
+	"or"		kw
+	"orelse"	kw
+	"query"		kw
+	"receive"	kw
+	"rem"		kw
+	"try"		kw
+	"when"		kw
+	"xor"		kw
+	"any"		type
+	"none"		type
+	"pid"		type
+	"port"		type
+	"reference"	type
+	"float"		type
+	"atom"		type
+	"binary"	type
+	"integer"	type
+	"list"		type
+	"improper_list"	type
+	"maybe_improper_list"	type
+	"tuple"		type
+	"term"		type
+	"boolean"	type
+	"byte"		type
+	"char"		type
+	"non_neg_integer"	type
+	"pos_integer"	type
+	"neg_integer"	type
+	"number"	type
+	"string"	type
+	"nonempty_string"	type
+	"iolist"	type
+	"module"	type
+	"mfa"		type
+	#interfears with the bif "node"		type
+	"timeout"	type
+	"no_return"	type
+	"badarg"	rterr
+	"badarith"	rterr
+	"badmatch"	rterr
+	"function_clause"	rterr
+	"case_clause"	rterr
+	"if_clause"	rterr
+	"try_clause"	rterr
+	"undef"		rterr
+	"badfun"	rterr
+	"badarity"	rterr
+	"timeout_value"	rterr
+	"noproc"	rterr
+	"nocatch"	rterr
+	"system_limit"	rterr
+	"is_atom"	guard
+	"is_binary"	guard
+	"is_bitstream"	guard
+	"is_boolean"	guard
+	"is_float"	guard
+	"is_function"	guard
+	"is_integer"	guard
+	"is_list"	guard
+	"is_number"	guard
+	"is_pid"	guard
+	"is_port"	guard
+	"is_record"	guard
+	"is_reference"	guard
+	"is_tuple"	guard
+	"abs"		bif
+	"adler32"	bif
+	"adler32_combine"	bif
+	"append_element"	bif
+	"apply"		bif
+	"atom_to_binary"	bif
+	"atom_to_list"	bif
+	"binary_part"	bif
+	"binary_to_atom"	bif
+	"binary_to_existing_atom"	bif
+	"binary_to_list"	bif
+	"bitstring_to_list"	bif
+	"binary_to_term"	bif
+	"bit_size"	bif
+	"bump_reductions"	bif
+	"byte_size"	bif
+	"cancel_timer"	bif
+	"check_old_code"	bif
+	"check_process_code"	bif
+	"crc32"		bif
+	"crc32_combine"	bif
+	"date"		bif
+	"decode_packet"	bif
+	"delete_module"	bif
+	"demonitor"	bif
+	"disconnect_node"	bif
+	"display"	bif
+	"element"	bif
+	"erase"		bif
+	"error"		bif
+	"exit"		bif
+	"external_size"	bif
+	"float"		bif
+	"float_to_list"	bif
+	"fun_info"	bif
+	"fun_to_list"	bif
+	"function_exported"	bif
+	"garbage_collect"	bif
+	"get"		bif
+	"get_cookie"	bif
+	"get_keys"	bif
+	"get_stacktrace"	bif
+	"group_leader"	bif
+	"halt"		bif
+	"hash"		bif
+	"hd"		bif
+	"hibernate"	bif
+	"integer_to_list"	bif
+	"iolist_to_binary"	bif
+	"iolist_size"	bif
+	"is_alive"	bif
+	"is_builtin"	bif
+	"is_process_alive"	bif
+	"length"	bif
+	"link"		bif
+	"list_to_atom"	bif
+	"list_to_binary"	bif
+	"list_to_bitstring"	bif
+	"list_to_existing_atom"	bif
+	"list_to_float"	bif
+	"list_to_integer"	bif
+	"list_to_pid"	bif
+	"list_to_tuple"	bif
+	"load_module"	bif
+	"load_nif"	bif
+	"loaded"	bif
+	"local_time"	bif
+	"local_time_to_universaltime"	bif
+	"make_ref"	bif
+	"make_tuple"	bif
+	"max"		bif
+	"md5"		bif
+	"md5_final"	bif
+	"md5_init"	bif
+	"md5_update"	bif
+	"memory"	bif
+	"min"		bif
+	"module_loaded"	bif
+	"monitor"	bif
+	"monitor_node"	bif
+	"nif_error"	bif
+	"node"		bif
+	"nodes"		bif
+	"now"		bif
+	"open_port"	bif
+	"phash"		bif
+	"phash2"	bif
+	"pid_to_list"	bif
+	"port_close"	bif
+	"port_command"	bif
+	"port_connect"	bif
+	"port_control"	bif
+	"port_call"	bif
+	"port_info"	bif
+	"port_to_list"	bif
+	"ports"		bif
+	"pre_loaded"	bif
+	"process_display"	bif
+	"process_flag"	bif
+	"process_info"	bif
+	"processes"	bif
+	"purge_module"	bif
+	"put"		bif
+	"raise"		bif
+	"read_timer"	bif
+	"ref_to_list"	bif
+	"register"	bif
+	"registered"	bif
+	"resume_process"	bif
+	"round"		bif
+	"self"		bif
+	"send"		bif
+	"send_after"	bif
+	"send_nosuspend"	bif
+	"set_cookie"	bif
+	"setelement"	bif
+	"size"		bif
+	"spawn"		bif
+	"spawn_link"	bif
+	"spawn_monitor"	bif
+	"spawn_opt"	bif
+	"split_binary"	bif
+	"start_timer"	bif
+	"statistics"	bif
+	"suspended_process"	bif
+	"system_flag"	bif
+	"system_info"	bif
+	"system_monitor"	bif
+	"system_profile"	bif
+	"term_to_binary"	bif
+	"throw"		bif
+	"time"		bif
+	"tl"		bif
+	"trace"		bif
+	"trace_deliviered"	bif
+	"trace_info"	bif
+	"trace_pattern"	bif
+	"trunc"		bif
+	"tuple_size"	bif
+	"tuple_to_list"	bif
+	"universaltime"		bif
+	"universaltime_to_localtime"	bif
+	"unlink"	bif
+	"unregister"	bif
+	"whereis"	bif
+	"yield"		bif
+done 
+	"a-zA-Z0-9_@"	atom

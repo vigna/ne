@@ -1,0 +1,67 @@
+# JOE syntax highlight file for apt's sources.list
+# by Christian Nicolai (http://mycrobase.de)
+
+=Idle
+=Comment	green
+=Keyword	bold
+=Bad		bold red
+
+=URL		cyan
+
+=SpacyURL	bold cyan
+=Distribution	red
+=Component	magenta
+
+:line_start Idle
+	*		line_rest	noeat
+	"#"		line_comment	recolor=-1
+	"a-zA-Z"	deb		recolor=-1
+
+:line_rest Idle
+	*		line_rest
+	"\n"		line_start
+
+:line_comment Comment
+	*		line_comment
+	"\n"		line_start
+
+:deb Keyword
+	*		deb
+	" \t"		deb_url_pre
+
+# allow multiple spaces
+:deb_url_pre Idle
+	*		deb_url		noeat
+	" \t"		deb_url_pre
+
+:deb_url URL
+	*		deb_url
+	"["		deb_spacy_url	recolor=-1
+	" \t"		deb_distro_pre
+
+:deb_spacy_url SpacyURL
+	*		deb_spacy_url
+	"]"		deb_url
+
+# allow multiple spaces
+:deb_distro_pre Idle
+	*		deb_distro	noeat
+	" \t"		deb_distro_pre
+
+:deb_distro Distribution
+	*		deb_distro
+	" \t"		deb_component_pre
+
+	# distro is the last obligatory part,
+	# components are all optional
+	"\n"		line_start
+
+# allow multiple spaces
+:deb_component_pre Idle
+	*		deb_component	noeat
+	" \t"		deb_component_pre
+
+:deb_component Component
+	*		deb_component
+	" \t"		deb_component_pre
+	"\n"		line_start

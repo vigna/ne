@@ -1,0 +1,86 @@
+# JOE syntax highlight file for properties files
+# by Christian Nicolai (http://mycrobase.de)
+
+=Idle
+=Comment	green
+=Constant	cyan
+=Escape		bold cyan
+=Bad		bold red
+
+=Key		
+=KeyEscape	bold
+=Separator	bold
+
+:line_start Idle
+	*		key		noeat
+	"\n"		line_start
+	" \t\r"		line_start # leading spaces
+	"#!"		line_comment	recolor=-1
+	"=:"		missing_key	recolor=-1
+
+:line_comment Comment
+	*		line_comment
+	"\n"		line_start
+
+:missing_key Bad
+	*		value_pre	noeat
+
+:key Key
+	*		key
+	"\\"		key_esc		recolor=-1
+	" \t\r"		key_post	noeat
+	"=:"		sep		recolor=-1
+	"\n"		key_error	recolor=-2
+
+# one escaped char
+:key_esc KeyEscape
+	*		key
+	"\n"		key_error	recolor=-2
+
+:key_post Idle
+	*		value_pre	noeat
+	" \t\r"		key_post
+	"=:"		sep		recolor=-1
+
+:key_error Bad
+	*		key		noeat
+
+:sep Separator
+	*		value_pre	noeat
+
+:value_pre Idle
+	*		value		noeat
+	" \t\r"		value_pre
+
+:value Constant
+	*		value
+	"\\"		value_esc	recolor=-1
+	"\n"		line_start
+
+:value_esc Escape
+	*		value_error	recolor=-2
+	"u"		value_unicode_hex1
+	"\n"		value_cont
+
+:value_unicode_hex1 Escape
+	*		value_error	recolor=-3
+	"A-Fa-f0-9"	value_unicode_hex2
+
+:value_unicode_hex2 Escape
+	*		value_error	recolor=-4
+	"A-Fa-f0-9"	value_unicode_hex3
+
+:value_unicode_hex3 Escape
+	*		value_error	recolor=-5
+	"A-Fa-f0-9"	value_unicode_hex4
+
+:value_unicode_hex4 Escape
+	*		value_error	recolor=-6
+	"A-Fa-f0-9"	value
+
+:value_cont Constant
+	*		value
+	" \t\r"		value_cont # leading spaces
+
+:value_error Bad
+	*		value		noeat

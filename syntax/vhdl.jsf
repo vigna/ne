@@ -170,6 +170,7 @@
 	"ror"		operator
 	"select"	kw
 	"severity"	kw
+	"shared"	kw
 	"signal"	kw
 	"sla"		operator
 	"sll"		operator

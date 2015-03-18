@@ -1,0 +1,129 @@
+# JOE syntax highlight file for ip(6)tables-save and -restore
+# by Christian Nicolai (http://mycrobase.de)
+
+=Idle
+=Comment	green
+=Constant	cyan
+=Escape		bold cyan
+=Bad		bold red
+
+=Table		bold
+=Policy		bold blue
+=Option		yellow
+=Module		blue
+
+:line_start Idle
+	*		rest		noeat
+	"#"		line_comment	recolor=-1
+	"*"		maybe_table	buffer
+	":"		default_policy	recolor=-1
+	"C"		maybe_commit	buffer
+	"-"		command
+
+:rest Idle
+	*		rest
+	"\n"		line_start
+
+:line_comment Comment
+	*		line_comment
+	"\n"		line_start
+
+:maybe_table Idle
+	*		bad		noeat strings
+	"*filter"	table_name
+	"*mangle"	table_name
+	"*nat"		table_name
+	"*raw"		table_name
+done
+	"a-z"		maybe_table
+
+:table_name Table
+	*		bad		noeat
+	"\n"		line_start
+
+:default_policy Policy
+	*		default_policy
+	"\n"		line_start
+
+:maybe_commit Idle
+	*		bad		noeat strings
+	"COMMIT"	commit
+done
+	"A-Z"		maybe_commit
+
+:commit Table
+	*		bad		noeat
+	"\n"		line_start
+
+:command Idle
+	*		bad		noeat
+	"ADINX"		chain_name_pre
+
+:chain_name_pre Idle
+	*		chain_name	noeat
+	" "		chain_name_pre
+
+:chain_name Option
+	*		chain_name
+	" "		rule_spec	noeat
+	"\n"		line_start
+
+:rule_spec Idle
+	*		rule_option	noeat
+	" "		rule_spec
+	"\n"		line_start
+
+:rule_option Idle
+	*		rule_option
+	" "		rule_spec	noeat
+	"\n"		line_start
+	"-"		rule_flag
+
+:rule_flag Idle
+	*		rule_option
+	"-"		rule_flag_flag
+	"iojp"		rule_iojp_pre
+	"sd"		rule_sd_pre
+	"m"		rule_m_pre
+
+:rule_flag_flag Idle
+	*		rule_flag_flag1	buffer
+
+:rule_flag_flag1 Idle
+	*		rule_option	noeat strings
+	"sport"		rule_sd_pre
+	"dport"		rule_sd_pre
+done
+	"a-z-_"		rule_flag_flag1
+	
+
+:rule_iojp_pre Idle
+	*		rule_iojp	noeat
+	" "		rule_iojp_pre
+
+:rule_iojp Option
+	*		rule_iojp
+	" "		rule_option	noeat
+	"\n"		line_start
+
+:rule_sd_pre Idle
+	*		rule_sd		noeat
+	" "		rule_sd_pre
+
+:rule_sd Constant
+	*		rule_sd
+	" "		rule_option	noeat
+	"\n"		line_start
+
+:rule_m_pre Idle
+	*		rule_m		noeat
+	" "		rule_m_pre
+
+:rule_m Module
+	*		rule_m
+	" "		rule_option	noeat
+	"\n"		line_start
+
+:bad Bad
+	*		bad
+	"\n"		line_start

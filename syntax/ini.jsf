@@ -1,0 +1,77 @@
+# JOE syntax highlight file for INI files
+# by Christian Nicolai (http://mycrobase.de)
+
+=Idle
+=Comment	green
+=Constant	cyan
+=Escape		bold cyan
+=Bad		bold red
+
+=Key
+=Separator	bold
+=Section	bold magenta
+
+:line_start Idle
+	*		key		noeat
+	"\n"		line_start
+	" \t\r"		line_start # leading spaces
+	";#"		line_comment	recolor=-1
+	"["		section		recolor=-1
+	"="		missing_key	recolor=-1
+
+:line_comment Comment
+	*		line_comment
+	"\n"		line_start
+
+:section Section
+	*		section
+	"]"		section_end
+	"\n"		section_unexp_end	recolor=-2
+
+:section_end Bad
+	*		section_end
+	"\n"		line_start
+
+:section_unexp_end Bad
+	*		line_start	noeat
+
+:missing_key Bad
+	*		value_pre	noeat
+
+:key Key
+	*		key
+	" \t\r"		key_post	noeat
+	"="		sep		recolor=-1
+	"\n"		key_error	recolor=-2
+
+:key_post Idle
+	*		value_pre	noeat
+	" \t\r"		key_post
+	"="		sep		recolor=-1
+
+:key_error Bad
+	*		key		noeat
+
+:sep Separator
+	*		value_pre	noeat
+
+:value_pre Idle
+	*		value		noeat
+	" \t\r"		value_pre
+
+:value Constant
+	*		value
+	"\\"		value_esc
+	"\n"		line_start
+	" "		maybe_comment	recolor=-1
+
+:value_esc Escape
+	*		value
+	"\n"		value_error	recolor=-2
+
+:value_error Bad
+	*		value		noeat
+
+:maybe_comment Idle
+	*		value		noeat
+	";#"		line_comment	recolor=-1

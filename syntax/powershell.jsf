@@ -1,0 +1,259 @@
+# PowerShell syntax highlighting for Joe's Own Editor
+# Oskar Liljeblad <oskar@osk.mine.nu>, 2014-02-11
+#
+# PowerShell is the poor man's[1] replacement for a real shell such as Bash.
+# [1] Someone who has to use Windows for whatever reason.
+#
+# Reference: http://www.microsoft.com/en-us/download/details.aspx?id=36389
+# Status:
+# 	1	100%
+#	2.1	100%
+#  	2.2.1	100% except signature support
+#	2.2.2	100%
+#	2.2.3	100% except requires support
+#	2.2.4	100%
+#	2.3.1	100%
+#	2.3.2	100% except automatic variables
+#	2.3.3	100% no coloring
+#	2.3.4	100% no coloring
+#	2.3.5	100% no coloring
+#	2.3.6	100%
+
+=Idle
+=Comment 		green
+=Constant 		cyan
+=ConstEscape 		bold cyan
+=Keyword 		bold
+=Var 			magenta
+=VarEscape		bold magenta
+
+:idle Idle
+	*		idle
+	"#"		comment			recolor=-1
+	"$"		var			recolor=-1
+	"@"		var_array		recolor=-1
+	"<"		idle1
+	"\""		string_dq		recolor=-1
+	"'"		string_sq		recolor=-1
+	"@"		idle2
+	"a-zA-Z_-"	ident			buffer
+
+:idle1 Idle
+	*		idle			noeat
+	"#"		delim_comment		recolor=-2
+
+:idle2 Idle
+	*		idle			noeat
+	"\""		herestr_dq		recolor=-2
+	"'"		herestr_sq		recolor=-2
+
+:comment Comment
+	*		comment
+	"\r\n"		idle
+
+:var_array Var
+	*		idle			noeat
+	"$?^"		idle
+	"a-zA-Z_"	var_name
+
+:var Var
+	*		idle			noeat
+	"{"		var_brack
+	"$?^"		idle
+	"a-zA-Z_"	var_name
+
+:var_name Var
+	*		idle			noeat recolor=-1
+	"a-zA-Z0-9_:?"	var_name
+
+:var_brack Var
+	*		var_brack
+	"`"		var_escape		recolor=-1
+	"}"		idle
+
+:var_escape VarEscape
+	*		var_brack
+
+:delim_comment Comment
+	*		delim_comment
+	"#"		delim_comment1
+
+:delim_comment1 Comment
+	*		delim_comment		noeat
+	">"		idle
+
+:kw Keyword
+	*		idle			noeat
+
+:string_dq Constant
+	*		string_dq
+	"\"\n"		idle
+	"$"		string_dq_subst		recolor=-1
+	"`"		string_dq_esc		recolor=-1
+
+:string_dq_subst Var
+	*		string_dq		noeat recolor=-2
+	"a-zA-Z_"	string_dq_subst_name
+	"{"		string_dq_subst_brack
+	"("		string_dq_subst_parens
+	"`"		string_dq_subst_escape 	recolor=-1
+
+:string_dq_subst_name Var
+	*		string_dq		recolor=-1 noeat
+	"a-zA-Z0-9_:"	string_dq_subst_name
+	"`"		string_dq_subst_escape 	recolor=-1
+
+:string_dq_subst_escape VarEscape
+	*		string_dq_subst_name
+
+:string_dq_subst_brack Var
+	*		string_dq_subst_brack
+	"}"		string_dq
+
+:string_dq_subst_parens Var
+	*		string_dq_sustr_parens
+	")"		string_dq
+
+:string_sq Constant
+	*		string_sq
+	"\'\n"		idle
+
+:string_dq_esc ConstEscape
+	*		string_dq
+
+:string_sq_esc ConstEscape
+	*		string_sq
+
+:herestr_dq Constant
+	*		herestr_dq
+	"\""		herestr_dq1
+	"$"		herestr_dq_subst	recolor=-1
+
+:herestr_dq1 Constant
+	*		herestr_dq		noeat
+	"@"		idle
+
+:herestr_dq_subst Var
+	*		herestr_dq		noeat recolor=-2
+	"a-zA-Z_"	herestr_dq_subst_name
+	"("		herestr_dq_subst_parens
+	"`"		herestr_dq_subst_escape recolor=-1
+
+:herestr_dq_subst_name Var
+	*		herestr_dq		recolor=-1 noeat
+	"a-zA-Z0-9_:"	herestr_dq_subst_name
+	"`"		herestr_dq_subst_escape	recolor=-1
+
+:herestr_dq_subst_escape VarEscape
+	*		herestr_dq_subst_name
+
+:herestr_dq_subst_parens Var
+	*		herestr_dq_subst_parens
+	")"		herestr_dq
+
+:herestr_sq Constant
+	*		herestr_sq
+	"\'"		herestr_sq1
+
+:herestr_sq1 Constant
+	*		herestr_sq		noeat
+	"@"		idle
+
+:ident Idle
+	*		idle			noeat istrings
+	"-and"		kw
+	"-band"		kw
+	"-bnot"		kw
+	"-bor"		kw
+	"-bxor"		kw
+	"-not"		kw
+	"-or"		kw
+	"-xor"		kw
+	"-f"		kw
+	"-as"		kw
+	"-ccontains"	kw
+	"-ceq"		kw
+	"-cge"		kw
+	"-cgt"		kw
+	"-cle"		kw
+	"-clike"	kw
+	"-clt"		kw
+	"-cmatch"	kw
+	"-cne"		kw
+	"-cnotcontains"	kw
+	"-cnotlike"	kw
+	"-cnotmatch"	kw
+	"-contains"	kw
+	"-creplace"	kw
+	"-csplit"	kw
+	"-eq"		kw
+	"-ge"		kw
+	"-gt"		kw
+	"-icontains"	kw
+	"-ieq"		kw
+	"-ige"		kw
+	"-igt"		kw
+	"-ile"		kw
+	"-ilike"	kw
+	"-ilt"		kw
+	"-imatch"	kw
+	"-in"		kw
+	"-ine"		kw
+	"-inotcontains"	kw
+	"-inotlike"	kw
+	"-inotmatch"	kw
+	"-ireplace"	kw
+	"-is"		kw
+	"-isnot"	kw
+	"-isplit"	kw
+	"-join"		kw
+	"-le"		kw
+	"-like"		kw
+	"-lt"		kw
+	"-match"	kw
+	"-ne"		kw
+	"-notcontains"	kw
+	"-notin"	kw
+	"-notlike"	kw
+	"-notmatch"	kw
+	"-replace"	kw
+	"-shl"		kw
+	"-shr"		kw
+	"-split"	kw
+	"begin"		kw
+	"break"		kw
+	"catch"		kw
+	"class"		kw
+	"continue"	kw
+	"data"		kw
+	"define"	kw
+	"do"		kw
+	"dynamicparam"	kw
+	"else"		kw
+	"elseif"	kw
+	"end"		kw
+	"exit"		kw
+	"filter"	kw
+	"finally"	kw
+	"for"		kw
+	"foreach"	kw
+	"from"		kw
+	"function"	kw
+	"if"		kw
+	"in"		kw
+	"inlinescript"	kw
+	"parallel"	kw
+	"param"		kw
+	"process"	kw
+	"return"	kw
+	"switch"	kw
+	"throw"		kw
+	"trap"		kw
+	"try"		kw
+	"until"		kw
+	"using"		kw
+	"var"		kw
+	"while"		kw
+	"workflow"	kw
+done
+	"a-zA-Z_"	ident

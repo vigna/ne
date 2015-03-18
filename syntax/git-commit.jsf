@@ -1,0 +1,21 @@
+# JOE syntax highlight file for Markdown
+# by Christian Nicolai (http://mycrobase.de)
+
+=Idle
+=Tag		green
+=Escape		bold
+=Bad		bold red
+
+=Ignore		green
+
+:line_start Idle
+	*		idle		noeat
+	"#"		ignore		recolor=-1
+
+:idle Idle
+	*		idle
+	"\n"		line_start
+
+:ignore Ignore
+	*		ignore
+	"\n"		line_start

@@ -29,9 +29,9 @@
 =Background
 =Text
 =TagEdge	green
-=TagName	cyan
-=TagParam	green
-=TagDelim	bold green
+=TagName	green #cyan
+=TagParam	#green
+=TagDelim	#bold green
 =TagValue	cyan
 =TagEntity	bold blue
 =SGMLtag	magenta
@@ -81,17 +81,24 @@
 .else
 	"?"			xml_pi recolor=-2
 .endif
+.ifdef erb
+	"%"			maybe_erb_eq
+.endif
 
 # this state allows php and perl to recolor the ?> %> or &> properly.
 :rtn_php TagEdge
 	*			idle noeat
+
+:maybe_erb_eq TagEdge
+	*			rtn_php noeat call=ruby.ruby(erb)
+	"="			rtn_php call=ruby.ruby(erb)
 
 :tag_name_first Mystery
 	*			tag_idle noeat
 	"-A-Za-z0-9._:"		tag_name recolor=-1
 
 :tag_name TagName
-	*			tag_idle noeat istrings
+	*			tag_idle noeat strings
 	"script"		stag_enter_idle
 	"style"			ytag_enter_idle
 done
@@ -100,7 +107,7 @@ done
 :tag_idle Background
 	*			mistake_tag recolor=-1
 	"<"			tag_maybe_php recolor=-1
-	" \t\n"			tag_idle
+	" \t\n"		tag_idle
 	"/"			tag_end recolor=-1 
 	">"			tag_end noeat recolor=-1
 	"-A-Za-z0-9._:"		tag_param noeat recolor=-1
@@ -118,12 +125,7 @@ done
 :tag_param TagParam
 	*			tag_idle noeat recolor=-1
 	"-A-Za-z0-9._:"		tag_param
-	"="			tag_may_delim recolor=-1
-	" \t\n"			tag_may_delim
-
-:tag_may_delim TagDelim
-	*			tag_delim noeat recolor=-1
-	"= \t\n"		tag_may_delim
+	"="			tag_delim recolor=-1
 
 :tag_delim TagDelim
 	*			mistake_tag noeat recolor=-1
@@ -148,7 +150,7 @@ done
 
 :stag_idle Background
 	*			smistake_tag recolor=-1
-	" \t\n"			stag_idle
+	" \t\n"		stag_idle
 	"/"			stag_end recolor=-1 
 	">"			stag_end noeat recolor=-1
 	"-A-Za-z0-9._:"		stag_param noeat recolor=-1
@@ -170,9 +172,9 @@ done
 
 :stag_end TagEdge
 .ifdef php
-	*	tag_begin	call=php.php(script)
+	*	tag_begin	call=js.js(php)
 .else
-	*	tag_begin	call=java.java(script)
+	*	tag_begin	call=js.js(html)
 .endif
 
 :stag_done TagEdge
@@ -188,7 +190,7 @@ done
 
 :ytag_idle Background
 	*			ymistake_tag recolor=-1
-	" \t\n"			ytag_idle
+	" \t\n"		ytag_idle
 	"/"			ytag_end recolor=-1 
 	">"			ytag_end noeat recolor=-1
 	"-A-Za-z0-9._:"		ytag_param noeat recolor=-1
@@ -209,7 +211,11 @@ done
 	"-A-Za-z0-9._:"		ytag_value
 
 :ytag_end TagEdge
+.ifdef php
+	*	tag_begin	call=css.css(php)
+.else
 	*	tag_begin	call=css.css()
+.endif
 
 :ytag_done TagEdge
 	*	tag_name_first	buffer noeat

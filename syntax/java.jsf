@@ -1,11 +1,8 @@
 # JOE syntax highlight file for JAVA
 
-# Needs: \uXXXX for unicode in strings
-# improve escape parsing
+# Needs: improve escape parsing
 
 =Idle
-=Preproc 	blue
-=Define		bold blue
 =Comment 	green
 =Constant 	cyan
 =Escape 	bold cyan
@@ -14,7 +11,9 @@
 =Operator	bold
 =Bad		bold red
 =Brace		magenta
-=Control
+=Control	
+
+=Methods
 
 :begin Idle
 	*	begin	noeat call=.java()
@@ -30,28 +29,23 @@
 	"\n"		idle
 	"/"		slash
 	"0"		first_digit	recolor=-1
-	"1-9"		decimal	recolor=-1
+	"1-9"		decimal		recolor=-1
 	"."		maybe_float
 	"\""		string		recolor=-1
 	"'"		char		recolor=-1
-	"a-zA-Z_"	ident		buffer
+	"a-zA-Z_"	ident		mark buffer
 	"{}"		brace		recolor=-1
-.ifdef script
-	",:;=()>[]*&|!~+\-%^"	control		recolor=-1
-	"<"		maybe_done
-.else
-	",:;=()><[]*&|!~+\-%^"	control		recolor=-1
-.endif
+	",:;=()><[]*&|!~+\-%^"	control	recolor=-1
 
 :maybe_done Control
-	*	idle	noeat
-	"/"	idle	noeat return recolor=-2
+	*		idle		noeat
+	"/"		idle		noeat return recolor=-2
 
 :brace Brace
-	*	idle	noeat
+	*		idle		noeat
 
 :control Control
-	*	idle	noeat
+	*		idle		noeat
 
 :slash Idle
 	*		idle		noeat
@@ -60,19 +54,23 @@
 
 :comment Comment
 	*		comment
+	# might be TODO label
+	"BFHNTX"	comment		noeat call=comment_todo.comment_todo()
 	"*"		maybe_end_comment
 
 :maybe_end_comment Comment
-	*		comment
+	*		comment		noeat
 	"/"		idle
 	"*"		maybe_end_comment
 
 :line_comment Comment
 	*		line_comment
+	# might be TODO label
+	"BFHNTX"	line_comment	noeat call=comment_todo.comment_todo()
 	"\n"		idle
 
 :first_digit Constant
-	*		idle	noeat
+	*		idle		noeat
 	"xX"		hex
 	"."		float
 	"eE"		epart
@@ -80,39 +78,39 @@
 	"89"		bad_number	recolor=-1
 
 :bad_number Bad
-	*		idle	noeat
+	*		idle		noeat
 	"0-9"		bad_number
 
 :octal Constant
-	*		idle	noeat
+	*		idle		noeat
 	"0-7"		octal
 	"89"		bad_number	recolor=-1
 
 :hex Constant
-	*		idle	noeat
+	*		idle		noeat
 	"0-9A-Fa-f"	hex
 
 :decimal Constant
-	*		idle	noeat
+	*		idle		noeat
 	"0-9"		decimal
 	"eE"		epart
 	"."		float
 
 :maybe_float Constant
-	*		idle	recolor=-2	noeat
+	*		idle		recolor=-2 noeat
 	"0-9"		float		recolor=-2
 
 :float Constant
-	*		idle	noeat
+	*		idle		noeat
 	"eE"		epart
 	"0-9"		float
 
 :epart Constant
-	*		idle	noeat
+	*		idle		noeat
 	"0-9+\-"	enum
 
 :enum Constant
-	*		idle	noeat
+	*		idle		noeat
 	"0-9"		enum
 
 :string	Constant
@@ -123,15 +121,23 @@
 
 :string_escape Escape
 	*		string
-	"x"		string_hex1
+	"u"		string_uni1
 	"0-7"		string_octal2
 	"\n"		string		recolor=-2
 
-:string_hex1 Escape
+:string_uni1 Escape
 	*		string		noeat
-	"0-9a-fA-F"	string_hex2
+	"0-9a-fA-F"	string_uni2
 
-:string_hex2 Escape
+:string_uni2 Escape
+	*		string		noeat
+	"0-9a-fA-F"	string_uni3
+
+:string_uni3 Escape
+	*		string		noeat
+	"0-9a-fA-F"	string_uni4
+
+:string_uni4 Escape
 	*		string		noeat
 	"0-9a-fA-F"	string
 
@@ -146,7 +152,6 @@
 :string_control Escape
 	*		string_control
 	"\n"		reset
-	"\""		string		noeat
 	"diouxXeEfFgGaAcspn%SC"	string
 
 :char Constant
@@ -157,15 +162,23 @@
 
 :char_escape	Escape
 	*		char
-	"x"		char_hex1
+	"u"		char_uni1
 	"0-7"		char_octal2
 	"\n"		char		recolor=-2
 
-:char_hex1 Escape
+:char_uni1 Escape
 	*		char		noeat
-	"0-9a-fA-F"	char_hex2
+	"0-9a-fA-F"	char_uni2
 
-:char_hex2 Escape
+:char_uni2 Escape
+	*		char		noeat
+	"0-9a-fA-F"	char_uni3
+
+:char_uni3 Escape
+	*		char		noeat
+	"0-9a-fA-F"	char_uni4
+
+:char_uni4 Escape
 	*		char		noeat
 	"0-9a-fA-F"	char
 
@@ -178,8 +191,9 @@
 	"0-7"		char
 
 :ident Idle
-	*		idle		noeat strings
+	*		ident_end	noeat markend strings
 	"abstract"	kw
+	"assert"	kw
 	"boolean"	type
 	"break"		kw
 	"byte"		type
@@ -187,18 +201,20 @@
 	"catch"		kw
 	"char"		type
 	"class"		kw
-	"const"		kw
+	"const"		bad_kw
 	"continue"	kw
 	"default"	kw
 	"do"		kw
 	"double"	type
 	"else"		kw
+	"enum"		kw
 	"extends"	kw
+	"false"		lit
 	"final"		kw
 	"finally"	kw
 	"float"		type
 	"for"		kw
-	"goto"		kw
+	"goto"		bad_kw
 	"if"		kw
 	"implements"	kw
 	"import"	kw
@@ -216,6 +232,7 @@
 	"return"	kw
 	"short"		type
 	"static"	kw
+	"strictfp"	kw
 	"super"		kw
 	"switch"	kw
 	"synchronized"	kw
@@ -223,25 +240,35 @@
 	"throw"		kw
 	"throws"	kw
 	"transient"	kw
+	"true"		lit
 	"try"		kw
 	"void"		kw
 	"volatile"	kw
 	"while"		kw
-	"true"		lit
-	"false"		lit
 done
 	"a-zA-Z0-9_"	ident
 
 :type Type
-	*	idle	noeat
+	*		idle		noeat
 
 :kw Keyword
-	*	idle	noeat
+	*		idle		noeat
+
+:bad_kw Bad
+	*		idle		noeat
 
 :lit Constant
-	*	idle	noeat
+	*		idle		noeat
 
 :operator Operator
-	*	idle	noeat
+	*		idle		noeat
+
+:ident_end Idle
+	*		idle		noeat
+	" "		ident_end
+	"("		method_end	noeat recolormark
+
+:method_end Methods
+	*		idle		noeat
 
 .end

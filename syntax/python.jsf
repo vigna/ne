@@ -1,12 +1,7 @@
 # JOE syntax highlight file for Python
 
-# TODO:
-#  * octal escape sequences
-#  * highlight function and class names?
-
 =Idle
 =Comment 	green
-=CommentLabel	bold green
 =Docstring	green
 =DocstringLabel	bold green
 =DocEscape	bold cyan
@@ -16,15 +11,15 @@
 =Bad		bold red
 =Brace		magenta
 
-=PrivateMember	fg_310 # brown
+=PrivateMember	yellow #fg_310 # brown
 =Decorator	red
+=Declaration	bold blue
 
 :idle Idle
 	*		idle
 	"#"		comment		recolor=-1
 	"0-9"		first_digit	recolor=-1
-	"'"		string_sq_1	recolor=-1
-	"\""		string_dq_1	recolor=-1
+	"'\""		string_quot_1	recolor=-1 save_c
 	"a-zA-Z_"	ident		noeat
 	"{}"		brace		recolor=-1
 	"@"		decorator	recolor=-1
@@ -35,117 +30,45 @@
 # annotations
 :decorator Decorator
 	*		decorator
-	"\"'"		string_sq	recolor=-1
-	"(\t\r\n"	idle		noeat
+	" (\t\r\n"	idle		noeat
 
 :comment Comment
 	*		comment
 	# might be TODO label
-	"BFHNTX"	comment		noeat call=.comment_todo()
+	"BFHNTX"	comment		noeat call=comment_todo.comment_todo()
 	"\n"		idle
 
-:string_sq_1 Constant
-	*		string_sq	noeat
-	"'"		string_sq_2
-
-:string_sq_2 Constant
-	*		idle		noeat
-	"'"		docstr_sq	recolor=-3
-
-:string_sq Constant
-	*		string_sq
-	"\'"		idle
-	"\\"		string_sq_esc	recolor=-1
-
-:string_sq_esc Escape
-	*		string_sq
-	"\n"		string_sq	recolor=-2
-
-:docstr_sq Docstring
-	*		docstr_sq
-	# might be TODO label
-	"BFHNTX"	docstr_sq	noeat call=.comment_todo_docstr()
-	"\\"		docstr_sq_esc	recolor=-1
-	"'"		docstr_sq_1
-
-:docstr_sq_1 Docstring
-	*		docstr_sq	noeat
-	"'"		docstr_sq_2
-
-:docstr_sq_2 Docstring
-	*		docstr_sq	noeat
-	"'"		idle
-
-:docstr_sq_esc DocEscape
-	*		docstr_sq
-	"\n"		docstr_sq	recolor=-2
-
-:string_dq_1 Constant
-	*		string_dq	noeat
-	"\""		string_dq_2
-
-:string_dq_2 Constant
-	*		idle		noeat
-	"\""		docstr_dq	recolor=-3
-
-:string_dq Constant
-	*		string_dq
-	"\""		idle
-	"\\"		string_dq_esc	recolor=-1
-
-:string_dq_esc Escape
-	*		string_dq
-	"\n"		string_dq	recolor=-2
-
-:docstr_dq Docstring
-	*		docstr_dq
-	# might be TODO label
-	"BFHNTX"	docstr_dq	noeat call=.comment_todo_docstr()
-	"\\"		docstr_dq_esc	recolor=-1
-	"\""		docstr_dq_1
-
-:docstr_dq_1 Docstring
-	*		docstr_dq	noeat
-	"\""		docstr_dq_2
-
-:docstr_dq_2 Docstring
-	*		docstr_dq	noeat
-	"\""		idle
-
-:docstr_dq_esc DocEscape
-	*		docstr_dq
-	"\n"		docstr_dq	recolor=-2
-	
 :first_digit Constant
-	*		idle	noeat
+	*		idle		noeat
 	"xX"		hex
 	"."		float
+	"eE"		epart
 	"0-9"		first_number
 
 :hex Constant
-	*		idle	noeat
+	*		idle		noeat
 	"0-9A-Fa-f"	hex
 
 :first_number Constant
-	*		idle	noeat
+	*		idle		noeat
 	"0-9"		first_number
 	"."		float
 
 :maybe_float Constant
-	*		idle	recolor=-2	noeat
+	*		idle		recolor=-2	noeat
 	"0-9"		float		recolor=-2
 
 :float Constant
-	*		idle	noeat
+	*		idle		noeat
 	"eE"		epart
 	"0-9"		float
 
 :epart Constant
-	*		idle	noeat
+	*		idle		noeat
 	"0-9+\-"	enum
 
 :enum Constant
-	*		idle	noeat
+	*		idle		noeat
 	"0-9"		enum
 
 :ident Idle
@@ -155,11 +78,12 @@
 :ident1 Idle
 	*		idle		noeat strings
 	"and"		kw
+	"as"		kw
 	"assert"	kw
 	"break"		kw
-	"class"		kw
+	"class"		declkw
 	"continue"	kw
-	"def"		kw
+	"def"		declkw
 	"del"		kw
 	"elif"		kw
 	"else"		kw
@@ -182,11 +106,20 @@
 	"return"	kw
 	"try"		kw
 	"while"		kw
+	"with"		kw
 	"yield"		kw
+	
 	# quasi-keywords
 	"False"		lit
 	"None"		lit
 	"True"		lit
+done
+	"'\""		idle 		noeat istrings
+	"u"		string_pre
+	"b"		string_pre
+	"r"		string_raw_pre
+	"br"		string_raw_pre
+	"rb"		string_raw_pre
 done
 	"a-zA-Z0-9_"	ident1
 
@@ -196,32 +129,142 @@ done
 :lit Keyword
 	*		idle		noeat
 
+:declkw Keyword
+	*		idle 		noeat recolor=-1
+	"a-zA-Z"	declkw
+	" \t"		declname_1
+
+:declname_1 Declaration
+	*		declname
+	"_"		priv_member	recolor=-1
+
+:declname Declaration
+	*		idle		noeat recolor=-1
+	"a-zA-Z0-9_"	declname
+
 :priv_member PrivateMember
 	*		idle		noeat
 	"a-zA-Z0-9_"	priv_member
 
-.subr comment_todo
-# initial state
-:comment_todo_init Comment
-	*		comment_todo_guess	buffer
+# Handle string prefixes up to the string itself.
+:string_pre Constant
+	*		idle noeat
+	"'\""		string_quot_1 	save_c
 
-# highlight common TODO labels
-:comment_todo_guess Comment
-	*		comment_todo_unknown	noeat strings
-	"BUG"		comment_todo
-	"FIXME"		comment_todo
-	"HACK"		comment_todo
-	"NOTE"		comment_todo
-	"TODO"		comment_todo
-	"XXX"		comment_todo
-done
-	"A-Z"		comment_todo_guess
+:string_raw_pre Constant
+	*		idle noeat
+	"'\""		string_quot_raw_1 save_c
 
-:comment_todo_unknown Comment
-	*		NULL		noeat return
+# Differentiate between docstrings and regular strings, carrying with it raw state
+:string_quot_1 Constant
+	*		idle call=.string() noeat
+	&		string_quot_2
 
-:comment_todo CommentLabel
-	*		NULL		noeat return
+:string_quot_2 Constant
+	*		idle noeat
+	&		idle call=.string(docstring) recolor=-3
+
+:string_quot_raw_1 Constant
+	*		idle call=.string(raw)
+	&		string_quot_raw_2
+
+:string_quot_raw_2 Constant
+	*		idle noeat
+	&		idle call=.string(docstring raw) recolor=-3
+
+.subr string
+
+.ifdef docstring	# Long strings
+:string Docstring
+	*		string
+	"BFHNTX"	string		noeat call=.comment_todo_docstr()
+.ifdef raw
+.else
+	"\\"		string_esc	mark
+.endif
+	&		doc_end_1
+
+:doc_end_1 Docstring
+	*		string noeat
+	&		doc_end_2
+
+:doc_end_2 Docstring
+	*		string noeat
+	&		string return
+
+.else			# Short strings
+
+:string Constant
+	*		string
+	"\n"		string return
+.ifdef raw
+.else
+	"\\"		string_esc mark
+.endif
+	&		string return
+
+.endif
+
+:string_esc Constant
+	*		string_esc_done
+	"x"		string_hex2
+	"u"		string_hex4
+	"U"		string_hex8
+	"0-7"		string_octal2
+	"\n"		string_esc_done
+
+# Recolor whole escape sequence based on whether this is a docstring.
+:string_esc_done Constant
+	*		string_esc_really_done noeat markend recolormark
+
+.ifdef docstring
+:string_esc_really_done DocEscape
+	*		string 		noeat
+.else
+:string_esc_really_done Escape
+	*		string 		noeat
+.endif
+
+:string_hex1 Escape
+	*		string_esc_done	noeat
+	"0-9a-fA-F"	string_esc_done
+
+:string_hex2 Escape
+	*		string_esc_done	noeat
+	"0-9a-fA-F"	string_hex1
+
+:string_hex3 Escape
+	*		string_esc_done	noeat
+	"0-9a-fA-F"	string_hex2
+
+:string_hex4 Escape
+	*		string_esc_done	noeat
+	"0-9a-fA-F"	string_hex3
+
+:string_hex5 Escape
+	*		string_esc_done	noeat
+	"0-9a-fA-F"	string_hex4
+
+:string_hex6 Escape
+	*		string_esc_done	noeat
+	"0-9a-fA-F"	string_hex5
+
+:string_hex7 Escape
+	*		string_esc_done	noeat
+	"0-9a-fA-F"	string_hex6
+
+:string_hex8 Escape
+	*		string_esc_done	noeat
+	"0-9a-fA-F"	string_hex7
+
+:string_octal1 Escape
+	*		string_esc_done	noeat
+	"0-7"		string_esc_done
+
+:string_octal2 Escape
+	*		string_esc_done	noeat
+	"0-7"		string_octal1
+
 .end
 
 .subr comment_todo_docstr

@@ -23,8 +23,11 @@
   * Requesters (filenames, help, autocompletions, etc.) do progressive
     "fuzzy match" by typed characters, backspace.
 
-  * Added syntax support for puppet files with a ".pp" extension, and
-    updates to ruby, erb, python and conf syntax recognizers.
+  * Updates to ruby, erb, python, conf, many other syntax recognizers.
+    Added these recognizers from the Joe project: ant batch
+    classic_pascal comment_todo csharp debian differences elixir erlang
+    git-commit go haml htmlerb ini iptables js json md powershell pp
+    prolog properties sieve typescript whitespace yaml
 
 2.5
 

@@ -6,6 +6,7 @@
 =Mathmode 	cyan
 =Brace		magenta
 =Parameter	bold blue
+=Bad		bold red
 
 :idle Idle
 	*		idle
@@ -17,6 +18,8 @@
 
 :comment Comment
 	*		comment
+	# might be TODO label
+	"BFHNTX"	comment		noeat call=comment_todo.comment_todo()
 	"\n"		idle
 
 :math Mathmode
@@ -24,14 +27,6 @@
 	"\\"		math_command	recolor=-1
 	"{[]}"		math_brace	recolor=-1
 	"$"		idle
-
-:command Keyword
-	*		idle
-	"a-zA-Z@"	command2
-
-:command2 Keyword
-	*		idle		noeat
-	"a-zA-Z@"	command2
 
 :math_command Keyword
 	*		math
@@ -50,3 +45,38 @@
 
 :math_brace Brace
 	*		math		noeat
+
+:command Keyword
+	*		idle
+	"a-zA-Z@"	command2	buffer
+
+:command2 Keyword
+	*		idle		noeat strings
+#	"begin"		env_begin
+	"verb"		verbatim
+done
+	"a-zA-Z@"	command2
+
+:verbatim Keyword
+	*		verbatim1	save_c
+
+:verbatim1 Idle
+	*		verbatim1
+	&		end_verbatim	recolor=-1
+
+:end_verbatim Keyword
+	*		idle		noeat
+
+#:env_begin Keyword
+#	*		env_begin1	noeat
+
+#:env_begin1 Idle
+#	*		env_begin1
+#	"{"		env_begin_brace	recolor=-1
+
+#:env_begin_brace Brace
+#	*		env_begin_name	noeat buffer
+
+#:env_begin_name Bad
+#	*		env_begin_name
+#	"}"		idle		noeat

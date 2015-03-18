@@ -1,0 +1,6 @@
+# JOE syntax file for Typescript
+
+=Idle
+
+:idle Idle
+	*	idle	noeat call=js.js(typescript)

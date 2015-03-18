@@ -1,20 +1,25 @@
 # JOE syntax highlight file for CSS
 # by Eric Lin
 
--
-
 # Define colors
 
 =Idle
-=Comment  green
-=Class    cyan
-=Id       red
-=Tag      magenta
-=Keyword  bold
+=Comment 	green
+=Constant	cyan
+=Escape		bold cyan
+=Keyword	bold
+=Bad		bold red
+
+=Class		yellow
+=Id		red
+=Tag		magenta
 =HTML
 
+# from html.jsf to support <?php?>
+=TagEdge        green
+
 :begin Idle
-	*             begin             noeat call=.css()
+	*		begin		noeat call=.css()
 
 #
 # For <style> in html
@@ -23,98 +28,141 @@
 .subr css
 
 :reset HTML
-	*             reset
-	"<"           maybe_done
-	"/"           slash
-	"#"           id_block          recolor=-1
-	"."           class_block       recolor=-1
-	"a-zA-Z"      tag_block         recolor=-1
-	"@"           at_block_name     noeat
+	*		reset
+	"<"		maybe_done	recolor=-1
+	"/"		slash
+	# prevent duplicate code
+	"#.a-zA-Z"	selector	noeat
+	"@"		command		recolor=-1
 
-:at_block_name Tag
-	*             at_block
-	"@a-zA-z"     at_block_name
-	" \t\n"       at_block_space
-	"{"           style_block       recolor=-1
+:maybe_done TagEdge
+	*		reset_html	noeat
+	"/"		reset		noeat return recolor=-2
+.ifdef php
+	"?%"		rtn_php		call=php.php()
+.endif
 
-:at_block_space Idle
-	*             at_block          noeat
-	" \t\n"       at_block_space
-	"{"           style_block       recolor=-1
-	
+# fix needed to produce similar output without php
+:reset_html HTML
+	*		reset		noeat recolor=-2
 
-:at_block Keyword
-	*             at_block
-	";"           reset
-
-:maybe_done HTML
-	*             reset             noeat
-	"/"           reset             noeat return recolor=-2
+# this state allows php and perl to recolor the ?> %> or &> properly.
+:rtn_php TagEdge
+	*		reset		noeat
 
 :slash Idle
-	*             reset             noeat
-	"*"           comment           recolor=-2
+	*		reset		noeat
+	"*"		comment		recolor=-2
 
 :comment Comment
-	*             comment
-	"*"           maybe_end_comment
+	*		comment
+	"*"		maybe_end_comment
 
 :maybe_end_comment Comment
-	*             comment
-	"/"           reset
-	"*"           maybe_end_comment
+	*		comment
+	"/"		reset
+	"*"		maybe_end_comment
 
-:id_block Id
-	*             id_block
-	" "           id_block_reset
-	"{"           style_block       recolor=-1
+:command Idle
+	*		command
+	";"		reset
+	"{"		command_block
 
-:id_block_reset Idle
-	*             id_block
-	"a-zA-Z"      tag_block         recolor=-1
-	"."           class_block       recolor=-1
-	"#"           id_block          recolor=-1
-	"{"           style_block       recolor=-1
-	
-:class_block  Class
-	*             class_block
-	" "           tag_block
-	"{"           style_block       recolor=-1
-	
-:tag_block  Tag 
-	*             tag_block
-	"{"           style_block       recolor=-1
-	","           tag_sep           recolor=-1
-	
-:tag_sep  Idle
-	*             tag_block         recolor=-1
+:command_block Idle
+	*		command_block
+	"}"		reset
 
-:style_block  Idle
-	*             style_block
-	"}"           reset
-	"/"           maybe_style_comment
-	"a-zA-Z-"     style_word        recolor=-1
+# CSS selectors
+:selector Idle
+	*		selector
+	"#"		id_sel		recolor=-1
+	"."		class_sel	recolor=-1
+	"a-zA-Z"	tag_sel		recolor=-1
+	":"		pseudo_class_sel	recolor=-1
+	"{"		style_block	recolor=-1
 
+:id_sel Id
+	*		selector	noeat
+	"a-zA-Z0-9_-"	id_sel
+
+:class_sel Class
+	*		selector	noeat
+	"a-zA-Z0-9_-"	class_sel
+
+:tag_sel Tag
+	*		selector	noeat
+	"a-zA-Z0-9_-"	tag_sel
+	"["		tag_sel_attr	recolor=-1
+
+:tag_sel_attr Idle
+	*		tag_sel_attr
+	"]"		selector
+
+:pseudo_class_sel Idle
+	*		selector	noeat
+	"a-zA-Z0-9_-"	pseudo_class_sel
+
+# everything inside "{ ... }", containing many "key: value;" pairs
+:style_block Idle
+	*		style_block
+	"}"		reset
+	"/"		maybe_style_comment
+	"a-zA-Z-"	style_word	recolor=-1
+
+:maybe_style_comment Idle
+	*		style_block	recolor=-1
+	"*"		style_comment	recolor=-2
+
+:style_comment Comment
+	*		style_comment
+	"*"		maybe_end_style_comment
+  
+:maybe_end_style_comment Comment
+	*		comment
+	"/"		style_block
+	"*"		maybe_end_style_comment
+
+# property-key
 :style_word Keyword
-	*             style_word
-	":"           style_value       recolor=-1
+	*		style_word
+	":"		style_value	recolor=-1
 
+# property-value
 :style_value Idle
-	*             style_value
-	";"           style_block
-	"}"           style_block       noeat
-	
-:maybe_style_comment  Idle
-	*             style_block       recolor=-1
-	"*"           style_comment     recolor=-2
+	*		style_value
+	";"		style_block
+	# treat } without previous ; like ;}
+	"}"		style_block	noeat
+	"#"		color		recolor=-1
+	"0-9"		decimal		recolor=-1
+	"."		maybe_float
+	"a-zA-Z_"	ident
 
-:style_comment  Comment
-	*             style_comment
-	"*"           maybe_end_style_comment
-	
-:maybe_end_style_comment  Comment
-	*             comment
-	"/"           style_block
-	"*"           maybe_end_style_comment
-	
+:color Constant
+	*		style_value	noeat
+	"0-9a-fA-F"	color
+
+:decimal Constant
+	*		style_value	noeat
+	"0-9"		decimal
+	"."		float
+	"a-zA-Z%"	decimal_unit
+
+:maybe_float Constant
+	*		style_value	noeat recolor=-2
+	"0-9"		float		recolor=-2
+
+:float Constant
+	*		style_value	noeat
+	"0-9"		float
+	"a-zA-Z%"	decimal_unit
+
+:decimal_unit Constant
+	*		style_value	noeat
+	"a-zA-Z"	decimal_unit
+
+:ident Idle
+	*		style_value	noeat
+	"a-ZA-Z0-9_-"	ident
+
 .end

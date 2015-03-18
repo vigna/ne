@@ -29,6 +29,7 @@
 	"'"		string_sq	recolor=-1
 	"\""		string_dq	recolor=-1
 	"<"		maybe_inc
+	"0-9"		maybe_base	recolor=-1
 	"a-zA-Z{}![_"	ident		buffer
 
 :subst_char Var
@@ -232,9 +233,14 @@ done
 	*		string_bq_subst_brack
 	"}"		string_bq
 
+:maybe_base Idle
+	*		idle		noeat
+	"#"		idle
+	"0-9"		maybe_base
+
 :ident Idle
 	*		idle		noeat strings
-	"!"		kw
+	"!"		bang
 	"{"		kw
 	"}"		kw
 	"["		kw
@@ -330,3 +336,7 @@ done
 
 :kw Keyword
 	*	idle	noeat
+
+:bang Keyword
+	*	idle	noeat
+	"#"	idle

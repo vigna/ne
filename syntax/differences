@@ -1,0 +1,13 @@
+
+# [utoddl@tarna syntax-joe]$ diff -bBq . $S
+# Files ./c.jsf and /home/utoddl/src/ne/ne/trunk/syntax/c.jsf differ
+# Files ./conf.jsf and /home/utoddl/src/ne/ne/trunk/syntax/conf.jsf differ
+# Files ./perl.jsf and /home/utoddl/src/ne/ne/trunk/syntax/perl.jsf differ
+# Only in /home/utoddl/src/ne/ne/trunk/syntax: tabs.jsf
+# Only in /home/utoddl/src/ne/ne/trunk/syntax: texinfo.jsf
+# Only in /home/utoddl/src/ne/ne/trunk/syntax: txt2tags.jsf
+
+What this means is, our c, conf, and perl files have enhancements
+releative to those in the joe project.
+
+tabs, texinfo, and txt2tags are unique to ne.

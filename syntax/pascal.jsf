@@ -77,7 +77,7 @@
 	"0-7"		oct_number	recolor=-2
 
 :bad Bad
-	*		idle
+	*		idle		noeat
 
 :hex_number	Constant
 	*		idle		noeat

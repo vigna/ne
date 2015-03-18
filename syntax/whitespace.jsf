@@ -1,0 +1,17 @@
+# JOE syntax highlight file for Whitespace
+# by Christian Nicolai (http://mycrobase.de)
+
+=Idle		
+=Space		inverse red
+=Tab		inverse green
+
+:idle Idle
+	*		idle
+	" "		space		recolor=-1
+	"\t"		tab		recolor=-1
+
+:space Space
+	*		idle		noeat
+
+:tab Tab
+	*		idle		noeat

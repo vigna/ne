@@ -1,0 +1,122 @@
+# JOE syntax highlight file for Haml
+# by Christian Nicolai (http://mycrobase.de)
+
+=Idle
+=Comment	green
+=Constant	cyan
+=Escape		bold cyan
+=Bad		bold red
+=Brace		magenta
+
+=Tag		blue
+=Class		yellow
+=Id		green
+=Doctype	bold magenta
+=Filter		blue
+
+:line_start Idle
+	*		idle		noeat
+	# eat indent
+	" "		line_start
+	"\\"		escape_first	recolor=-1
+	"!"		doctype1
+	"%"		tag		recolor=-1
+	# implicit <div>
+	".#"		after_tag	noeat
+	"/"		html_comment	recolor=-1
+	":"		filter		recolor=-1
+
+:escape_first Constant
+	*		idle_no_ruby
+
+:idle Constant
+	*		idle_no_ruby
+	"\n"		line_start
+	"#"		maybe_subst
+	"\\"		maybe_subst_escape
+	"=~-"		ruby_call	noeat
+	"&!"		maybe_esc_ruby_call
+
+:idle_no_ruby Constant
+	*		idle_no_ruby
+	"\n"		line_start
+	"#"		maybe_subst
+	"\\"		maybe_subst_escape
+
+:doctype1 Idle
+	*		idle		recolor=-2
+	"="		esc_ruby_call	recolor=-2
+	"!"		doctype2
+
+:doctype2 Idle
+	*		idle		recolor=-3
+	"!"		doctype3	recolor=-3
+
+:doctype3 Doctype
+	*		doctype3
+	"\n"		line_start
+
+:tag Tag
+	*		idle		noeat
+	"a-zA-Z0-9_-"	tag
+	".#{(/"		after_tag	noeat
+
+:after_tag Idle
+	*		idle		noeat
+	"."		class		recolor=-1
+	"#"		id		recolor=-1
+	"{"		attrA
+	"("		attrB
+	"/"		tag_close	recolor=-1
+
+:class Class
+	*		after_tag	noeat
+	"a-zA-Z0-9_-"	class
+
+:id Id
+	*		after_tag	noeat
+	"a-zA-Z0-9_-"	id
+
+:attrA Idle
+	*		attrA
+	"}"		after_tag
+
+:attrB Idle
+	*		attrB
+	")"		after_tag
+
+:tag_close Tag
+	*		idle		noeat
+
+:html_comment Comment
+	*		html_comment
+	"\n"		line_start
+
+:ruby_call Idle
+	*		line_start	call=ruby.ruby(haml)
+
+:maybe_esc_ruby_call Constant
+	*		idle_no_ruby
+	"="		esc_ruby_call	recolor=-2
+
+:esc_ruby_call Idle
+	*		line_start	call=ruby.ruby(haml)
+	"="		esc_ruby_call2
+
+:esc_ruby_call2 Idle
+	*		line_start	call=ruby.ruby(haml)
+
+:maybe_subst Constant
+	*		idle_no_ruby
+	"{"		subst		recolor=-2
+
+:subst Escape
+	*		subst
+	"}"		idle_no_ruby
+
+:maybe_subst_escape Constant
+	*		idle_no_ruby
+
+:filter Filter
+	*		idle
+	"a-zA-Z0-9_"	filter

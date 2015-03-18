@@ -1,4 +1,5 @@
 # JOE syntax highlight file for Puppet
+# by Christian Nicolai (http://mycrobase.de)
 
 =Idle
 =Comment	green
@@ -8,7 +9,7 @@
 =Type		bold
 =Keyword	bold
 =Bad		bold red
-=Var		fg_310 # brown
+=Var		yellow #fg_310 # brown
 =Brace		magenta
 
 =KeywordAttr	bold

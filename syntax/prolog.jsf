@@ -1,0 +1,155 @@
+# JOE syntax highlight file for Prolog
+# by Christian Nicolai (http://mycrobase.de)
+
+=Idle
+=Comment	green
+=Constant	cyan
+=Escape		bold cyan
+=Keyword	bold
+=Bad		bold red
+
+=Brace		#magenta
+=Variable	#yellow
+=Predicate	red
+
+:idle Idle
+	*		idle
+	"\n"		idle
+	"%"		line_comment	recolor=-1
+	"/"		maybe_comment
+	"0-9"		first_digit	recolor=-1
+	"'"		string_sq_1	recolor=-1
+	"\""		string_dq_1	recolor=-1
+
+	# marking -> predicate hilite
+	# buffering -> keyword hilite
+	"a-z"		atom		mark buffer
+
+	"A-Z"		variable	recolor=-1
+	"_"		_variable
+	"[]"		brace		recolor=-1
+
+:line_comment Comment
+	*		line_comment
+	"\n"		idle
+
+:maybe_comment Idle
+	*		idle		noeat
+	"*"		comment		recolor=-2
+
+:comment Comment
+	*		comment
+	"*"		maybe_end_comment
+
+:maybe_end_comment Comment
+	*		comment
+	"/"		idle
+	"*"		maybe_end_comment
+
+:brace Brace
+	*		idle		noeat
+
+:string_sq_1 Constant
+	*		string_sq	noeat
+
+:string_sq Constant
+	*		string_sq
+	"\'"		idle
+	"\\"		string_sq_esc	recolor=-1
+
+:string_sq_esc Escape
+	*		string_sq
+	"\n"		string_sq	recolor=-2
+
+:string_dq_1 Constant
+	*		string_dq	noeat
+
+:string_dq Constant
+	*		string_dq
+	"\""		idle
+	"\\"		string_dq_esc	recolor=-1
+
+:string_dq_esc Escape
+	*		string_dq
+	"\n"		string_dq	recolor=-2
+
+:first_digit Constant
+	*		idle		noeat
+	# no float support
+#	"."		float
+	"0-9"		first_number
+
+:first_number Constant
+	*		idle		noeat
+	"0-9"		first_number
+	"."		float
+
+:float Constant
+	*		idle		noeat
+	"eE"		epart
+	"0-9"		float
+
+:epart Constant
+	*		idle		noeat
+	"0-9+\-"	enum
+
+:enum Constant
+	*		idle		noeat
+	"0-9"		enum
+
+# list of keywords includes some predicates...
+:atom Idle
+	*		atom_end	noeat markend strings
+	"append"	kw
+	"atom"		kw
+	"atomic"	kw
+	"call"		kw
+	"catch"		kw
+	"clause"	kw
+	"close"		kw
+	"fail"		kw
+	"findall"	kw
+	"float"		kw
+	"halt"		kw
+	"integer"	kw
+	"is"		kw
+	"member"	kw
+	"nl"		kw
+	"nonvar"	kw
+	"number"	kw
+	"once"		kw
+	"op"		kw
+	"open"		kw
+	"read"		kw
+	"repeat"	kw
+	"throw"		kw
+	"true"		kw
+	"var"		kw
+	"write"		kw
+done
+	"a-zA-Z0-9_"	atom
+	
+:kw Keyword
+	*		idle		noeat
+
+:atom_end Idle
+	*		idle		noeat
+	" "		atom_end
+	"("		pred_end	recolormark
+	":"		maybe_pred_end
+
+:pred_end Predicate
+	*		idle		noeat
+
+:maybe_pred_end Idle
+	*		idle		noeat
+	"-"		pred_end	recolormark
+
+:variable Variable
+	*		idle		noeat
+	"a-zA-Z0-9_"	variable
+
+:_variable Idle
+	*		idle		noeat
+	# if it's not only _, color it
+	"a-zA-Z0-9_"	variable	recolor=-2

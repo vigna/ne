@@ -96,20 +96,14 @@ done
 :var_indqstring Var
   *     string_dq recolor=-1
   "a-zA-Z_" var_indqstring
-  "\""  idle
+  "\""  string_dq noeat
 	"\\"		string_dq_esc	recolor=-1
 
 :var_inbqstring Var
   *     string_bq recolor=-1
   "a-zA-Z_" var_inbqstring
-  "\`"  idle
+  "\`"  string_sq noeat
 	"\\"		string_bq_esc	recolor=-1
-
-:var_insqstring Var
-  *     string_sq recolor=-1
-  "a-zA-Z_" var_insqstring
-  "'" idle
-	"\\"		string_sq_esc	recolor=-1
 
 :maybe_method Methods
 	*		idle  recolor=-1
@@ -130,7 +124,7 @@ done
   "a-zA-Z_" method  recolor=-1
 
 :idle_qmark Idle
-	*		idle
+	*		idle		noeat
 	">"		idle recolor=-2 return
 
 :idle_hash Idle
@@ -162,7 +156,6 @@ done
 
 :string_sq Constant_sq
 	*		string_sq
-	"$"     var_insqstring recolor=-1
 	"\'"		idle
 	"\\"		string_sq_esc	recolor=-1
 

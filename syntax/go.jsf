@@ -1,0 +1,368 @@
+# Google Go (golang) syntax
+# (c) 2012 Matthias S. Benkmann
+# License: http://creativecommons.org/licenses/by/3.0/deed.en_US
+
+# Small modifications by jjjordan to better suit white backgrounds and 16-color
+# consoles.  (Original colors commented out below)
+
+# Standard colors:
+#
+# Foreground:
+#   white cyan magenta blue yellow green red black
+#
+# Background:
+#   bg_white bg_cyan bg_magenta bg_blue bg_yellow bg_green bg_red bg_black
+#
+#
+# For 16 color and 256 color xterms: "export TERM=xterm-16color", the following
+# brighter than normal colors are available ( Note that you need an xterm which 
+# was compiled to support 16 or 256 colors and a matching termcap/terminfo entry 
+# for it.)
+#
+# Foreground:
+#   WHITE CYAN MAGENTA BLUE YELLOW GREEN RED BLACK
+#
+# Background:
+#   bg_WHITE bg_CYAN bg_MAGENTA bg_BLUE bg_YELLOW bg_GREEN bg_RED bg_BLACK
+#
+#
+# For 256 color xterm: "export TERM=xterm-256color", the following become available
+# ( Note that you need an xterm which was compiled to support 256 colors and a
+# matching termcap/terminfo entry for it. )
+#
+# fg_RGB and bg_RGB, where R, G, and B range from 0 - 5.  So: fg_500 is bright red.
+#
+# fg_NN and bg_NN give shades of grey, where the intensity, NN, ranges from 0 - 23.
+
+
+=Idle
+=Error          red bold
+=Comment        green #bold green
+=SingleQuoted   cyan
+=DoubleQuoted   cyan
+=BackQuoted     cyan
+=Escape         bold cyan
+=Operator       bold cyan
+=Parentheses    #bold yellow
+=Brackets       yellow
+=Brace          magenta #bold magenta
+=Semicolon      #bold yellow
+=Period         bold
+=PeriodDecimal  red
+=Number         red
+=Constant       red
+=Comma          #bold yellow
+=Identifier     #fg_333
+=ExportedIdentifier #fg_444
+=Keyword        bold
+=Type           bold
+=BuiltinFunction bold
+
+##################### main #########################
+:main Idle
+  *             keyword_or_identifier   noeat buffer
+  " \t"         main
+  "\n"          main
+  "/"           maybe_comment recolor=-1
+  "'"           single_quoted recolor=-1
+  "\""          double_quoted recolor=-1
+  "`"           back_quoted   recolor=-1
+  "+&=!|*^<>:%-" operator    noeat
+  "()"          parentheses   noeat
+  "[]"          brackets      noeat
+  "{}"          curlies       noeat
+  ";"           semicolon     noeat
+  ","           comma         noeat  
+  "."           period
+  "0"           number0       recolor=-1
+  "1-9"         float         recolor=-1
+  "#$@~"        error         noeat
+
+#################### error ##########################
+:error Error
+  *             error
+  "\n"          main
+  "/"           maybe_comment_err  recolor=-1
+
+:maybe_comment_err Operator
+  *             error noeat recolor=-2
+  "/"           line_comment  recolor=-2
+  "*"           block_comment recolor=-2
+
+################## comments #########################
+:maybe_comment Operator
+  *             main noeat
+  "/"           line_comment  recolor=-2
+  "*"           block_comment recolor=-2
+
+:line_comment Comment
+  *             line_comment
+  "\n"          main
+
+:block_comment Comment  
+  *            block_comment
+  "*"          maybe_end_block_comment
+  
+:maybe_end_block_comment Comment
+  *            block_comment noeat
+  "/"          main
+
+################ strings ############################
+:single_quoted SingleQuoted
+  *            single_quoted
+  "'"          main
+  "\\"         single_quoted call=.escape() recolor=-1
+  "\n"         error
+
+:double_quoted DoubleQuoted
+  *            double_quoted
+  "\""         main
+  "\\"         double_quoted call=.escape() recolor=-1
+  "\n"         error
+
+:back_quoted BackQuoted
+  *            back_quoted
+  "`"          main
+
+################### operators #######################
+:operator Operator
+  *            main
+
+:parentheses Parentheses
+  *            main
+
+:brackets Brackets
+  *            main
+
+:curlies  Brace
+  *            main
+
+:semicolon Semicolon
+  *            main
+
+:comma Comma
+  *            main
+
+##################### period #######################
+
+:period Period
+  *            period_other    noeat recolor=-2
+  "0-9"        period_decimal  noeat recolor=-2
+
+:period_other Period  
+  *            main noeat
+
+:period_decimal PeriodDecimal
+  *            float_no_period noeat
+
+
+################### numbers ####################
+:float_no_period Number
+  *            end_of_number   noeat
+  "0-9"        float_no_period
+  "eE"         integer
+
+:integer Number
+  *            error     noeat
+  "+-"         unsigned
+  "0-9"        unsigned_or_end
+
+:unsigned Number
+  *            error     noeat
+  "0-9"        unsigned_or_end
+
+:unsigned_or_end Number
+  *            end_of_number noeat
+  "0-9"        unsigned_or_end
+
+:end_of_number Number
+  *            main  noeat
+  "i"          main   # imaginary number suffix
+
+:number0 Number
+  *            end_of_number  noeat
+  "xX"         hex
+  "."          period_decimal recolor=-1
+    # 099i is a valid imaginary number, 099.0 is a valid float,
+    # but 099 is an invalid octal. 
+    #We don't check for this and simply lump both cases together.
+  "0-9"        float
+
+:hex Number
+  *            main  noeat
+  "0-9a-fA-F"  hex
+
+:float Number
+  *            end_of_number  noeat
+  "0-9"        float
+  "."          period_decimal recolor=-1
+  "eE"         integer
+  
+################# keywords and identifiers ##########################
+:keyword_or_identifier Identifier
+  *            identifier
+  "A-Z"        exported_identifier recolor=-1
+  "a-z_"       keyword_or_identifier2
+
+:exported_identifier  ExportedIdentifier
+  *                         exported_identifier
+  "\x01-/:-@[-^`{-\x7f"      main noeat
+
+:identifier Identifier
+  *                         identifier
+  "\x01-/:-@[-^`{-\x7f"     main noeat
+
+:keyword_or_identifier2 Identifier
+  *                 identifier
+  "a-zA-Z_0-9"      keyword_or_identifier2
+  "\x01-/:-@[-^`{-\x7f"      main noeat hold strings
+      "_"           keyword
+      "break"       keyword
+      "default"     keyword
+      "func"        keyword
+      "interface"   keyword
+      "select"      keyword
+      "case"        keyword
+      "defer"       keyword
+      "go"          keyword
+      "map"         keyword
+      "struct"      keyword
+      "chan"        keyword
+      "else"        keyword
+      "goto"        keyword
+      "package"     keyword
+      "switch"      keyword
+      "const"       keyword
+      "fallthrough" keyword
+      "if"          keyword
+      "range"       keyword
+      "type"        keyword
+      "continue"    keyword
+      "for"         keyword
+      "import"      keyword
+      "return"      keyword
+      "var"         keyword
+      
+      "true"        constant
+      "false"       constant
+      "nil"         constant
+      "iota"        constant
+      
+      "byte"        type
+      "rune"        type
+      "int"         type
+      "uint"        type
+      "uintptr"     type
+      "uint8"       type
+      "uint16"      type
+      "uint32"      type
+      "uint64"      type
+      "int8"        type
+      "int16"       type
+      "int32"       type
+      "int64"       type
+      "float32"     type
+      "float64"     type
+      "complex64"   type
+      "complex128"  type
+      "bool"        type
+      "string"      type
+      "error"       type
+      
+      "delete"      builtin
+      "make"        builtin
+      "len"         builtin
+      "cap"         builtin
+      "new"         builtin
+      "copy"        builtin
+      "append"      builtin
+      "close"       builtin
+      "complex"     builtin
+      "imag"        builtin
+      "panic"       builtin
+      "print"       builtin
+      "println"     builtin
+      "real"        builtin
+      "recover"     builtin
+  done
+
+:keyword Keyword
+  *            main  noeat
+
+:constant Constant
+  *            main  noeat
+
+:type Type
+  *            main  noeat
+  
+:builtin BuiltinFunction
+  *            main  noeat
+  
+  
+
+
+########################## .subr escape START ######################################
+.subr escape
+:esc Escape
+  *              esc_err    noeat
+  "abfnrtv'\"" whatever return
+    # For some reason joe doesn't interpret \\ properly if merged with the
+    # previous case. So create a separate case for it.
+  "\\"         whatever return
+  "x"            hex2
+  "u"            hex4
+  "U"            hex8
+  "0-3"          oct2
+
+:hex8 Escape
+  *              esc_err noeat
+  "a-fA-F0-9"    hex7
+
+:hex7 Escape
+  *              esc_err    noeat
+  "a-fA-F0-9"    hex6
+
+:hex6 Escape
+  *              esc_err noeat
+  "a-fA-F0-9"    hex5
+
+:hex5 Escape
+  *              esc_err    noeat
+  "a-fA-F0-9"    hex4
+
+:hex4 Escape
+  *              esc_err noeat
+  "a-fA-F0-9"    hex3
+
+:hex3 Escape
+  *              esc_err    noeat
+  "a-fA-F0-9"    hex2
+
+:hex2 Escape
+  *              esc_err noeat
+  "a-fA-F0-9"    hex1
+
+:hex1 Escape
+  *              esc_err    noeat
+  "a-fA-F0-9"    whatever return
+
+:oct2 Escape
+  *              esc_err noeat
+  "0-7"          oct1
+
+:oct1 Escape
+  *              esc_err noeat
+  "0-7"          whatever return
+
+:esc_err Error
+  *              esc_err return
+  "\n"           esc_err_newline noeat recolor=-2
+
+:esc_err_newline Error
+  *              esc_err return noeat
+  
+
+.end
+########################## .subr escape END ######################################
+
+

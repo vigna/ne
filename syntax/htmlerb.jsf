@@ -1,0 +1,12 @@
+# JOE syntax highlight file for HTML embedded ERB
+# by Christian Nicolai (http://mycrobase.de)
+
+=Idle
+=Keyword	bold
+=Bad		bold red
+=Brace		magenta
+
+=ERB		yellow
+
+:begin Idle
+	*	NULL		noeat call=html.html(erb)

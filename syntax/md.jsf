@@ -1,0 +1,135 @@
+# JOE syntax highlight file for Markdown
+# by Christian Nicolai (http://mycrobase.de)
+
+# And yes, this *is* a joke :p
+
+# bold parsing is not that perfect since this works: **bold__
+
+=Idle
+=Tag		green
+=Escape		bold
+=Bad		bold red
+
+=Bold		bold
+=Headline	bold yellow
+=Quote		green
+=Code		green
+=List		yellow
+=LinkDesc	green
+=Link		blue
+=Rule		inverse
+
+:line_start Idle
+	*		idle		noeat
+	"#"		headline_prefix recolor=-1
+	">"		quote		recolor=-1
+	" "		maybe_code1
+	"\t"		code
+	"-*"		maybe_list
+
+:idle Idle
+	*		idle
+	"\n"		line_start
+	"<"		tag		recolor=-1
+	"\\"		escape		recolor=-1
+	"*_"		maybe_bold1
+	"["		maybe_link_desc1
+
+:headline_prefix Idle
+	*		headline
+	"#"		headline_prefix
+
+:headline Headline
+	*		headline
+	"\n"		line_start
+
+:quote Quote
+	*		quote
+	"\n"		line_start
+
+:maybe_code1 Idle
+	*		idle
+	" "		maybe_code2
+
+:maybe_code2 Idle
+	*		idle
+	" "		maybe_code3
+
+:maybe_code3 Idle
+	*		idle
+	" "		code		recolor=-4
+
+:code Code
+	*		code
+	"\n"		line_start
+
+:maybe_list Idle
+	*		idle
+	" "		list
+	"-*"		maybe_rule1
+
+:list List
+	*		list
+	"\n"		line_start
+
+:maybe_rule1 Idle
+	*		idle
+	"-*"		rule		recolor=-3
+
+:rule Rule
+	*		rule
+	"\n"		line_start
+
+:tag Tag
+	*		idle
+	"a-z0-9 /"	tag
+	">"		idle
+
+# do escaping of *_ and so on
+:escape Escape
+	*		idle
+
+:maybe_bold1 Idle
+	*		idle		noeat
+	"*_"		bold		recolor=-2
+
+:bold Bold
+	*		bold
+	"\n"		line_start	# end if we reach newline during bold
+	"*_"		maybe_end_bold
+
+:maybe_end_bold Bold
+	*		bold
+	"*_"		end_bold
+
+:end_bold Bold
+	*		idle		noeat
+
+:maybe_link_desc1 Idle
+	*		maybe_link_desc	mark
+
+:maybe_link_desc Idle
+	*		maybe_link_desc
+	"]"		maybe_end_link_desc	markend
+
+:maybe_end_link_desc Idle
+	*		idle
+	"("		link_inline1	recolormark
+	"["		link_ref1	recolormark
+
+:link_inline1 LinkDesc
+	*		link_inline	noeat
+
+:link_inline Link
+	*		link_inline
+	")"		link_end	noeat
+
+:link_ref1 LinkDesc
+	*		link_ref	noeat
+
+:link_ref Link
+	*		link_ref
+	"]"		link_end	noeat
+
+:link_end Idle
+	*		idle

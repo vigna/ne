@@ -1,0 +1,106 @@
+# JOE syntax highlight file for Sieve
+# by Christian Nicolai (http://mycrobase.de)
+
+=Idle
+=Comment	green
+=Constant	cyan
+=Escape		bold cyan
+=Keyword	bold
+=Bad		bold red
+=Brace		magenta
+
+=TaggedArgument	red
+
+:idle Idle
+	*		idle
+	"#"		line_comment	recolor=-1
+	"/"		maybe_comment
+	"1-9"		decimal		recolor=-1
+	"\""		string		recolor=-1
+	"[]{}"		brace		recolor=-1
+	":"		maybe_tagged_arg
+	"a-zA-Z_"	ident		buffer
+
+:brace Brace
+	*		idle		noeat
+
+:line_comment Comment
+	*		line_comment
+	"\n"		idle
+
+:maybe_comment Idle
+	*		idle		noeat
+	"*"		comment		recolor=-2
+
+:comment Comment
+	*		comment
+	"*"		maybe_end_comment
+
+:maybe_end_comment Comment
+	*		comment		noeat
+	"/"		idle
+
+:decimal Constant
+	*		idle		noeat
+	"0-9"		decimal
+	"KMG"		decimal_suffix
+
+:decimal_suffix Constant
+	*		idle		noeat
+
+:string Constant
+	*		string
+	"\""		idle
+	"\\"		string_escape	recolor=-1
+
+:string_escape Escape
+	*		string_bad_escape	recolor=-1
+	"\\"		string
+	"\""		string
+
+:string_bad_escape Bad
+	*		string		noeat
+
+:maybe_tagged_arg Idle
+	*		idle		noeat
+	"a-zA-Z_"	tagged_arg	recolor=-2
+
+:tagged_arg TaggedArgument
+	*		idle		noeat
+	"a-zA-Z0-9_"	tagged_arg
+
+:ident Idle
+	*		idle		noeat strings
+	# control"
+	"else"		kw
+	"elsif"		kw
+	"if"		kw
+	"require"	kw
+	"stop"		kw
+	# commands
+	"discard"	cmd
+	"fileinto"	cmd
+	"keep"		cmd
+	"redirect"	cmd
+	# tests
+	"address"	test
+	"allof"		test
+	"anyof"		test
+	"envelope"	test
+	"exists"	test
+	"false"		test
+	"header"	test
+	"not"		test
+	"size"		test
+	"true"		test
+done
+	"a-zA-Z0-9_"	ident
+
+:kw Keyword
+	*		idle		noeat
+
+:cmd Idle
+	*		idle		noeat
+
+:test Idle
+	*		idle		noeat

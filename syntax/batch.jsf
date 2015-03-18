@@ -1,0 +1,154 @@
+# JOE syntax highlight file for Windows batch scripts
+
+=Idle
+=Comment	green
+=Command	bold
+=Statement	bold cyan
+=Brace		magenta
+=Variable	blue
+=Label		bold blue
+
+:reset Idle
+	*		linebegin	noeat
+	" \t\r\n"	reset
+
+:linebegin Idle
+	*		stmtorcommand	noeat buffer
+	":"		labelorcomment
+	"@"		linebegin
+	"%"		args		call=.variable() recolor=-1
+	"\""		qargs		recolor=-1
+	"'"		sqargs		recolor=-1		# These two encountered in 
+	"`"		bqargs		recolor=-1		# certain varieties of for-loops
+
+:stmtorcommand Command
+	*		command		noeat istrings
+	"call"		stmt
+	"cd"		stmt
+	"chdir"		stmt
+	"cls"		stmt
+	"copy"		stmt
+	"del"		stmt
+	"dir"		stmt
+	"echo"		echostmt
+	"echo."		echostmt
+	"endlocal"	stmt
+	"erase"		stmt
+	"exit"		stmt
+	"for"		stmt
+	"goto"		stmt
+	"if"		stmt
+	"move"		stmt
+	"pause"		stmt
+	"popd"		stmt
+	"pushd"		stmt
+	"rd"		stmt
+	"rem"		comment
+	"ren"		stmt
+	"rename"	stmt
+	"rmdir"		stmt
+	"set"		stmt
+	"setlocal"	stmt
+	"setx"		stmt
+	"shift"		stmt
+	"sleep"		stmt
+	"start"		stmt
+	"type"		stmt
+	"xcopy"		stmt
+done
+	"a-zA-Z."	stmtorcommand
+	"\"\\_0-9"	command
+	")"		rparen		recolor=-1
+
+:labelorcomment Idle
+	*		label		recolor=-2
+	":"		comment		recolor=-2
+
+:label Label
+	*		label
+	"\r\n"		reset
+
+:comment Comment
+	*		comment
+	"\r\n"		reset
+
+:stmt Statement
+	*		args		noeat
+
+:echostmt Statement
+	*		echoargs	noeat
+
+:echoargs Idle
+	*		echoargs
+	"%"		echoargs	call=.variable() recolor=-1
+	"&"		and		recolor=-1
+	"\r\n"		reset
+
+:command Command
+	*		command
+	"\""		qcommand
+	" \t"		args
+	"\r\n"		reset
+
+:qcommand Command
+	*		qcommand
+	"\""		command
+	"\r\n"		reset
+
+:args Idle
+	*		args
+	"%"		args		call=.variable() recolor=-1
+	"("		lparen		recolor=-1
+	")"		rparen		recolor=-1
+	"\r\n"		reset
+	"\""		qargs			
+	"&"		and		recolor=-1
+
+# Double-quoted args
+:qargs Idle
+	*		qargs
+	"\""		args
+	"%"		qargs		call=.variable() recolor=-1
+	"\r\n"		reset
+
+# Single-quoted args
+:sqargs Idle
+	*		sqargs
+	"'"		args
+	"%"		sqargs		call=.variable() recolor=-1
+	"\r\n"		reset
+
+# Back-quoted (`) args, found in some for-loops
+:bqargs Idle
+	*		bqargs
+	"`"		args
+	"%"		bqargs		call=.variable() recolor=-1
+	"\r\n"		reset
+
+:and Idle
+	*		reset		noeat
+
+:lparen Brace
+	*		linebegin	noeat
+
+:rparen Brace
+	*		args		noeat
+
+.subr variable
+
+:variable Variable
+	*		args		noeat return
+	"%~"		shortvar
+	"\*"		noeat		return
+	"0-9"		variable	return
+	"A-Za-z_"	varbody
+
+:shortvar Variable
+	*		args		noeat return
+	"A-Za-z0-9_"	shortvar
+
+:varbody Variable
+	*		varbody
+	"%"		args		return
+
+.end

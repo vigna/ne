@@ -1,0 +1,145 @@
+# JOE syntax highlight file for YAML
+# by Christian Nicolai (http://mycrobase.de)
+
+=Idle
+=Comment	green
+=Constant	cyan
+=Escape		bold cyan
+=Type		bold
+=Keyword	bold
+=Bad		bold red
+=Brace		magenta
+
+=Directive	red
+=Reference	yellow
+=LocalType	blue
+=BlockDelim	bold blue
+
+=BadTab		inverse red
+
+:line_start Idle
+	*		maybe_key	noeat
+	"\t"		bad_tab		recolor=-1
+	" "		line_start
+
+:idle Constant
+	*		idle
+	"\n"		line_start
+	"%"		directive	recolor=-1
+	"#"		line_comment	recolor=-1
+	"'"		string_sq_1	recolor=-1
+	"\""		string_dq_1	recolor=-1
+	"{[]}"		brace		recolor=-1
+	"."		maybe_block_end1
+	"*&"		maybe_reference
+	"!"		maybe_typecast
+
+:maybe_key Idle
+	*		maybe_key1	recolor=-1 mark
+	"\n%#'\"{[]}*&!"	idle		noeat
+	"-"		maybe_block1	mark
+
+:maybe_key1 Constant
+	*		idle		noeat
+	":"		key
+	" a-zA-Z0-9_-"	maybe_key1
+
+# necessary to include the :
+:key Idle
+	*		key_end		noeat recolormark
+
+:key_end Idle
+	*		idle		noeat
+
+# mark bad tabs until the first non-whitespace
+:bad_tab BadTab
+	*		line_start	noeat
+
+:line_comment Comment
+	*		line_comment
+	"\n"		line_start
+
+:brace Brace
+	*		idle		noeat
+
+:directive Directive
+	*		directive
+	"\n"		line_start
+
+:string_sq_1 Constant
+	*		string_sq	noeat
+
+:string_sq Constant
+	*		string_sq
+	"\'"		idle
+	"\\"		string_sq_esc	recolor=-1
+
+:string_sq_esc Escape
+	*		string_sq
+	"\n"		string_sq	recolor=-2
+
+:string_dq_1 Constant
+	*		string_dq	noeat
+
+:string_dq Constant
+	*		string_dq
+	"\""		idle
+	"\\"		string_dq_esc	recolor=-1
+
+:string_dq_esc Escape
+	*		string_dq
+	"\n"		string_dq	recolor=-2
+
+:maybe_block1 Constant
+	*		maybe_key1	noeat
+	"-"		maybe_block2
+
+:maybe_block2 Constant
+	*		maybe_key1	noeat
+	"-"		block		recolor=-3
+
+:block BlockDelim
+	*		idle		noeat
+
+:maybe_block_end1 Constant
+	*		idle		noeat
+	"."		maybe_block_end2
+
+:maybe_block_end2 Constant
+	*		idle		noeat
+	"."		block_end	recolor=-3
+
+:block_end BlockDelim
+	*		idle		noeat
+
+:maybe_reference Constant
+	*		idle
+	"a-zA-Z_"	reference	recolor=-2
+
+:reference Reference
+	*		idle		noeat
+	"a-zA-Z0-9_"	reference
+
+:maybe_typecast Constant
+	*		idle		noeat
+	"a-zA-Z_"	local_type	recolor=-1
+	"!"		builtin_type
+
+:builtin_type Idle
+	*		idle		noeat
+	"a-zA-Z"	builtin_type2	buffer
+
+:builtin_type2 Idle
+	*		idle		noeat strings
+	"str"		type
+	"float"		type
+	"binary"	type
+done
+	"a-zA-Z_"	builtin_type2
+
+:type Type
+	*		idle		noeat
+
+:local_type LocalType
+	*		idle		noeat
+	"a-zA-Z_"	local_type

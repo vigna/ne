@@ -1,0 +1,622 @@
+# JOE syntax highlight file for JavaScript
+# by Christian Nicolai (http://mycrobase.de) and Rebecca Turner
+
+# Define colors
+
+=Idle
+=Comment	green
+=Constant	cyan
+=String		cyan
+=StringEscape	bold cyan
+=Regexp		cyan
+=RegexpEscape	bold cyan
+=RegexpOptions	cyan
+=Number		cyan
+=Type		bold
+=CustomType
+=Keyword	bold
+=Global		bold
+=Exports
+=ExportItem
+=Operator	bold
+=Bad		inverse bold red
+=Brace		magenta
+=Assign		bold
+=Paren
+=Bracket
+=Semicolon
+=Comma
+=PropSep
+=Syntax
+=Ident
+=Method
+
+# from html.jsf to support embedded languages
+=TagEdge	green
+
+:begin Idle
+	*			begin		noeat call=.js()
+	"#"			shebang		recolor=-1
+
+:shebang Comment
+	*			shebang
+	"\n"			begin
+
+.subr js
+
+:idle Idle
+	*			idle
+	"/"			re_or_comment	recolor=-1
+	"0"			first_digit	recolor=-1
+	"1-9"			decimal		recolor=-1
+	"."			maybe_float
+	"\""			string		recolor=-1 save_c
+	"'"			string		recolor=-1 save_c
+	"A-Z"			type_match	mark buffer recolor=-1
+	"$a-z_"			ident		mark buffer recolor=-1
+	"{}"			brace		recolor=-1
+	"()"			paren		noeat recolor=-1
+	";"			semicolon	recolor=-1
+	","			comma		recolor=-1
+	"="			assign_maybe	recolor=-1
+	"[]"			bracket		noeat recolor=-1
+	"\-"			subtract	recolor=-1
+	"+"			add		recolor=-1
+	"*|&^%"			mutate_maybe	recolor=-1
+	":?~"			syntax		recolor=-1
+.ifdef html
+	"<"			maybe_done	recolor=-1
+	">!"			eqmixer_maybe	recolor=-1
+.else
+.ifdef php
+	"<"			maybe_done	recolor=-1
+	">!"			eqmixer_maybe	recolor=-1
+.else
+.ifdef mason
+	"<"			maybe_done	recolor=-1
+	">!"			eqmixer_maybe	recolor=-1
+.else
+	"<>!"			eqmixer_maybe	recolor=-1
+.endif
+.endif
+.endif
+
+:subtract Assign
+	*			mutate_maybe	noeat
+	"\-"			assign		recolor=-2
+
+:add Assign
+	*			mutate_maybe	noeat
+	"+"			assign		recolor=-2
+
+:mutate_maybe Assign
+	*			syntax		recolor=-2 noeat
+	"="			assign		recolor=-2
+
+:syntax Syntax
+	*			idle		recolor=-1 noeat
+
+:assign Assign
+	*			idle		recolor=-1 noeat
+
+:eqmixer_maybe Syntax
+	*			idle		recolor=-1 noeat
+	"="			eqmixer_maybe
+
+:assign_maybe Assign
+	*			idle            recolor=-1 noeat
+	"="			equality	recolor=-2
+
+:equality Syntax
+	*			idle		recolor=-1 noeat
+	"="			syntax
+
+:maybe_done TagEdge
+	*			eqmixer_maybe	noeat
+	"/"			idle		noeat return recolor=-2
+.ifdef php
+	"?"			rtn_embed	call=php.php()
+.endif
+.ifdef mason
+	"&%"			rtn_embed	call=perl.perl()
+.endif
+
+:rtn_embed TagEdge
+	*			idle		noeat
+
+:no_regex Idle
+	*			idle		noeat
+	"/"			maybe_comment	recolor=-1
+	" "			no_regex
+
+:after_term Idle
+	*			after_term
+	"\n"			idle
+	"/"			maybe_comment	recolor=-1
+	"."			prop_sep	recolor=-1
+	"a-z"			infix_operator	buffer recolor=-1
+	"\"'A-Z_0-9"		bad_after_term	recolor=-1
+	"{}"			brace		recolor=-1
+	"()"			paren		noeat recolor=-1
+	";"			semicolon	recolor=-1
+	"="			assign_maybe	recolor=-1
+	","			comma		recolor=-1
+	"[]"			bracket		noeat recolor=-1
+	"\-"			subtract	recolor=-1
+	"+"			add		recolor=-1
+	"*|&^%"			mutate_maybe	recolor=-1
+	":?~"			syntax		recolor=-1
+.ifdef html
+	"<"			maybe_done	recolor=-1
+	">!"			eqmixer_maybe	recolor=-1
+.else
+.ifdef php
+	"<"			maybe_done	recolor=-1
+	">!"			eqmixer_maybe	recolor=-1
+.else
+.ifdef mason
+	"<"			maybe_done	recolor=-1
+	">!"			eqmixer_maybe	recolor=-1
+.else
+	"<>!"			eqmixer_maybe	recolor=-1
+.endif
+.endif
+.endif
+
+:ident_only Idle
+	*			bad_after_term	recolor=-1
+	"A-Z"			type_match	mark buffer recolor=-1
+	"$a-z_"			ident		mark buffer recolor=-1
+	" \t"			ident_only
+	"\n"			idle
+
+:bad_after_term Bad
+	*			after_term	noeat markend strings
+done
+	"\"'"			after_term
+	"a-zA-Z0-9_."		bad_after_term
+
+:re_or_comment Syntax
+	*			regex		noeat recolor=-2
+	"*/"			maybe_comment	noeat
+
+:maybe_comment Syntax
+	*			syntax		noeat
+	"*"			comment		recolor=-2
+	"/"			line_comment	recolor=-2
+	"="			assign		recolor=-2
+
+:comment Comment
+	*			comment
+	# might be TODO label
+	"BFHNTX"		comment		noeat call=comment_todo.comment_todo()
+	"*"			maybe_end_comment
+
+:maybe_end_comment Comment
+	*			comment		noeat
+	"/"			idle
+	"*"			maybe_end_comment
+
+:line_comment Comment
+	*			line_comment
+	# might be TODO label
+	"BFHNTX"		line_comment	noeat call=comment_todo.comment_todo()
+	"\n"			idle
+
+:regex Regexp
+	*			regex
+	"\\"			regex_quote	recolor=-1
+	"["			regex_charclass
+	"/"			regex_mod
+	"\n"			regex_bad
+
+:regex_quote RegexpEscape
+	*			regex
+	"\n"			regex_bad
+
+:regex_charclass Regexp
+	*			regex_charclass
+	"\\"			regex_cc_quote	recolor=-1
+	"\n"			regex_bad_cc
+	"]"			regex
+
+:regex_cc_quote RegexpEscape
+	*			regex_charclass
+	"\n"			regex_bad_cc
+
+:regex_bad Bad
+	*			regex_bad
+	"\\"			regex_bad_quote
+	"["			regex_bad_cc
+	"/"			after_term
+
+:regex_bad_quote Bad
+	*			regex_bad
+
+:regex_bad_cc Bad
+	*			regex_bad_cc
+	"\\"			regex_bad_quote_cc
+	"]"			regex_bad
+
+:regex_bad_quote_cc Bad
+	*			regex_bad_cc
+
+:regex_mod RegexpOptions
+	*			after_term	noeat
+	"igm"			regex_mod
+
+:brace Brace
+	*			idle		noeat
+
+:paren Paren
+	"("			idle
+	")"			no_regex
+
+:bracket Bracket
+	"["			idle
+	"]"			after_term
+
+:syntax Syntax
+	*			idle		noeat
+
+:comma Comma
+	*			idle		noeat
+
+:semicolon Semicolon
+	*			idle		noeat
+
+:first_digit Number
+	*			after_term	noeat
+	"xX"			hex
+	"."			float
+	"eE"			epart
+	"0-7"			octal
+	"89"			bad_number	recolor=-1
+
+:bad_number Bad
+	*			after_term	noeat
+	"0-9"			bad_number
+
+:octal Number
+	*			after_term	noeat
+	"0-7"			octal
+	"89"			bad_number	recolor=-1
+
+:hex Number
+	*			after_term	noeat
+	"0-9A-Fa-f"		hex
+
+:decimal Number
+	*			after_term	noeat
+	"0-9"			decimal
+	"eE"			epart
+	"."			float
+
+:maybe_float Number
+	*			prop_sep	noeat recolor=-2
+	"0-9"			float		recolor=-2
+
+:prop_sep PropSep
+	*			ident_only	noeat
+
+:float Number
+	*			after_term	noeat
+	"eE"			epart
+	"0-9"			float
+
+:epart Number
+	*			after_term	noeat
+	"0-9+\-"		enum
+
+:enum Number
+	*			after_term	noeat
+	"0-9"			enum
+
+:string		String
+	*			string_body	noeat mark
+
+:string_body	String
+	*			string
+	"\n"			string_bad
+	&			after_term
+	"\\"			string_escape	recolor=-1
+
+:string_bad Bad
+	*			string_bad
+	"\\"			string_bad_escape
+	&			after_term
+
+:string_bad_escape Bad
+	*			string_bad
+
+:string_escape StringEscape
+	*			string
+	"x"			string_hex1
+	"0-7"			string_octal2
+	"\n"			string_bad	noeat
+
+:string_hex1 StringEscape
+	*			string		noeat
+	"0-9a-fA-F"		string_hex2
+
+:string_hex2 StringEscape
+	*			string		noeat
+	"0-9a-fA-F"		string
+
+:string_octal2 StringEscape
+	*			string		noeat
+	"0-7"			string_octal3
+
+:string_octal3 StringEscape
+	*			string		noeat
+	"0-7"			string
+
+:infix_operator Bad
+	*			bad_op		noeat markend strings
+	"in"			operator
+	"instanceof"		operator
+done
+	"a-zA-Z0-9_"		infix_operator
+
+:bad_op Bad
+	*			idle		noeat
+	"a-zA-Z0-9_"		bad_op
+
+:operator Operator
+	*			idle		noeat
+
+:type_match CustomType
+	*			type_end	noeat markend strings
+	"Infinity"		lit
+	"NaN"			lit
+	"Array"			type
+	"ArrayBuffer"		type
+	"Boolean"		type
+	"DataView"		type
+	"Date"			type
+	"Error"			type
+	"EvalError"		type
+	"Function"		type
+	"Float32Array"		type
+	"Float64Array"		type
+	"Int16Array"		type
+	"Int32Array"		type
+	"Int8Array"		type
+	"JSON"			type
+	"Math"			type
+	"Number"		type
+	"Object"		type
+	"RangeError"		type
+	"ReferenceError"	type
+	"RegExp"		type
+	"String"		type
+	"SyntaxError"		type
+	"TypeError"		type
+	"Uint16Array"		type
+	"Uint32Array"		type
+	"Uint8Array"		type
+	"Uint8ClampedArray"	type
+	"URIError"		type
+	# node.js
+	"Buffer"		type
+done
+	"a-zA-Z0-9_"		type_match
+
+:type_end Idle
+	*			after_term	noeat
+	" "			type_end
+	"."			prop_sep	recolor=-1
+
+.ifdef typescript
+
+:ident Ident
+	*			ident_end	noeat markend strings
+	"delete"		operator
+	"in"			operator
+	"instanceof"		operator
+	"typeof"		operator
+	"new"			operator
+	"arguments"		kw
+	"break"			kw
+	"case"			kw
+	"catch"			kw
+	"continue"		kw
+	"default"		kw
+	"do"			kw
+	"else"			kw
+	"finally"		kw
+	"for"			kw
+	"function"		kw
+	"if"			kw
+	"let"			kw
+	"return"		kw
+	"switch"		kw
+	"throw"			kw
+	"try"			kw
+	"var"			kw
+	"void"			kw
+	"while"			kw
+	"with"			kw
+	"false"			lit
+	"null"			lit
+	"true"			lit
+	"const"			global
+	"decodeURI"		global
+	"decodeURIComponent"	global
+	"encodeURI"		global
+	"encodeURIComponent"	global
+	"escape"		global
+	"eval"			global
+	"isFinite"		global
+	"isNaN"			global
+	"parseFloat"		global
+	"parseInt"		global
+	"undefined"		global
+	"unescape"		global
+	"setImmediate"		global
+	"this"			quasikw
+	"prototype"		quasikw
+	# node.js
+	"exports"		export
+	"module"		global
+	"process"		global
+	"global"		global
+	"console"		global
+	"setTimeout"		global
+	"setInterval"		global
+	"clearInterval"		global
+	"clearTimeout"		global
+	"require"		quasikw
+	"__filename"		quasikw
+	"__dirname"		quasikw
+	# By convention...
+	"self"			quasikw
+
+	# Typescript-specific
+	"class"		kw
+	"constructor"	kw
+	"declare"	kw
+	"enum"		kw
+	"extends"	kw
+	"export"	kw
+	"get"		kw
+	"implements"	kw
+	"import"	kw
+	"interface"	kw
+	"module"	kw
+	"namespace"	kw
+	"private"	kw
+	"public"	kw
+	"require"	kw
+	"set"		kw
+	"static"	kw
+	"super"		kw
+	
+	"any"		type
+	"boolean"	type
+	"number"	type
+	"string"	type
+	"void"		type
+
+done
+	"$a-zA-Z0-9_"		ident
+
+.else
+
+:ident Ident
+	*			ident_end	noeat markend strings
+	"delete"		operator
+	"in"			operator
+	"instanceof"		operator
+	"typeof"		operator
+	"new"			operator
+	"arguments"		kw
+	"break"			kw
+	"case"			kw
+	"catch"			kw
+	"continue"		kw
+	"default"		kw
+	"do"			kw
+	"else"			kw
+	"finally"		kw
+	"for"			kw
+	"function"		kw
+	"if"			kw
+	"let"			kw
+	"return"		kw
+	"switch"		kw
+	"throw"			kw
+	"try"			kw
+	"var"			kw
+	"void"			kw
+	"while"			kw
+	"with"			kw
+	"false"			lit
+	"null"			lit
+	"true"			lit
+	"const"			global
+	"decodeURI"		global
+	"decodeURIComponent"	global
+	"encodeURI"		global
+	"encodeURIComponent"	global
+	"escape"		global
+	"eval"			global
+	"isFinite"		global
+	"isNaN"			global
+	"parseFloat"		global
+	"parseInt"		global
+	"undefined"		global
+	"unescape"		global
+	"setImmediate"		global
+	"this"			quasikw
+	"prototype"		quasikw
+	# node.js
+	"exports"		export
+	"module"		global
+	"process"		global
+	"global"		global
+	"console"		global
+	"setTimeout"		global
+	"setInterval"		global
+	"clearInterval"		global
+	"clearTimeout"		global
+	"require"		quasikw
+	"__filename"		quasikw
+	"__dirname"		quasikw
+	# By convention...
+	"self"			quasikw
+done
+	"$a-zA-Z0-9_"		ident
+
+.endif
+
+:ident_end Idle
+	*			after_term	noeat
+	" "			ident_end
+	"."			prop_sep	recolor=-1
+	"("			method_start	recolor=-1
+
+:method_start Paren
+	*			method_end	noeat recolormark
+
+:method_end Method
+	*			idle		noeat
+
+:type Type
+	*			after_term	noeat
+
+:kw Keyword
+	*			idle	noeat
+
+:quasikw Keyword
+	*			after_term	noeat
+
+:global Global
+	*			after_term	noeat
+
+:export Exports
+	*			export_end	noeat
+
+:export_end Exports
+	*			after_term	noeat
+	" "			export_end
+	"."			export_item_start
+
+:export_item_start ExportItem
+	*			bad_after_term	recolor=-1 noeat
+	" "			export_item_start
+	"a-zA-Z_"		export_item
+
+:export_item ExportItem
+	*			after_term	noeat
+	"a-zA-Z0-9_"		export_item
+
+:lit Constant
+	*			lit_end		noeat
+
+:lit_end Constant
+	*			after_term	noeat
+	" "			lit_end
+	"."			prop_sep	recolor=-1
+
+.end

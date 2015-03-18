@@ -46,7 +46,7 @@
 	"]"		idle
 
 :lua_string_1 Constant
-	*		lua_string_1 noeat
+	*		lua_string_1
 	"]"		lua_string_1_maybe_donea
 
 :lua_string_1_maybe_donea	Constant
@@ -58,7 +58,7 @@
 	"]"		idle
 
 :lua_string_2 Constant
-	*		lua_string_2 noeat
+	*		lua_string_2
 	"]"		lua_string_2_maybe_donea
 
 :lua_string_2_maybe_donea	Constant
@@ -74,7 +74,7 @@
 	"]"		idle
 
 :lua_string_3 Constant
-	*		lua_string_3 noeat
+	*		lua_string_3
 	"]"		lua_string_3_maybe_donea
 
 :lua_string_3_maybe_donea	Constant
@@ -107,7 +107,7 @@
 	"["		long_comment_0
 
 :maybe_long_comment_1 Comment
-	*		ling_comment noeat
+	*		line_comment noeat
 	"="		maybe_long_comment_2
 	"["		long_comment_1
 
@@ -117,7 +117,7 @@
 	"["		long_comment_2
 
 :maybe_long_comment_3 Comment
-	*		ling_comment noeat
+	*		line_comment noeat
 	"["		long_comment_3
 
 :long_comment_0 Comment
