@@ -96,7 +96,7 @@ unsigned char *autocomplete(unsigned char *p, char *req_msg, const int ext, int 
 			
 	assert(p);
 	
-	req_list_init(&rl, (cur_buffer->opt.case_search ? strcmp : strdictcmp), FALSE, EXTERNAL_FLAG_CHAR);
+	req_list_init(&rl, (cur_buffer->opt.case_search ? strcmp : strdictcmp), FALSE, FALSE, EXTERNAL_FLAG_CHAR);
 
 	search_buff(cur_buffer, p, cur_buffer->encoding, cur_buffer->opt.case_search, FALSE);
 	if (stop) {

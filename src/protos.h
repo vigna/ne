@@ -232,7 +232,7 @@ int   request_document(void);
 char *complete_filename(const char *start_prefix);
 /* int   req_list_del(req_list * const rl, int nth); */
 void  req_list_free(req_list * const rl);
-int   req_list_init(req_list * const rl, int cmpfnc(const char *, const char *), const int allow_dupes, const char suffix);
+int   req_list_init(req_list * const rl, int cmpfnc(const char *, const char *), const int allow_dupes, const int allow_reorder, const char suffix);
 char *req_list_add(req_list * const rl, char * const str, const int suffix);
 void  req_list_finalize(req_list * const rl);
 

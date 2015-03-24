@@ -745,7 +745,9 @@ void help(char *p) {
 	req_list rl;
 	
 	rl.cmpfnc = NULL;
-	rl.allow_dupes = 0;
+	rl.allow_dupes = FALSE;
+	rl.allow_reorder = FALSE;
+	rl.ignore_tab = TRUE;
 	rl.suffix = 0;
 	
 	rl.cur_chars = 0;

@@ -148,13 +148,18 @@ enum {
 
 typedef struct {
 	int (*cmpfnc)(const char *, const char *);
-	int allow_dupes;
+	unsigned int
+		allow_dupes:1,     /* Searches are more efficient if we have no duplicate entries. */
+		allow_reorder:1,   /* Allow NextDoc/PrevDoc keys to re-order entries. */
+		ignore_tab:1,      /* Permits Tab to exit requester. */
+		reordered:1;       /* Indicates whether reordering was done during request. */
 	char suffix;
 	
 	int cur_entries;
 	int alloc_entries;
 	int max_entry_len;
 	char **entries;
+	int *orig_order;      /* maps from current order to original order when allow_reorder is true. */
 	
 	int cur_chars;
 	int alloc_chars;

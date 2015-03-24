@@ -109,4 +109,5 @@ char *info_msg[INFO_COUNT] = {
 	"Completed.",
 	"Partially completed.",
 	"Cancelled.",
+	"SELECT: cursor, enter. FILTER: chars, backspace. REORDER: F2/F3. ABORT: Esc",
 };

@@ -1,6 +1,6 @@
 /* Requester handling.
 
-	Copyright (C) 1993-1998 Sebastiano Vigna 
+	Copyright (C) 1993-1998 Sebastiano Vigna
 	Copyright (C) 1999-2014 Todd M. Lewis and Sebastiano Vigna
 
 	This file is part of ne, the nice editor.
@@ -105,7 +105,7 @@ for $n ( 1 .. $M ) {
 #define BC_NAMES_PER_COL(p)  (LASTPAGE(p) ? (((rl.cur_entries % names_per_page)+NAMES_PER_LINE(p)-1) / NAMES_PER_LINE(p)) : max_names_per_col)
 #define BC_PXY2N(p,x,y)   ((p) * names_per_page + (x) * NAMES_PER_COL(p) + (y))
 #define BC_N2P(n)         ((n) / names_per_page)
-#define BC_N2X(n)        (((n) % names_per_page) / NAMES_PER_COL(N2P(n))) 
+#define BC_N2X(n)        (((n) % names_per_page) / NAMES_PER_COL(N2P(n)))
 #define BC_N2Y(n)        (((n) % names_per_page) % NAMES_PER_COL(N2P(n)))
 #define BC_DX(p)         NAMES_PER_COL(p)
 #define BC_DY            1
@@ -240,10 +240,17 @@ static void request_move_left(void) {
 	}
 }
 
+static void request_move_next(void) {
+	normalize(PXY2N(page,x,y)+1);
+}
+
+static void request_move_previous(void) {
+	normalize(PXY2N(page,x,y)-1);
+}
 
 static void request_move_right(void) {
-	if (y < NAMES_PER_COL(page) - 1 && PXY2N(page,0,y+1) < rl.cur_entries && 
-	    (x == NAMES_PER_LINE(page) - 1 || PXY2N(page,x+1,y) > rl.cur_entries -1)  ) {
+	if (y < NAMES_PER_COL(page) - 1 && PXY2N(page,0,y+1) < rl.cur_entries &&
+		 (x == NAMES_PER_LINE(page) - 1 || PXY2N(page,x+1,y) > rl.cur_entries -1)  ) {
 		request_move_to_sol();
 		request_move_down();
 	}
@@ -253,6 +260,41 @@ static void request_move_right(void) {
 	else if (PXY2N(page,x,y) + DX(page) < rl.cur_entries ) {
 		normalize(PXY2N(page,x,y) + DX(page));
 	}
+}
+
+/* Reorder (i.e. swap) the current entry n with entry n+dir. dir should be
+   either 1 or -1. */
+static int request_reorder(const int dir) {
+	int n1, n0;
+	int i0, i1, i;
+	char *p0, *p1, *ptmp;
+	if (! rl0->allow_reorder || rl.cur_entries < 2) return 0;
+	n0 = PXY2N(page,x,y);
+	n1 = (n0 + dir + rl.cur_entries ) % rl.cur_entries; /* Allows wrap around. */
+	p0 = rl.entries[n0];
+	p1 = rl.entries[n1];
+	for (i=0, i0=-1, i1=-1; i<rl0->cur_entries && (i0<0 || i1<0); i++) {
+		if (i0 < 0 && p0 == rl0->entries[i] ) {
+			i0 = i;
+		}
+		if (i1 < 0 && p1 == rl0->entries[i] ) {
+			i1 = i;
+		}
+	}
+
+	i = rl0->orig_order[i0];
+	rl0->orig_order[i0] = rl0->orig_order[i1];
+	rl0->orig_order[i1] = i;
+	
+	rl.entries[n0] = p1;
+	rl.entries[n1] = p0;
+	
+	rl0->entries[i0] = p1;
+	rl0->entries[i1] = p0;
+	
+	page = -1; /* causes normalize() to call print_strings() */
+	normalize(n1);
+	return 1;
 }
 
 /* Back up to the first entry with a common prefix, pulling in matching entries
@@ -282,7 +324,7 @@ static void fuzz_back() {
 }
 
 /* given a localised_up_case character c, keep only entries that
-   matches our current fuzz_len prefix plus this additional character. 
+   matches our current fuzz_len prefix plus this additional character.
    Note that relative order of rl.entries[] is preserved. */
 
 static void fuzz_forward(const int c) {
@@ -315,19 +357,20 @@ static void fuzz_forward(const int c) {
    cleans up the allocations. A small handful of static variables keep up with
    common prefix size, default entry index, etc. */
 
-int request_strings_init(req_list *rlp0) {
+static int request_strings_init(req_list *rlp0) {
 	rl.cur_entries = rlp0->cur_entries;
 	rl.max_entry_len = rlp0->max_entry_len;
 	rl.suffix = rlp0->suffix;
-	if (!(rl.entries = calloc(rlp0->cur_entries, sizeof(char *))))
+	if (!(rl.entries = calloc(rlp0->cur_entries, sizeof(char *)))) {
 		return 0;
+	}
 	memcpy(rl.entries, rlp0->entries, rl.cur_entries * sizeof(char *));
 	rl0 = rlp0;
 	fuzz_len = common_prefix_len(&rl);
 	return rl.cur_entries;
 }
 
-int request_strings_cleanup() {
+static int request_strings_cleanup(int reordered) {
 	int i, n = PXY2N(page,x,y);
 	char *p0 = rl.entries[n];
 	for (i=0; i<rl0->cur_entries; i++) {
@@ -339,21 +382,23 @@ int request_strings_cleanup() {
 	if (rl.entries)
 		free(rl.entries);
 	rl.entries = NULL;
+	if (reordered) rl0->reordered = TRUE;
+		else rl0->reordered = FALSE;
 	return n;
 }
 
 /* Given a list of strings, let the user pick one. If _rl->suffix is not '\0', we bold names ending with it.
    The integer returned is one of the following:
-   n >= 0  User selected string n with the enter key. 
+   n >= 0  User selected string n with the enter key.
    -1      Error or abort; no selection made.
-   -n - 2  User selected string n with the TAB key. 
+   -n - 2  User selected string n with the TAB key.
    (Yes, it's kind of evil, but it's nothing compared to what request() does!) */
 
 int request_strings(req_list *rlp0, int n ) {
 
 	action a;
 	input_class ic;
-	int c, i, ne_lines0, ne_columns0, dx;
+	int c, i, ne_lines0, ne_columns0, dx, reordered=0;
 
 	assert(rlp0->cur_entries > 0);
 
@@ -398,12 +443,15 @@ int request_strings(req_list *rlp0, int n ) {
 				break;
 
 			case TAB:
-				n = request_strings_cleanup();
-				if (n >= rlp0->cur_entries) return ERROR;
-				else return -n - 2;
+				if (! rlp0->ignore_tab) {
+					n = request_strings_cleanup(reordered);
+					if (n >= rlp0->cur_entries) return ERROR;
+					else return -n - 2;
+				}
+				break;
 
 			case RETURN:
-				n = request_strings_cleanup();
+				n = request_strings_cleanup(reordered);
 				if (n >= rlp0->cur_entries) return ERROR;
 				else return n;
 
@@ -474,10 +522,27 @@ int request_strings(req_list *rlp0, int n ) {
 						request_toggle_seof();
 						break;
 
-					case CLOSEDOC_A: 
-					case QUIT_A:
+					case NEXTWORD_A:
+						request_move_next();
+						break;
+
+					case PREVWORD_A:
+						request_move_previous();
+						break;
+
+					case NEXTDOC_A:
+						reordered += request_reorder(1);
+						break;
+
+					case PREVDOC_A:
+						reordered += request_reorder(-1);
+						break;
+
+					case CLOSEDOC_A:
 					case ESCAPE_A:
-						request_strings_cleanup();
+					case QUIT_A:
+					case SELECTDOC_A:
+						request_strings_cleanup(reordered);
 						return -1;
 					}
 				}
@@ -519,7 +584,7 @@ char *complete_filename(const char *start_prefix) {
 
 		while(!stop && (de = readdir(d))) {
 
-			if (is_prefix(start_prefix, de->d_name)) 
+			if (is_prefix(start_prefix, de->d_name))
 				if (cur_prefix) {
 					cur_prefix[max_prefix(cur_prefix, de->d_name)] = 0;
 					unique = FALSE;
@@ -534,8 +599,8 @@ char *complete_filename(const char *start_prefix) {
 	}
 
 	if (cur_prefix) {
-	   result = malloc(strlen(dir_name) + strlen(cur_prefix) + 2);
-	   strcat(strcat(strcpy(result, dir_name), cur_prefix), unique && is_dir ? "/" : "");
+		result = malloc(strlen(dir_name) + strlen(cur_prefix) + 2);
+		strcat(strcat(strcpy(result, dir_name), cur_prefix), unique && is_dir ? "/" : "");
 	}
 
 	if (cur_dir_name != NULL) {
@@ -581,7 +646,7 @@ char *request_syntax(const char * const prefix, int use_prefix) {
 	DIR *d;
 	int i;
 
-	if (req_list_init(&rl, filenamecmp, FALSE, '*') != OK) return NULL;
+	if (req_list_init(&rl, filenamecmp, FALSE, FALSE, '*') != OK) return NULL;
 	if ((p = exists_prefs_dir()) && strlen(p) + 2 + strlen(SYNTAX_DIR) < sizeof syn_dir_name) {
 		strcat(strcpy(syn_dir_name, p), SYNTAX_DIR);
 		if (d = opendir(syn_dir_name)) {
@@ -646,7 +711,7 @@ char *request_files(const char * const filename, int use_prefix) {
 
 	do {
 		next_dir = FALSE;
-		if (req_list_init(&rl, filenamecmp, TRUE, '/') != OK) break; 
+		if (req_list_init(&rl, filenamecmp, TRUE, FALSE, '/') != OK) break;
 
 		if (d = opendir(CURDIR)) {
 
@@ -723,11 +788,11 @@ char *request_file(const buffer *b, const char *prompt, const char *default_name
 
 int request_document(void) {
 
-	int i = -1, cur_entry = 0;
+	int i = -1, cur_entry = 0, j;
 	buffer *b = (buffer *)buffers.head;
 	req_list rl;
 
-	if (b->b_node.next && req_list_init(&rl, NULL, TRUE, '*')==OK) {
+	if (b->b_node.next && req_list_init(&rl, NULL, TRUE, TRUE, '*')==OK) {
 		i = 0;
 		while(b->b_node.next) {
 			if (b == cur_buffer) cur_entry = i;
@@ -735,10 +800,26 @@ int request_document(void) {
 			b = (buffer *)b->b_node.next;
 			i++;
 		}
+		rl.ignore_tab = TRUE;
 		req_list_finalize(&rl);
-
+      print_message(info_msg[SELECT_DOC]);
 		i = request_strings(&rl, cur_entry);
 		reset_window();
+		draw_status_bar();
+		if (i >= 0 && rl.reordered) {
+			/* We're going to cheat big time here. We have an array of pointers
+			   at rl.entries that's big enough to hold all the buffer pointers,
+			   and that's exactly what we're going to use it for now. */
+			for (j=0, b=(buffer *)buffers.head; b->b_node.next; j++ ) {
+				rl.entries[j] = (char *)b;
+				b = (buffer *)b->b_node.next;
+				rem(b->b_node.prev);
+			}
+			/* Ack! We're removed all our buffers! */
+			for (j=0; j<rl.cur_entries; j++) {
+				add_tail(&buffers, (node *)rl.entries[rl.orig_order[j]]);
+			}
+		}
 
 		req_list_free(&rl);
 	}
@@ -805,9 +886,11 @@ void req_list_free(req_list * const rl) {
    case req_list_finalize() should be called before the entries are used in a
    request_strings() call. */
 
-int req_list_init( req_list * const rl, int cmpfnc(const char *, const char *), const int allow_dupes, const char suffix) {
+int req_list_init( req_list * const rl, int cmpfnc(const char *, const char *), const int allow_dupes, const int allow_reorder, const char suffix) {
 	rl->cmpfnc = cmpfnc;
 	rl->allow_dupes = allow_dupes;
+	rl->allow_reorder = allow_reorder;
+	rl->ignore_tab = FALSE;
 	rl->suffix = suffix;
 	rl->cur_entries = rl->alloc_entries = rl->max_entry_len = 0;
 	rl->cur_chars = rl->alloc_chars = 0;
@@ -828,7 +911,10 @@ int req_list_init( req_list * const rl, int cmpfnc(const char *, const char *), 
    having to consider the optional suffexes. Finalizing the req_list effectively
    shifts the suffixes left, exchanging them for the preceeding '\0'. After this
    operation, all the strings will be just strings, some of which happen to end
-   with the suffix character, and all of which are followed by two null bytes. */ 
+   with the suffix character, and all of which are followed by two null bytes.
+      req_list_finalize() also initializes the orig_order array if allow_reorder
+   is true. If the array cannot be allocated, allow_reorder is simply reset to
+   false rather than returning an error. */
 void req_list_finalize(req_list * const rl) {
 	int i, len;
 	for (i=0; i<rl->cur_entries; i++) {
@@ -836,9 +922,16 @@ void req_list_finalize(req_list * const rl) {
 		*(rl->entries[i]+len) = *(rl->entries[i]+len+1);
 		*(rl->entries[i]+len+1) = '\0';
 	}
+	if (rl->allow_reorder ) {
+		if ( rl->orig_order = malloc(sizeof(int) * rl->cur_entries)) {
+			for (i=0; i<rl->cur_entries; i++) {
+				rl->orig_order[i] = i;
+			}
+		} else rl->allow_reorder = FALSE;
+	}
 }
 
-/* Add a string plus an optional suffix to a request list. 
+/* Add a string plus an optional suffix to a request list.
    We really add two null-terminated strings: the actual entry, and a
    possibly empty suffix. These pairs should be merged later by
    req_list_finalize(). If duplicates are not allowed (see req_list_init()) and
@@ -872,8 +965,8 @@ char *req_list_add(req_list * const rl, char * const str, const int suffix) {
 		}
 		else if (r < i ) { ins = i; /* insert at i */ }
 		else if (l > i ) { ins = i + 1; /* insert at i + 1 */ }
-		else { /* impossible! */ ins = rl->cur_entries; } 
-	} 
+		else { /* impossible! */ ins = rl->cur_entries; }
+	}
 	else {/* not ordered */
 		ins = rl->cur_entries; /* append to end */
 		if (!rl->allow_dupes) {

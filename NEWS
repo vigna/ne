@@ -2,8 +2,12 @@
 
 2.6
 
+  * Requesters (filenames, help, autocompletions, etc.) do progressive
+    "fuzzy match" by typed characters, backspace.
+
   * Document requester (F4) opens with cursor on the current document.
-    Docs with unsaved changes are bold, flagged with "*".
+    Docs with unsaved changes are bold, flagged with "*". F2/F3 reorder
+    documents.
 
   * Tab in Syntax command displays requester of extant syntax recognizers.
 
@@ -17,11 +21,8 @@
 
   * Add % to special leading characters for re-wrapping Paragraphs.
 
-  * WordWrap no longer waits for the cursor to hit the right margin. Wraps
+  * WordWrap no longer waits for the cursor to hit the right margin; it wraps
     on insertions and deletions now.
-
-  * Requesters (filenames, help, autocompletions, etc.) do progressive
-    "fuzzy match" by typed characters, backspace.
 
   * Updates to ruby, erb, python, conf, many other syntax recognizers.
     Added these recognizers from the Joe project: ant batch
