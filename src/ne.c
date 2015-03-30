@@ -94,7 +94,11 @@ list macros = { (node *)&macros.tail, NULL, (node *)&macros.head };
 /* global prefs, only saved in ~/.ne/.default#ap if their
    current settings differ from these defaults. Make sure these
    defaults match the conditionals in prefs.c:save_prefs(). */
+#ifndef ALTPAGING
 int req_order;
+#else
+int req_order = TRUE;
+#endif
 int fast_gui;
 int status_bar = TRUE;
 int verbose_macros = TRUE;

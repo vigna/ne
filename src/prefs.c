@@ -182,7 +182,11 @@ int save_prefs(buffer * const b, const char * const name) {
 		if (saving_global) {
 			/* We only save the global flags that differ from their defaults. */
 			/* Make sure these are in sync with the defaults near the top of ne.c. */
+#ifndef ALTPAGING
 			if (req_order)       record_action(cs, REQUESTORDER_A,  req_order,      NULL, verbose_macros);
+#else
+			if (!req_order)      record_action(cs, REQUESTORDER_A,  req_order,      NULL, verbose_macros);
+#endif
 			if (fast_gui)        record_action(cs, FASTGUI_A,       fast_gui,       NULL, verbose_macros);
 			if (!status_bar)     record_action(cs, STATUSBAR_A,     status_bar,     NULL, verbose_macros);
 			if (!verbose_macros) record_action(cs, VERBOSEMACROS_A, verbose_macros, NULL, verbose_macros);
