@@ -455,6 +455,7 @@ typedef struct {
 	char *find_string;
 	char *replace_string;
 	char *command_line;
+	unsigned long mtime;      /* mod time of on-disk file when it was last loaded/saved, or 0 */
 	int win_x, win_y;         /* line and pos of upper left-most visible character. */
 	int cur_x, cur_y;         /* position of cursor within the window */
 	int wanted_x;             /* desired x position modulo short lines, tabs, etc. Valid only if x_wanted is TRUE. */

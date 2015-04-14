@@ -724,6 +724,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		if (p || (q = p = request_file(b, "Filename", b->filename))) {
 			print_info(SAVING);
 
+			if (buffer_file_modified(b,p) && !request_response(b, info_msg[FILE_HAS_BEEN_MODIFIED], FALSE)) return DOCUMENT_NOT_SAVED;
 			error = save_buffer_to_file(b, p);
 
 			if (!print_error(error)) {

@@ -408,7 +408,10 @@ When you want to save a file, just use the command @code{Save}
 (@kbd{@key{Control}-S}). It will use the current document name or will
 ask you for one if the current document has no name. @code{SaveAs}, on the
 other hand, will always ask for a new name before saving the file.
-@code{SaveAll} will save all modified documents.
+@code{SaveAll} will save all modified documents. If the file you are
+saving a document to has changed since you last loaded or saved it,
+perhaps because another user updated it while you were editing,
+@code{ne} will warn you before overwriting the file.
 
 If @code{ne} is interrupted by an external signal (for instance, if your
 terminal crashes), it will try to save your work in some emergency files.
@@ -1079,7 +1082,7 @@ becomes the @dfn{input line}. You can see this because a @dfn{prompt} is
 displayed at the start of the line, suggesting what kind of input is
 required. (Prompts always ends with a colon, so it is easy to
 distinguish them from @dfn{error messages}, which overwrite the status
-line from time to time.)
+bar from time to time.)
 
 @code{ne} uses the input line in two essentially different ways:
 @dfn{immediate} input and @dfn{long} input. You can easily distinguish
@@ -1974,7 +1977,7 @@ matches the empty string, but only if it is at the end of a word.
 
 @item \w
 matches any word-constituent character. These are US-ASCII letters,
-numbers and the underscore, independently on the buffer encoding.
+numbers and the underscore, independently of the buffer encoding.
 
 @item \W
 matches any character that is not a word-constituent.
@@ -2311,6 +2314,10 @@ using the @code{NoFileReq} command; see @ref{NoFileReq}.)
 If you escape from the file requester, you can input the file name on the
 command line.
 
+If the file has been modified since the current document was loaded or last
+saved (perhaps by another user), @code{ne} will warn you before overwriting
+the updated file.
+
 
 
 
@@ -2331,6 +2338,9 @@ command; see @ref{NoFileReq}.)
 If you escape from the file requester, you can enter the file name on the
 input line, the default being the current document name, if available.
 
+If the file has been modified since the current document was loaded or last
+saved (perhaps by another user), @code{ne} will warn you before overwriting
+the updated file.
 
 
 @node SaveAll
@@ -2342,8 +2352,10 @@ input line, the default being the current document name, if available.
 
 @noindent saves all modified documents. If any modified documents cannot be
 saved, the action is suspended and an error message is issued. Note that
-only named buffers can be saved, so @code{SaveAll}, will report an error
-if you have any modified unnamed buffers.
+only named buffers can be saved, so @code{SaveAll} will report an error
+if you have any modified unnamed buffers, or if any of the modified
+documents' corresponding files have been updated since the buffers were
+loaded or last saved.
 
 
 
@@ -2387,8 +2399,11 @@ have to confirm the action.
 
 @noindent saves all modified documents, closes them and exits. If
 any documents cannot be saved, the action is suspended and an error message
-is issued. Note that only named buffers can be saved, so @code{SaveAll}, will
-report an error if you have any modified unnamed buffers.
+is issued and no documents are closed. Note that only named buffers can be
+saved, so @code{Exit} will report an error if you have any modified unnamed
+buffers. Like @code{SaveAll}, @code{Exit} will not save a document if its
+corresponding file has been modified since the document was loaded or last
+saved, in which case an error is reported and no documents are closed.
 
 
 
@@ -2684,7 +2699,7 @@ input line.
 @noindent Syntax: @code{SaveClip [@var{filename}]}@*
 @noindent Abbreviation: @code{SC}
 
-@noindent saves the current clip on the given file name.
+@noindent saves the current clip to the given file name.
 
 If the optional @var{filename} argument is not specified, the
 file requester will open and you will be prompted to select a file. (You
@@ -3798,7 +3813,7 @@ It is not saved by the @code{SaveAutoPrefs} command.
 
 @noindent sets the hex code flag. When this flag is true, the
 hexadecimal code of the character currently under the cursor is
-displayed on the status line.
+displayed on the status bar.
 
 
 
@@ -3908,7 +3923,7 @@ This is the deletion counterpart to the @code{Tabs} flag. @xref{Tabs}.
 
 @noindent sets the @code{ShiftTabs} flag. @code{ShiftTabs} has an effect only
 when the @code{Tabs} flag is set, in which case an upper case @samp{T}
-appears in the status line. When this flag and the @code{Tabs} flag are
+appears in the status bar. When this flag and the @code{Tabs} flag are
 both set, left and right @code{Shift} commands may use tab characters to
 adjust leading white space. Otherwise only spaces are used. @xref{Shift}.
 
@@ -4128,7 +4143,7 @@ purposes, such as filtering out specific settings.
 @noindent Syntax: @code{SavePrefs [@var{filename}]}@*
 @noindent Abbreviation: @code{SP}
 
-@noindent saves the current preferences on the given file.
+@noindent saves the current preferences to the given file.
 
 If the optional @var{filename} argument is not specified, the file
 requester is opened, and you are prompted to select a file. (You can
@@ -4159,7 +4174,7 @@ See @ref{AutoPrefs}.
 @noindent Syntax: @code{SaveAutoPrefs}@*
 @noindent Abbreviation: @code{SAP}
 
-@noindent saves the current preferences on the file in @file{~/.ne}
+@noindent saves the current preferences to the file in @file{~/.ne}
 associated with the current document's file name extension. If the
 current file name has no extension, an error message is issued.
 See @ref{AutoPrefs}.
@@ -4173,7 +4188,7 @@ See @ref{AutoPrefs}.
 @noindent Syntax: @code{SaveDefPrefs}@*
 @noindent Abbreviation: @code{SDP}
 
-@noindent saves the current preferences on the @file{~/.ne/.default#ap} file.
+@noindent saves the current preferences to the @file{~/.ne/.default#ap} file.
 This file is always loaded by @code{ne} at startup.
 
 
@@ -5178,7 +5193,7 @@ never registered while recording a macro. See @ref{Record}.
 @noindent Syntax: @code{KeyCode}@*
 @noindent Abbreviation: @code{KC}
 
-@noindent prompts you to press a key, and reports on the status line
+@noindent prompts you to press a key, and reports on the status bar
 the key code @code{ne} associates with that key. This can be useful
 while configuring your @file{~/.ne/.keys} file. It also reports the
 input class for that key. Input class codes are: ALPHA, COMMAND,
@@ -5476,7 +5491,7 @@ you edit again your previous input, or with @key{Tab}, which will copy
 your current selection over your previous file name. In other words, you
 can freely alternate completion, editing and browsing.
 
-@item Disable the status line for slow connections.
+@item Disable the status bar for slow connections.
 @code{ne} tries to emit as few characters as possible when updating the
 screen. However, for each key you type it is likely that the status
 bar has to be updated. If your connection is very slow, you can

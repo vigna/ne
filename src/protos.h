@@ -273,6 +273,8 @@ char *ne_getcwd(const int bufsize);
 const char *get_global_dir(void);
 const char *tilde_expand(const char *filename);
 const char *file_part(const char *pathname);
+unsigned long file_mod_time(const char *filename);
+int buffer_file_modified(const buffer *b, const char *name);
 char *str_dup(const char *s);
 int strnlen_ne(const char *s, int n);
 int strcmpp(const void *a, const void *b);

@@ -15,6 +15,9 @@
 
   * New SaveAll command saves all modified documents.
 
+  * Warns before saving over a file that was modified since the buffer was
+    last loaded or saved.
+
   * `' joins (), {}, [], and <> as character pairs known to MatchBracket.
 
   * New example macros: aspell, DeleteSOL.

@@ -370,7 +370,6 @@ buffer *get_buffer_named(const char *p) {
 }
 
 
-
 /* Returns TRUE if any of the buffers has been modified since the last save. */
 
 int modified_buffers(void) {
@@ -385,9 +384,9 @@ int modified_buffers(void) {
 }
 
 
-
 /* Saves all buffers which have been modified since the last save. Returns an
-	error if a save is unsuccessful, or if a buffer has no name. */
+	error if a save is unsuccessful, a file on-disk was modified since last
+	loaded or saved, or if a buffer has no name. */
 
 int save_all_modified_buffers(void) {
 
@@ -395,8 +394,10 @@ int save_all_modified_buffers(void) {
 	buffer *b = (buffer *)buffers.head;
 
 	while(b->b_node.next) {
-		if (b->is_modified)
-			if (save_buffer_to_file(b, NULL)) rc = ERROR;
+		if (b->is_modified) {
+			if (buffer_file_modified(b, NULL)) rc = ERROR;
+			else if (save_buffer_to_file(b, NULL)) rc = ERROR;
+		}
 		b = (buffer *)b->b_node.next;
 	}
 	return rc;
@@ -1156,6 +1157,7 @@ int load_file_in_buffer(buffer * const b, const char *name) {
 	if ((fh = open(name, READ_FLAGS)) >= 0) {
 		result = load_fh_in_buffer(b, fh);
 		close(fh);
+		b->mtime = file_mod_time(name);
 		if (!result) b->opt.read_only = (access(name, W_OK) != 0);
 		return result;
 	}
@@ -1347,7 +1349,8 @@ void ensure_attr_buf(buffer * const b, const int capacity) {
 
 
 /* Here we save a buffer to a given file. If no file is specified, the
-buffer filename field is used. The is_modified flag is set to 0. */
+   buffer filename field is used. The is_modified flag is set to 0,
+   and the mtime is updated. */
 
 
 int save_buffer_to_file(buffer *b, const char *name) {
@@ -1469,7 +1472,7 @@ int save_buffer_to_file(buffer *b, const char *name) {
 
 		if (close(fh)) error = IO_ERROR;
 		if (error == OK) b->is_modified = 0;
-
+		b->mtime = file_mod_time(name);
 	}
 	else error = CANT_OPEN_FILE;
 
