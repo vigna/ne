@@ -1,6 +1,6 @@
 (This file, NEWS, lists new features and enhancements. See CHANGES for fixes.)
 
-2.6  (not yet released)
+2.6  2015-04-17
 
   * Requesters (filenames, help, autocompletions, etc.) do progressive
     "fuzzy match" by typed characters, backspace.

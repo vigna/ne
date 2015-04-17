@@ -1,6 +1,6 @@
 (This file, CHANGES, lists fixes. See NEWS for new features and enhancements.)
 
-2.6  (not yet released)
+2.6  2015-04-17
 
   * Ancient bug with vertical clip edges fixed.
 
