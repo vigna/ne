@@ -1,6 +1,6 @@
 (This file, NEWS, lists new features and enhancements. See CHANGES for fixes.)
 
-2.6
+2.6  (not yet released)
 
   * Requesters (filenames, help, autocompletions, etc.) do progressive
     "fuzzy match" by typed characters, backspace.
@@ -33,7 +33,7 @@
     git-commit go haml htmlerb ini iptables js json md powershell pp
     prolog properties sieve typescript whitespace yaml
 
-2.5
+2.5  2012-12-24
 
   * New DelTabs flag, function separated from Tabs flag.
 
@@ -42,7 +42,7 @@
 
   * WordWrap preserves leading characters identically to Paragraph.
 
-2.4
+2.4  2012-04-10
 
   * New Shift command indents/outdents selected lines.
 
@@ -55,12 +55,12 @@
 
   * New syntax highlighting for texinfo files.
   
-2.3
+2.3  2011-10-28
 
   * Takes 'SEQ "sequence" KEYCODE' in ~/.ne/.keys to bind character
     sequences to key codes.
 
-2.2
+2.2  2011-01-23
 
   * Now ne is distributed under the GPLv3.
 
@@ -90,7 +90,7 @@
 
   * Recognize C99 integer types from <stdint.h> and highlight accordingly.
 
-2.1
+2.1  2010-03-17
 
   * New commands: KeyCode, DeleteNextWord, DeletePrevWord, AutoComplete,
     InsertTab, Tabs, RequestOrder.

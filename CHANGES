@@ -1,6 +1,6 @@
 (This file, CHANGES, lists fixes. See NEWS for new features and enhancements.)
 
-2.6
+2.6  (not yet released)
 
   * Ancient bug with vertical clip edges fixed.
 
@@ -13,7 +13,7 @@
 
   * Avoid SaveMacro optimization before Undo, called macros.
 
-2.5
+2.5  2012-12-24
 
   * Pathologically long-running PARAGRAPH commands are now stoppable (^-\).
 
@@ -26,7 +26,7 @@
   * ReplaceOnce was returning a generic error code instead of success,
     thus stopping macros.
 
-2.4
+2.4  2012-04-10
 
   * CLOSEDOC and QUIT (^Q and Alt-Q) now close string requesters just like Esc.
 
@@ -48,7 +48,7 @@
 
   * AUTOCOMPLETE could sometimes insert an inadvertent trailing "*".
 
-2.3
+2.3  2011-10-28
 
   * Fixed ridiculously old bug when copying a block and the marker is
     after the cursor.
@@ -66,7 +66,7 @@
 
   * We no longer set the buffer filename in case of I/O error.
 
-2.2
+2.2  2011-01-23
 
   * Fixed memory allocation macros in regex code from glibc to work on systems
     that return NULL on zero-sized allocations.
@@ -86,7 +86,7 @@
 
   * ToUpper and ToLower now stop when they reach the end of a document.
 
-2.1
+2.1  2010-03-17
 
   * Fixed efficiency bug introduced with syntax highlighting: ne should now
     be much more responsive along slow connections.
