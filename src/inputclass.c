@@ -76,8 +76,8 @@ const char *key_binding[NUM_KEYS] = {
 	/* ^] */      MATCHBRACKET_ABBREV,
 	/* ^^ */      ADJUSTVIEW_ABBREV,
 	/* ^_ */      FINDREGEXP_ABBREV,
-       
-   /* These keys map to strings, not commands. 31..126  20..7e */
+	    
+	/* These keys map to strings, not commands. 31..126  20..7e */
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,  /* space ! " # $ % & ' ( ) * + , - . /  */
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,  /*     0 1 2 3 4 5 6 7 8 9 : ; < = > ?  */
 
@@ -85,7 +85,7 @@ const char *key_binding[NUM_KEYS] = {
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,  /* P Q R S T U V W X Y Z [ \ ] ^ _  */
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,  /* ` a b c d e f g h i j k l m n o  */
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,        /* p q r s t u v w x y z { | } ~    */
-   DELETECHAR_ABBREV,                         /*  127  7f */
+	DELETECHAR_ABBREV,                         /*  127  7f */
 
 	/* Control-meta-letter bindings (Ctrl-Alt-X)  128..159 80..9f */
 
@@ -251,7 +251,7 @@ const char *key_binding[NUM_KEYS] = {
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,  /* 416..431  1A0..1AF */
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,  /* 432..447  1B0..1BF */
 
-   /* Prefix-simulated META (ESC X)  448..479   1C0..1DF */
+	/* Prefix-simulated META (ESC X)  448..479   1C0..1DF */
 	/* ESC @ */ NULL, 
 	/* ESC A */ MOVESOF_ABBREV, 
 	/* ESC B */ PREVWORD_ABBREV, 
@@ -287,7 +287,7 @@ const char *key_binding[NUM_KEYS] = {
 	/* ESC _ */ NULL,
 
 
-   /* Prefix-simulated META (ESC X)  480..511  1E0..1FF */
+	/* Prefix-simulated META (ESC X)  480..511  1E0..1FF */
 	/* ESC @ */ NULL, 
 	/* ESC a */ MOVESOF_ABBREV, 
 	/* ESC b */ PREVWORD_ABBREV, 
@@ -506,7 +506,7 @@ const char *key_stroke[NUM_KEYS] = {
 	"^A",
 	"^B",
 	"^C",
-	"^D",      
+	"^D",
 	"^E",      
 	"^F",      
 	"^G",      
@@ -537,16 +537,16 @@ const char *key_stroke[NUM_KEYS] = {
 	"^]", 
 	"^^", 
 	"^_", 
-       
-   /* These keys map to strings, not commands. 31..126  20..7e */
+	    
+	/* These keys map to strings, not commands. 31..126  20..7e */
 	" ", "!", "\"","#", "$", "%", "&", "'", "(", ")", "*", "+", ",", "-", ".", "/",   /* space ! " # $ % & ' ( ) * + , - . /  */
 	"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ":", ";", "<", "=", ">", "?",   /*     0 1 2 3 4 5 6 7 8 9 : ; < = > ?  */
-   
+	
 	"@", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O",   /* @ A B C D E F G H I J K L M N O  */ 
 	"P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "[", "\\","]", "^", "_",   /* P Q R S T U V W X Y Z [ \ ] ^ _  */
 	"`", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o",   /* ` a b c d e f g h i j k l m n o  */
 	"p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "{", "|", "}", "~",        /* p q r s t u v w x y z { | } ~    */
-   "Del",                         /*  127  7f */
+	"Del",                         /*  127  7f */
 
 	/* Control-meta-letter bindings (Ctrl-Alt-X)  128..159 80..9f */
 
@@ -712,7 +712,7 @@ const char *key_stroke[NUM_KEYS] = {
 	"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",  /* 416..431  1A0..1AF */
 	"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",  /* 432..447  1B0..1BF */
 
-   /* Prefix-simulated META (ESC X)  448..479   1C0..1DF */
+	/* Prefix-simulated META (ESC X)  448..479   1C0..1DF */
 	"ESC-@",
 	"ESC-A",
 	"ESC-B",
@@ -748,7 +748,7 @@ const char *key_stroke[NUM_KEYS] = {
 	"ESC-_",
 
 
-   /* Prefix-simulated META (ESC X)  480..511  1E0..1FF */
+	/* Prefix-simulated META (ESC X)  480..511  1E0..1FF */
 	"ESC-@",
 	"ESC-a",
 	"ESC-b",

@@ -22,12 +22,12 @@
 #include "ne.h"
 
 /* These functions provide basic management of lists. The basic ideas in this
-   file come from the Amiga Exec list management functions and their C
-   counterparts developed by Marco Zandonadi. Note that because of the way a
-   list is defined, there are never special cases for the empty list. The price
-   to pay is that a list is empty not if it's NULL, but rather is l->head->next
-   is NULL. The first node of a list is l->head, the last one is
-   l->tail_pred. A node is the last in a list if n->next->next == NULL. */
+	file come from the Amiga Exec list management functions and their C
+	counterparts developed by Marco Zandonadi. Note that because of the way a
+	list is defined, there are never special cases for the empty list. The price
+	to pay is that a list is empty not if it's NULL, but rather is l->head->next
+	is NULL. The first node of a list is l->head, the last one is
+	l->tail_pred. A node is the last in a list if n->next->next == NULL. */
 
 /* Initializes a list before any usage. */
 
@@ -69,7 +69,7 @@ void rem(node *n) {
 
 
 /* Adds a node to a list after a specified position. list.head and
-   list.tail_pred are valid positions. */
+	list.tail_pred are valid positions. */
 
 void add(node *n, node *pos) {
 	n->next = pos->next;
@@ -80,7 +80,7 @@ void add(node *n, node *pos) {
 
 
 /* Applies a given deallocation function throughout a whole list, emptying the
-   list itself. */
+	list itself. */
 
 void free_list(list *l, void (func)()) {
 

@@ -60,8 +60,8 @@ int ansi = FALSE;
 #endif
 
 /* Value is non-zero if attribute ATTR may be used with color.  ATTR
-   should be one of the enumerators from enum no_color_bit, or a bit set
-   built from them. */
+	should be one of the enumerators from enum no_color_bit, or a bit set
+	built from them. */
 
 #define MAY_USE_WITH_COLORS(ATTR) (color_ok && ! (ne_no_color_video & (ATTR)))
 
@@ -204,7 +204,7 @@ struct cm Wcm;
 
 
 /* Terminal charateristics that higher levels want to look at.
-   These are all extern'd in termchar.h */
+	These are all extern'd in termchar.h */
 
 int	line_ins_del_ok;		/* Terminal can insert and delete lines */
 int	char_ins_del_ok;		/* Terminal can insert and delete chars */
@@ -402,7 +402,7 @@ void standout_on (void) {
 void standout_off (void) {
 	standout_wanted = FALSE;
 }
-       
+
 
 /* Depending on the value of io_utf8, this function will do a simple putchar(),
 	or a series of putchar() that expand the given character in UTF-8 encoding. 
@@ -663,11 +663,11 @@ void clear_entire_screen (void) {
 
 
 /* Outputs len characters pointed at by string, attributed as indicated by
-   a corresponding vector of attributes, which can be NULL, in which case
-   no attribute will be set. The characters will be truncated to the end
-   of the current line. Passing a NULL for string results in outputting
-   spaces. A len of 0 causes no action. If utf8 is TRUE, the string is
-   UTF-8 encoded. */
+	a corresponding vector of attributes, which can be NULL, in which case
+	no attribute will be set. The characters will be truncated to the end
+	of the current line. Passing a NULL for string results in outputting
+	spaces. A len of 0 causes no action. If utf8 is TRUE, the string is
+	UTF-8 encoded. */
 void output_chars(const unsigned char *string, const unsigned int *attr, const int raw_len, const int utf8) {
 
 	int i, c, len;
@@ -763,7 +763,7 @@ void output_char(const int c, const unsigned int attr, const int utf8) {
 /* Outputs spaces. */
 
 void output_spaces(const int n, const unsigned int *attr) {
-   output_chars(NULL, attr, n, FALSE);
+	output_chars(NULL, attr, n, FALSE);
 }
 
 /* Same as output_chars(), but inserts instead. */
@@ -807,7 +807,7 @@ void insert_chars(const unsigned char * start, const unsigned int * const attr, 
 	cmplus(string_output_width(start, &len, ne_columns - curX - (AutoWrap && curY == ne_lines - 1), utf8));
 
 	if (!ne_transparent_underline && !ne_tilde_glitch && start
-	     && ne_insert_padding == NULL && ne_insert_character == NULL) {
+		  && ne_insert_padding == NULL && ne_insert_character == NULL) {
 		for(i = 0; i < len; i++) {
 			if (attr) set_attr(attr[i]);
 			if (utf8) {
@@ -1017,7 +1017,7 @@ int ttysize(void) {
 #endif
 	D(fprintf(stderr,"ttysize:...size is (%d,%d)\n", l, c);)
 	if (((ne_lines != l) || (ne_columns != c)) && l > 0 && c > 0) {
-		ScreenRows = ne_lines    = l;
+		ScreenRows = ne_lines	 = l;
 		ScreenCols = ne_columns  = c;
 		set_terminal_window(ne_lines - 1);
 		if (scroll_region_ok) set_scroll_region(0, ne_lines - 1);
@@ -1032,7 +1032,7 @@ int ttysize(void) {
 #ifndef TERMCAP
 
 /* If we get capabilities from the database, then we copy them into our
-   internal counterparts. */
+	internal counterparts. */
 
 void copy_caps(void) {
 
@@ -1207,15 +1207,15 @@ void term_init (void) {
 
 		if (ne_generic_type) {
 			printf("Your terminal type is a generic terminal, not a real\n"
-			       "terminal, and it lacks the ability to position the cursor.\n"
-			       "Please check that the variable TERM is set correctly, and that\n"
-			       "your " DATABASE_NAME " database is up to date.\n");
+					 "terminal, and it lacks the ability to position the cursor.\n"
+					 "Please check that the variable TERM is set correctly, and that\n"
+					 "your " DATABASE_NAME " database is up to date.\n");
 		}
 		else {
 			printf("Your terminal type is not powerful enough to run ne:\n"
-			       "it lacks the ability to position the cursor.\n"
-			       "Please check that the variable TERM is set correctly, and that\n"
-			       "your " DATABASE_NAME "database is up to date.\n");
+					 "it lacks the ability to position the cursor.\n"
+					 "Please check that the variable TERM is set correctly, and that\n"
+					 "your " DATABASE_NAME "database is up to date.\n");
 		}
 
 		printf("If your terminal is ANSI-compatible, you can also try to use\n"
@@ -1227,26 +1227,26 @@ void term_init (void) {
 	calculate_costs();
 
 	delete_in_insert_mode
-	     = ne_enter_delete_mode && ne_enter_insert_mode
-	     && !strcmp (ne_enter_delete_mode, ne_enter_insert_mode);
+		  = ne_enter_delete_mode && ne_enter_insert_mode
+		  && !strcmp (ne_enter_delete_mode, ne_enter_insert_mode);
 
 	se_is_so = ne_enter_standout_mode && ne_exit_standout_mode
-	     && !strcmp (ne_enter_standout_mode, ne_exit_standout_mode);
+		  && !strcmp (ne_enter_standout_mode, ne_exit_standout_mode);
 
 	esm_is_eam = ne_exit_standout_mode && ne_exit_attribute_mode
-	     && !strcmp (ne_exit_standout_mode, ne_exit_attribute_mode);
+		  && !strcmp (ne_exit_standout_mode, ne_exit_attribute_mode);
 
 	scroll_region_ok = ne_set_window || ne_change_scroll_region;
 
 	line_ins_del_ok = (((ne_insert_line || ne_parm_insert_line)
-	     && (ne_delete_line || ne_parm_delete_line))
-	     || (scroll_region_ok
-	     && ne_scroll_forward
-	     && ne_scroll_reverse));
+		  && (ne_delete_line || ne_parm_delete_line))
+		  || (scroll_region_ok
+		  && ne_scroll_forward
+		  && ne_scroll_reverse));
 
 	char_ins_del_ok = ((ne_insert_character || ne_enter_insert_mode ||
-	    ne_insert_padding || ne_parm_ich)
-	     && (ne_delete_character || ne_parm_dch));
+		 ne_insert_padding || ne_parm_ich)
+		  && (ne_delete_character || ne_parm_dch));
 
 	standout_ok = (ne_enter_standout_mode && ne_exit_standout_mode && ne_magic_cookie_glitch < 0);
 

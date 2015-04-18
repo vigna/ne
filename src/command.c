@@ -56,7 +56,7 @@ typedef struct {
 #define NAHL(x) x ## _NAME, x ##_ABBREV, x ## _HELP, HELP_LEN(x)
 
 /* This is the command vector. Note that the command names come from names.h,
-   and the help names come from help.h. This must be kept sorted. */
+	and the help names come from help.h. This must be kept sorted. */
 
 static const command commands[ACTION_COUNT] = {
 	{ NAHL(ABOUT         ), NO_ARGS                                                               },
@@ -334,7 +334,7 @@ action parse_command_line(const unsigned char * command_line, int * const num_ar
 		D(fprintf(stderr,"parse_command error: Has no argument.\n");)
 		return -HAS_NO_ARGUMENT;
 	}
-   D(fprintf(stderr,"parse_command error: No such command.\n");)
+	D(fprintf(stderr,"parse_command error: No such command.\n");)
 	return -NO_SUCH_COMMAND;
 }
 
@@ -398,7 +398,7 @@ void record_action(char_stream *cs, action a, int c, unsigned char *p, int verbo
 	if (commands[a].flags & DO_NOT_RECORD) return;
 	
 	/* NOP_A is special; it may actually be a comment.
-	   Blank lines and real NOPs are recorded as blank lines. */
+		Blank lines and real NOPs are recorded as blank lines. */
 	if (a == NOP_A) {
 		if (p && *p) add_to_stream(cs, p, strlen(p) + 1);
 		else add_to_stream(cs, "", 1);
@@ -433,9 +433,9 @@ static int insertchar_val(const unsigned char *p) {
 	int h;
 	const unsigned char *cmd;
 	action a;
-    
+	 
 	if ( !p || !*p) return 0;
-    
+	 
 	while(isasciispace(*p)) p++;
 
 	cmd = p;
@@ -457,10 +457,10 @@ static int insertchar_val(const unsigned char *p) {
 }
 
 /* Optimizing macros is not safe if there are any subsequent undo commands
-   calls to macros (which may themselves contain undo commands). This function
-   looks through a stream for undo or non-built in commands, and returns 0
-   if any are found; returns 1 otherwise. */
-   
+	calls to macros (which may themselves contain undo commands). This function
+	looks through a stream for undo or non-built in commands, and returns 0
+	if any are found; returns 1 otherwise. */
+	
 int vet_optimize_macro_stream(char_stream *cs, int pos) {
 	int n, a;
 	unsigned char *p;
@@ -697,7 +697,7 @@ void unload_macros(void) {
 }
 
 /* Find any key strokes that currently map to commands[i].name or commands[i].short_name.
-   Returns either NULL or a char string that must be freed by the caller. */
+	Returns either NULL or a char string that must be freed by the caller. */
 char *find_key_strokes(int c) {
 	int i;
 	char *str=NULL, *p;
@@ -705,16 +705,16 @@ char *find_key_strokes(int c) {
 	for (i=0; i<NUM_KEYS; i++) {
 		if (key_binding[i]) {
 			if (((!strncasecmp(commands[c].short_name,key_binding[i],strlen(commands[c].short_name))) &&
-			     ((!key_binding[i][strlen(commands[c].short_name)]      ) || 
-			      (key_binding[i][strlen(commands[c].short_name)] == ' ')
-			     )
-			    ) || 
-			    ((!strncasecmp(commands[c].name,key_binding[i],strlen(commands[c].name))) &&
-			     ((!key_binding[i][strlen(commands[c].name)]      ) ||
-			      (key_binding[i][strlen(commands[c].name)] == ' ')
-			     )
-			    )
-			   ) {
+				  ((!key_binding[i][strlen(commands[c].short_name)]		) || 
+					(key_binding[i][strlen(commands[c].short_name)] == ' ')
+				  )
+				 ) || 
+				 ((!strncasecmp(commands[c].name,key_binding[i],strlen(commands[c].name))) &&
+				  ((!key_binding[i][strlen(commands[c].name)]		) ||
+					(key_binding[i][strlen(commands[c].name)] == ' ')
+				  )
+				 )
+				) {
 				if (!str) {
 					if (!(str = malloc(14))) return NULL;
 					strcpy(str,"Bound key(s):");
@@ -761,8 +761,8 @@ void help(char *p) {
 		rl.alloc_entries = 0;
 		rl.max_entry_len = MAX_COMMAND_WIDTH;
 		rl.entries = (char **)command_names;
-      if (p || (i = request_strings(&rl, i)) >= 0) {
-         D(fprintf(stderr,"Help check #2: p=%p, i=%d\n",p,i);)
+		if (p || (i = request_strings(&rl, i)) >= 0) {
+			D(fprintf(stderr,"Help check #2: p=%p, i=%d\n",p,i);)
 			if (p) {
 				for(i = 0; i < strlen(p); i++) if (isasciispace((unsigned char)p[i])) break;
 

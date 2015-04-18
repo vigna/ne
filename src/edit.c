@@ -25,7 +25,7 @@
 #define NUM_BRACKETS 5
 
 /* Applies a given to_first() function to the first letter of the text starting at the cursor,
-   and to_rest() to the following alphabetical letters (see the functions below). */
+	and to_rest() to the following alphabetical letters (see the functions below). */
 
 static int to_something(buffer *b, int (to_first)(int), int (to_rest)(int)) {
 
@@ -141,10 +141,10 @@ int match_bracket(buffer *b) {
 int find_matching_bracket(buffer *b, const int min_line, int max_line, int *match_line, int *match_pos, int *c, line_desc ** match_ld) {
 
 	static unsigned char bracket_table[NUM_BRACKETS][2] = { { '(', ')' },
-	                                                        { '[', ']' },
-	                                                        { '{', '}' },
-	                                                        { '<', '>' },
-	                                                        { '`', '\'' } };
+																			  { '[', ']' },
+																			  { '{', '}' },
+																			  { '<', '>' },
+																			  { '`', '\'' } };
 
 	int i, j, n, y, dir, pos;
 	line_desc *ld = b->cur_line_desc;
@@ -208,9 +208,9 @@ int find_matching_bracket(buffer *b, const int min_line, int max_line, int *matc
 
 
 /* This experimental alternative to word wrapping sets a bookmark, calls
-   paragraph(), then returns to the bookmark (which may have moved due to
-   insertions/deletions).  The number of characters existing on the new line is
-   returned, or ERROR if no word wrap was possible. */
+	paragraph(), then returns to the bookmark (which may have moved due to
+	insertions/deletions).  The number of characters existing on the new line is
+	returned, or ERROR if no word wrap was possible. */
 
 int word_wrap(buffer * const b) {
 	static char avcmd[16];
@@ -220,9 +220,9 @@ int word_wrap(buffer * const b) {
 
 	if (b->cur_pos > b->cur_line_desc->line_len) return ERROR;
 	/* If the char to our left is a space, we need to insert
-	   a non-space to attach our WORDWRAP_BOOKMARK to because
-	   spaces at the split point get removed, which effectively
-	   leaves our bookmark on the current line. */
+		a non-space to attach our WORDWRAP_BOOKMARK to because
+		spaces at the split point get removed, which effectively
+		leaves our bookmark on the current line. */
 	delay_update();
 	pos = prev_pos(line, b->cur_pos, b->encoding);
 	if (pos >= 0 && (non_blank_added = ne_isspace(get_char(&line[pos], b->encoding), b->encoding))) {
@@ -231,7 +231,7 @@ int word_wrap(buffer * const b) {
 		line = b->cur_line_desc->line;
 		goto_pos(b, next_pos(line, b->cur_pos, b->encoding));
 	}
-	b->bookmark[WORDWRAP_BOOKMARK].pos   = b->cur_pos;
+	b->bookmark[WORDWRAP_BOOKMARK].pos	= b->cur_pos;
 	b->bookmark[WORDWRAP_BOOKMARK].line  = original_line = b->cur_line;
 	b->bookmark[WORDWRAP_BOOKMARK].cur_y = b->cur_y;
 	b->bookmark_mask |= (1 << WORDWRAP_BOOKMARK);
@@ -257,35 +257,35 @@ int word_wrap(buffer * const b) {
 leading US-ASCII white space. The strategy is as follows:
 
   1. Establish appropriate leading space. This will be taken from the line
-     following the current line if it is non-blank. Otherwise it will be
-     taken from the current line. Save a copy of it for later as space[].
+	  following the current line if it is non-blank. Otherwise it will be
+	  taken from the current line. Save a copy of it for later as space[].
 
   1.1 If the leading non-blank (the part after space[]) is not an alphanumeric,
-     then we take it as a comment initiator and preserve it for later as spots[].
+	  then we take it as a comment initiator and preserve it for later as spots[].
 
   2. Start an undo chain.
 
   3. Trim trailing space off the current line.
 
   4. while the current line is too long (i.e., needs to be split:
-       4.1  Find the split point
-       4.2  Remove any space at the split point
-       4.3  Split the line at the split point.  (We are done with this line)
-       4.4  Make the new line the current line
-       4.5  Insert the space[] stream we saved in step 1.
-       4.5.1 Insert the spots[] stream we saved from step 1.1.
-       4.6  Trim trailing space off the end of the line.
+		 4.1  Find the split point
+		 4.2  Remove any space at the split point
+		 4.3  Split the line at the split point.  (We are done with this line)
+		 4.4  Make the new line the current line
+		 4.5  Insert the space[] stream we saved in step 1.
+		 4.5.1 Insert the spots[] stream we saved from step 1.1.
+		 4.6  Trim trailing space off the end of the line.
 
   5. If the _following_ line is part of this paragraph (i.e., its first
-     non-blank character is in the correct position):
-       5.1  Add a space to the end of the current line.
-       5.2  Delete this line's leading white space.
-       5.3  If the leading non-blank character matches the first character
-            of spots[], remove it any any subsequent non-alphanumeric.
-       5.2  Copy following line's data starting with the first
-            non-blank to the end of the current line.
-       5.3  Remove the following line.
-       5.4  Goto step 3.
+	  non-blank character is in the correct position):
+		 5.1  Add a space to the end of the current line.
+		 5.2  Delete this line's leading white space.
+		 5.3  If the leading non-blank character matches the first character
+				of spots[], remove it any any subsequent non-alphanumeric.
+		 5.2  Copy following line's data starting with the first
+				non-blank to the end of the current line.
+		 5.3  Remove the following line.
+		 5.4  Goto step 3.
 
   6. end the undo chain.
 
@@ -294,16 +294,16 @@ leading US-ASCII white space. The strategy is as follows:
   8. and refresh the screen
 
   9. move to the next non-blank after the current line. (We have to do
-     this so that commands like "Paragraph 5" will do 5 paragraphs
-     instead of only three.)
+	  this so that commands like "Paragraph 5" will do 5 paragraphs
+	  instead of only three.)
 
 */
 
-static char *pa_spots     = NULL;  /* Where we keep leading non-alphanumerics */
-static int   pa_spots_pos;         /* How long pa_spots is in chars */
+static char *pa_spots = NULL;    /* Where we keep leading non-alphanumerics */
+static int pa_spots_pos;         /* How long pa_spots is in chars */
 
 /* save_spots() is like save_space(), but it preserves the string of non-alphanumerics
-   immediately follow where save_space() left off. */
+	immediately follow where save_space() left off. */
 
 static int save_spots(line_desc * const ld, const int pos, const encoding_type encoding) {
 	int rc = 0;
@@ -367,8 +367,8 @@ static int save_space(line_desc * const ld, const int tab_size, const encoding_t
 
 
 /* trim_trailing_space() removes spaces from the end of the line referred to by
-   the line_desc ld. The int line is necessary if you want to be able to undo
-   later. */
+	the line_desc ld. The int line is necessary if you want to be able to undo
+	later. */
 
 static void trim_trailing_space(buffer * const b, line_desc *ld, const int line, const encoding_type encoding) {
 	int pos;
@@ -379,11 +379,11 @@ static void trim_trailing_space(buffer * const b, line_desc *ld, const int line,
 }
 
 /* is_part_of_paragraph() determines if the line ld refers to could be
-   considered part of a paragraph based on its leading spaces compared to
-   pa_space_len. If they are the same, is_part_of_paragraph() returns 1, and
-   *first_non_blank is set to the position of the first non-blank character on
-   the line. Otherwise, *first_non_blank is -1 and is_part_of_paragraph()
-   returns 0. */
+	considered part of a paragraph based on its leading spaces compared to
+	pa_space_len. If they are the same, is_part_of_paragraph() returns 1, and
+	*first_non_blank is set to the position of the first non-blank character on
+	the line. Otherwise, *first_non_blank is -1 and is_part_of_paragraph()
+	returns 0. */
 
 static int is_part_of_paragraph(const line_desc * const ld, const int tab_size, int * const first_non_blank, const encoding_type encoding) {
 	int pos = 0;
@@ -398,8 +398,8 @@ static int is_part_of_paragraph(const line_desc * const ld, const int tab_size, 
 }
 
 /* paragraph() reformats a paragraph following the current parameters for
-   right_margin (a value of 0 forces the use of the full screen width).  On
-   completion the cursor is positioned either:
+	right_margin (a value of 0 forces the use of the full screen width).  On
+	completion the cursor is positioned either:
 
   * on the first non-blank character after the paragraph if there is one, or
 
@@ -412,10 +412,10 @@ static int is_part_of_paragraph(const line_desc * const ld, const int tab_size, 
 
 int paragraph(buffer * const b) {
 	int pos,
-	    done,
-	    skip,
-	    line = b->cur_line,
-	    right_margin = b->opt.right_margin ? b->opt.right_margin : ne_columns;
+		 done,
+		 skip,
+		 line = b->cur_line,
+		 right_margin = b->opt.right_margin ? b->opt.right_margin : ne_columns;
 
 	line_desc *ld = b->cur_line_desc, *start_line_desc = ld;
 
@@ -423,19 +423,19 @@ int paragraph(buffer * const b) {
 
 	/** Step 1 **/
 	if (!(
-	       (ld->ld_node.next->next &&
-	         save_space((line_desc *)ld->ld_node.next, b->opt.tab_size, b->encoding)
-	         )
-	       || save_space(ld, b->opt.tab_size, b->encoding)
-	      )
-	    ) return line_down(b);
+			 (ld->ld_node.next->next &&
+				save_space((line_desc *)ld->ld_node.next, b->opt.tab_size, b->encoding)
+				)
+			 || save_space(ld, b->opt.tab_size, b->encoding)
+			)
+		 ) return line_down(b);
 
 
 	/** Step 2 **/
 	start_undo_chain(b);
 
 	/* This useless insertion and deletion of a single character ensures
-	   that the text isn't shifted way over to the left after an undo. */
+		that the text isn't shifted way over to the left after an undo. */
 	insert_one_char(b, ld, line, 0, ' ');
 	delete_stream(b, ld, line, 0, 1);
 
@@ -452,18 +452,18 @@ int paragraph(buffer * const b) {
 
 			/** 4.1  Find the split point **/
 
-			pos = 0;   /* Skip past leading spaces... */
+			pos = 0;	/* Skip past leading spaces... */
 			while(pos < ld->line_len && isasciispace(ld->line[pos]))
 			  pos = next_pos(ld->line, pos, b->encoding);
-			           /* ...and the invariants if any. */
+						  /* ...and the invariants if any. */
 			while(pos < ld->line_len && isparaspot(ld->line[pos]))
 			  pos = next_pos(ld->line, pos, b->encoding);
 
 			did_split = split_pos = spaces = 0;
 
 			while (pos < ld->line_len &&
-			      (calc_width(ld, pos, b->opt.tab_size, b->encoding) < right_margin ||
-			        ! split_pos)) {
+					(calc_width(ld, pos, b->opt.tab_size, b->encoding) < right_margin ||
+					  ! split_pos)) {
 				if (isasciispace(ld->line[pos])) {
 					split_pos = pos;
 					spaces = 0;
@@ -489,7 +489,7 @@ int paragraph(buffer * const b) {
 				line++;
 
 				/** 4.5  Insert the pa_space[] stream we saved in step 1. Note that  **/
-				/** we only want to do this if this line is the result of a split,   **/
+				/** we only want to do this if this line is the result of a split,	**/
 				/** which is true if did_split != 0.                                 **/
 
 				if (did_split) {
@@ -506,12 +506,12 @@ int paragraph(buffer * const b) {
 			else done = TRUE;
 		}
 
-		/** If the current line is just a spot (no text), we skip over it.      **/
+		/** If the current line is just a spot (no text), we skip over it. **/
 		pos = 0;   /* Skip past leading spaces... */
 		skip = FALSE;
 		while(pos < ld->line_len && isasciispace(ld->line[pos]))
 			pos = next_pos(ld->line, pos, b->encoding);
-		           /* ...and the invariants if any. */
+					  /* ...and the invariants if any. */
 		while(pos < ld->line_len && isparaspot(ld->line[pos]))
 			pos = next_pos(ld->line, pos, b->encoding);
 		if (pos == ld->line_len) skip = TRUE;
@@ -590,7 +590,7 @@ int paragraph(buffer * const b) {
 
 
 /* Centers the current line with respect to the right_margin parameter. If the
-   line (without spaces) is longer than the right margin, nothing happens. */
+	line (without spaces) is longer than the right margin, nothing happens. */
 
 int center(buffer * const b) {
 
@@ -623,8 +623,8 @@ int center(buffer * const b) {
 
 
 /* Indents a line of the amount of whitespace present on the previous line, stopping
-   at a given column (use INT_MAX for not stopping). The number of
-   inserted bytes is returned. */
+	at a given column (use INT_MAX for not stopping). The number of
+	inserted bytes is returned. */
 
 int auto_indent_line(buffer * const b, const int line, line_desc * const ld, const int up_to_col) {
 
@@ -692,7 +692,7 @@ int shift(buffer * const b, char *p, char *msg, int msg_size) {
 
 	/* If we're shifting left (dir=='<'), verify that we have sufficient white space
 	   to remove on all the relevant lines before making any changes, i. */
-   
+	
 	if (dir == '<') {
 		shift_size = -shift_size; /* signed shift_size now also indicates direction. */
 		for (line=first_line; !rc && line<=last_line; line++) {

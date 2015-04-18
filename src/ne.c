@@ -92,8 +92,8 @@ list clips = { (node *)&clips.tail, NULL, (node *)&clips.head };
 list macros = { (node *)&macros.tail, NULL, (node *)&macros.head };
 
 /* global prefs, only saved in ~/.ne/.default#ap if their
-   current settings differ from these defaults. Make sure these
-   defaults match the conditionals in prefs.c:save_prefs(). */
+	current settings differ from these defaults. Make sure these
+	defaults match the conditionals in prefs.c:save_prefs(). */
 #ifndef ALTPAGING
 int req_order;
 #else
@@ -140,7 +140,7 @@ int delete_buffer(void) {
 
 	if (pb->b_node.prev) {
 		cur_buffer = pb;
-      return TRUE;
+		return TRUE;
 	}
 
 	if (nb->b_node.next) {
@@ -152,9 +152,9 @@ int delete_buffer(void) {
 }
 
 void about(int show) {
-   int i;
+	int i;
 
-   if (show) {
+	if (show) {
 		clear_entire_screen();
 		for(i = 0; NO_WARRANTY_msg[i]; i++) {
 			if (i == ne_lines - 1) break;
@@ -196,7 +196,7 @@ int main(int argc, char **argv) {
 	char *skiplist, *locale;
 
 	if (!(skiplist = calloc(argc, 1)))  /* We need this many flags. */
-	  exit(1);                             /* This would be bad.       */
+	  exit(1);									  /* This would be bad.		 */
 
 	locale = setlocale(LC_ALL, "");
 	for(i = 0; i < 256; i++) localised_up_case[i] = toupper(i);
@@ -276,12 +276,12 @@ int main(int argc, char **argv) {
 
 #ifdef NE_TEST
 	/* Dump the builtin menu and key bindings to compare to
-	   doc/default.menus and doc/default.keys. */
+		doc/default.menus and doc/default.keys. */
 	dump_config();
 #endif
 
 	/* Unless --noconfig was specified, we try to configure the
-	   menus and the keyboard. Note that these functions can exit() on error. */
+		menus and the keyboard. Note that these functions can exit() on error. */
 
 	if (!no_config) {
 		get_menu_configuration(menu_conf_name);
@@ -345,12 +345,12 @@ int main(int argc, char **argv) {
 
 		int first_file = TRUE;
 		int first_line=0, first_col=0, binary=0, skip_plus=0;
-      char *d;
+		char *d;
 		stop = FALSE;
 
 		for(i = 1; i < argc && !stop; i++) {
 			if (argv[i] && !skiplist[i]) {
-				if (argv[i][0] == '+' && !skip_plus) {   /* looking for "+", or "+N" or "+N,M"  */
+				if (argv[i][0] == '+' && !skip_plus) {	/* looking for "+", or "+N" or "+N,M"  */
 					int tmp_l=INT_MAX, tmp_c=0;
 					char *d;
 					errno = 0;
@@ -358,7 +358,7 @@ int main(int argc, char **argv) {
 						if (isdigit(argv[i][1])) {
 							tmp_l = strtol(argv[i]+1, &d, 10);
 							if (!errno) {
-								if (*d) {                     /* separator between N and M */
+								if (*d) {							/* separator between N and M */
 									if (isdigit(d[1])) {
 										tmp_c = strtol(d+1, &d, 10);
 										if (*d) errno = ERANGE;
@@ -385,14 +385,14 @@ int main(int argc, char **argv) {
 					if (!strcmp(argv[i],"--")) i++;
 					if (!first_file) do_action(cur_buffer, NEWDOC_A, -1, NULL);
 					else first_file = FALSE;
-               cur_buffer->opt.binary = binary;
-               if (i<argc) do_action(cur_buffer, OPEN_A, 0, str_dup(argv[i]));
+					cur_buffer->opt.binary = binary;
+					if (i<argc) do_action(cur_buffer, OPEN_A, 0, str_dup(argv[i]));
 					if (first_line) do_action(cur_buffer, GOTOLINE_A, first_line, NULL);
 					if (first_col)  do_action(cur_buffer, GOTOCOLUMN_A, first_col, NULL);
 					skip_plus  =
 					first_line =
 					first_col  =
-					binary     = 0;
+					binary	  = 0;
 				}
 			}
 		}
@@ -417,9 +417,8 @@ int main(int argc, char **argv) {
 		/* If there is no file to load, and no macro to execute, we display
 		the "NO WARRANTY" message. */
 
-      about(1);
-      displaying_info = TRUE;
-
+		about(1);
+		displaying_info = TRUE;
 	}
 
 	while(TRUE) {

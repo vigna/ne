@@ -63,7 +63,7 @@ int utf8char(const unsigned char * const s) {
 	given string. Returns the length of the string written. */
 
 int utf8str(const int c, unsigned char * const s) {
-   if (c < 0x80) {
+	if (c < 0x80) {
 		s[0] = c;
 		return 1;
 	}
@@ -109,23 +109,23 @@ int utf8str(const int c, unsigned char * const s) {
 
 
 /* Upper cases an UTF-8 character. The only point of this function is that is
-   has the same prototype as toupper(). */
+	has the same prototype as toupper(). */
 
 int utf8toupper(const int c) {
 #ifdef NOWCHAR
-   return c < 0x80 ? toupper(c) : c;
+	return c < 0x80 ? toupper(c) : c;
 #else
-   return towupper(c);
+	return towupper(c);
 #endif
 }
 
 /* Lower cases an UTF-8 character. The only point of this function is that is
-   has the same prototype as tolower(). */
+	has the same prototype as tolower(). */
 
 int utf8tolower(const int c) {
 #ifdef NOWCHAR
-   return c < 0x80 ? tolower(c) : c;
+	return c < 0x80 ? tolower(c) : c;
 #else
-   return towlower(c);
+	return towlower(c);
 #endif
 }

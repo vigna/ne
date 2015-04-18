@@ -108,7 +108,7 @@ int meta_color_single(unsigned char *s)
 		return BG_BBLACK;
 
 	/* Look at the "256colres.pl" PERL script in the xterm source
-	   distribution to see how these work. */
+		distribution to see how these work. */
 
 	/* 256 color xterm support: bg_RGB and fg_RGB, where R, G, and B range from 0 - 5 */
 	/* Codes 16 - 231 are a 6x6x6 color cube */
@@ -116,13 +116,13 @@ int meta_color_single(unsigned char *s)
 		s[3]>='0' && s[3]<='5' &&
 		s[4]>='0' && s[4]<='5' &&
 		s[5]>='0' && s[5]<='5' && !s[6])
-	        return FG_NOT_DEFAULT | ((16 + (s[3]-'0')*6*6 + (s[4]-'0')*6 + (s[5]-'0')) << FG_SHIFT);
+			  return FG_NOT_DEFAULT | ((16 + (s[3]-'0')*6*6 + (s[4]-'0')*6 + (s[5]-'0')) << FG_SHIFT);
 
 	else if(s[0]=='b' && s[1]=='g' && s[2]=='_' &&
 		  s[3]>='0' && s[3]<='5' &&
 		  s[4]>='0' && s[4]<='5' &&
 		  s[5]>='0' && s[5]<='5' && !s[6])
-	        return BG_NOT_DEFAULT | ((16 + (s[3]-'0')*6*6 + (s[4]-'0')*6 + (s[5]-'0')) << BG_SHIFT);
+			  return BG_NOT_DEFAULT | ((16 + (s[3]-'0')*6*6 + (s[4]-'0')*6 + (s[5]-'0')) << BG_SHIFT);
 
 	/* 256 color xterm support: shades of grey */
 	/* Codes 232 - 255 are shades of grey */
@@ -165,10 +165,10 @@ unsigned char *lowerize(unsigned char *s) {
 }
 
 /* Parse one line.  Returns new state.
-   'syntax' is the loaded syntax definition for this buffer.
-   'line' is advanced to start of next line.
-   Global array 'attr_buf' end up with coloring for each character of line (attr_len characters).
-   'state' is initial parser state for the line (0 is initial state). */
+	'syntax' is the loaded syntax definition for this buffer.
+	'line' is advanced to start of next line.
+	Global array 'attr_buf' end up with coloring for each character of line (attr_len characters).
+	'state' is initial parser state for the line (0 is initial state). */
 
 int *attr_buf = 0;	
 int attr_size = 0;
@@ -205,7 +205,7 @@ HIGHLIGHT_STATE parse(struct high_syntax *syntax, line_desc *ld, HIGHLIGHT_STATE
 	
 		
 	/* Get next character */
-	                  /* Una iterazione in più: aggiungo '\n' come ultimo carattere. */
+							/* Una iterazione in più: aggiungo '\n' come ultimo carattere. */
 	while( p <= q ) { /* On the last itteration, process the virtual '\n' character. */
 		struct high_cmd *cmd, *kw_cmd;
 		int x;

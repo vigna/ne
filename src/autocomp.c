@@ -1,8 +1,8 @@
 /* AutoComplete
 
-   Copyright (C) 2010-2015 Todd M. Lewis and Sebastiano Vigna
+	Copyright (C) 2010-2015 Todd M. Lewis and Sebastiano Vigna
 
-   This file is part of ne, the nice editor.
+	This file is part of ne, the nice editor.
 
 	This library is free software; you can redistribute it and/or modify it
 	under the terms of the GNU General Public License as published by
@@ -26,26 +26,26 @@ static req_list rl;
 
 static void add_string(unsigned char * const s, const int len, const int ext) {
 	static char *buf = NULL;
-	static int   buflen = 0;
+	static int buflen = 0;
 	char *buf_new;
-	int   cplen = len;
+	int cplen = len;
 
-   if (len < 1) {
-   	if (buf) free(buf);
-   	buf = NULL;
-   	buflen = 0;
-   	return;
-   }
-   if (len > buflen) {
-   	if (buf_new = realloc(buf,len * 2 + 1)) {
-   		buflen = len * 2 + 1;
-   		buf = buf_new;
-   	}
-   	else cplen = buflen - 1;
-   }
-   strncpy(buf,s,cplen);
-   buf[cplen] = '\0';
-   req_list_add(&rl,buf,ext);
+	if (len < 1) {
+		if (buf) free(buf);
+		buf = NULL;
+		buflen = 0;
+		return;
+	}
+	if (len > buflen) {
+		if (buf_new = realloc(buf,len * 2 + 1)) {
+			buflen = len * 2 + 1;
+			buf = buf_new;
+		}
+		else cplen = buflen - 1;
+	}
+	strncpy(buf,s,cplen);
+	buf[cplen] = '\0';
+	req_list_add(&rl,buf,ext);
 }
 
 static void search_buff(const buffer *b, const unsigned char *p, const int encoding, const int case_search, const int ext) {
@@ -60,7 +60,7 @@ static void search_buff(const buffer *b, const unsigned char *p, const int encod
 		do {
 			/* find left edge of word */
 			while (l < ld->line_len - p_len && !ne_isword(get_char(&ld->line[l], b->encoding), b->encoding)) l += get_char_width(&ld->line[l], b->encoding);
-			if    (l < ld->line_len - p_len ) {
+			if (l < ld->line_len - p_len ) {
 				/* find right edge of word */
 				r = l + get_char_width(&ld->line[l], b->encoding);
 				while (r < ld->line_len && ne_isword(get_char(&ld->line[r], b->encoding), b->encoding)) r += get_char_width(&ld->line[r], b->encoding);
@@ -82,13 +82,13 @@ static void search_buff(const buffer *b, const unsigned char *p, const int encod
 }
 
 /* Returns a completion for the (non-NULL) prefix p, showing suffixes from
-   all buffers if ext is true. Note that p is free()'d by this function,
-   and that, in turn, the returned string must be free()'d by the caller
-   if it is non-NULL (a returned NULL means that no completion is available).
-   
-   If there is more than one completion, this function will invoke request_strings()
-   (and subsequently reset_window()) after displaying req_msg. In any case, error 
-   will contain a value out of those in the enum info that start with AUTOCOMPLETE_. */
+	all buffers if ext is true. Note that p is free()'d by this function,
+	and that, in turn, the returned string must be free()'d by the caller
+	if it is non-NULL (a returned NULL means that no completion is available).
+
+	If there is more than one completion, this function will invoke request_strings()
+	(and subsequently reset_window()) after displaying req_msg. In any case, error 
+	will contain a value out of those in the enum info that start with AUTOCOMPLETE_. */
 
 unsigned char *autocomplete(unsigned char *p, char *req_msg, const int ext, int * const error) {
 	int i, j, l, m, max_len = 0, min_len = INT_MAX, prefix_len = strlen(p);

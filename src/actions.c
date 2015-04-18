@@ -33,15 +33,15 @@ is what most commands require. */
 #define NORMALIZE(x)  { x = (x)<0 ? 1 : (x); }
 
 /* The length of the static message buffer. It must be larger by a factor
-   of about three of the maximum screen width as UTF-8 encoded characters
-   might take several characters per screen position. */
+	of about three of the maximum screen width as UTF-8 encoded characters
+	might take several characters per screen position. */
 
 #define MAX_MESSAGE_SIZE (1024)
 
 /* Here, given a mask represent a user flag and an integer i, we do as follows:
-   i < 0 : toggle flag;
-   i = 0 : clear flag;
-   i > 0 : set flag;
+	i < 0 : toggle flag;
+	i = 0 : clear flag;
+	i > 0 : set flag;
 */
 
 #define SET_USER_FLAG(b,i,x) {\
@@ -55,7 +55,7 @@ is what most commands require. */
 
 
 /* Converts a non-positive result from request_number() to OK if the
-   function was aborted or not-a-number error if an invalid number was read. */
+	function was aborted or not-a-number error if an invalid number was read. */
 
 #define NUMERIC_ERROR(c) ((c) == ABORT ? OK : NOT_A_NUMBER)
 
@@ -64,16 +64,16 @@ is what most commands require. */
 
 /* This is the dispatcher of all actions that have some effect on the text.
 
-   The arguments are an action to be executed, a possible integer parameter and
-   a possible string parameter. -1 and NULL are, respectively, reserved values
-   meaning "no argument". For most operations, the integer argument is the
-   number of repetitions. When an on/off choice is required, nonzero means on,
-   zero means off, no argument means toggle.
+	The arguments are an action to be executed, a possible integer parameter and
+	a possible string parameter. -1 and NULL are, respectively, reserved values
+	meaning "no argument". For most operations, the integer argument is the
+	number of repetitions. When an on/off choice is required, nonzero means on,
+	zero means off, no argument means toggle.
 
-   If there is a string argument (i.e. p != NULL), it is assumed that the
-   action will consume p -- it ends up being free()d or stored
-   somewhere. Though efficient, this has lead to some memory leaks (can you
-   find them?). */
+	If there is a string argument (i.e. p != NULL), it is assumed that the
+	action will consume p -- it ends up being free()d or stored
+	somewhere. Though efficient, this has lead to some memory leaks (can you
+	find them?). */
 
 
 int do_action(buffer *b, action a, int c, unsigned char *p) {
@@ -229,22 +229,22 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		for(i = 0; i < c && !error && !stop; i++) {
 			int marking_t = b->marking;
 			int mark_is_vertical_t = b->mark_is_vertical;
-			b->bookmark[WORDWRAP_BOOKMARK].pos   = b->block_start_pos;
-			b->bookmark[WORDWRAP_BOOKMARK].line  = b->block_start_line;
-			b->bookmark_mask                    |= (1 << WORDWRAP_BOOKMARK);
+			b->bookmark[WORDWRAP_BOOKMARK].pos = b->block_start_pos;
+			b->bookmark[WORDWRAP_BOOKMARK].line = b->block_start_line;
+			b->bookmark_mask |= (1 << WORDWRAP_BOOKMARK);
 
 			b->marking = 1;
 			b->mark_is_vertical = 0;
 			b->block_start_line = b->cur_line;
-			b->block_start_pos  = b->cur_pos;
+			b->block_start_pos = b->cur_pos;
 
 			if(!(error = do_action(b, a == DELETENEXTWORD_A ? NEXTWORD_A : PREVWORD_A, 1, NULL))) {
 				if (!(error = erase_block(b))) update_window_lines(b, b->cur_y, ne_lines - 2, FALSE);
 			}
-			b->bookmark_mask   &= ~(1 << WORDWRAP_BOOKMARK);
-			b->block_start_pos  = b->bookmark[WORDWRAP_BOOKMARK].pos;
+			b->bookmark_mask &= ~(1 << WORDWRAP_BOOKMARK);
+			b->block_start_pos = b->bookmark[WORDWRAP_BOOKMARK].pos;
 			b->block_start_line = b->bookmark[WORDWRAP_BOOKMARK].line;
-			b->marking          = marking_t;
+			b->marking = marking_t;
 			b->mark_is_vertical = mark_is_vertical_t;
 		}
 		end_undo_chain(b);
@@ -276,7 +276,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		{
 			int relative = FALSE;
 			/* *p can be  "", "-", "0".."9", "+1","-1", for which, respectively, */
-			/*  c becomes  0, AB,   0 .. 9,  next,prev. Anything else is out of range. */
+			/*  c becomes  0, AB,  0 .. 9,  next,prev. Anything else is out of range. */
 			if (p) {
 				if ((p[0]=='+' || p[0]=='-') && p[1]=='1') {
 					if (b->cur_bookmark<0 || b->cur_bookmark>MAX_USER_BOOKMARK) b->cur_bookmark = 0;
@@ -333,8 +333,8 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 				if (! (b->bookmark_mask & (1 << c))) return BOOKMARK_NOT_SET;
 				else {
 					const int prev_line = b->cur_line;
-					const int prev_pos  = b->cur_pos;
-					const int cur_y     = b->cur_y;
+					const int prev_pos = b->cur_pos;
+					const int cur_y = b->cur_y;
 					b->cur_bookmark = c;
 					int  avshift;
 					delay_update();
@@ -344,8 +344,8 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 						snprintf(msg, MAX_MESSAGE_SIZE, "%c%d", avshift > 0 ? 'T' :'B', avshift > 0 ? avshift : -avshift);
 						adjust_view(b,msg);
 					}
-					b->bookmark[AUTO_BOOKMARK].line  = prev_line;
-					b->bookmark[AUTO_BOOKMARK].pos   = prev_pos;
+					b->bookmark[AUTO_BOOKMARK].line = prev_line;
+					b->bookmark[AUTO_BOOKMARK].pos = prev_pos;
 					b->bookmark[AUTO_BOOKMARK].cur_y = cur_y;
 					b->bookmark_mask |= 1<<AUTO_BOOKMARK;
 					if (relative) {
@@ -379,7 +379,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			start_undo_chain(b);
 			
 			/* We cannot rely on encoding promotion done by INSERTCHAR_A, because it could work
-			   just for part of the string if UTF-8 auto-detection is not enabled. */
+				just for part of the string if UTF-8 auto-detection is not enabled. */
 			
 			if (b->encoding == ENC_ASCII || encoding == ENC_ASCII || (b->encoding == encoding)) {
 				if (b->encoding == ENC_ASCII) b->encoding = encoding;
@@ -466,7 +466,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		need_attr_update = TRUE;
 		
 		/* At this point the line has been modified: note that if we are in overwrite mode and write a character
-		   at or beyond the length of the current line, we are actually doing an insertion. */
+			at or beyond the length of the current line, we are actually doing an insertion. */
 		
 		if (!deleted_char) update_inserted_char(b, c, b->cur_line_desc, b->cur_pos, b->cur_char, b->cur_y, b->cur_x);
 		else update_overwritten_char(b, old_char, c, b->cur_line_desc, b->cur_pos, b->cur_char, b->cur_y, b->cur_x);
@@ -474,7 +474,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		char_right(b);
 
 		/* Note the use of ne_columns-1. This avoids a double horizontal scrolling each time a
-		   word wrap happens with b->opt.right_margin = 0. */
+			word wrap happens with b->opt.right_margin = 0. */
 
 		if (b->opt.word_wrap) word_wrap(b);
 		if (b->syn) update_line(b, b->cur_y, TRUE, FALSE);
@@ -498,20 +498,20 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 						return ERROR;
 					}
 					/* We turn a backspace at the start of a line into a delete 
-					   at the end of the previous line. */
+						at the end of the previous line. */
 					char_left(b);
 				}
 				else {
 					if (b->opt.del_tabs && (b->win_x + b->cur_x) % b->opt.tab_size == 0
 						&& (b->cur_pos > b->cur_line_desc->line_len || b->cur_line_desc->line[b->cur_pos - 1] == ' ')) {
 						/* We are deleting one or more spaces from a tabbing position. We go left until the
-						   previous tabbing, or when spaces end. */
+							previous tabbing, or when spaces end. */
 						do char_left(b); while((b->win_x + b->cur_x) % b->opt.tab_size != 0 
-						                        && (b->cur_pos > b->cur_line_desc->line_len || b->cur_line_desc->line[b->cur_pos - 1] == ' '));
+														&& (b->cur_pos > b->cur_line_desc->line_len || b->cur_line_desc->line[b->cur_pos - 1] == ' '));
 					}
 					else char_left(b);
 					/* If we are not over text, we are in free form mode; the backspace
-					   is turned into moving to the left. */
+						is turned into moving to the left. */
 					if (b->cur_pos >= b->cur_line_desc->line_len) continue;
 				}
 			}
@@ -522,11 +522,11 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 				((b->win_x + b->cur_x) % b->opt.tab_size == 0 || b->cur_line_desc->line[b->cur_pos - 1] != ' ')) {
 				col = 0;
 				do col++; while((b->win_x + b->cur_x + col) % b->opt.tab_size != 0 
-				                && b->cur_pos + col < b->cur_line_desc->line_len
-				                && b->cur_line_desc->line[b->cur_pos + col] == ' ');
+									 && b->cur_pos + col < b->cur_line_desc->line_len
+									 && b->cur_line_desc->line[b->cur_pos + col] == ' ');
 				/* We are positioned at the start of the block of col spaces. If there is at most
-				   one character to delete, we can just go on. Otherwise, we replace the block with a 
-				   TAB, doing some magick to keep everything in sync. */
+					one character to delete, we can just go on. Otherwise, we replace the block with a 
+					TAB, doing some magick to keep everything in sync. */
 				if (col > 1 && (b->win_x + b->cur_x + col) % b->opt.tab_size == 0) {
 					if (b->syn) {
 						freeze_attributes(b, b->cur_line_desc);
@@ -543,9 +543,9 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			if (b->cur_pos > b->cur_line_desc->line_len) {
 				col = b->win_x + b->cur_x;
 				/* We are not over text; we must be in FreeForm mode.
-				   We're deleting past the end of the line, so if we aren't on the last line
-				   we need to pad this line with space up to col, then fall through to the
-				   delete_one_char() below. */
+					We're deleting past the end of the line, so if we aren't on the last line
+					we need to pad this line with space up to col, then fall through to the
+					delete_one_char() below. */
 				if (b->cur_line_desc->ld_node.next->next == NULL) continue;
 				if (b->cur_line_desc->line_len == 0) {
 					auto_indent_line(b, b->cur_line, b->cur_line_desc, col);
@@ -675,15 +675,15 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		start_undo_chain(b);
 		for(i = 0; i < c && !stop; i++) {
 			/* This is a bit tricky. First of all, if we are undeleting for
-			   the first time and the local attribute buffer is not valid
-			   we fill it. */
+				the first time and the local attribute buffer is not valid
+				we fill it. */
 			if (i == 0 && b->syn && b->attr_len < 0) freeze_attributes(b, b->cur_line_desc);
 			if (error = undelete_line(b)) break;
 			if (i == 0) {
 				if (b->syn) {
 					/* Now the only valid part of the local attribute buffer is before b->cur_pos. 
-					   We perform a differential update so that if we undelete in the middle of
-					   a line we avoid to rewrite the part up to b->cur_pos. */
+						We perform a differential update so that if we undelete in the middle of
+						a line we avoid to rewrite the part up to b->cur_pos. */
 					b->attr_len = b->cur_pos;
 					update_line(b, b->cur_y, FALSE, TRUE);
 					next_line_state = b->next_state;
@@ -751,7 +751,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		i = CHAR_CLASS(c);
 		col = (c < 0) ? -c-1 : c;
 		snprintf(msg, MAX_MESSAGE_SIZE, "Key Code: 0x%02x,  Input Class: %s,  Assigned Command: %s", col, input_class_names[i],
-		         (key_binding[col] && key_binding[col][0]) ? key_binding[col] : "(none)" );
+					(key_binding[col] && key_binding[col][0]) ? key_binding[col] : "(none)" );
 		print_message(msg);
 		return OK;
 
@@ -782,10 +782,10 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 				if (b->opt.auto_prefs && extension(p)) load_auto_prefs(b, extension(p));
 				error = load_file_in_buffer(b, p);
 				if (error != FILE_IS_MIGRATED 
-				   && error != FILE_IS_DIRECTORY 
-				   && error != IO_ERROR 
-				   && error != FILE_IS_TOO_LARGE 
-				   && error != OUT_OF_MEMORY) change_filename(b, p);
+					&& error != FILE_IS_DIRECTORY 
+					&& error != IO_ERROR 
+					&& error != FILE_IS_TOO_LARGE 
+					&& error != OUT_OF_MEMORY) change_filename(b, p);
 				print_error(error);
 				reset_window();
 				return OK;
@@ -873,7 +873,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 				if (a == REPLACEALL_A) start_undo_chain(b);
 
 				while(!stop && 
-				      !(error = (b->last_was_regexp ? find_regexp : find)(b, NULL, !first_search && a != REPLACEALL_A && c != 'A' && c != 'Y'))) {
+						!(error = (b->last_was_regexp ? find_regexp : find)(b, NULL, !first_search && a != REPLACEALL_A && c != 'A' && c != 'Y'))) {
 
 					if (c != 'A' && a != REPLACEALL_A && a != REPLACEONCE_A) {
 						refresh_window(b);
@@ -948,7 +948,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			if (b->last_was_replace) {
 				const encoding_type replace_encoding = detect_encoding(b->replace_string, strlen(b->replace_string));
 				if (replace_encoding != ENC_ASCII && b->encoding != ENC_ASCII && replace_encoding != b->encoding ||
-				    search_encoding != ENC_ASCII && replace_encoding != ENC_ASCII && search_encoding != replace_encoding)
+					 search_encoding != ENC_ASCII && replace_encoding != ENC_ASCII && search_encoding != replace_encoding)
 					return INCOMPATIBLE_REPLACE_STRING_ENCODING;
 			}
 
@@ -1244,7 +1244,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		reset_window();
 
 		/* We always return ERROR after a buffer has been deleted. Otherwise,
-		   the calling routines (and macros) could work on an unexisting buffer. */
+			the calling routines (and macros) could work on an unexisting buffer. */
 
 		return ERROR;
 
@@ -1573,8 +1573,8 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 
 	case AUTOCOMPLETE_A:
 		/* Since we are going to call other actions (INSERTSTRING_A and DELETEPREVWORD_A),
-		   we do not want to record this insertion twice. Also, we are counting on 
-		   INSERTSTRING_A to handle character encoding issues. */
+			we do not want to record this insertion twice. Also, we are counting on 
+			INSERTSTRING_A to handle character encoding issues. */
 		recording = b->recording;
 
 		i = b->cur_pos;
@@ -1582,7 +1582,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		if ( !p ) { /* no prefix given; find one left of the cursor. */
 			if ( context_prefix(b, &p, &i, b->encoding) ) return OUT_OF_MEMORY;
 		}
-      
+
 		snprintf(msg, MAX_MESSAGE_SIZE, "AutoComplete: prefix \"%s\"", p);
 		
 		if (p = autocomplete(p, msg, TRUE, &col)) {

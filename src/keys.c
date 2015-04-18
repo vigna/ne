@@ -27,7 +27,7 @@
 
 
 /* Maximum number of key definitions from terminfo plus others
-   we may get from keys file -- i.e. key_may_set(). */
+	we may get from keys file -- i.e. key_may_set(). */
 
 #define MAX_TERM_KEY 512
 
@@ -85,19 +85,19 @@ int binsearch(const char * const s) {
 #ifdef DEBUGPRINTF
 void dump_keys(void)
   {
-    int i;
-    for (i = 0; i < num_keys; i++)
-      {
-        unsigned char *p = key[i].string;
-        fprintf(stderr,"%3d: \"",i);
-        while (*p)
-          {
-            if (isprint(*p)) fprintf(stderr,"%c",*p);
-            else fprintf(stderr,"\\x%02x", *p );
-            p++;
-          }
-        fprintf (stderr,"\"\t-> %d\n", key[i].code );
-      }
+	 int i;
+	 for (i = 0; i < num_keys; i++)
+		{
+		  unsigned char *p = key[i].string;
+		  fprintf(stderr,"%3d: \"",i);
+		  while (*p)
+			 {
+				if (isprint(*p)) fprintf(stderr,"%c",*p);
+				else fprintf(stderr,"\\x%02x", *p );
+				p++;
+			 }
+		  fprintf (stderr,"\"\t-> %d\n", key[i].code );
+		}
   }
 
 #endif
@@ -125,16 +125,16 @@ that way. This is part of the horrible hack to make cursor and
 function keys work on numerous terminals which have broken terminfo
 and termcap entries, or for weak terminal emulators which happen to
 produce well-known sequences. Returns
-   > 0 on success,
-   ==0 if table is full (or no cap_string supplied)
-   < 0 if string is already defined.
+	> 0 on success,
+	==0 if table is full (or no cap_string supplied)
+	< 0 if string is already defined.
  */
 
 
 int key_may_set(const char * const cap_string, const int code) {
 	int pos=0;
 
-   if (num_keys >= MAX_TERM_KEY - 1) return 0;
+	if (num_keys >= MAX_TERM_KEY - 1) return 0;
 	if (!cap_string || (pos = binsearch(cap_string)) < 0) return pos;
 
 	memmove(key + pos + 1, key + pos, (num_keys - pos) * sizeof *key);
@@ -334,14 +334,14 @@ void read_key_capabilities(void) {
 	key_may_set("\x1B\x1B", NE_KEY_F(1));
 
 
-   /* More hacking. Function keys are routinely defined wrong on bazillions of
-      systems. This sections codes the F1-F10 keys for vt100, xterms and PCs. I
-      can't believe vendors can ship such buggy termcap/terminfo entries.  This
-      also handles the case of an otherwise limited terminal emulator which
-      happens to produce these sequences for function keys.  */
+	/* More hacking. Function keys are routinely defined wrong on bazillions of
+		systems. This sections codes the F1-F10 keys for vt100, xterms and PCs. I
+		can't believe vendors can ship such buggy termcap/terminfo entries.  This
+		also handles the case of an otherwise limited terminal emulator which
+		happens to produce these sequences for function keys.  */
 
-   /* xterm fkeys: kf1=\E[11~ kf2=\E[12~ kf3=\E[13~ kf4=\E[14~  kf5=\E[15~
-                   kf6=\E[17~ kf7=\E[18~ kf8=\E[19~ kf9=\E[20~ kf10=\E[21~ kf11=\E[23~ kf12=\E[24~ */
+	/* xterm fkeys: kf1=\E[11~ kf2=\E[12~ kf3=\E[13~ kf4=\E[14~  kf5=\E[15~
+						 kf6=\E[17~ kf7=\E[18~ kf8=\E[19~ kf9=\E[20~ kf10=\E[21~ kf11=\E[23~ kf12=\E[24~ */
 
 	key_may_set("\x1b[11~",  NE_KEY_F(1));
 	key_may_set("\x1b[12~",  NE_KEY_F(2));
@@ -356,9 +356,9 @@ void read_key_capabilities(void) {
 	key_may_set("\x1b[23~", NE_KEY_F(11));
 	key_may_set("\x1b[24~", NE_KEY_F(12));
 
-   /* vt100 keys:   k1=\EOP    k2=\EOQ    k3=\EOR    k4=\EOS     k5=\EOt 
+	/* vt100 keys:   k1=\EOP    k2=\EOQ    k3=\EOR    k4=\EOS     k5=\EOt 
                     k6=\EOu    k7=\EOv    k8=\EOl    k9=\EOw    k10=\EOy */
-                    
+
 	key_may_set("\x1bOP",  NE_KEY_F(1));
 	key_may_set("\x1bOQ",  NE_KEY_F(2));
 	key_may_set("\x1bOR",  NE_KEY_F(3));
@@ -370,8 +370,8 @@ void read_key_capabilities(void) {
 	key_may_set("\x1bOw",  NE_KEY_F(9));
 	key_may_set("\x1bOy", NE_KEY_F(10));
 
-   /* pc keys:   k1=\E[[A   k2=\E[[B    k3=\E[[C    k4=\E[[D     k5=\E[[E */
-                    
+	/* pc keys:   k1=\E[[A   k2=\E[[B    k3=\E[[C    k4=\E[[D     k5=\E[[E */
+	
 	key_may_set("\x1b[[A",  NE_KEY_F(1));
 	key_may_set("\x1b[[B",  NE_KEY_F(2));
 	key_may_set("\x1b[[C",  NE_KEY_F(3));
@@ -384,7 +384,7 @@ void read_key_capabilities(void) {
 	for(i = 1; i < 128; i++) key_may_set(meta_prefixed[i], NE_KEY_META(i));
 
 #ifdef DEBUGPRINTF
-   dump_keys();
+	dump_keys();
 #endif
 }
 

@@ -75,14 +75,14 @@ const unsigned char ascii_up_case[256] = {
 
 
 /* Performs a search for the given pattern with a simplified Boyer-Moore
-   algorithm starting at the given position, in the given direction, skipping a
-   possible match at the current cursor position if skip_first is TRUE. The 
-   search direction depends on b->opt.search_back. If pattern is NULL, it is
-   fetched from b->find_string. In this case, b->find_string_changed is
-   checked, and, if it is FALSE, the string is not recompiled. Please check to
-   set b->find_string_changed whenever a new string is set in
-   b->find_string. The cursor is moved on the occurrence position if a match is
-   found. */
+	algorithm starting at the given position, in the given direction, skipping a
+	possible match at the current cursor position if skip_first is TRUE. The 
+	search direction depends on b->opt.search_back. If pattern is NULL, it is
+	fetched from b->find_string. In this case, b->find_string_changed is
+	checked, and, if it is FALSE, the string is not recompiled. Please check to
+	set b->find_string_changed whenever a new string is set in
+	b->find_string. The cursor is moved on the occurrence position if a match is
+	found. */
 
 int find(buffer * const b, const unsigned char *pattern, const int skip_first) {
 
@@ -193,7 +193,7 @@ int find(buffer * const b, const unsigned char *pattern, const int skip_first) {
 
 
 /* Replaces n characters with the given string at the current cursor position,
-   and then moves it to the end of the string. */
+	and then moves it to the end of the string. */
 
 int replace(buffer * const b, const int n, const char * const string) {
 
@@ -245,10 +245,10 @@ static struct re_registers re_reg;
 #define UTF8NONWORD "([\x01-\x1E\x20-\x2F\x3A-\x40\x5B-\x60\x7B-\x7F]|[\xC0-\xFF][\x80-\xBF]+)"
 
 /* In UTF-8 text, the numbering of a parenthesised group may differ from the
-   "official" one, due to the usage of parenthesis in UTF8DOT, UT8COMP and
-   UTF8NONWORD. This array records for each user-invoked group the
-   corresponding (usually larger) regex group. The group may be larger than
-   RE_NREGS, in which case there is no way to recover it. */
+	"official" one, due to the usage of parenthesis in UTF8DOT, UT8COMP and
+	UTF8NONWORD. This array records for each user-invoked group the
+	corresponding (usually larger) regex group. The group may be larger than
+	RE_NREGS, in which case there is no way to recover it. */
 
 static int map_group[RE_NREGS];
 
@@ -453,8 +453,8 @@ int find_regexp(buffer * const b, const unsigned char *regex, const int skip_fir
 
 
 /* Replaces a regular expression. The given string can contain \0, \1 etc. for
-   the pattern matched by the i-th pair of brackets (\0 is the whole
-   string). */
+	the pattern matched by the i-th pair of brackets (\0 is the whole
+	string). */
 
 int replace_regexp(buffer * const b, const char * const string) {
 

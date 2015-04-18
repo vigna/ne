@@ -31,7 +31,7 @@
 #endif
 
 /* Returns a pointer to the global ne directory if the environment variable
-   NE_GLOBAL_DIR is set.  If it isn't set, then GLOBALDIR is returned. */
+	NE_GLOBAL_DIR is set.  If it isn't set, then GLOBALDIR is returned. */
 
 const char *get_global_dir(void) {
 	char *ne_global_dir;
@@ -43,9 +43,9 @@ const char *get_global_dir(void) {
 
 
 /* Some UNIXes allow "getcwd(NULL, size)" and will allocate the buffer for
-   you when your first parm is NULL.  This is not really legal, so we've put a
-   front end onto getcwd() called ne_getcwd() that allocates the buffer for you
-   first. */
+	you when your first parm is NULL.  This is not really legal, so we've put a
+	front end onto getcwd() called ne_getcwd() that allocates the buffer for you
+	first. */
 
 char *ne_getcwd(const int bufsize) {
 	char *result = malloc(bufsize);
@@ -55,16 +55,16 @@ char *ne_getcwd(const int bufsize) {
 
 
 /* is_migrated() tells whether the specified file is currently migrated.  A
-   migrated file is one which is not actually on-line but is out on tape or
-   other media. In general we don't want to try to load a migrated file in an
-   interactive program because the delay (waiting for a tape mount, etc.)  is
-   most annoying and frustrating.  On systems which don't support hierarchical
-   storage, non-zero length files always take up at least one disk block, so
-   this should never be an issue for them. */
+	migrated file is one which is not actually on-line but is out on tape or
+	other media. In general we don't want to try to load a migrated file in an
+	interactive program because the delay (waiting for a tape mount, etc.)  is
+	most annoying and frustrating.  On systems which don't support hierarchical
+	storage, non-zero length files always take up at least one disk block, so
+	this should never be an issue for them. */
 
 #if defined _CONVEX_SOURCE
 /* The Convex system uses CDVM, and can call cvxstat to see if a file is
-   migrated. */
+	migrated. */
 #include <sys/dmon.h>
 int is_migrated(const char * const name) {
 	struct cvxstat st;
@@ -75,9 +75,9 @@ int is_migrated(const char * const name) {
 }
 #elif defined ZERO_STAT_MIG_TEST
 /* Some systems which support hierarchical storage will report a non-zero file
-   size but zero blocks used.  (Since the file is on tape rather than disc, it's
-   using no disc blocks.)  If this describes the behaviour of your system,
-   define ZERO_STAT_MIG_TEST when building ne. */
+	size but zero blocks used.  (Since the file is on tape rather than disc, it's
+	using no disc blocks.)  If this describes the behaviour of your system,
+	define ZERO_STAT_MIG_TEST when building ne. */
 int is_migrated(const char * const name) {
 	struct stat statbuf;
 	
@@ -90,8 +90,8 @@ int is_migrated(const char * const name) {
 #else
 
 /* Most systems have no hierarchical storage facility and need never concern
-   themselves with this problem. For these systems, is_migrated() will always be
-   false. */
+	themselves with this problem. For these systems, is_migrated() will always be
+	false. */
 int is_migrated(const char * const name) {
 	return 0;
 }
@@ -105,10 +105,10 @@ int is_directory(const char * const name) {
 }
 
 /* Returns the mtime of the named file, or 0 on error.
-   If a file's mtime actually is 0, then this system probably doesn't keep
-   mtimes, so we can't distinguish that case,
-   but we probably don't care either, as that's also our sentinel value
-   for buffers which have not been saved. */
+	If a file's mtime actually is 0, then this system probably doesn't keep
+	mtimes, so we can't distinguish that case,
+	but we probably don't care either, as that's also our sentinel value
+	for buffers which have not been saved. */
 
 unsigned long file_mod_time(const char *filename) {
 
@@ -119,14 +119,14 @@ unsigned long file_mod_time(const char *filename) {
 }
 
 /* Check a named file's mtime relative to a buffer's stored mtime.
-   Note that stat errors are treated like 0 mtime, which also is the value
-   for new buffers. Return values:
-   
-   1 if file's non-zero modification time differs from the buffer's non-zero mtime,
-   0 everything else, including if the files mtime couldn't be checked
-     (possibly no file or couldn't stat), buffer's stored mtime is 0,
-     no usable name.
-   Uses filename from the buffer unless passed a name. */
+	Note that stat errors are treated like 0 mtime, which also is the value
+	for new buffers. Return values:
+	
+	1 if file's non-zero modification time differs from the buffer's non-zero mtime,
+	0 everything else, including if the files mtime couldn't be checked
+	  (possibly no file or couldn't stat), buffer's stored mtime is 0,
+	  no usable name.
+	Uses filename from the buffer unless passed a name. */
 
 int buffer_file_modified(const buffer *b, const char *name) {
 
@@ -147,9 +147,9 @@ int buffer_file_modified(const buffer *b, const char *name) {
 
 
 /* Returns a pointer to a tilde-expanded version of the string pointed to by
-   filename. The string should not be free()ed, since it is tracked
-   locally. Note that this function can return the same pointer which is
-   passed, in case no tilde expansion has to be performed. */
+	filename. The string should not be free()ed, since it is tracked
+	locally. Note that this function can return the same pointer which is
+	passed, in case no tilde expansion has to be performed. */
 
 const char *tilde_expand(const char * filename) {
 
@@ -203,7 +203,7 @@ const char *tilde_expand(const char * filename) {
 
 
 /* Given a pathname, returns a pointer to the real file name (i.e., the pointer
-   points inside the string passed). */
+	points inside the string passed). */
 
 const char *file_part(const char * const pathname) {
 	const char *p;
@@ -229,7 +229,7 @@ char *str_dup(const char * const s) {
 }
 
 /* Tries to compute the length as a string of the given pointer,
-   but stops after n characters (returning n). */
+	but stops after n characters (returning n). */
 
 int strnlen_ne(const char *s, int n) {
 	const char * const p = s;
@@ -268,9 +268,9 @@ int is_prefix(const char * const p, const char * const s) {
 
 
 /* The following *cmpp() functions are suitable for use with qsort().
-   They front comparison functions with "normal" (i.e., like strcmp())
-   calling conventions. */
-   
+	They front comparison functions with "normal" (i.e., like strcmp())
+	calling conventions. */
+	
 /* A string pointer comparison function for qsort(). */
 
 int strcmpp(const void *a, const void *b) {
@@ -290,10 +290,9 @@ int strdictcmp(const char *a, const char *b)	{
 	if ( ci = strcasecmp(a, b) ) return ci;
 	return strcmp(a, b);
 }
-                                                                       
 
 /* A filename comparison function for qsort(). It makes "../" the first string, "./" the second string
-   and then orders lexicographically. */
+	and then orders lexicographically. */
 
 int filenamecmpp(const void *a, const void *b) {
 	return filenamecmp(*(const char **)a, *(const char **)b);
@@ -314,10 +313,10 @@ int filenamecmp(const char * s, const char * t) {
 
 
 /* Sets the "interactive I/O mode" of the terminal. It suitably sets the mode
-   bits of the termios structure, and then transmits various capability strings
-   by calling set_terminal_modes(). This function assumes that the terminfo
-   database has been properly initialized. The old_termios structure records
-   the original state of the terminal interface. */
+	bits of the termios structure, and then transmits various capability strings
+	by calling set_terminal_modes(). This function assumes that the terminfo
+	database has been properly initialized. The old_termios structure records
+	the original state of the terminal interface. */
 
 static struct termios termios, old_termios;
 
@@ -334,7 +333,7 @@ void set_interactive_mode(void) {
 	termios.c_lflag &= ~(ISIG | ICANON | ECHO | ECHONL | IEXTEN);
 
 	/* Cygwin's signal must be disabled, or CTRL-C won't work. There is no way
-	   to really change the sequences associated to signals. */
+		to really change the sequences associated to signals. */
 
 #ifndef __CYGWIN__
 	termios.c_lflag |= ISIG;
@@ -347,9 +346,9 @@ void set_interactive_mode(void) {
 	termios.c_cc[VMIN] = 1;
 
 	/* Now we keep the kernel from intercepting any keyboard input in order
-	   to turn it into a signal. Note that some signals, such as dsusp on BSD,
-	   are not trackable here. They have to be disabled through suitable
-	   commands (for instance, `stty dsusp ^-'). */
+		to turn it into a signal. Note that some signals, such as dsusp on BSD,
+		are not trackable here. They have to be disabled through suitable
+		commands (for instance, `stty dsusp ^-'). */
 
 	termios.c_cc[VSUSP] = _POSIX_VDISABLE;
 	termios.c_cc[VQUIT] = _POSIX_VDISABLE;
@@ -386,13 +385,13 @@ void set_interactive_mode(void) {
 
 
 /* Undoes the work of the previous function, in reverse order. It assumes the
-   old_termios has been filled with the old termios structure. */
+	old_termios has been filled with the old termios structure. */
 
 void unset_interactive_mode(void) {
 
 	/* We move the cursor on the last line, clear it, and output a CR, so that
-	   the kernel can track the cursor position. Note that clear_to_eol() can
-	   move the cursor. */
+		the kernel can track the cursor position. Note that clear_to_eol() can
+		move the cursor. */
 
 	losecursor();
 	move_cursor(ne_lines - 1, 0);
@@ -400,15 +399,15 @@ void unset_interactive_mode(void) {
 	move_cursor(ne_lines - 1, 0);
 
 	/* Now we disable the keypad, cursor addressing, etc. fflush() guarantees
-	   that tcsetattr() won't clip part of the capability strings output by
-	   reset_terminal_modes(). */
+		that tcsetattr() won't clip part of the capability strings output by
+		reset_terminal_modes(). */
 
 	reset_terminal_modes();
 	putchar('\r');
 	fflush(stdout);
 
 	/* Now we restore all the flags in the termios structure to the state they
-	   were before us. */
+		were before us. */
 
 	tcsetattr(0, TCSADRAIN, &old_termios);
 
@@ -422,8 +421,8 @@ void unset_interactive_mode(void) {
 
 
 /* Computes the TAB-expanded width of a line descriptor up to a certain
-   position. The position can be greater than the line length, the usual
-   convention of infinite expansion via spaces being in place. */
+	position. The position can be greater than the line length, the usual
+	convention of infinite expansion via spaces being in place. */
 
 int calc_width(const line_desc * const ld, const int n, const int tab_size, const encoding_type encoding) {
 
@@ -448,9 +447,9 @@ int calc_char_len(const line_desc * const ld, const encoding_type encoding) {
 
 
 /* Given a column, the index of the character "containing" that position is
-   given, that is, calc_width(index) > n, and index is minimum with this
-   property. If the width of the line is smaller than the given column, the
-   line length is returned. */
+	given, that is, calc_width(index) > n, and index is minimum with this
+	property. If the width of the line is smaller than the given column, the
+	line length is returned. */
 
 int calc_pos(const line_desc * const ld, const int col, const int tab_size, const encoding_type encoding) {
 
@@ -538,8 +537,8 @@ encoding_type detect_encoding(const unsigned char *s, const int len) {
 }
 
 /* Returns the position of the character after the one pointed by pos in s. If
-   s is NULL, just returns pos + 1. If encoding is UTF8 it uses utf8len() to
-   move forward. */
+	s is NULL, just returns pos + 1. If encoding is UTF8 it uses utf8len() to
+	move forward. */
 
 int next_pos(const unsigned char * const s, const int pos, const encoding_type encoding) {
 	assert(encoding != ENC_UTF8 || s == NULL || utf8len(s[pos]) > 0);
@@ -549,8 +548,8 @@ int next_pos(const unsigned char * const s, const int pos, const encoding_type e
 }
 
 /* Returns the position of the character before the one pointed by pos in s.
-   If s is NULL, just returns pos + 1. If encoding is UTF-8 uses utf8len() to
-   move backward. If pos is 0, this function returns -1. */
+	If s is NULL, just returns pos + 1. If encoding is UTF-8 uses utf8len() to
+	move backward. If pos is 0, this function returns -1. */
 
 int prev_pos(const unsigned char * const s, int pos, const encoding_type encoding) {
 	assert(pos >= 0);
@@ -565,7 +564,7 @@ int prev_pos(const unsigned char * const s, int pos, const encoding_type encodin
 
 
 /* Returns the ISO 10646 character represented by the sequence of bytes
-   starting at s, using the provided encoding. */
+	starting at s, using the provided encoding. */
 
 int get_char(const unsigned char * const s, const encoding_type encoding) {
 	if (encoding == ENC_UTF8) return utf8char(s);
@@ -573,7 +572,7 @@ int get_char(const unsigned char * const s, const encoding_type encoding) {
 }
 
 /* Returns the width of the ISO 10646 character represented by the sequence of bytes
-   starting at s, using the provided encoding. */
+	starting at s, using the provided encoding. */
 
 int get_char_width(const unsigned char * const s, const encoding_type encoding) {
 	assert(s != NULL);
@@ -581,7 +580,7 @@ int get_char_width(const unsigned char * const s, const encoding_type encoding) 
 }
 
 /* Returns the width of the first len characters of s, using the provided
-   encoding. If s is NULL, returns len. */
+	encoding. If s is NULL, returns len. */
 
 int get_string_width(const unsigned char * const s, const int len, const encoding_type encoding) {
 	int pos, width = 0;
@@ -591,7 +590,7 @@ int get_string_width(const unsigned char * const s, const int len, const encodin
 }
 
 /* Returns whether the given character is a punctuation character. This function is 
-   compiled differently depending on whether wide-character function support is inhibited. */
+	compiled differently depending on whether wide-character function support is inhibited. */
 
 int ne_ispunct(const int c, const int encoding) {
 #ifdef NOWCHAR
@@ -602,7 +601,7 @@ int ne_ispunct(const int c, const int encoding) {
 }
 
 /* Returns whether the given character is whitespace. This function is 
-   compiled differently depending on whether wide-character function support is inhibited. */
+	compiled differently depending on whether wide-character function support is inhibited. */
 
 int ne_isspace(const int c, const int encoding) {
 #ifdef NOWCHAR
@@ -613,18 +612,18 @@ int ne_isspace(const int c, const int encoding) {
 }
 
 /* Returns whether the given character is a "word" character.
-   Word characters are '_' plus any non-punctuation or space.
-   
-   TODO: implement a way for users to specify their own word characters.
-   For now, hardcode '_'.  */
+	Word characters are '_' plus any non-punctuation or space.
+	
+	TODO: implement a way for users to specify their own word characters.
+	For now, hardcode '_'.  */
 
 int ne_isword(const int c, const int encoding) {
 	return c == '_' || !(ne_isspace(c, encoding) || ne_ispunct(c, encoding));
 }
 
 /* Returns a copy of the ne_isword() string to the left of the cursor, or an empty
-   string if none is found. Consumer is responsible for seeing that the string is freed.
-   *prefix_pos is the offset from the beginning of the current line where the prefix starts. */
+	string if none is found. Consumer is responsible for seeing that the string is freed.
+	*prefix_pos is the offset from the beginning of the current line where the prefix starts. */
 
 int context_prefix(const buffer *b, unsigned char **p, int *prefix_pos, encoding_type encoding) {
 
@@ -647,7 +646,7 @@ int context_prefix(const buffer *b, unsigned char **p, int *prefix_pos, encoding
 
 
 /* Returns the line descriptor for line n of buffer b, or NULL if n is out of range. */
-   line_desc *nth_line_desc(const buffer *b, const int n) {
+	line_desc *nth_line_desc(const buffer *b, const int n) {
 	line_desc *ld = b->cur_line_desc;
 	int i = b->cur_line - n;
 

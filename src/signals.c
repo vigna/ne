@@ -77,11 +77,11 @@ static sigset_t signal_full_mask;
 
 
 /* Diverts to fatal_code() the behaviour of all fatal signals.  Moreover,
-   signal_full_mask is filled with all the existing signals.
+	signal_full_mask is filled with all the existing signals.
 
-   PORTABILITY PROBLEM: certain systems could have extra, non-POSIX signals
-   whose trapping could be necessary. Feel free to add other signals to this
-   list, but please leave SIGINT for the interrupt character. */
+	PORTABILITY PROBLEM: certain systems could have extra, non-POSIX signals
+	whose trapping could be necessary. Feel free to add other signals to this
+	list, but please leave SIGINT for the interrupt character. */
 
 void set_fatal_code(void) {
 
@@ -132,7 +132,7 @@ void release_signals(void) {
 
 
 /* Handles SIGQUIT. It just sets the stop global variable to TRUE, so that the
-   interested functions can check it, and restores itself as signal handler. */
+	interested functions can check it, and restores itself as signal handler. */
 
 void set_stop (const int sig) {
 	signal(sig, SIG_IGN);

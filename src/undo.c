@@ -68,9 +68,9 @@ static int cat_undo_step(undo_buffer * const ub, const int line, const int pos, 
 
 
 /* Activates the chaining feature of the undo system. Any operations recorded
-   between start_undo_chain() and end_undo_chain() will be undone or redone as
-   a single entity. These calls can be nested, since a nesting index keeps
-   track of multiple calls. */
+	between start_undo_chain() and end_undo_chain() will be undone or redone as
+	a single entity. These calls can be nested, since a nesting index keeps
+	track of multiple calls. */
 
 
 void start_undo_chain(buffer * const b) {
@@ -105,18 +105,18 @@ void end_undo_chain(buffer * const b) {
 
 
 /* This function is the external interface to the undo recording system. It
-   takes care of recording a position of -pos-1 if the undo linking feature is
-   in use. A positive len records an insertion, a negative len records a
-   deletion. When an insertion is recorded, len characters have to be added to
-   the undo stream with add_to_undo_stream(). */
+	takes care of recording a position of -pos-1 if the undo linking feature is
+	in use. A positive len records an insertion, a negative len records a
+	deletion. When an insertion is recorded, len characters have to be added to
+	the undo stream with add_to_undo_stream(). */
 
 int add_undo_step(buffer * const b, const int line, const int pos, const int len) {
 	return cat_undo_step(&b->undo, line, b->link_undos ? -pos - 1 : pos, len);
 }
 
 /* Fixes the last undo step adding the given delta to its length. This
-   function is needed by delete_stream(), as it is not possible to know
-   the exact length of a deletion until it is performed. */
+	function is needed by delete_stream(), as it is not possible to know
+	the exact length of a deletion until it is performed. */
 
 void fix_last_undo_step(buffer * const b, const int delta) {
 	b->undo.steps[b->undo.cur_step - 1].len += delta;
@@ -173,7 +173,7 @@ void reset_undo_buffer(undo_buffer * const ub) {
 
 
 /* Undoes the current undo step, which is the last one, if no undo has still be
-   done, or an intermediate one, if some undo has already been done. */
+	done, or an intermediate one, if some undo has already been done. */
 
 
 int undo(buffer * const b) {

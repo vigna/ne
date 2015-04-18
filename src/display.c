@@ -65,7 +65,7 @@ void delay_update() {
 	window_needs_refresh = TRUE;
 #endif
 }
-     
+	 
 
 /* Compares two highlight states for equality. */
 
@@ -741,7 +741,7 @@ void automatch_bracket(buffer * const b, const int show) {
 	line_desc *matching_ld;
 	if (show) {
 		if (find_matching_bracket(b, b->win_y, b->win_y + ne_lines - 2 >= b->num_lines - 1 ? b->num_lines - 1 : b->win_y + ne_lines - 2,
-		                          &b->automatch.y, &match_pos, &c, &matching_ld) == OK) {
+								  &b->automatch.y, &match_pos, &c, &matching_ld) == OK) {
 			/* We limited find_matching_bracket()'s search to the visible lines, but not the
 			visible portions of those lines. Now ensure the matching pos is within the visible window. */
 			b->automatch.y -= b->win_y;
@@ -812,7 +812,7 @@ void automatch_bracket(buffer * const b, const int show) {
 		if (b->automatch.shown) {
 			move_cursor(b->automatch.y, b->automatch.x);
 			output_char(c, orig_attr, b->encoding == ENC_UTF8);
-      	b->automatch.shown = 0;
+			b->automatch.shown = 0;
 		}
 	}
 }

@@ -225,7 +225,7 @@ int line_down(buffer * const b) {
  */
 
 void keep_cursor_on_screen(buffer * const b) {
-   int shift_right;
+	int shift_right;
 	b->opt.tab_size = min(b->opt.tab_size, max(ne_columns / 2 - 1,1));
 	if (shift_right = b->win_x % b->opt.tab_size) {
 		b->win_x -= shift_right;
@@ -400,7 +400,7 @@ int next_page(buffer * const b) {
 		if (b->win_y >= b->num_lines - (ne_lines - 1)) {
 			ld_cur = b->top_line_desc;
 			for(i = 0; i < ne_lines - 2 && ld_cur->ld_node.next->next; i++)
-			   ld_cur = (line_desc *)ld_cur->ld_node.next;
+				ld_cur = (line_desc *)ld_cur->ld_node.next;
 			b->cur_line += (i - b->cur_y);
 			b->cur_y = i;
 		}
@@ -462,19 +462,19 @@ int page_up(buffer * const b) {
 		b->y_wanted = TRUE;
 		b->wanted_y = b->cur_line;
 		b->wanted_cur_y = b->cur_y;
-   }
+	}
 
 	for (i = 0; i < disp; i++) {
 		b->wanted_y--; /* We want to move up */
 			
 		/* Can we move up? */
-		if (b->wanted_y >= 0 /* We aren't yet off the top    */
+		if (b->wanted_y >= 0 /* We aren't yet off the top */
 				&& b->wanted_y < b->num_lines - 1) { /* we aren't still past the end */
 			b->cur_line_desc = (line_desc *)b->cur_line_desc->ld_node.prev;
 			b->cur_line--;
 		}
 		
-	   /* Should we shift the view up? */
+		/* Should we shift the view up? */
 		if (b->win_y > 0 /* We aren't already at the top */
 				&& b->win_y + b->wanted_cur_y > b->wanted_y) { /* Gap between virtual cursor and TOS is to small */
 			b->top_line_desc = (line_desc *)b->top_line_desc->ld_node.prev;
@@ -506,9 +506,9 @@ int page_down(buffer * const b) {
 		b->y_wanted = TRUE;
 		b->wanted_y = b->cur_line;
 		b->wanted_cur_y = b->cur_y;
-   }
+	}
 
-   shift_view = (b->win_y + disp < b->num_lines); /* can't already see the last line */
+	shift_view = (b->win_y + disp < b->num_lines); /* can't already see the last line */
 
 	for (i = 0; i < disp; i++) {
 		b->wanted_y++; /* We want to move down */
@@ -520,7 +520,7 @@ int page_down(buffer * const b) {
 			b->cur_line++;
 		}
 		
-	   /* Should we shift the view down? */
+		/* Should we shift the view down? */
 		if (shift_view /* already decided we should */
 				&& b->wanted_y - b->wanted_cur_y >  b->win_y) { /* Gap between virtual cursor and TOS is to big */
 			b->top_line_desc = (line_desc *)b->top_line_desc->ld_node.next;
@@ -562,8 +562,8 @@ int move_bos(buffer * const b) {
 		b->attr_len = -1;
 		if (b->win_y >= b->num_lines - (ne_lines - 1)) {
 			ld_cur = b->top_line_desc;
-			for(i = 0; i < ne_lines - 2  &&   ld_cur->ld_node.next->next; i++)
-			   ld_cur = (line_desc *)ld_cur->ld_node.next;
+			for(i = 0; i < ne_lines - 2  &&	ld_cur->ld_node.next->next; i++)
+				ld_cur = (line_desc *)ld_cur->ld_node.next;
 			b->cur_line += (i - b->cur_y);
 			b->cur_y = i;
 		}
@@ -581,8 +581,8 @@ int move_bos(buffer * const b) {
 }
 
 /* adjust_view() never moves the cursor. It is only concerned with shifting
-   win_x, cur_x, win_y and cur_y -- the variables which control which part
-   of the file is visible in the terminal window. */
+	win_x, cur_x, win_y and cur_y -- the variables which control which part
+	of the file is visible in the terminal window. */
 
 int adjust_view(buffer * const b, const unsigned char *p) {
 	int i, disp, mag, rc = OK;
@@ -627,15 +627,15 @@ int adjust_view(buffer * const b, const unsigned char *p) {
 
 			case 'c' :
 			case 'C' :
-			   /* Shift the view as far left as possible. This way we don't have to
-			      deal with figuring out which side of Middle the view started on. */
+				/* Shift the view as far left as possible. This way we don't have to
+					deal with figuring out which side of Middle the view started on. */
 				while (b->cur_x >= b->opt.tab_size) {
 					b->win_x += b->opt.tab_size;
 					b->cur_x -= b->opt.tab_size;
 				}
 				/* Since we now know that the cursor is left of center, we can start
-				   to shift the view right until the cursor is centered or until we
-				   run out of text to shift right. */
+					to shift the view right until the cursor is centered or until we
+					run out of text to shift right. */
 				while (b->cur_x < (ne_columns / 2) - (ne_columns / 2) % b->opt.tab_size && b->win_x >= b->opt.tab_size) {
 					b->win_x -= b->opt.tab_size;
 					b->cur_x += b->opt.tab_size;
@@ -655,7 +655,7 @@ int adjust_view(buffer * const b, const unsigned char *p) {
 
 			default  :
 				/* When we hit a character we don't recognize, we set the rc, but
-				   we still process other valid view displacements. */
+					we still process other valid view displacements. */
 				rc = ERROR;
 				break;
 		}
@@ -976,15 +976,15 @@ int search_word(buffer * const b, const int dir) {
 		space_skipped = TRUE;
 
 		if (dir > 0) {
-         ld = (line_desc *)ld->ld_node.next;
-         y++;
+			ld = (line_desc *)ld->ld_node.next;
+			y++;
 			pos = 0;
-      }
-      else {
-         ld = (line_desc *)ld->ld_node.prev;
-         y--;
+		}
+		else {
+			ld = (line_desc *)ld->ld_node.prev;
+			y--;
 			if (ld->ld_node.prev) pos = prev_pos(ld->line, ld->line_len, b->encoding);
-      }
+		}
 	}
 	return ERROR;
 }
@@ -997,7 +997,7 @@ int search_word(buffer * const b, const int dir) {
 void move_to_eow(buffer * const b) {
 
 	line_desc *ld = b->cur_line_desc;
-   int pos = b->cur_pos, c;
+	int pos = b->cur_pos, c;
 
 	if (pos >= ld->line_len || !ne_isword(c = get_char(&ld->line[pos], b->encoding), b->encoding)) return;
 

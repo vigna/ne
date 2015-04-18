@@ -114,8 +114,8 @@ int insert_in_stream(char_stream *cs, const char *s, const int pos, const int le
 
 	if (pos > cs->len) return ERROR;
 		
-   tail = cs->len - pos;
-   
+	tail = cs->len - pos;
+	
 	if (cs->size - cs->len < len && !realloc_char_stream(cs, cs->len + len + CHAR_STREAM_SIZE_INC)) return OUT_OF_MEMORY;
 
 	if (tail > 0) memmove(cs->stream + pos + len, cs->stream + pos, tail);
@@ -181,7 +181,7 @@ void set_stream_encoding(char_stream * const cs, const encoding_type source) {
 /* These two functions load a stream in memory. Carriage returns and line feeds
 	are converted to NULLs. You can pass NULL for cs, and a char stream will be
 	allocated for you. If preserve_cr is TRUE, CRs are preserved. If binary 
-   is true, the stream is filled exactly with the file content. */
+	is true, the stream is filled exactly with the file content. */
 
 char_stream *load_stream(char_stream * cs, const char *name, const int preserve_cr, const int binary) {
 
@@ -251,7 +251,7 @@ char_stream *load_stream_from_fh(char_stream *cs, const int fh, const int preser
 
 /* These two functions save a stream to file. NULLs are converted to line
 	feeds. If CRLF is TRUE, we save CR/LF pairs as line terminators. If binary 
-   is true, the stream is dump literally. We return an error code. */
+	is true, the stream is dump literally. We return an error code. */
 
 int save_stream(const char_stream *const cs, const char *name, const int CRLF, const int binary) {
 

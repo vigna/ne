@@ -177,10 +177,10 @@ static void init_history(void) {
 			move_to_bof(history_buff);
 			if (history_buff->cur_line_desc->line && history_buff->cur_line_desc->line_len) {
 				insert_stream(history_buff,
-				              history_buff->cur_line_desc,
-				              history_buff->cur_line,
-				              history_buff->cur_line_desc->line_len,
-				              "", 1);
+								  history_buff->cur_line_desc,
+								  history_buff->cur_line,
+								  history_buff->cur_line_desc->line_len,
+								  "", 1);
 			}
 		}
 	}
@@ -211,51 +211,51 @@ static void add_to_history(const unsigned char * const str) {
 	move_to_bof(history_buff);
 
 	/* This insert_stream() takes care of adding a line, including a line-feed
-	   at the end. */
+		at the end. */
 
 	insert_stream(history_buff,
-	              history_buff->cur_line_desc,
-	              history_buff->cur_line,
-	              history_buff->cur_line_desc->line_len,
-	              str,
-	              strlen(str) + 1);
+					  history_buff->cur_line_desc,
+					  history_buff->cur_line,
+					  history_buff->cur_line_desc->line_len,
+					  str,
+					  strlen(str) + 1);
 	assert_buffer(history_buff);
 }
 
 /* request() is the main function that serves request_number() and
-   request_string(). Given a prompt, a default string and a boolean flag which
-   establish the possibility of any alphabetical input (as opposed to digits
-   only), the user can edit a string of at most MAX_INPUT_LINE_LEN characters.
-   Many useful commands can be used here. The string edited by the user is
-   returned, or NULL if the input was escaped, or the empty string was entered.
-   Note that presently this function always returns a pointer to a static
-   buffer, but this could change in the future.
+	request_string(). Given a prompt, a default string and a boolean flag which
+	establish the possibility of any alphabetical input (as opposed to digits
+	only), the user can edit a string of at most MAX_INPUT_LINE_LEN characters.
+	Many useful commands can be used here. The string edited by the user is
+	returned, or NULL if the input was escaped, or the empty string was entered.
+	Note that presently this function always returns a pointer to a static
+	buffer, but this could change in the future.
 
-   completion_allowed has several possible values:
-    0 COMPLETE_NONE   means no completion,
-    1 COMPLETE_FILE   complete as a filename,
-    2                 complete as a command followed by a filename, (not implemented?)
-    3 COMPLETE_SYNTAX complete as a recognized syntax name.
+	completion_allowed has several possible values:
+	 0 COMPLETE_NONE	means no completion,
+	 1 COMPLETE_FILE	complete as a filename,
+	 2					  complete as a command followed by a filename, (not implemented?)
+	 3 COMPLETE_SYNTAX complete as a recognized syntax name.
 
-   If prefer_utf8 is true, editing an ASCII line inserting an ISO-8859-1 character
-   will turn it into an UTF-8 line.
-   
-   request() relies on a number of auxiliary functions and static data. As
-   always, we would really need nested functions, but, alas, C can't cope with
-   them. */
+	If prefer_utf8 is true, editing an ASCII line inserting an ISO-8859-1 character
+	will turn it into an UTF-8 line.
+	
+	request() relies on a number of auxiliary functions and static data. As
+	always, we would really need nested functions, but, alas, C can't cope with
+	them. */
 
 static unsigned char input_buffer[MAX_INPUT_LINE_LEN + 1];
 
 /* The current encoding of the command line. Contrarily to buffers, the command line may (and will) move
-   back to ASCII if all non-US-ASCII characters are deleted .*/
+	back to ASCII if all non-US-ASCII characters are deleted .*/
 
 static encoding_type encoding;
 
 /* start_x  is the first usable screen x position for editing;
-   len      is the current raw length of the input buffer (input_buffer[len] is always a NULL);
-   x        is the screen x position of the cursor;
-   pos      is the position of the cursor inside the input buffer;
-   offset   is the first displayed buffer character. 
+	len      is the current raw length of the input buffer (input_buffer[len] is always a NULL);
+	x        is the screen x position of the cursor;
+	pos      is the position of the cursor inside the input buffer;
+	offset   is the first displayed buffer character. 
 */
 
 static int start_x, len, pos, x, offset;
@@ -301,47 +301,47 @@ static void input_autocomplete(void) {
 	}
 	else p = malloc(1); /* no prefix left of the cursor; we'll give an empty one. */
 	p[pos - prefix_pos] = 0;
-   if (p = autocomplete(p, NULL, TRUE, &ac_err)) {
-   	encoding_type ac_encoding = detect_encoding(p, strlen(p));
+	if (p = autocomplete(p, NULL, TRUE, &ac_err)) {
+		encoding_type ac_encoding = detect_encoding(p, strlen(p));
 		if (ac_encoding != ENC_ASCII && encoding != ENC_ASCII && ac_encoding != encoding) {
-		   free(p);
+			free(p);
 			alert();
 		} else {
 			encoding = ac_encoding;
-      	
-      	if (prefix_pos < pos) {
-      		memmove(&input_buffer[prefix_pos], &input_buffer[pos], len - pos + 1);
+			
+			if (prefix_pos < pos) {
+				memmove(&input_buffer[prefix_pos], &input_buffer[pos], len - pos + 1);
 				len -= pos - prefix_pos;
 				pos = prefix_pos;
-      	}
-      	ac_len = strlen(p);
-      	if (ac_len + len >= MAX_INPUT_LINE_LEN) ac_len = MAX_INPUT_LINE_LEN - len;
-      	memmove(&input_buffer[pos + ac_len], &input_buffer[pos], len - pos + 1);
-      	memmove(&input_buffer[pos], p, ac_len);
-      	len += ac_len;
-      	while (ac_len > 0) {
-      		cw = get_char_width(&input_buffer[pos],encoding);
+			}
+			ac_len = strlen(p);
+			if (ac_len + len >= MAX_INPUT_LINE_LEN) ac_len = MAX_INPUT_LINE_LEN - len;
+			memmove(&input_buffer[pos + ac_len], &input_buffer[pos], len - pos + 1);
+			memmove(&input_buffer[pos], p, ac_len);
+			len += ac_len;
+			while (ac_len > 0) {
+				cw = get_char_width(&input_buffer[pos],encoding);
 				pos = next_pos(input_buffer, pos, encoding);
-      		ac_len -= cw;
-      		dx++;
-      	}
-      	free(p); 
-      	x += dx;
-      	if (x >= ne_columns) {
-      		dx = x - ne_columns + 1;
-      		while (dx--) {
-      			offset = next_pos(input_buffer, offset, encoding);
-      		}
-      		x = ne_columns - 1;
-      	}
-   	}
-   }
-   if (ac_err == AUTOCOMPLETE_COMPLETED || ac_err == AUTOCOMPLETE_CANCELLED) {
-   	do_action(cur_buffer, REFRESH_A, 0, NULL);
-   	refresh_window(cur_buffer);
+				ac_len -= cw;
+				dx++;
+			}
+			free(p); 
+			x += dx;
+			if (x >= ne_columns) {
+				dx = x - ne_columns + 1;
+				while (dx--) {
+					offset = next_pos(input_buffer, offset, encoding);
+				}
+				x = ne_columns - 1;
+			}
+		}
+	}
+	if (ac_err == AUTOCOMPLETE_COMPLETED || ac_err == AUTOCOMPLETE_CANCELLED) {
+		do_action(cur_buffer, REFRESH_A, 0, NULL);
+		refresh_window(cur_buffer);
 		set_attr(0);
-   	print_prompt(NULL);
-   }
+		print_prompt(NULL);
+	}
 	input_refresh();
 }
 
@@ -674,20 +674,20 @@ char *request(const char *prompt, const char * const default_string, const int a
 						}
 
 						/* In some cases, the default displayed on the command line will be the same as the 
-						   first history item. In that case we skip it. */
+							first history item. In that case we skip it. */
 
 						if (first_char_typed == TRUE 
-						    && a == LINEUP_A 
-						    && history_buff->cur_line_desc->line 
-						    && !strncmp(history_buff->cur_line_desc->line, input_buffer, history_buff->cur_line_desc->line_len))
+							 && a == LINEUP_A 
+							 && history_buff->cur_line_desc->line 
+							 && !strncmp(history_buff->cur_line_desc->line, input_buffer, history_buff->cur_line_desc->line_len))
 							line_up(history_buff);
 						
 						if (history_buff->cur_line_desc->line) {
 							strncpy(input_buffer,
-							        history_buff->cur_line_desc->line,
-							        min(history_buff->cur_line_desc->line_len,MAX_INPUT_LINE_LEN));
+									  history_buff->cur_line_desc->line,
+									  min(history_buff->cur_line_desc->line_len,MAX_INPUT_LINE_LEN));
 							input_buffer[min(history_buff->cur_line_desc->line_len,MAX_INPUT_LINE_LEN)] = 0;
-							len    = strlen(input_buffer);
+							len	 = strlen(input_buffer);
 							encoding = detect_encoding(input_buffer, len);
 						}
 						else {
@@ -695,8 +695,8 @@ char *request(const char *prompt, const char * const default_string, const int a
 							encoding = ENC_ASCII;
 						}
 
-						x      = start_x;
-						pos    = 0;
+						x		= start_x;
+						pos	= 0;
 						offset = 0;
 						input_refresh();
 					}

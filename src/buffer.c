@@ -46,7 +46,7 @@ pool dimension, with respect to the number of lines of the given file. */
 
 /* The length of the block used in order to optimize saves. */
 
-#define SAVE_BLOCK_LEN   (64 * 1024 - 1)
+#define SAVE_BLOCK_LEN	(64 * 1024 - 1)
 
 
 /* Detects (heuristically) the encoding of a buffer. */
@@ -248,7 +248,7 @@ void free_buffer_contents(buffer * const b) {
 	b->is_CRLF = FALSE;
 	b->encoding = ENC_ASCII;
 	b->bookmark_mask = 0;
-        
+
 	free_char_stream(b->last_deleted);
 	b->last_deleted = NULL;
 
@@ -652,17 +652,17 @@ void free_chars(buffer *const b, unsigned char *const p, const int len) {
 
 	if (!b || !p || !len) return;
 
-   cp = get_char_pool(b, p);
+	cp = get_char_pool(b, p);
 
-   assert_char_pool(cp);
+	assert_char_pool(cp);
 
-   assert(*p);
-   assert(p[len - 1]);
+	assert(*p);
+	assert(p[len - 1]);
 
 	block_signals();
 
-   memset(p, 0, len);
-   b->free_chars += len;
+	memset(p, 0, len);
+	b->free_chars += len;
 
 	if (p == &cp->pool[cp->first_used]) while(cp->first_used <= cp->last_used && !cp->pool[cp->first_used]) cp->first_used++;
 	if (p + len - 1 == &cp->pool[cp->last_used]) while(!cp->pool[cp->last_used] && cp->first_used <= cp->last_used) cp->last_used--;
@@ -1153,7 +1153,7 @@ int load_file_in_buffer(buffer * const b, const char *name) {
 
 	if (is_directory(name)) return FILE_IS_DIRECTORY;
 	if (is_migrated(name)) return FILE_IS_MIGRATED;
-    
+	 
 	if ((fh = open(name, READ_FLAGS)) >= 0) {
 		result = load_fh_in_buffer(b, fh);
 		close(fh);
@@ -1184,7 +1184,7 @@ int load_fh_in_buffer(buffer *b, int fh) {
 	unsigned char terminators[] = { 0x0d, 0x0a };
 
 	if (b->opt.preserve_cr) terminators[0] = 0;
-         
+
 	len = lseek(fh, 0, SEEK_END);
 
 	if (len < 0 || lseek(fh, 0, SEEK_SET) < 0) return IO_ERROR;
@@ -1349,8 +1349,8 @@ void ensure_attr_buf(buffer * const b, const int capacity) {
 
 
 /* Here we save a buffer to a given file. If no file is specified, the
-   buffer filename field is used. The is_modified flag is set to 0,
-   and the mtime is updated. */
+	buffer filename field is used. The is_modified flag is set to 0,
+	and the mtime is updated. */
 
 
 int save_buffer_to_file(buffer *b, const char *name) {
@@ -1372,7 +1372,7 @@ int save_buffer_to_file(buffer *b, const char *name) {
 
 	if (is_directory(name)) return FILE_IS_DIRECTORY;
 	if (is_migrated(name)) return FILE_IS_MIGRATED;
-    
+ 
 	block_signals();
 
 	if ((fh = open(name, WRITE_FLAGS, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH)) >= 0) {

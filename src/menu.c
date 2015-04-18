@@ -321,8 +321,8 @@ int dump_config(void) {
 		fprintf(f,"%s \"%s\"\n", MENU_KEYWORD, menus[menu].text );
 		for (item = 0; item < menus[menu].item_num; item++) {
 			fprintf(f,"%s \"%s\" \"%s\"\n", ITEM_KEYWORD,
-			                                    menus[menu].items[item].text,
-			                                    menus[menu].items[item].command_line);
+															menus[menu].items[item].text,
+															menus[menu].items[item].command_line);
 		}
 		fprintf(f,"\n");
 	}
@@ -609,8 +609,8 @@ char *gen_flag_string(const buffer * const b) {
 		}
 		else for(j = 0; j < 2; j++) string[i++] = ' ';
 		if (ch > -1) {
-		   string[i++] = "0123456789abcdef"[(ch >> 4) & 0x0f];
-		   string[i++] = "0123456789abcdef"[ch & 0x0f];
+			string[i++] = "0123456789abcdef"[(ch >> 4) & 0x0f];
+			string[i++] = "0123456789abcdef"[ch & 0x0f];
 		}
 		else for(j = 0; j < 2; j++) string[i++] = ' ';
 	}
@@ -760,7 +760,7 @@ void print_message(const char * const message) {
 		msg_cache[MAX_MESSAGE_LENGTH - 1] = '\0';
 	}
 	
-   if (message || showing_msg) {
+	if (message || showing_msg) {
 		move_cursor(ne_lines - 1, 0);
 
 		set_attr(0);
@@ -1023,7 +1023,7 @@ static void get_menu_conf(const char * menu_conf_name, char * (exists_prefs_func
 }
 
 /* Menu configs are all or nothing, so if the user has one,
-   skip any global one. */
+	skip any global one. */
 void get_menu_configuration(const char * menu_conf_name) {
 	get_menu_conf(menu_conf_name, exists_prefs_dir);
 	if (menus == def_menus) get_menu_conf(menu_conf_name, exists_gprefs_dir);
@@ -1074,12 +1074,12 @@ static void get_key_bind(const char * key_bindings_name, char * (exists_prefs_fu
 					}
 					else if (*p && !cmdcmp(SEQ_KEYWORD, p)) {
 						char *buf;
-						while(*p && !isasciispace(*p)) p++;    /* skip past SEQ */
-						while(isasciispace(*p)) p++;           /* skip to quoted sequence, like  "\x1b[A" */
-						buf = p;   /* Risky: we're replacing the double-quoted string with its parsed equivalent in situ. */
+						while(*p && !isasciispace(*p)) p++;	 /* skip past SEQ */
+						while(isasciispace(*p)) p++;			  /* skip to quoted sequence, like  "\x1b[A" */
+						buf = p;	/* Risky: we're replacing the double-quoted string with its parsed equivalent in situ. */
 						if (parse_string(&p, buf, strlen(p)) > 0) {  /* parse_string() expects double-quoted string. */
 							while(*p && isasciispace(*p)) p++;  /* skip to key code */
-							if (*p && sscanf(p, "%x %*s", &c) == 1) {    /* convert key code */
+							if (*p && sscanf(p, "%x %*s", &c) == 1) {	 /* convert key code */
 								if (c >= 0 && c < NUM_KEYS) {
 									if (c != 27 && c != 13) {
 										if ((c=key_may_set(buf,c)) < 0)
@@ -1111,7 +1111,7 @@ char *cur_dir(void) {
 }
 
 /* Key bindings override easily, so pull in any global bindings
-   first, then override with the users bindings. */
+	first, then override with the users bindings. */
 void get_key_bindings(const char * key_bindings_name) {
 	get_key_bind(key_bindings_name, exists_gprefs_dir);
 	get_key_bind(key_bindings_name, exists_prefs_dir);
