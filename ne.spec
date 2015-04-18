@@ -1,6 +1,6 @@
 Summary: ne, the nice editor
 Name: ne
-Version: 2.5
+Version: 2.6
 Release: 1
 License: GPLv3
 Group: Applications/Editors
@@ -57,6 +57,7 @@ mv doc/html .
 %doc ./doc/default.*
 %doc ./README
 %doc ./NEWS
+%doc ./CHANGES
 %doc ./COPYING
 
 %post
