@@ -134,9 +134,9 @@ unsigned char *autocomplete(unsigned char *p, char *req_msg, const int ext, int 
 	
 #ifdef NE_TEST
 	/* During tests, we always output the middle entry. */
-	if (n) {
-		if (entries[n/2][strlen(entries[n/2]) - 1] == EXTERNAL_FLAG_CHAR) entries[n/2][strlen(entries[n/2]) - 1] = 0;
-		p = str_dup(entries[n/2]);
+	if (rl.cur_entries) {
+		if (entries[rl.cur_entries/2][strlen(entries[rl.cur_entries/2]) - 1] == EXTERNAL_FLAG_CHAR) entries[rl.cur_entries/2][strlen(entries[rl.cur_entries/2]) - 1] = 0;
+		p = str_dup(entries[rl.cur_entries/2]);
 	}
 	*error = AUTOCOMPLETE_COMPLETED;
 	free(entries);
@@ -179,6 +179,6 @@ unsigned char *autocomplete(unsigned char *p, char *req_msg, const int ext, int 
 	else *error = AUTOCOMPLETE_NO_MATCH;
 
 	req_list_free(&rl);
-	D(fprintf(stderr,"autocomp returning '%s', entries: %d\n", p, n);)
+	D(fprintf(stderr,"autocomp returning '%s', entries: %d\n", p, rl.cur_entries);)
 	return p;
 }
