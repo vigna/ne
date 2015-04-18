@@ -339,6 +339,7 @@ static void input_autocomplete(void) {
    if (ac_err == AUTOCOMPLETE_COMPLETED || ac_err == AUTOCOMPLETE_CANCELLED) {
    	do_action(cur_buffer, REFRESH_A, 0, NULL);
    	refresh_window(cur_buffer);
+		set_attr(0);
    	print_prompt(NULL);
    }
 	input_refresh();
