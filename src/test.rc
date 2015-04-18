@@ -24,7 +24,7 @@ function check_differences {
 
 orig=ne.texinfo
 
-./test.rb 1000 $orig > test.macro
+./test.rb 10000 $orig > test.macro
 time ./ne --macro test.macro 2>test.err
 check_differences $orig
 
@@ -33,6 +33,6 @@ check_differences $orig
 # so that autoprefs don't override the Binary flag.
 cp $orig $orig.bin$$
 orig=$orig.bin$$
-./test.rb 1000 $orig BINARY > test.binary.macro
+./test.rb 10000 $orig BINARY > test.binary.macro
 time ./ne --macro test.binary.macro 2>test.binary.err
 check_differences $orig

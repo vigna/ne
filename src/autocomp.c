@@ -92,7 +92,6 @@ static void search_buff(const buffer *b, const unsigned char *p, const int encod
 
 unsigned char *autocomplete(unsigned char *p, char *req_msg, const int ext, int * const error) {
 	int i, j, l, m, max_len = 0, min_len = INT_MAX, prefix_len = strlen(p);
-	char **entries;
 			
 	assert(p);
 	
@@ -135,11 +134,10 @@ unsigned char *autocomplete(unsigned char *p, char *req_msg, const int ext, int 
 #ifdef NE_TEST
 	/* During tests, we always output the middle entry. */
 	if (rl.cur_entries) {
-		if (entries[rl.cur_entries/2][strlen(entries[rl.cur_entries/2]) - 1] == EXTERNAL_FLAG_CHAR) entries[rl.cur_entries/2][strlen(entries[rl.cur_entries/2]) - 1] = 0;
-		p = str_dup(entries[rl.cur_entries/2]);
+		if (rl.entries[rl.cur_entries/2][strlen(rl.entries[rl.cur_entries/2]) - 1] == EXTERNAL_FLAG_CHAR) rl.entries[rl.cur_entries/2][strlen(rl.entries[rl.cur_entries/2]) - 1] = 0;
+		p = str_dup(rl.entries[rl.cur_entries/2]);
 	}
 	*error = AUTOCOMPLETE_COMPLETED;
-	free(entries);
 	req_list_free(&rl);
 	return p;
 #endif
