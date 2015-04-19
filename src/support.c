@@ -1,22 +1,22 @@
 /* Miscellaneous support functions.
 
-	Copyright (C) 1993-1998 Sebastiano Vigna 
-	Copyright (C) 1999-2015 Todd M. Lewis and Sebastiano Vigna
+   Copyright (C) 1993-1998 Sebastiano Vigna 
+   Copyright (C) 1999-2015 Todd M. Lewis and Sebastiano Vigna
 
-	This file is part of ne, the nice editor.
+   This file is part of ne, the nice editor.
 
-	This library is free software; you can redistribute it and/or modify it
-	under the terms of the GNU General Public License as published by
-	the Free Software Foundation; either version 3 of the License, or (at your
-	option) any later version.
+   This library is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or (at your
+   option) any later version.
 
-	This library is distributed in the hope that it will be useful, but
-	WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-	or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-	for more details.
+   This library is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, see <http://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
 
 #include "ne.h"
@@ -80,7 +80,7 @@ int is_migrated(const char * const name) {
    define ZERO_STAT_MIG_TEST when building ne. */
 int is_migrated(const char * const name) {
 	struct stat statbuf;
-	
+
 	if ((stat(tilde_expand(name), &statbuf) == 0) &&
 		  (statbuf.st_size > 0) &&
 		  (statbuf.st_blocks == 0))
@@ -121,7 +121,7 @@ unsigned long file_mod_time(const char *filename) {
 /* Check a named file's mtime relative to a buffer's stored mtime.
    Note that stat errors are treated like 0 mtime, which also is the value
    for new buffers. Return values:
-   
+
    1 if file's non-zero modification time differs from the buffer's non-zero mtime,
    0 everything else, including if the files mtime couldn't be checked
      (possibly no file or couldn't stat), buffer's stored mtime is 0,
@@ -154,40 +154,40 @@ int buffer_file_modified(const buffer *b, const char *name) {
 const char *tilde_expand(const char * filename) {
 
 	static char *expanded_filename;
-	
+
 	char *home_dir, *p;
 	struct passwd *passwd = NULL;
-	
+
 	if (!filename) return NULL;
 
 	if (filename[0] != '~') return filename;
-	
+
 	if (filename[1] == '/') {
 		home_dir = getenv("HOME");
 		if (!home_dir) return filename;
 		filename++;
 	}
 	else {
-		
+
 		const char *s;
 		char *t;
-		
+
 		s = filename + 1;
 
 		while(*s && *s != '/') s++;
-		
+
 		if (t = malloc(s - filename)) {
-			
+
 			memcpy(t, filename + 1, s - filename - 1);
 			t[s - filename - 1] = 0;
-			
+
 			passwd = getpwnam(t);
-			
+
 			free(t);
 		}
-		
+
 		if (!passwd) return filename;
-		
+
 		filename = s;
 		home_dir = passwd->pw_dir;
 	}
@@ -196,7 +196,7 @@ const char *tilde_expand(const char * filename) {
 		strcat(strcpy(expanded_filename = p, home_dir), filename);
 		return expanded_filename;
 	}
-	
+
 	return filename;
 }
 
@@ -270,7 +270,7 @@ int is_prefix(const char * const p, const char * const s) {
 /* The following *cmpp() functions are suitable for use with qsort().
    They front comparison functions with "normal" (i.e., like strcmp())
    calling conventions. */
-   
+
 /* A string pointer comparison function for qsort(). */
 
 int strcmpp(const void *a, const void *b) {
@@ -286,7 +286,7 @@ int strdictcmpp(const void *a, const void *b)	{
 
 int strdictcmp(const char *a, const char *b)	{
 	int ci;
-	
+
 	if ( ci = strcasecmp(a, b) ) return ci;
 	return strcmp(a, b);
 }
@@ -613,7 +613,7 @@ int ne_isspace(const int c, const int encoding) {
 
 /* Returns whether the given character is a "word" character.
    Word characters are '_' plus any non-punctuation or space.
-   
+
    TODO: implement a way for users to specify their own word characters.
    For now, hardcode '_'.  */
 
@@ -639,7 +639,7 @@ int context_prefix(const buffer *b, unsigned char **p, int *prefix_pos, encoding
 		strncpy(*p, &b->cur_line_desc->line[*prefix_pos], b->cur_pos - *prefix_pos);
 	} 
 	else *p = malloc(1); /* no prefix left of the cursor; we'll give an empty one. */
-	
+
 	(*p)[b->cur_pos - *prefix_pos] = 0;
 	return OK;
 }
@@ -650,19 +650,19 @@ int context_prefix(const buffer *b, unsigned char **p, int *prefix_pos, encoding
    line_desc *ld = b->cur_line_desc;
    int i = b->cur_line - n;
 
-	if (n < 0 || n >= b->num_lines) return NULL;
+   if (n < 0 || n >= b->num_lines) return NULL;
 
-	/* Count relative to the current line, because we're usually looking for something close by. */
-	
-	while( i ) {
-		if (i > 0) {
-			ld = (line_desc *)ld->ld_node.prev;
-			i--;
-		} else {
-			ld = (line_desc *)ld->ld_node.next;
-			i++;
-		}
-	}
-	return ld;
+   /* Count relative to the current line, because we're usually looking for something close by. */
+
+   while( i ) {
+   	if (i > 0) {
+   		ld = (line_desc *)ld->ld_node.prev;
+   		i--;
+   	} else {
+   		ld = (line_desc *)ld->ld_node.next;
+   		i++;
+   	}
+   }
+   return ld;
 }
 

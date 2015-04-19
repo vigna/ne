@@ -1,21 +1,21 @@
 /* Hardwired ANSI terminal control sequences.
 
-	Copyright (C) 2001-2015 Todd M. Lewis and Sebastiano Vigna
+   Copyright (C) 2001-2015 Todd M. Lewis and Sebastiano Vigna
 
-	This file is part of ne, the nice editor.
+   This file is part of ne, the nice editor.
 
-	This library is free software; you can redistribute it and/or modify it
-	under the terms of the GNU General Public License as published by
-	the Free Software Foundation; either version 3 of the License, or (at your
-	option) any later version.
+   This library is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or (at your
+   option) any later version.
 
-	This library is distributed in the hope that it will be useful, but
-	WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-	or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-	for more details.
+   This library is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, see <http://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
 
 #include "ne.h"
@@ -26,8 +26,8 @@
 /* Pokes into the terminfo capability strings the ANSI definitions.
    This is good for situation in which no database is available.
 
-	The keyboard is already fixed in keys.c, because key_may_set() will
-	poke into the keyboard capabilities all ANSI keyboard sequences.
+   The keyboard is already fixed in keys.c, because key_may_set() will
+   poke into the keyboard capabilities all ANSI keyboard sequences.
 */
 
 void setup_ansi_term(void) {

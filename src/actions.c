@@ -1,22 +1,22 @@
 /* Main command processing loop.
 
-	Copyright (C) 1993-1998 Sebastiano Vigna 
-	Copyright (C) 1999-2015 Todd M. Lewis and Sebastiano Vigna
+   Copyright (C) 1993-1998 Sebastiano Vigna 
+   Copyright (C) 1999-2015 Todd M. Lewis and Sebastiano Vigna
 
-	This file is part of ne, the nice editor.
+   This file is part of ne, the nice editor.
 
-	This library is free software; you can redistribute it and/or modify it
-	under the terms of the GNU General Public License as published by
-	the Free Software Foundation; either version 3 of the License, or (at your
-	option) any later version.
+   This library is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or (at your
+   option) any later version.
 
-	This library is distributed in the hope that it will be useful, but
-	WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-	or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-	for more details.
+   This library is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, see <http://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
 
 #include "ne.h"
@@ -64,16 +64,16 @@ is what most commands require. */
 
 /* This is the dispatcher of all actions that have some effect on the text.
 
-	The arguments are an action to be executed, a possible integer parameter and
-	a possible string parameter. -1 and NULL are, respectively, reserved values
-	meaning "no argument". For most operations, the integer argument is the
-	number of repetitions. When an on/off choice is required, nonzero means on,
-	zero means off, no argument means toggle.
+   The arguments are an action to be executed, a possible integer parameter and
+   a possible string parameter. -1 and NULL are, respectively, reserved values
+   meaning "no argument". For most operations, the integer argument is the
+   number of repetitions. When an on/off choice is required, nonzero means on,
+   zero means off, no argument means toggle.
 
-	If there is a string argument (i.e. p != NULL), it is assumed that the
-	action will consume p -- it ends up being free()d or stored
-	somewhere. Though efficient, this has lead to some memory leaks (can you
-	find them?). */
+   If there is a string argument (i.e. p != NULL), it is assumed that the
+   action will consume p -- it ends up being free()d or stored
+   somewhere. Though efficient, this has lead to some memory leaks (can you
+   find them?). */
 
 
 int do_action(buffer *b, action a, int c, unsigned char *p) {
@@ -92,7 +92,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 	if (b->recording) record_action(b->cur_macro, a, c, p, verbose_macros);
 
 	switch(a) {
-		
+
 	case EXIT_A:
 		if (save_all_modified_buffers()) {
 			print_error(CANT_SAVE_EXIT_SUSPENDED);
@@ -356,18 +356,18 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			}
 			return OK;
 		}
-	
+
 	case GOTOLINE_A:
 		if (c < 0 && (c = request_number("Line", b->cur_line + 1))<0) return NUMERIC_ERROR(c);
 		if (c == 0 || c > b->num_lines) c = b->num_lines;
 		goto_line(b, --c);
 		return OK;
-	
+
 	case GOTOCOLUMN_A:
 		if (c < 0 && (c = request_number("Column", b->cur_x + b->win_x + 1))<0) return NUMERIC_ERROR(c);
 		goto_column(b, c ? --c : 0);
 		return OK;
-	
+
 	case INSERTSTRING_A:
 		/* Since we are going to call another action, we do not want to record this insertion twice. */
 		recording= b->recording;
@@ -377,10 +377,10 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			encoding_type encoding = detect_encoding(p, strlen(p));
 			error = OK;
 			start_undo_chain(b);
-			
+
 			/* We cannot rely on encoding promotion done by INSERTCHAR_A, because it could work
 				just for part of the string if UTF-8 auto-detection is not enabled. */
-			
+
 			if (b->encoding == ENC_ASCII || encoding == ENC_ASCII || (b->encoding == encoding)) {
 				if (b->encoding == ENC_ASCII) b->encoding = encoding;
 				for(i = 0; p[i] && error == OK; i = next_pos(p, i, encoding)) error = do_action(b, INSERTCHAR_A, get_char(&p[i], encoding), NULL);
@@ -435,7 +435,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		int deleted_char, old_char, error = ERROR;
 
 		if (b->opt.read_only) return FILE_IS_READ_ONLY;
-		
+
 		if (c < 0 && (c = request_number("Char Code", last_inserted_char))<0) return NUMERIC_ERROR(c);
 		if (c == 0) return CANT_INSERT_0;
 
@@ -444,14 +444,14 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			else if (c > 0x7F) b->encoding = b->opt.utf8auto ? ENC_UTF8 : ENC_8_BIT;
 		}
 		if (c > 0xFF && b->encoding == ENC_8_BIT) return INVALID_CHARACTER;
-		
+
 		last_inserted_char = c;
-		
+
 		old_char = b->cur_pos < b->cur_line_desc->line_len ? get_char(&b->cur_line_desc->line[b->cur_pos], b->encoding) : 0;
 
 		/* Freeze the line attributes before any real update. */
 		if (b->syn && b->attr_len < 0) freeze_attributes(b, b->cur_line_desc);
-			
+
 		start_undo_chain(b);
 
 		if (deleted_char = !b->opt.insert && b->cur_pos < b->cur_line_desc->line_len) delete_one_char(b, b->cur_line_desc, b->cur_line, b->cur_pos);
@@ -460,14 +460,14 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			insert_spaces(b, b->cur_line_desc, b->cur_line, b->cur_line_desc->line_len, b->cur_pos - b->cur_line_desc->line_len);
 			if (b->syn) update_line(b, b->cur_y, TRUE, TRUE);
 		}
-		
+
 		insert_one_char(b, b->cur_line_desc, b->cur_line, b->cur_pos, c);
-		
+
 		need_attr_update = TRUE;
-		
+
 		/* At this point the line has been modified: note that if we are in overwrite mode and write a character
 			at or beyond the length of the current line, we are actually doing an insertion. */
-		
+
 		if (!deleted_char) update_inserted_char(b, c, b->cur_line_desc, b->cur_pos, b->cur_char, b->cur_y, b->cur_x);
 		else update_overwritten_char(b, old_char, c, b->cur_line_desc, b->cur_pos, b->cur_char, b->cur_y, b->cur_x);
 
@@ -515,9 +515,9 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 					if (b->cur_pos >= b->cur_line_desc->line_len) continue;
 				}
 			}
-			
+
 			/* From here, we just implement a delete. */
-			
+
 			if (b->opt.del_tabs && b->cur_pos < b->cur_line_desc->line_len && b->cur_line_desc->line[b->cur_pos] == ' ' && 
 				((b->win_x + b->cur_x) % b->opt.tab_size == 0 || b->cur_line_desc->line[b->cur_pos - 1] != ' ')) {
 				col = 0;
@@ -563,7 +563,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 				const int old_char = b->encoding == ENC_UTF8 ? utf8char(&b->cur_line_desc->line[b->cur_pos]) : b->cur_line_desc->line[b->cur_pos];
 				const int old_attr = b->syn ? b->attr_buf[b->cur_pos] : 0;
 				delete_one_char(b, b->cur_line_desc, b->cur_line, b->cur_pos);
-				
+
 				update_deleted_char(b, old_char, old_attr, b->cur_line_desc, b->cur_pos, b->cur_char, b->cur_y, b->cur_x);
 				if (b->syn) update_line(b, b->cur_y, TRUE, TRUE);
 			}
@@ -574,13 +574,13 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 				if (b->syn && b->cur_pos == 0) next_line_state = b->cur_line_desc->highlight_state;
 				delete_one_char(b, b->cur_line_desc, b->cur_line, b->cur_pos);
 				if (b->syn && b->cur_pos == 0) b->cur_line_desc->highlight_state = next_line_state;
-				
+
 				if (b->syn) {
 					b->next_state = parse(b->syn, b->cur_line_desc, b->cur_line_desc->highlight_state, b->encoding == ENC_UTF8); 
 					update_line(b, b->cur_y, FALSE, TRUE);
 				}
 				else update_partial_line(b, b->cur_y, b->cur_x, TRUE, FALSE);
-				
+
 				if (b->cur_y < ne_lines - 2) scroll_window(b, b->cur_y + 1, -1);
 			}
 		}
@@ -640,14 +640,14 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 				}
 			}
 		}
-		
+
 		return stop ? STOPPED : 0;
 
 	case DELETELINE_A:
-			
+
 		if (b->opt.read_only) return FILE_IS_READ_ONLY;
 		NORMALIZE(c);
-		
+
 		col = b->win_x + b->cur_x;
 		start_undo_chain(b);
 		for(i = 0; i < c && !stop; i++) {
@@ -661,15 +661,15 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		}
 		resync_pos(b);
 		goto_column(b, col);
-		
+
 		return stop ? STOPPED : error;
 
 	case UNDELLINE_A:
-		
+
 		if (b->opt.read_only) return FILE_IS_READ_ONLY;
 
 		NORMALIZE(c);
-		
+
 		next_ld = (line_desc *)b->cur_line_desc->ld_node.next;
 
 		start_undo_chain(b);
@@ -888,21 +888,21 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 
 						if (b->last_was_regexp) error = replace_regexp(b, p);
 						else error = replace(b, strlen(b->find_string), p);
-						
+
 						if (!error) {
 							update_line(b, b->cur_y, FALSE, FALSE);
 							if (b->syn) {
 								need_attr_update = TRUE;
 								update_syntax_states(b, b->cur_y, b->cur_line_desc, NULL);
 							}
-						
+
 							num_replace++;
 
 							if (last_replace_empty_match)
 								if (b->opt.search_back) error = char_left(cur_buffer);
 								else error = char_right(cur_buffer);
 						}
-	
+
 						if (print_error(error)) {
 							if (a == REPLACEALL_A || c == 'A') end_undo_chain(b);
 							return ERROR;
@@ -966,7 +966,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 								need_attr_update = TRUE;
 								update_syntax_states(b, b->cur_y, b->cur_line_desc, NULL);
 							}
-						
+
 							if (last_replace_empty_match)
 								if (b->opt.search_back) error = char_left(cur_buffer);
 								else error = char_right(cur_buffer);
@@ -1390,7 +1390,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 							unset_interactive_mode();
 							if (system(command)) error = EXTERNAL_COMMAND_ERROR;
 							set_interactive_mode();
-							
+
 							if (!error) {
 
 								if (!(error = load_clip(INT_MAX, tmpnam2, b->opt.preserve_cr, b->opt.binary))) {
@@ -1414,7 +1414,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 				}
 			}
 			else error = CANT_OPEN_TEMPORARY_FILE;
-			
+
 			remove(tmpnam1);
 			remove(tmpnam2);
 
@@ -1578,13 +1578,13 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		recording = b->recording;
 
 		i = b->cur_pos;
-		
+
 		if ( !p ) { /* no prefix given; find one left of the cursor. */
 			if ( context_prefix(b, &p, &i, b->encoding) ) return OUT_OF_MEMORY;
 		}
 
 		snprintf(msg, MAX_MESSAGE_SIZE, "AutoComplete: prefix \"%s\"", p);
-		
+
 		if (p = autocomplete(p, msg, TRUE, &col)) {
 			b->recording = 0;
 			start_undo_chain(b);
@@ -1595,7 +1595,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		}
 		else if (stop) error = STOPPED;
 		else if (col == AUTOCOMPLETE_NO_MATCH) print_message(info_msg[AUTOCOMPLETE_NO_MATCH]);
-		
+
 		return print_error(error) ? ERROR : 0;
 
 	default:

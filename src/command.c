@@ -1,22 +1,22 @@
 /* Command table manipulation functions and vectors.
 
-	Copyright (C) 1993-1998 Sebastiano Vigna 
-	Copyright (C) 1999-2015 Todd M. Lewis and Sebastiano Vigna
+   Copyright (C) 1993-1998 Sebastiano Vigna 
+   Copyright (C) 1999-2015 Todd M. Lewis and Sebastiano Vigna
 
-	This file is part of ne, the nice editor.
+   This file is part of ne, the nice editor.
 
-	This library is free software; you can redistribute it and/or modify it
-	under the terms of the GNU General Public License as published by
-	the Free Software Foundation; either version 3 of the License, or (at your
-	option) any later version.
+   This library is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or (at your
+   option) any later version.
 
-	This library is distributed in the hope that it will be useful, but
-	WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-	or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-	for more details.
+   This library is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, see <http://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
 
 #include "ne.h"
@@ -396,7 +396,7 @@ void record_action(char_stream *cs, action a, int c, unsigned char *p, int verbo
 	char t[MAX_INT_LEN + 2];
 
 	if (commands[a].flags & DO_NOT_RECORD) return;
-	
+
 	/* NOP_A is special; it may actually be a comment.
 		Blank lines and real NOPs are recorded as blank lines. */
 	if (a == NOP_A) {
@@ -433,19 +433,19 @@ static int insertchar_val(const unsigned char *p) {
 	int h;
 	const unsigned char *cmd;
 	action a;
-	 
+
 	if ( !p || !*p) return 0;
-	 
+
 	while(isasciispace(*p)) p++;
 
 	cmd = p;
-	
+
 	if (!isalpha(*p)) return 0;
-	
+
 	while(*p && !isasciispace(*p)) p++;
-	
+
 	h = hash_cmd(cmd, p - cmd);
-	
+
 	if (((a = hash_table[h]) && !cmdcmp(commands[--a].name, cmd)
 		|| (a = short_hash_table[h]) && !cmdcmp(commands[--a].short_name, cmd))	&& a == INSERTCHAR_A) {
 
@@ -460,7 +460,7 @@ static int insertchar_val(const unsigned char *p) {
    calls to macros (which may themselves contain undo commands). This function
    looks through a stream for undo or non-built in commands, and returns 0
    if any are found; returns 1 otherwise. */
-   
+
 int vet_optimize_macro_stream(char_stream *cs, int pos) {
 	int n, a;
 	unsigned char *p;
@@ -490,7 +490,7 @@ void optimize_macro(char_stream *cs, int verbose) {
 	int chr;
 	int building = 0;
 	int safe_to_optimize = 0;
-	 
+
 	if (!cs || !cs->len) return;
 
 	for (pos = 0; pos < cs->len; pos += strlen(&cs->stream[pos]) + 1) {
@@ -521,7 +521,7 @@ void optimize_macro(char_stream *cs, int verbose) {
 		}
 	}
 }
-  
+
 
 /* This function is the ultimate goal of this file. It plays a character
    stream, considering each line as a command line. It polls the global stop
@@ -701,7 +701,7 @@ void unload_macros(void) {
 char *find_key_strokes(int c) {
 	int i;
 	char *str=NULL, *p;
-	
+
 	for (i=0; i<NUM_KEYS; i++) {
 		if (key_binding[i]) {
 			if (((!strncasecmp(commands[c].short_name,key_binding[i],strlen(commands[c].short_name))) &&
@@ -743,13 +743,13 @@ void help(char *p) {
 	char **tmphelp;
 	int j, i = 0;
 	req_list rl;
-	
+
 	rl.cmpfnc = NULL;
 	rl.allow_dupes = FALSE;
 	rl.allow_reorder = FALSE;
 	rl.ignore_tab = TRUE;
 	rl.suffix = 0;
-	
+
 	rl.cur_chars = 0;
 	rl.alloc_chars = 0;
 	rl.chars = NULL;
@@ -779,7 +779,7 @@ void help(char *p) {
 				i = parse_command_line(command_names[i], NULL, NULL, FALSE);
 				D(fprintf(stderr,"...and got i=%d\n",i);)
 			}
-			
+
 			if (i < 0) {
 				i = 0;
 				continue;

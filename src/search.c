@@ -1,22 +1,22 @@
 /* Search/replace functions (with and without regular expressions).
 
-	Copyright (C) 1993-1998 Sebastiano Vigna 
-	Copyright (C) 1999-2015 Todd M. Lewis and Sebastiano Vigna
+   Copyright (C) 1993-1998 Sebastiano Vigna 
+   Copyright (C) 1999-2015 Todd M. Lewis and Sebastiano Vigna
 
-	This file is part of ne, the nice editor.
+   This file is part of ne, the nice editor.
 
-	This library is free software; you can redistribute it and/or modify it
-	under the terms of the GNU General Public License as published by
-	the Free Software Foundation; either version 3 of the License, or (at your
-	option) any later version.
+   This library is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or (at your
+   option) any later version.
 
-	This library is distributed in the hope that it will be useful, but
-	WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-	or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-	for more details.
+   This library is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, see <http://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
 
 #include "ne.h"
@@ -202,7 +202,7 @@ int replace(buffer * const b, const int n, const char * const string) {
 	assert(string != NULL);
 
 	last_replace_empty_match = FALSE;
-	
+
 	len = strlen(string);
 
 	start_undo_chain(b);
@@ -381,7 +381,7 @@ int find_regexp(buffer * const b, const unsigned char *regex, const int skip_fir
 
 				escape = FALSE;
 			} while(*(s++));
-			
+
 			/* This assert may be false if a [ is not closed. */
 			assert(strlen(actual_regex) == strlen(regex) + (strlen(UTF8DOT) - 1) * dots + (strlen(UTF8NONWORD) - 2) * nonwords + (strlen(UTF8COMP) - 1) * comps);
 		}

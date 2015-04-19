@@ -1,22 +1,22 @@
 /* Various editing functions such as word wrap, to upper, etc.
 
-	Copyright (C) 1993-1998 Sebastiano Vigna
-	Copyright (C) 1999-2015 Todd M. Lewis and Sebastiano Vigna
+   Copyright (C) 1993-1998 Sebastiano Vigna
+   Copyright (C) 1999-2015 Todd M. Lewis and Sebastiano Vigna
 
-	This file is part of ne, the nice editor.
+   This file is part of ne, the nice editor.
 
-	This library is free software; you can redistribute it and/or modify it
-	under the terms of the GNU General Public License as published by
-	the Free Software Foundation; either version 3 of the License, or (at your
-	option) any later version.
+   This library is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or (at your
+   option) any later version.
 
-	This library is distributed in the hope that it will be useful, but
-	WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-	or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-	for more details.
+   This library is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, see <http://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
 
 #include "ne.h"
@@ -310,7 +310,7 @@ static int save_spots(line_desc * const ld, const int pos, const encoding_type e
 	if (pa_spots) free(pa_spots);
 	pa_spots  = NULL;
 	pa_spots_pos = 0;
-	
+
 	if (!ld->line || ld->line_len <= pos) return 0; /* No data on this line. */
 
 	while(pos + pa_spots_pos < ld->line_len && isparaspot(ld->line[pos+pa_spots_pos]))
@@ -321,7 +321,7 @@ static int save_spots(line_desc * const ld, const int pos, const encoding_type e
 	}
 	return pa_spots_pos > 0;
 }
-	
+
 static char *pa_space     = NULL;  /* Where we keep space for paragraph left offsets */
 static int   pa_space_len;         /* How long pa_space is when tabs are expanded */
 static int   pa_space_pos;         /* How long pa_space is without expanding tabs */
@@ -515,7 +515,7 @@ int paragraph(buffer * const b) {
 		while(pos < ld->line_len && isparaspot(ld->line[pos]))
 			pos = next_pos(ld->line, pos, b->encoding);
 		if (pos == ld->line_len) skip = TRUE;
-			
+
 		/** 5. If the _following_ line is part of this paragraph (i.e., its first  **/
 		/**     non-blank character is in the correct position):                   **/
 
@@ -614,7 +614,7 @@ int center(buffer * const b) {
 	delete_stream(b, ld, b->cur_line, end_pos, ld->line_len - end_pos);
 	delete_stream(b, ld, b->cur_line, 0, start_pos);
 	insert_spaces(b, ld, b->cur_line, 0, (right_margin - len) / 2);
-	
+
 	end_undo_chain(b);
 
 	return OK;
@@ -661,7 +661,7 @@ int shift(buffer * const b, char *p, char *msg, int msg_size) {
 	int line;
 	int avshift;
 	int rc = 0;
-	
+
 	/* Parse parm p; looks like [<|>] ### [s|t], but we allow them
 	   in any order, once, with optional white space. */
 	if (p) {
@@ -692,7 +692,7 @@ int shift(buffer * const b, char *p, char *msg, int msg_size) {
 
 	/* If we're shifting left (dir=='<'), verify that we have sufficient white space
 	   to remove on all the relevant lines before making any changes, i. */
-	
+
 	if (dir == '<') {
 		shift_size = -shift_size; /* signed shift_size now also indicates direction. */
 		for (line=first_line; !rc && line<=last_line; line++) {
@@ -786,7 +786,7 @@ int shift(buffer * const b, char *p, char *msg, int msg_size) {
 		}
 		update_window_lines(b, 0, ne_lines - 2, FALSE);
 	}
-	
+
 	/* put the screen back where way we found it. */
 	goto_line(b, init_line);
 	goto_pos(b, init_pos);

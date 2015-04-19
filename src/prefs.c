@@ -1,22 +1,22 @@
 /* Preferences functions.
 
-	Copyright (C) 1993-1998 Sebastiano Vigna 
-	Copyright (C) 1999-2015 Todd M. Lewis and Sebastiano Vigna
+   Copyright (C) 1993-1998 Sebastiano Vigna 
+   Copyright (C) 1999-2015 Todd M. Lewis and Sebastiano Vigna
 
-	This file is part of ne, the nice editor.
+   This file is part of ne, the nice editor.
 
-	This library is free software; you can redistribute it and/or modify it
-	under the terms of the GNU General Public License as published by
-	the Free Software Foundation; either version 3 of the License, or (at your
-	option) any later version.
+   This library is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or (at your
+   option) any later version.
 
-	This library is distributed in the hope that it will be useful, but
-	WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-	or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-	for more details.
+   This library is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, see <http://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
 
 #include "ne.h"
@@ -117,7 +117,7 @@ char *exists_gprefs_dir(void) {
 	/* If we have been already called, we already computed the name. We
 		should free up the name and re-compute it (because the global dir may
 		have changed). */
-	 
+
 	if (gprefs_dir) {
 		free(gprefs_dir);
 		gprefs_dir = NULL;
@@ -178,7 +178,7 @@ int save_prefs(buffer * const b, const char * const name) {
 		record_action(cs, BINARY_A,           b->opt.binary,         NULL, verbose_macros);
 		record_action(cs, UTF8AUTO_A,         b->opt.utf8auto,       NULL, verbose_macros);
 		record_action(cs, VISUALBELL_A,       b->opt.visual_bell,    NULL, verbose_macros);
-		
+
 		if (saving_global) {
 			/* We only save the global flags that differ from their defaults. */
 			/* Make sure these are in sync with the defaults near the top of ne.c. */
@@ -327,7 +327,7 @@ typedef struct {
 	int psize;
 	options_t pref[MAX_PREF_STACK_SIZE];
 } pref_stack_t;
-  
+
 static pref_stack_t pstack = { 0, MAX_PREF_STACK_SIZE };
 
 int push_prefs(buffer * const b) {
@@ -343,7 +343,7 @@ int push_prefs(buffer * const b) {
 	print_message(msg);
 	return OK;
 }
-  
+
 int pop_prefs(buffer * const b) {
 	char msg[120];
 	if (pstack.pcount <= 0) {

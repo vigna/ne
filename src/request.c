@@ -1,22 +1,22 @@
 /* Requester handling.
 
-	Copyright (C) 1993-1998 Sebastiano Vigna
-	Copyright (C) 1999-2015 Todd M. Lewis and Sebastiano Vigna
+   Copyright (C) 1993-1998 Sebastiano Vigna
+   Copyright (C) 1999-2015 Todd M. Lewis and Sebastiano Vigna
 
-	This file is part of ne, the nice editor.
+   This file is part of ne, the nice editor.
 
-	This library is free software; you can redistribute it and/or modify it
-	under the terms of the GNU General Public License as published by
-	the Free Software Foundation; either version 3 of the License, or (at your
-	option) any later version.
+   This library is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or (at your
+   option) any later version.
 
-	This library is distributed in the hope that it will be useful, but
-	WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-	or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-	for more details.
+   This library is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, see <http://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
 
 #include "ne.h"
@@ -35,7 +35,7 @@
    RETURN, n is returned; if string n was selected with TAB, -n-2 is returned.
    On escaping, ERROR is returned.
 
-	We rely on a series of auxiliary functions and a few static variables. */
+   We rely on a series of auxiliary functions and a few static variables. */
 
 static req_list rl, *rl0; /* working and original * req_list */
 
@@ -53,12 +53,12 @@ static int x, y, page, max_names_per_line, max_names_per_col, names_per_page, fu
    The request code was also full of tricky expressions like those in
    the macros below.
 
-	This version attempts to switch to a by-row request display, and also
-	to consolidate as many of the tricky expressions into one small set of
-	macros.
+   This version attempts to switch to a by-row request display, and also
+   to consolidate as many of the tricky expressions into one small set of
+   macros.
 
-	If request_order is true you should get by-column request list. Otherwise it will
-	exibit the by-row behavior of the older versions of ne. */
+   If request_order is true you should get by-column request list. Otherwise it will
+   exibit the by-row behavior of the older versions of ne. */
 
 #define BR_NAMES_PER_LINE(p) max_names_per_line
 #define BR_NAMES_PER_COL(p) max_names_per_col
@@ -75,14 +75,14 @@ static int x, y, page, max_names_per_line, max_names_per_col, names_per_page, fu
     roughly proportional to the window itself. (Prior pages use the entire window of course.)
     Calculating $x first gives slight priority to taller columns rather than wider lines.
 
-	 Translating the Perl "$x =" and "$y =" to the C macros NAMES_PER_LINE and NAMES_PER_COL,
-	 respectively, is a matter of substituting the following:
-		$N  ($M - $n)
-		$n  (rl.cur_entries % names_per_page)	 The number of actual entries on the last page.
-		$X  max_names_per_line
-		$Y  max_names_per_col
-		$M  names_per_page
-		$x  NAMES_PER_LINE(p)
+    Translating the Perl "$x =" and "$y =" to the C macros NAMES_PER_LINE and NAMES_PER_COL,
+    respectively, is a matter of substituting the following:
+   	$N  ($M - $n)
+   	$n  (rl.cur_entries % names_per_page)	 The number of actual entries on the last page.
+   	$X  max_names_per_line
+   	$Y  max_names_per_col
+   	$M  names_per_page
+   	$x  NAMES_PER_LINE(p)
 
 #!/usr/bin/perl -w
 use strict;
@@ -285,13 +285,13 @@ static int request_reorder(const int dir) {
 	i = rl0->orig_order[i0];
 	rl0->orig_order[i0] = rl0->orig_order[i1];
 	rl0->orig_order[i1] = i;
-	
+
 	rl.entries[n0] = p1;
 	rl.entries[n1] = p0;
-	
+
 	rl0->entries[i0] = p1;
 	rl0->entries[i1] = p0;
-	
+
 	page = -1; /* causes normalize() to call print_strings() */
 	normalize(n1);
 	return 1;

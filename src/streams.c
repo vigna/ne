@@ -1,22 +1,22 @@
 /* Stream handling functions.
 
-	Copyright (C) 1993-1998 Sebastiano Vigna 
-	Copyright (C) 1999-2015 Todd M. Lewis and Sebastiano Vigna
+   Copyright (C) 1993-1998 Sebastiano Vigna 
+   Copyright (C) 1999-2015 Todd M. Lewis and Sebastiano Vigna
 
-	This file is part of ne, the nice editor.
+   This file is part of ne, the nice editor.
 
-	This library is free software; you can redistribute it and/or modify it
-	under the terms of the GNU General Public License as published by
-	the Free Software Foundation; either version 3 of the License, or (at your
-	option) any later version.
+   This library is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or (at your
+   option) any later version.
 
-	This library is distributed in the hope that it will be useful, but
-	WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-	or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-	for more details.
+   This library is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, see <http://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
 
 #include "ne.h"
@@ -113,9 +113,9 @@ int insert_in_stream(char_stream *cs, const char *s, const int pos, const int le
 	if (!cs) return ERROR;
 
 	if (pos > cs->len) return ERROR;
-		
+
 	tail = cs->len - pos;
-	
+
 	if (cs->size - cs->len < len && !realloc_char_stream(cs, cs->len + len + CHAR_STREAM_SIZE_INC)) return OUT_OF_MEMORY;
 
 	if (tail > 0) memmove(cs->stream + pos + len, cs->stream + pos, tail);
@@ -234,7 +234,7 @@ char_stream *load_stream_from_fh(char_stream *cs, const int fh, const int preser
 	for(i = j = 0; i < len; i++, j++) {
 		if (i < len - 1 && !preserve_cr && cs->stream[i] == '\r' && cs->stream[i + 1] == '\n') i++;
 		cs->stream[j] = cs->stream[i];
-		
+
 		if (cs->stream[j] == terminators[0] || cs->stream[j] == terminators[1]) cs->stream[j] = 0;
 	}
 

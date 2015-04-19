@@ -1,22 +1,22 @@
 /* Navigation functions.
 
-	Copyright (C) 1993-1998 Sebastiano Vigna
-	Copyright (C) 1999-2015 Todd M. Lewis and Sebastiano Vigna
+   Copyright (C) 1993-1998 Sebastiano Vigna
+   Copyright (C) 1999-2015 Todd M. Lewis and Sebastiano Vigna
 
-	This file is part of ne, the nice editor.
+   This file is part of ne, the nice editor.
 
-	This library is free software; you can redistribute it and/or modify it
-	under the terms of the GNU General Public License as published by
-	the Free Software Foundation; either version 3 of the License, or (at your
-	option) any later version.
+   This library is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or (at your
+   option) any later version.
 
-	This library is distributed in the hope that it will be useful, but
-	WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-	or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-	for more details.
+   This library is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, see <http://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
 
 #include "ne.h"
@@ -454,7 +454,7 @@ int page_up(buffer * const b) {
 
 	/* Already on the top line? */
 	if (b->cur_line == 0) return OK;
-	
+
 	update_syntax_states(b, -1, b->cur_line_desc, NULL);
 	b->attr_len = -1;
 
@@ -466,14 +466,14 @@ int page_up(buffer * const b) {
 
 	for (i = 0; i < disp; i++) {
 		b->wanted_y--; /* We want to move up */
-			
+
 		/* Can we move up? */
 		if (b->wanted_y >= 0 /* We aren't yet off the top */
 				&& b->wanted_y < b->num_lines - 1) { /* we aren't still past the end */
 			b->cur_line_desc = (line_desc *)b->cur_line_desc->ld_node.prev;
 			b->cur_line--;
 		}
-		
+
 		/* Should we shift the view up? */
 		if (b->win_y > 0 /* We aren't already at the top */
 				&& b->win_y + b->wanted_cur_y > b->wanted_y) { /* Gap between virtual cursor and TOS is to small */
@@ -498,7 +498,7 @@ int page_down(buffer * const b) {
 
 	/* Already on the bottom line? */
 	if (b->cur_line == b->num_lines - 1) return OK;
-	
+
 	update_syntax_states(b, -1, b->cur_line_desc, NULL);
 	b->attr_len = -1;
 
@@ -512,14 +512,14 @@ int page_down(buffer * const b) {
 
 	for (i = 0; i < disp; i++) {
 		b->wanted_y++; /* We want to move down */
-			
+
 		/* Can we move down? */
 		if (b->wanted_y > 0 /* We aren't still above the top  */
 				&&  b->wanted_y < b->num_lines) { /* we aren't yet to the end */
 			b->cur_line_desc = (line_desc *)b->cur_line_desc->ld_node.next;
 			b->cur_line++;
 		}
-		
+
 		/* Should we shift the view down? */
 		if (shift_view /* already decided we should */
 				&& b->wanted_y - b->wanted_cur_y >  b->win_y) { /* Gap between virtual cursor and TOS is to big */
@@ -591,7 +591,7 @@ int adjust_view(buffer * const b, const unsigned char *p) {
 	b->y_wanted = 0;
 
 	if (!p) p = "t";
-	
+
 	while(*p) {
 		disp = 0;
 		mag = max(0,strtol(p+1, &q, 0));

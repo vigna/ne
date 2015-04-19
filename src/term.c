@@ -1,24 +1,24 @@
 /* Terminal control based on terminfo capabilities.
    Originally part of GNU Emacs. Vastly edited and modified for use within ne.
 
-	Copyright (C) 1985, 1986, 1987 Free Software Foundation, Inc.
-	Copyright (C) 1993-1998 Sebastiano Vigna 
-	Copyright (C) 1999-2015 Todd M. Lewis and Sebastiano Vigna
+   Copyright (C) 1985, 1986, 1987 Free Software Foundation, Inc.
+   Copyright (C) 1993-1998 Sebastiano Vigna 
+   Copyright (C) 1999-2015 Todd M. Lewis and Sebastiano Vigna
 
-	This file is part of ne, the nice editor.
+   This file is part of ne, the nice editor.
 
-	This library is free software; you can redistribute it and/or modify it
-	under the terms of the GNU General Public License as published by
-	the Free Software Foundation; either version 3 of the License, or (at your
-	option) any later version.
+   This library is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or (at your
+   option) any later version.
 
-	This library is distributed in the hope that it will be useful, but
-	WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-	or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-	for more details.
+   This library is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, see <http://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
 
 #include <stdio.h>
@@ -355,7 +355,7 @@ void set_attr(const unsigned int attr) {
 	if (color_ok) {
 		/* Colors must be set if attributes have been reset and the required
 			color is not default, or in any case if the color has changed. */
-		
+
 		if (attr_reset && (attr & FG_NOT_DEFAULT) || (attr & FG_MASK) != (curr_attr & FG_MASK)) {
 			if (attr & FG_NOT_DEFAULT) {
 				buf = tparm(ne_set_foreground , joe2color(attr >> FG_SHIFT));
@@ -394,7 +394,7 @@ static void standout_if_wanted(void) {
 
 /* These functions are called on all terminals in order to handle highlighting,
    but do nothing on terminals with a magic cookie (or without standout).  */
- 
+
 void standout_on (void) {
 	if (standout_ok) standout_wanted = TRUE;
 }
@@ -410,7 +410,7 @@ void standout_off (void) {
 
 static void out(int c, const int attr) {
 	int add_attr = 0;
-	
+
 	/* PORTABILITY PROBLEM: this code is responsible for filtering nonprintable
 		characters. On systems with a wider system character set, it could be
 		redefined, for instance, in order to allow characters between 128 and 160 to
@@ -422,17 +422,17 @@ static void out(int c, const int attr) {
 		c = '?';
 		add_attr = INVERSE;
 	}
-	
+
 	if (c == 160) {
 		c = ' ';
 		add_attr = INVERSE;
 	}
-	
+
 	if (c < ' ') {
 		c += '@';
 		add_attr = INVERSE;
 	}
-	
+
 	if (c > 0xFF && !io_utf8) {
 		c = '?';
 		add_attr = INVERSE;
@@ -834,7 +834,7 @@ void insert_chars(const unsigned char * start, const unsigned int * const attr, 
 					start += utf8len(*start);
 				}
 				else c = *start++;
-				
+
 				if (ne_tilde_glitch && c == '~') c = '`';
 
 				out(c, attr ? attr[i] : -1);
@@ -913,9 +913,9 @@ int ins_del_lines (const int vpos, const int n) {
 	assert(line_ins_del_ok);
 	assert(i != 0);
 	assert(vpos < specified_window);
-	
+
 	if (scroll_region_ok && vpos + i >= specified_window) return FALSE;
-	
+
 	if (!ne_memory_below && vpos + i >= ne_lines) return FALSE;
 
 	standout_if_wanted();
@@ -958,7 +958,7 @@ int ins_del_lines (const int vpos, const int n) {
 			}
 		}
 	}
-	
+
 	return TRUE;
 }
 
@@ -1024,7 +1024,7 @@ int ttysize(void) {
 		D(fprintf(stderr,"ttysize: size changed.\n");)
 		return 1;
 	}
-	
+
 	return 0;
 }
 

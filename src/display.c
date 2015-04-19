@@ -1,22 +1,22 @@
 /* Display handling functions with optional update delay
 
-	Copyright (C) 1993-1998 Sebastiano Vigna 
-	Copyright (C) 1999-2015 Todd M. Lewis and Sebastiano Vigna
+   Copyright (C) 1993-1998 Sebastiano Vigna 
+   Copyright (C) 1999-2015 Todd M. Lewis and Sebastiano Vigna
 
-	This file is part of ne, the nice editor.
+   This file is part of ne, the nice editor.
 
-	This library is free software; you can redistribute it and/or modify it
-	under the terms of the GNU General Public License as published by
-	the Free Software Foundation; either version 3 of the License, or (at your
-	option) any later version.
+   This library is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or (at your
+   option) any later version.
 
-	This library is distributed in the hope that it will be useful, but
-	WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-	or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-	for more details.
+   This library is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, see <http://www.gnu.org/licenses/>. */
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, see <http://www.gnu.org/licenses/>. */
 
 
 #include "ne.h"
@@ -65,7 +65,7 @@ void delay_update() {
 	window_needs_refresh = TRUE;
 #endif
 }
-	 
+
 
 /* Compares two highlight states for equality. */
 
@@ -91,14 +91,14 @@ This function uses the local attribute buffer: thus, after a call the local attr
 could be invalidated. */
 
 void update_syntax_states(buffer *b, int row, line_desc *ld, line_desc *end_ld) {
-	
+
 	if (b->syn && need_attr_update) {
  		int got_end_ld = end_ld == NULL;
 		int invalidate_attr_buf = FALSE;
 		HIGHLIGHT_STATE next_line_state = b->attr_len < 0 ? parse(b->syn, ld, ld->highlight_state, b->encoding == ENC_UTF8) : b->next_state;
 
 		assert(b->attr_len < 0 || b->attr_len == calc_char_len(ld, b->encoding));
-		
+
 		/* We update lines until the currenct starting state is equal to next_line_state, but we go until
 			end_ld if it is not NULL. In any case, we bail out at the end of the file. */
 		for(;;) {
@@ -148,17 +148,17 @@ void update_syntax_states(buffer *b, int row, line_desc *ld, line_desc *end_ld) 
    meaning as in update_line() and update_partial_line(). If utf8 is TRUE,
    then the line content is considered to be UTF-8 encoded.
 
-	If attr is not NULL, it contains a the list of attributes for the line
-	descriptor; if diff is not NULL, the update is differential: we assume
-	that the line is already correctly displayed with the attributes
-	specified in diff. If diff_size is shorter than the current line, all
-	characters without differential information will be updated. */
+   If attr is not NULL, it contains a the list of attributes for the line
+   descriptor; if diff is not NULL, the update is differential: we assume
+   that the line is already correctly displayed with the attributes
+   specified in diff. If diff_size is shorter than the current line, all
+   characters without differential information will be updated. */
 
 void output_line_desc(const int row, const int col, line_desc *ld, const int from_col, const int num_cols, const int tab_size, const int cleared_at_end, const int utf8, const int * const attr, const int * const diff, const int diff_size) {
-	
+
 	int curr_col, output_col, pos, attr_pos, c, c_len;
 	const unsigned char *s = ld->line;
-	
+
 	assert(ld != NULL);
 	assert(row < ne_lines - 1 && col < ne_columns);
 
@@ -185,7 +185,7 @@ void output_line_desc(const int row, const int col, line_desc *ld, const int fro
 					move_cursor(row, output_col + i);
 					output_char(' ', attr ? attr[attr_pos] : 0, FALSE);
 				}
-	
+
 			curr_col += tab_width;
 		}
 		else {
@@ -236,18 +236,18 @@ void output_line_desc(const int row, const int col, line_desc *ld, const int fro
    TRUE, this function assumes that it doesn't have to clean up the rest of the
    line if the string is not long enough to fill the line. 
 
-	If differential is nonzero, the line is update differentially w.r.t.
-	the content of b->attr_buf. The caller is thus responsible to guarantee
-	that b->attr_buf contents reflect the currently displayed characters. 
+   If differential is nonzero, the line is update differentially w.r.t.
+   the content of b->attr_buf. The caller is thus responsible to guarantee
+   that b->attr_buf contents reflect the currently displayed characters. 
 
-	Note that this function guarantees that it will call parse() on the
-	specified line.
+   Note that this function guarantees that it will call parse() on the
+   specified line.
 
-	Returns the line descriptor corresponding to row, or NULL if the
-	row is beyond the end of text. */
+   Returns the line descriptor corresponding to row, or NULL if the
+   row is beyond the end of text. */
 
 line_desc *update_partial_line(buffer * const b, const int row, const int from_col, const int cleared_at_end, const int differential) {
-	
+
 	int i;
 	line_desc *ld = b->top_line_desc;
 
@@ -303,7 +303,7 @@ void update_line(buffer * const b, const int n, const int cleared_at_end, const 
    TRUE forces a real update. Generally, doit should be FALSE. */
 
 void update_window_lines(buffer * const b, const int start_line, const int end_line, const int doit) {
-	
+
 	int i;
 	line_desc *ld = b->top_line_desc;
 
@@ -315,7 +315,7 @@ void update_window_lines(buffer * const b, const int start_line, const int end_l
 	if (last_line < end_line) last_line = end_line;
 
 	if (window_needs_refresh && ! doit) return;
-		
+
 	for(i = 0; i <= last_line && i + b->win_y < b->num_lines; i++) {
 		assert(ld->ld_node.next != NULL);
 
@@ -442,7 +442,7 @@ void update_deleted_char(buffer * const b, const int c, const int a, const line_
 			break;
 		}
 	}
-	
+
 	/* No TAB was found. We just delete the character and fill the end of the line. */
 	if (!tab_found) {
 		delete_chars(c_width);
@@ -522,8 +522,8 @@ void update_inserted_char(buffer * const b, const int c, const line_desc * const
 
 	if (c == '\t') insert_chars(NULL, attr, c_width, FALSE);
 	else insert_char(c, attr ? *attr : -1, b->encoding == ENC_UTF8);
-	
-	
+
+
 }
 
 /* See comments for update_deleted_char(). */
@@ -774,7 +774,7 @@ void automatch_bracket(buffer * const b, const int show) {
 					case BG_BWHITE:   tmp_attr = (tmp_attr & ~BG_MASK ) | BG_WHITE;        break;
 					default:          tmp_attr = (tmp_attr & ~BG_MASK ) | BG_BWHITE;       break;
 					}                           
-					
+
 					switch (orig_attr & FG_MASK) {
 					case FG_BLACK:    tmp_attr = (tmp_attr & ~FG_MASK) | FG_BBLACK;      break;
 					case FG_RED:      tmp_attr = (tmp_attr & ~FG_MASK) | FG_BRED;        break;

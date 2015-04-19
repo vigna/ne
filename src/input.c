@@ -1,22 +1,22 @@
 /* Input line handling.
 
-	Copyright (C) 1993-1998 Sebastiano Vigna 
-	Copyright (C) 1999-2015 Todd M. Lewis and Sebastiano Vigna
+   Copyright (C) 1993-1998 Sebastiano Vigna 
+   Copyright (C) 1999-2015 Todd M. Lewis and Sebastiano Vigna
 
-	This file is part of ne, the nice editor.
+   This file is part of ne, the nice editor.
 
-	This library is free software; you can redistribute it and/or modify it
-	under the terms of the GNU General Public License as published by
-	the Free Software Foundation; either version 3 of the License, or (at your
-	option) any later version.
+   This library is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or (at your
+   option) any later version.
 
-	This library is distributed in the hope that it will be useful, but
-	WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-	or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-	for more details.
+   This library is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, see <http://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
 
 #include "ne.h"
@@ -37,7 +37,7 @@
 static unsigned int print_prompt(const unsigned char * const prompt) {
 	static unsigned char *prior_prompt;
 	assert(prompt != NULL || prior_prompt);
-	
+
 	if (prompt) prior_prompt = (unsigned char *)prompt;
 
 	move_cursor(ne_lines - 1, 0);
@@ -173,7 +173,7 @@ static void init_history(void) {
 			/* This should be never necessary with new histories, as all lines will
 				be terminated by a life feed, but it is kept for backward
 				compatibility. */
-			
+
 			move_to_bof(history_buff);
 			if (history_buff->cur_line_desc->line && history_buff->cur_line_desc->line_len) {
 				insert_stream(history_buff,
@@ -231,18 +231,18 @@ static void add_to_history(const unsigned char * const str) {
    Note that presently this function always returns a pointer to a static
    buffer, but this could change in the future.
 
-	completion_allowed has several possible values:
-	 0 COMPLETE_NONE	means no completion,
-	 1 COMPLETE_FILE	complete as a filename,
-	 2					  complete as a command followed by a filename, (not implemented?)
-	 3 COMPLETE_SYNTAX complete as a recognized syntax name.
+   completion_allowed has several possible values:
+    0 COMPLETE_NONE	means no completion,
+    1 COMPLETE_FILE	complete as a filename,
+    2					  complete as a command followed by a filename, (not implemented?)
+    3 COMPLETE_SYNTAX complete as a recognized syntax name.
 
-	If prefer_utf8 is true, editing an ASCII line inserting an ISO-8859-1 character
-	will turn it into an UTF-8 line.
-	
-	request() relies on a number of auxiliary functions and static data. As
-	always, we would really need nested functions, but, alas, C can't cope with
-	them. */
+   If prefer_utf8 is true, editing an ASCII line inserting an ISO-8859-1 character
+   will turn it into an UTF-8 line.
+
+   request() relies on a number of auxiliary functions and static data. As
+   always, we would really need nested functions, but, alas, C can't cope with
+   them. */
 
 static unsigned char input_buffer[MAX_INPUT_LINE_LEN + 1];
 
@@ -308,7 +308,7 @@ static void input_autocomplete(void) {
 			alert();
 		} else {
 			encoding = ac_encoding;
-			
+
 			if (prefix_pos < pos) {
 				memmove(&input_buffer[prefix_pos], &input_buffer[pos], len - pos + 1);
 				len -= pos - prefix_pos;
@@ -523,7 +523,7 @@ char *request(const char *prompt, const char * const default_string, const int a
 	x = start_x = print_prompt(prompt);
 
 	init_history();
-	
+
 	if (default_string) {
 		strncpy(input_buffer, default_string, MAX_INPUT_LINE_LEN);
 		len = strlen(input_buffer);
@@ -550,28 +550,28 @@ char *request(const char *prompt, const char * const default_string, const int a
 		case INVALID:
 			alert();
 			break;
-					
+
 		case ALPHA:
 
 			if (first_char_typed) {
 				input_buffer[len = 0] = 0;
 				clear_to_eol();
 			}
-			
+
 			if (encoding == ENC_ASCII && c > 0x7F) encoding = prefer_utf8 || c > 0xFF ? ENC_UTF8 : ENC_8_BIT;
 			c_len = encoding == ENC_UTF8 ? utf8seqlen(c) : 1;
 			c_width = output_width(c);
 			assert(c_len > 0);
 
 			if (len <= MAX_INPUT_LINE_LEN - c_len && (alpha_allowed || (c < 0x100 && isxdigit(c)) || c=='X' || c=='x')) {
-				
+
 				memmove(&input_buffer[pos + c_len], &input_buffer[pos], len - pos + 1);
 
 				if (c_len == 1) input_buffer[pos] = c;
 				else utf8str(c, &input_buffer[pos]);
 
 				len += c_len;
-				
+
 				move_cursor(ne_lines - 1, x);
 
 				if (x < ne_columns - c_width) {
@@ -681,7 +681,7 @@ char *request(const char *prompt, const char * const default_string, const int a
 							 && history_buff->cur_line_desc->line 
 							 && !strncmp(history_buff->cur_line_desc->line, input_buffer, history_buff->cur_line_desc->line_len))
 							line_up(history_buff);
-						
+
 						if (history_buff->cur_line_desc->line) {
 							strncpy(input_buffer,
 									  history_buff->cur_line_desc->line,
@@ -750,7 +750,7 @@ char *request(const char *prompt, const char * const default_string, const int a
 					encoding = ENC_ASCII;
 					x = start_x;
 					break;
- 
+
 				case DELETEEOL_A:
 					input_buffer[len = pos] = 0;
 					clear_to_eol();

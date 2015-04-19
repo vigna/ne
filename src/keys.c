@@ -1,22 +1,22 @@
 /* Terminfo database scanning and keyboard escape sequence matching functions.
 
-	Copyright (C) 1993-1998 Sebastiano Vigna 
-	Copyright (C) 1999-2015 Todd M. Lewis and Sebastiano Vigna
+   Copyright (C) 1993-1998 Sebastiano Vigna 
+   Copyright (C) 1999-2015 Todd M. Lewis and Sebastiano Vigna
 
-	This file is part of ne, the nice editor.
+   This file is part of ne, the nice editor.
 
-	This library is free software; you can redistribute it and/or modify it
-	under the terms of the GNU General Public License as published by
-	the Free Software Foundation; either version 3 of the License, or (at your
-	option) any later version.
+   This library is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or (at your
+   option) any later version.
 
-	This library is distributed in the hope that it will be useful, but
-	WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-	or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-	for more details.
+   This library is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, see <http://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
 
 #include "ne.h"
@@ -66,14 +66,14 @@ int binsearch(const char * const s) {
 	if (num_keys) {
 		l = 0;
 		r = num_keys - 1;
-		
+
 		while(l <= r) {
 			m = (l + r) / 2;
 			if (is_prefix(s, key[m].string)) return -m - 1;
 			if (strcmp(key[m].string, s) > 0) l = m + 1;
 			else if (strcmp(key[m].string, s) < 0) r = m - 1;
 		}
-		
+
 	}
 	else return 0;
 
@@ -288,7 +288,7 @@ void read_key_capabilities(void) {
 		generally in sad shape too, but that's a much larger problem.)  However,
 		certain escape sequences are quite common among large sets of terminals,
 		and so we define the most common ones here.
-		
+
 		key_may_set() won't assign key cap strings if that sequence is already
 		taken, so we shouldn't be doing too much damage if the terminfo or
 		termcap happens to be correct.  */
@@ -371,7 +371,7 @@ void read_key_capabilities(void) {
 	key_may_set("\x1bOy", NE_KEY_F(10));
 
 	/* pc keys:   k1=\E[[A   k2=\E[[B    k3=\E[[C    k4=\E[[D     k5=\E[[E */
-	
+
 	key_may_set("\x1b[[A",  NE_KEY_F(1));
 	key_may_set("\x1b[[B",  NE_KEY_F(2));
 	key_may_set("\x1b[[C",  NE_KEY_F(3));
@@ -423,14 +423,14 @@ static void set_termios_timeout(const int timeout) {
    a character (possibly INVALID_CHAR), or a negative number denoting a key
    code (if x is the key code, -x-1 will be returned).
 
-	This function tries to be highly optimized and efficient by employing a
-	sorted array of strings for the terminal keys. An index keeps track of the
-	key which has a partial match with the current contents of the keyboard
-	buffer. As each character is input, a match is tried with the rest of the
-	string. If a new character does not match, we can just increment the key
-	counter (because the array is sorted). When we get out of the array, we give
-	back the first char in the keyboard buffer (the next call will retry a match
-	on the following chars). */
+   This function tries to be highly optimized and efficient by employing a
+   sorted array of strings for the terminal keys. An index keeps track of the
+   key which has a partial match with the current contents of the keyboard
+   buffer. As each character is input, a match is tried with the rest of the
+   string. If a new character does not match, we can just increment the key
+   counter (because the array is sorted). When we get out of the array, we give
+   back the first char in the keyboard buffer (the next call will retry a match
+   on the following chars). */
 
 
 int get_key_code(void) {
@@ -470,34 +470,34 @@ int get_key_code(void) {
 				else {
 					/* First easy case. We felt off the array. We return the first character
 						in the buffer and restart the match. */
-					
+
 					if (!key[cur_key].string) {
 						c = kbd_buffer[0];
 						if (--cur_len) memmove(kbd_buffer, kbd_buffer + 1, cur_len);
 						return c;
 					}
-					
+
 					/* Second case. We have a partial match on the first last_match
 						characters. If another character matches, either the string is terminated,
 						and we return the key code, or we increment the match count. */
-					
-					
+
+
 					else if (key[cur_key].string[last_match] == kbd_buffer[last_match]) {
 						if (key[cur_key].string[last_match + 1] == 0) {
 							if (cur_len -= last_match + 1) memmove(kbd_buffer, kbd_buffer + last_match + 1, cur_len);
-							
+
 							assert(key[cur_key].code < NUM_KEYS);
-							
+
 							return -key[cur_key].code - 1;
 						}
 						else last_match++;
 					}
-					
+
 					/* The tricky part. If there is a failed match, the order guarantees that
 						no match if possible if the code of the keyboard char is greater than the code of
 						the capability char. Otherwise, we check for the first capability starting
 						with the current keyboard characters. */
-					
+
 					else {
 						if (kbd_buffer[last_match] > key[cur_key].string[last_match]) {
 							c = kbd_buffer[0];
@@ -515,10 +515,10 @@ int get_key_code(void) {
 				tenths of second. If nothing arrives, it is probably time to return
 				what we got. Note that this won't work properly if the terminal has
 				a key capability which is a prefix of another key capability. */
-			
+
 			partial_match = TRUE;
 		}
-		
+
 		fflush(stdout);
 
 		if (partial_match) set_termios_timeout(escape_time);

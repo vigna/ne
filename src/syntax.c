@@ -1,22 +1,22 @@
 /* Syntax highlighting from Joe's Own Editor: Syntax highlighting DFA interpreter.
 
-	Copyright (C) 2004 Joseph H. Allen
-	Copyright (C) 2009-2015 Todd M. Lewis and Sebastiano Vigna
+   Copyright (C) 2004 Joseph H. Allen
+   Copyright (C) 2009-2015 Todd M. Lewis and Sebastiano Vigna
 
-	This file is part of ne, the nice editor.
+   This file is part of ne, the nice editor.
 
-	This library is free software; you can redistribute it and/or modify it
-	under the terms of the GNU General Public License as published by
-	the Free Software Foundation; either version 3 of the License, or (at your
-	option) any later version.
+   This library is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or (at your
+   option) any later version.
 
-	This library is distributed in the hope that it will be useful, but
-	WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-	or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-	for more details.
+   This library is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, see <http://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
 
 #include "ne.h"
@@ -178,11 +178,11 @@ int stack_count = 0;
 HIGHLIGHT_STATE parse(struct high_syntax *syntax, line_desc *ld, HIGHLIGHT_STATE h_state, int utf8)
 {
 	struct high_frame *stack = h_state.stack;
-	
+
 	struct high_state *h = (stack ? stack->syntax : syntax)->states[h_state.state];
-	
+
 			/* Current state */
-	
+
 	unsigned char buf[24];			/* Name buffer (trunc after 23 characters) */
 	unsigned char lbuf[24];			/* Lower case version of name buffer */
 	unsigned char lsaved_s[24];		/* Lower case version of delimiter match buffer */
@@ -197,19 +197,19 @@ HIGHLIGHT_STATE parse(struct high_syntax *syntax, line_desc *ld, HIGHLIGHT_STATE
 	int mark2 = 0;  			/* offset to mark end from current pos */
 	int mark_en = 0;			/* set if marking */
 	int recolor_delimiter_or_keyword;
-	
+
 	unsigned char *p = ld->line;			
 	unsigned char *q = ld->line  + ld->line_len;
 
 	buf[0]=0;				/* Forgot this originally... took 5 months to fix! */
-	
-		
+
+
 	/* Get next character */
 							/* Una iterazione in più: aggiungo '\n' come ultimo carattere. */
 	while( p <= q ) { /* On the last itteration, process the virtual '\n' character. */
 		struct high_cmd *cmd, *kw_cmd;
 		int x;
-			
+
 		if (p == q) c = '\n';
 		else c = utf8 ? get_char(p, ENC_UTF8) : *p;
 
@@ -221,8 +221,8 @@ HIGHLIGHT_STATE parse(struct high_syntax *syntax, line_desc *ld, HIGHLIGHT_STATE
 			c = 0x1F;
 
 		/* Create or expand attribute array if necessary */
-		
-		
+
+
 		if(attr==attr_end) {
 			if(!attr_buf) {
 				attr_size = 1024;
@@ -691,7 +691,7 @@ struct high_state *load_dfa(struct high_syntax *syntax)
 	int inside_subr = 0;
 
 	/* Load it */
-	
+
 	if ((p = exists_prefs_dir()) && strlen(p) + 2 + strlen(SYNTAX_DIR) + strlen(SYNTAX_EXT) + strlen(syntax->name) < sizeof name) {
 		strcat(strcat(strcat(strcat(strcpy(name, p), SYNTAX_DIR), "/"), syntax->name), SYNTAX_EXT);
 		f = fopen((char *)name,"r");

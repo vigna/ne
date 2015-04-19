@@ -1,22 +1,22 @@
 /* Buffer handling functions, including allocation, deallocation, and I/O.
 
-	Copyright (C) 1993-1998 Sebastiano Vigna 
-	Copyright (C) 1999-2015 Todd M. Lewis and Sebastiano Vigna
+   Copyright (C) 1993-1998 Sebastiano Vigna 
+   Copyright (C) 1999-2015 Todd M. Lewis and Sebastiano Vigna
 
-	This file is part of ne, the nice editor.
+   This file is part of ne, the nice editor.
 
-	This library is free software; you can redistribute it and/or modify it
-	under the terms of the GNU General Public License as published by
-	the Free Software Foundation; either version 3 of the License, or (at your
-	option) any later version.
+   This library is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or (at your
+   option) any later version.
 
-	This library is distributed in the hope that it will be useful, but
-	WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-	or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-	for more details.
+   This library is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, see <http://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
 
 #include "ne.h" 
@@ -179,7 +179,7 @@ buffer *alloc_buffer(const buffer * const cur_b) {
 		new_list(&b->line_desc_pool_list);
 		new_list(&b->line_desc_list);
 		new_list(&b->char_pool_list);
-		
+
 		b->cur_macro = alloc_char_stream(0);
 		b->opt.tab_size = 8;
 
@@ -418,8 +418,8 @@ int save_all_modified_buffers(void) {
    created with an invalid syntax state, so they will always force an update. */
 
 line_desc *alloc_line_desc(buffer * const b) {
-	
-	
+
+
 	line_desc_pool *ldp;
 	line_desc *ld;
 
@@ -832,7 +832,7 @@ int insert_stream(buffer * const b, line_desc * ld, int line, int pos, const uns
 				ld->line_len += len;
 			}
 			b->is_modified = 1;
-			
+
 			/* We just inserted len chars at (line,pos); adjust bookmarks and mark accordingly. */
 			if (b->marking && b->block_start_line == line && b->block_start_pos > pos) b->block_start_pos += len;
 
@@ -860,7 +860,7 @@ int insert_stream(buffer * const b, line_desc * ld, int line, int pos, const uns
 
 				b->is_modified = 1;
 				ld = new_ld;
-				
+
 				/* We just inserted a line break at (line,pos);
 				   adjust the buffer bookmarks and mark accordingly. */
 				if (b->marking) {
@@ -887,7 +887,7 @@ int insert_stream(buffer * const b, line_desc * ld, int line, int pos, const uns
 				return OUT_OF_MEMORY;
 			}
 		}
-		
+
 		s += len + 1;
 	}
 
@@ -904,7 +904,7 @@ int insert_stream(buffer * const b, line_desc * ld, int line, int pos, const uns
 
 int insert_one_char(buffer * const b, line_desc * const ld, const int line, const int pos, const int c) {
 
-	
+
 	static unsigned char t[8];
 
 	assert(b->encoding == ENC_8_BIT || b->encoding == ENC_UTF8 || c <= 127);
@@ -922,9 +922,9 @@ int insert_one_char(buffer * const b, line_desc * const ld, const int line, cons
 /* Inserts a number of spaces. */
 
 int insert_spaces(buffer * const b, line_desc * const ld, const int line, const int pos, int n) {
-	
-	
-	
+
+
+
 	static unsigned char spaces[MAX_STACK_SPACES];
 	int result = OK, i;
 
@@ -996,7 +996,7 @@ int delete_stream(buffer * const b, line_desc * const ld, const int line, const 
 					else if (b->bookmark[n].line > line) b->bookmark[n].line--;
 				}
 			}
-			
+
 			/* If one of the lines is empty, or their contents are adjacent,
 				we either do nothing or simply set a pointer. */
 
@@ -1065,7 +1065,7 @@ int delete_stream(buffer * const b, line_desc * const ld, const int line, const 
 
 		else {
 			n = len > ld->line_len - pos ? ld->line_len - pos : len;
-			
+
 			/* We're about to erase n chars at (line,pos); adjust mark and bookmarks accordingly. */
 			if (b->marking)
 				if (b->block_start_line == line)
@@ -1148,12 +1148,12 @@ int load_file_in_buffer(buffer * const b, const char *name) {
 	if (!b) return ERROR;
 
 	assert_buffer(b);
-	
+
 	name = tilde_expand(name);
 
 	if (is_directory(name)) return FILE_IS_DIRECTORY;
 	if (is_migrated(name)) return FILE_IS_MIGRATED;
-	 
+
 	if ((fh = open(name, READ_FLAGS)) >= 0) {
 		result = load_fh_in_buffer(b, fh);
 		close(fh);
@@ -1174,7 +1174,7 @@ int load_file_in_buffer(buffer * const b, const char *name) {
    single read in a big pool. */
 
 int load_fh_in_buffer(buffer *b, int fh) {
-	
+
 	off_t len;
 	int i, num_lines;
 	encoding_type encoding;
@@ -1235,7 +1235,7 @@ int load_fh_in_buffer(buffer *b, int fh) {
 
 		/* Now, if UTF-8 auto-detection is enabled, we try to guess whether this
 			buffer is in UTF-8. */
-		
+
 		encoding = detect_encoding(cp->pool, len);
 		if (encoding == ENC_ASCII) b->encoding = ENC_ASCII;
 		else {
@@ -1256,7 +1256,7 @@ int load_fh_in_buffer(buffer *b, int fh) {
 				line_desc *ld = do_syntax ? &ldp->pool[i] : (line_desc *)&((no_syntax_line_desc *)ldp->pool)[i];
 				rem(&ld->ld_node);
 				add_tail(&b->line_desc_list, &ld->ld_node);
-				
+
 				/* ultima riga */
 				if (i == num_lines - 1) {
 					if (p - cp->pool < len) {
@@ -1265,25 +1265,25 @@ int load_fh_in_buffer(buffer *b, int fh) {
 						ld->line_len = len - (p - cp->pool);
 					}
 				}
-				
+
 				else {
 					q = p;
 					while((b->opt.binary || *q != terminators[0] && *q != terminators[1]) && *q) q++;
-					
+
 					ld->line_len = q - p;
 					ld->line = q - p ? p : NULL;
-					
+
 					if (q - cp->pool < len - 1 && !b->opt.preserve_cr && q[0] == '\r' && q[1] == '\n') *q++ = 0;
 					*q++ = 0;
 					p = q;
-					
+
 				}
 			}
 
 
 			ldp->allocated_items = num_lines;
-			
-			
+
+
 
 			/* We set correctly the offsets of the first and last character used. If no
 			character is used (i.e., we have a file of line feeds), the char pool is
@@ -1367,12 +1367,12 @@ int save_buffer_to_file(buffer *b, const char *name) {
 	if (name == NULL) name = b->filename;
 
 	if (!name) return ERROR;
-	
+
 	name = tilde_expand(name);
 
 	if (is_directory(name)) return FILE_IS_DIRECTORY;
 	if (is_migrated(name)) return FILE_IS_MIGRATED;
- 
+
 	block_signals();
 
 	if ((fh = open(name, WRITE_FLAGS, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH)) >= 0) {

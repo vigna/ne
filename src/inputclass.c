@@ -1,22 +1,22 @@
 /* Input class, key bindings and upper casing vector definitions.
 
-	Copyright (C) 1993-1998 Sebastiano Vigna 
-	Copyright (C) 1999-2015 Todd M. Lewis and Sebastiano Vigna
+   Copyright (C) 1993-1998 Sebastiano Vigna 
+   Copyright (C) 1999-2015 Todd M. Lewis and Sebastiano Vigna
 
-	This file is part of ne, the nice editor.
+   This file is part of ne, the nice editor.
 
-	This library is free software; you can redistribute it and/or modify it
-	under the terms of the GNU General Public License as published by
-	the Free Software Foundation; either version 3 of the License, or (at your
-	option) any later version.
+   This library is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or (at your
+   option) any later version.
 
-	This library is distributed in the hope that it will be useful, but
-	WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-	or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-	for more details.
+   This library is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, see <http://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
 
 #include "ne.h"
@@ -76,7 +76,7 @@ const char *key_binding[NUM_KEYS] = {
 	/* ^] */      MATCHBRACKET_ABBREV,
 	/* ^^ */      ADJUSTVIEW_ABBREV,
 	/* ^_ */      FINDREGEXP_ABBREV,
-	    
+
 	/* These keys map to strings, not commands. 31..126  20..7e */
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,  /* space ! " # $ % & ' ( ) * + , - . /  */
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,  /*     0 1 2 3 4 5 6 7 8 9 : ; < = > ?  */
@@ -230,7 +230,7 @@ const char *key_binding[NUM_KEYS] = {
 	/* ESC Ctrl-m */ PLAYONCE_ABBREV, 
 	/* ESC Ctrl-n */ OPENNEW_ABBREV, 
 	/* ESC Ctrl-o */ OPENCLIP_ABBREV,
-	
+
 	/* ESC Ctrl-p */ PARAGRAPH_ABBREV, 
 	/* ESC Ctrl-q */ QUIT_ABBREV, 
 	/* ESC Ctrl-r */ REDO_ABBREV, 
@@ -537,11 +537,11 @@ const char *key_stroke[NUM_KEYS] = {
 	"^]", 
 	"^^", 
 	"^_", 
-	    
+
 	/* These keys map to strings, not commands. 31..126  20..7e */
 	" ", "!", "\"","#", "$", "%", "&", "'", "(", ")", "*", "+", ",", "-", ".", "/",   /* space ! " # $ % & ' ( ) * + , - . /  */
 	"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ":", ";", "<", "=", ">", "?",   /*     0 1 2 3 4 5 6 7 8 9 : ; < = > ?  */
-	
+
 	"@", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O",   /* @ A B C D E F G H I J K L M N O  */ 
 	"P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "[", "\\","]", "^", "_",   /* P Q R S T U V W X Y Z [ \ ] ^ _  */
 	"`", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o",   /* ` a b c d e f g h i j k l m n o  */
@@ -691,7 +691,7 @@ const char *key_stroke[NUM_KEYS] = {
 	"ESC-^M",
 	"ESC-^N",
 	"ESC-^O",
-	
+
 	"ESC-^P",
 	"ESC-^Q",
 	"ESC-^R",

@@ -1,22 +1,22 @@
 /* Menu handling function. Includes also key and menu configuration parsing.
 
-	Copyright (C) 1993-1998 Sebastiano Vigna
-	Copyright (C) 1999-2015 Todd M. Lewis and Sebastiano Vigna
+   Copyright (C) 1993-1998 Sebastiano Vigna
+   Copyright (C) 1999-2015 Todd M. Lewis and Sebastiano Vigna
 
-	This file is part of ne, the nice editor.
+   This file is part of ne, the nice editor.
 
-	This library is free software; you can redistribute it and/or modify it
-	under the terms of the GNU General Public License as published by
-	the Free Software Foundation; either version 3 of the License, or (at your
-	option) any later version.
+   This library is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or (at your
+   option) any later version.
 
-	This library is distributed in the hope that it will be useful, but
-	WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-	or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-	for more details.
+   This library is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, see <http://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
 
 #include "ne.h"
@@ -572,7 +572,7 @@ char *gen_flag_string(const buffer * const b) {
 	int ch = b->cur_pos < b->cur_line_desc->line_len ? (b->encoding == ENC_UTF8 ? utf8char(&b->cur_line_desc->line[b->cur_pos]) : b->cur_line_desc->line[b->cur_pos]) : -1;
 
 	string[i++] = ' ';
-	
+
 	string[i++] = b->opt.insert         ? 'i' : '-';
 	string[i++] = b->opt.auto_indent    ? 'a' : '-';
 	string[i++] = b->opt.search_back    ? 'b' : '-';
@@ -662,7 +662,7 @@ void draw_status_bar(void) {
 		if (!update) return;
 
 		if (!fast_gui && standout_ok) standout_on();
-		
+
 		x = cur_buffer->win_x + cur_buffer->cur_x;
 		y = cur_buffer->cur_line;
 		percent = new_percent;
@@ -754,12 +754,12 @@ void draw_status_bar(void) {
 void print_message(const char * const message) {
 
 	static char msg_cache[MAX_MESSAGE_LENGTH];
-	
+
 	if (message) {
 		strncpy(msg_cache, message, MAX_MESSAGE_LENGTH);
 		msg_cache[MAX_MESSAGE_LENGTH - 1] = '\0';
 	}
-	
+
 	if (message || showing_msg) {
 		move_cursor(ne_lines - 1, 0);
 
@@ -846,7 +846,7 @@ void handle_menus(void) {
 		case INVALID:
 			alert();
 			break;
-			
+
 		case ALPHA:
 			if (c == ':') {
 				undraw_last_menu();
@@ -855,11 +855,11 @@ void handle_menus(void) {
 			}
 			item_search(c);
 			break;
-			
+
 		case RETURN:
 			do_menu_action();
 			return;
-			
+
 		case COMMAND:
 			if (c < 0) c = -c - 1;
 			if ((a = parse_command_line(key_binding[c], &n, &p, FALSE))>=0) {
