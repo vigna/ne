@@ -33,15 +33,15 @@ is what most commands require. */
 #define NORMALIZE(x)  { x = (x)<0 ? 1 : (x); }
 
 /* The length of the static message buffer. It must be larger by a factor
-	of about three of the maximum screen width as UTF-8 encoded characters
-	might take several characters per screen position. */
+   of about three of the maximum screen width as UTF-8 encoded characters
+   might take several characters per screen position. */
 
 #define MAX_MESSAGE_SIZE (1024)
 
 /* Here, given a mask represent a user flag and an integer i, we do as follows:
-	i < 0 : toggle flag;
-	i = 0 : clear flag;
-	i > 0 : set flag;
+   i < 0 : toggle flag;
+   i = 0 : clear flag;
+   i > 0 : set flag;
 */
 
 #define SET_USER_FLAG(b,i,x) {\
@@ -55,7 +55,7 @@ is what most commands require. */
 
 
 /* Converts a non-positive result from request_number() to OK if the
-	function was aborted or not-a-number error if an invalid number was read. */
+   function was aborted or not-a-number error if an invalid number was read. */
 
 #define NUMERIC_ERROR(c) ((c) == ABORT ? OK : NOT_A_NUMBER)
 

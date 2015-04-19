@@ -23,16 +23,16 @@
 #include "termchar.h"
 
 /* This is the maximum number of bytes which can be typed on the input
-	line. The actual number of characters depends on the line encoding. */
+   line. The actual number of characters depends on the line encoding. */
 
 #define MAX_INPUT_LINE_LEN		2048
 
 
 
 /* Prints an input prompt in the input line. The prompt is assumed not to be
-	UTF-8 encoded. A colon is postpended to the prompt. The position of the
-	first character to use for input is returned. Moreover, the status bar is
-	reset, so that it will be updated. */
+   UTF-8 encoded. A colon is postpended to the prompt. The position of the
+   first character to use for input is returned. Moreover, the status bar is
+   reset, so that it will be updated. */
 
 static unsigned int print_prompt(const unsigned char * const prompt) {
 	static unsigned char *prior_prompt;
@@ -61,9 +61,9 @@ static unsigned int print_prompt(const unsigned char * const prompt) {
 
 
 /* Prompts the user for a yes/no answer. The prompt is assumed not to be UTF-8
-	encoded. default_value has to be TRUE or FALSE. TRUE is returned if 'y' was
-	typed, FALSE in any other case. Escaping is not allowed. RETURN returns the
-	default value. */
+   encoded. default_value has to be TRUE or FALSE. TRUE is returned if 'y' was
+   typed, FALSE in any other case. Escaping is not allowed. RETURN returns the
+   default value. */
 
 
 int request_response(const buffer * const b, const char * const prompt, const int default_value) {
@@ -77,12 +77,12 @@ int request_response(const buffer * const b, const char * const prompt, const in
 
 
 /* Prompts the user for a single character answer. The prompt is assumed not to
-	be UTF-8 encoded. default_value has to be an ISO-8859-1 character which is
-	used for the default answer. The character typed by the user (upper cased)
-	is returned. The default character is used if the user types RETURN. Note
-	that the cursor is moved back to its current position. This offers a clear
-	distinction between immediate and long inputs, and allows for interactive
-	search and replace. */
+   be UTF-8 encoded. default_value has to be an ISO-8859-1 character which is
+   used for the default answer. The character typed by the user (upper cased)
+   is returned. The default character is used if the user types RETURN. Note
+   that the cursor is moved back to its current position. This offers a clear
+   distinction between immediate and long inputs, and allows for interactive
+   search and replace. */
 
 
 char request_char(const buffer * const b, const char * const prompt, const char default_value) {
@@ -115,10 +115,10 @@ char request_char(const buffer * const b, const char * const prompt, const char 
 
 
 /* Requests a number, with a given prompt and default value. The prompt is
-	assumed not to be UTF-8 encoded. Only nonnegative integers can be
-	entered. The effects of a negative default_value are mysterious, and not
-	worth an investigation. The returned value is nonnegative if something was
-	entered, negative on escaping or on entering the empty string. */
+   assumed not to be UTF-8 encoded. Only nonnegative integers can be
+   entered. The effects of a negative default_value are mysterious, and not
+   worth an investigation. The returned value is nonnegative if something was
+   entered, negative on escaping or on entering the empty string. */
 
 
 int request_number(const char * const prompt, const int default_value) {
@@ -139,11 +139,11 @@ int request_number(const char * const prompt, const int default_value) {
 
 
 /* Requests a string. The prompt is assumed not to be UTF-8 encoded. The
-	returned string is never longer than MAX_INPUT_LINE_LEN, and has been
-	malloc()ed, so you can use it and then free() it. NULL is returned on
-	escaping, or if entering an empty string (unless accept_null_string is TRUE,
-	in which case the empty string is duplicated and
-	returned). completion_allowed and prefer_utf8 work as in request(). */
+   returned string is never longer than MAX_INPUT_LINE_LEN, and has been
+   malloc()ed, so you can use it and then free() it. NULL is returned on
+   escaping, or if entering an empty string (unless accept_null_string is TRUE,
+   in which case the empty string is duplicated and
+   returned). completion_allowed and prefer_utf8 work as in request(). */
 
 char *request_string(const char * const prompt, const char * const default_string, const int accept_null_string, const int completion_allowed, const int prefer_utf8) {
 
@@ -223,13 +223,13 @@ static void add_to_history(const unsigned char * const str) {
 }
 
 /* request() is the main function that serves request_number() and
-	request_string(). Given a prompt, a default string and a boolean flag which
-	establish the possibility of any alphabetical input (as opposed to digits
-	only), the user can edit a string of at most MAX_INPUT_LINE_LEN characters.
-	Many useful commands can be used here. The string edited by the user is
-	returned, or NULL if the input was escaped, or the empty string was entered.
-	Note that presently this function always returns a pointer to a static
-	buffer, but this could change in the future.
+   request_string(). Given a prompt, a default string and a boolean flag which
+   establish the possibility of any alphabetical input (as opposed to digits
+   only), the user can edit a string of at most MAX_INPUT_LINE_LEN characters.
+   Many useful commands can be used here. The string edited by the user is
+   returned, or NULL if the input was escaped, or the empty string was entered.
+   Note that presently this function always returns a pointer to a static
+   buffer, but this could change in the future.
 
 	completion_allowed has several possible values:
 	 0 COMPLETE_NONE	means no completion,
@@ -247,15 +247,15 @@ static void add_to_history(const unsigned char * const str) {
 static unsigned char input_buffer[MAX_INPUT_LINE_LEN + 1];
 
 /* The current encoding of the command line. Contrarily to buffers, the command line may (and will) move
-	back to ASCII if all non-US-ASCII characters are deleted .*/
+   back to ASCII if all non-US-ASCII characters are deleted .*/
 
 static encoding_type encoding;
 
 /* start_x  is the first usable screen x position for editing;
-	len      is the current raw length of the input buffer (input_buffer[len] is always a NULL);
-	x        is the screen x position of the cursor;
-	pos      is the position of the cursor inside the input buffer;
-	offset   is the first displayed buffer character. 
+   len      is the current raw length of the input buffer (input_buffer[len] is always a NULL);
+   x        is the screen x position of the cursor;
+   pos      is the position of the cursor inside the input buffer;
+   offset   is the first displayed buffer character. 
 */
 
 static int start_x, len, pos, x, offset;

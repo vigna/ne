@@ -29,11 +29,11 @@
 #define CUR_DIR_MAX_SIZE    (16*1024)
 
 /* request_strings() prompts the user to choose one between several (cur_entries) strings,
-	contained in the entries array. The maximum string width is given as
-	max_name_len. The strings are displayed as an array. More than one page will
-	be available if there are many strings. If string n was selected with
-	RETURN, n is returned; if string n was selected with TAB, -n-2 is returned.
-	On escaping, ERROR is returned.
+   contained in the entries array. The maximum string width is given as
+   max_name_len. The strings are displayed as an array. More than one page will
+   be available if there are many strings. If string n was selected with
+   RETURN, n is returned; if string n was selected with TAB, -n-2 is returned.
+   On escaping, ERROR is returned.
 
 	We rely on a series of auxiliary functions and a few static variables. */
 
@@ -42,16 +42,16 @@ static req_list rl, *rl0; /* working and original * req_list */
 static int x, y, page, max_names_per_line, max_names_per_col, names_per_page, fuzz_len;
 
 /* ne traditionally has displayed request entries by row, i.e.
-		a	b	c
-		d	e	f
-		g	h
-	rather than by column, i.e.
-		a	d	g
-		b	e	h
-		c	f
-	which, while easier to program, is somewhat harder to read.
-	The request code was also full of tricky expressions like those in
-	the macros below.
+   	a	b	c
+   	d	e	f
+   	g	h
+   rather than by column, i.e.
+   	a	d	g
+   	b	e	h
+   	c	f
+   which, while easier to program, is somewhat harder to read.
+   The request code was also full of tricky expressions like those in
+   the macros below.
 
 	This version attempts to switch to a by-row request display, and also
 	to consolidate as many of the tricky expressions into one small set of
@@ -70,10 +70,10 @@ static int x, y, page, max_names_per_line, max_names_per_col, names_per_page, fu
 #define BR_DY            max_names_per_line
 
 /*
-	 This Perl snippet is useful for tweaking the NAMES_PER_LINE and NAMES_PER_COL macros. The point of
-	 the complexity on the last page is to use a rectangle in the upper-left part of the window that's
-	 roughly proportional to the window itself. (Prior pages use the entire window of course.)
-	 Calculating $x first gives slight priority to taller columns rather than wider lines.
+    This Perl snippet is useful for tweaking the NAMES_PER_LINE and NAMES_PER_COL macros. The point of
+    the complexity on the last page is to use a rectangle in the upper-left part of the window that's
+    roughly proportional to the window itself. (Prior pages use the entire window of course.)
+    Calculating $x first gives slight priority to taller columns rather than wider lines.
 
 	 Translating the Perl "$x =" and "$y =" to the C macros NAMES_PER_LINE and NAMES_PER_COL,
 	 respectively, is a matter of substituting the following:
@@ -263,7 +263,7 @@ static void request_move_right(void) {
 }
 
 /* Reorder (i.e. swap) the current entry n with entry n+dir. dir should be
-	either 1 or -1. */
+   either 1 or -1. */
 static int request_reorder(const int dir) {
 	int n1, n0;
 	int i0, i1, i;
@@ -298,7 +298,7 @@ static int request_reorder(const int dir) {
 }
 
 /* Back up to the first entry with a common prefix, pulling in matching entries
-	from the original req_list *rl0 in such a way as to preserve original order. */
+   from the original req_list *rl0 in such a way as to preserve original order. */
 
 static void fuzz_back() {
 	int cmp, i, j, n1, n0 = PXY2N(page,x,y);
@@ -324,8 +324,8 @@ static void fuzz_back() {
 }
 
 /* given a localised_up_case character c, keep only entries that
-	matches our current fuzz_len prefix plus this additional character.
-	Note that relative order of rl.entries[] is preserved. */
+   matches our current fuzz_len prefix plus this additional character.
+   Note that relative order of rl.entries[] is preserved. */
 
 static void fuzz_forward(const int c) {
 	int cmp, i, j, n1, n0 = PXY2N(page,x,y);
@@ -351,11 +351,11 @@ static void fuzz_forward(const int c) {
 }
 
 /* The original master list of strings is described by *rlp0. We make a working copy
-	described by rl, which has an allocated buffer large enough to hold all the
-	original char pointers, but may at any time have fewer entries due to fuzzy
-	matching. request_strings_init() sets up this copy, and request_strings_cleanup()
-	cleans up the allocations. A small handful of static variables keep up with
-	common prefix size, default entry index, etc. */
+   described by rl, which has an allocated buffer large enough to hold all the
+   original char pointers, but may at any time have fewer entries due to fuzzy
+   matching. request_strings_init() sets up this copy, and request_strings_cleanup()
+   cleans up the allocations. A small handful of static variables keep up with
+   common prefix size, default entry index, etc. */
 
 static int request_strings_init(req_list *rlp0) {
 	rl.cur_entries = rlp0->cur_entries;
@@ -388,11 +388,11 @@ static int request_strings_cleanup(int reordered) {
 }
 
 /* Given a list of strings, let the user pick one. If _rl->suffix is not '\0', we bold names ending with it.
-	The integer returned is one of the following:
-	n >= 0  User selected string n with the enter key.
-	-1		Error or abort; no selection made.
-	-n - 2  User selected string n with the TAB key.
-	(Yes, it's kind of evil, but it's nothing compared to what request() does!) */
+   The integer returned is one of the following:
+   n >= 0  User selected string n with the enter key.
+   -1		Error or abort; no selection made.
+   -n - 2  User selected string n with the TAB key.
+   (Yes, it's kind of evil, but it's nothing compared to what request() does!) */
 
 int request_strings(req_list *rlp0, int n ) {
 
@@ -557,7 +557,7 @@ int request_strings(req_list *rlp0, int n ) {
 
 
 /* The completion function. Returns NULL if no file matches start_prefix, or
-	the longest prefix common to all files extending start_prefix. */
+   the longest prefix common to all files extending start_prefix. */
 
 char *complete_filename(const char *start_prefix) {
 
@@ -632,12 +632,12 @@ static void load_syntax_names(req_list *rl, DIR *d, int flag) {
 }
 
 /* This is the syntax requester. It reads the user's syntax directory and the
-	global syntax directory, builds an array of strings and calls request_strings().
-	Returns NULL on error or escaping, or a pointer to the selected syntax name sans
-	extension if RETURN or TAB key was pressed. As per request_files(), if the
-	selection was made with the TAB key, the first character of the returned string
-	is a NUL, so callers (currently only request()) must take care to handle this
-	case. */
+   global syntax directory, builds an array of strings and calls request_strings().
+   Returns NULL on error or escaping, or a pointer to the selected syntax name sans
+   extension if RETURN or TAB key was pressed. As per request_files(), if the
+   selection was made with the TAB key, the first character of the returned string
+   is a NUL, so callers (currently only request()) must take care to handle this
+   case. */
 
 char *request_syntax(const char * const prefix, int use_prefix) {
 	unsigned char syn_dir_name[512];
@@ -680,12 +680,12 @@ char *request_syntax(const char * const prefix, int use_prefix) {
 
 
 /* This is the file requester. It reads the directory in which the filename
-	lives, builds an array of strings and calls request_strings(). If a directory
-	name is returned, it enters the directory. Returns NULL on error or escaping, a
-	pointer to the selected filename if RETURN is pressed, or a pointer to the
-	selected filename (or directory) preceeded by a NUL if TAB is pressed (so by
-	checking whether the first character of the returned string is NUL you can
-	check which key the user pressed). */
+   lives, builds an array of strings and calls request_strings(). If a directory
+   name is returned, it enters the directory. Returns NULL on error or escaping, a
+   pointer to the selected filename if RETURN is pressed, or a pointer to the
+   selected filename (or directory) preceeded by a NUL if TAB is pressed (so by
+   checking whether the first character of the returned string is NUL you can
+   check which key the user pressed). */
 
 
 char *request_files(const char * const filename, int use_prefix) {
@@ -762,8 +762,8 @@ char *request_files(const char * const filename, int use_prefix) {
 
 
 /* Requests a file name. If no_file_req is FALSE, the file requester is firstly
-	presented. If no_file_req is TRUE, or the file requester is escaped, a long
-	input is performed with the given prompt and default_name. */
+   presented. If no_file_req is TRUE, or the file requester is escaped, a long
+   input is performed with the given prompt and default_name. */
 
 char *request_file(const buffer *b, const char *prompt, const char *default_name) {
 
@@ -784,7 +784,7 @@ char *request_file(const buffer *b, const char *prompt, const char *default_name
 
 
 /* Presents to the user a list of the documents currently available.  It
-	returns the number of the document selected, or -1 on escape or error. */
+   returns the number of the document selected, or -1 on escape or error. */
 
 int request_document(void) {
 
@@ -828,12 +828,12 @@ int request_document(void) {
 }
 
 /* The req_list functions below provide a simple mechanism suitable for building
-	request lists for directory entries, syntax recognizers, etc. */
+   request lists for directory entries, syntax recognizers, etc. */
 
 /* These are the default allocation sizes for the entry array and for the
-	name array when reading a directory. The allocation sizes start with these
-	values, and they are doubled each time more space is needed. This ensures a
-	reasonable number of retries. */
+   name array when reading a directory. The allocation sizes start with these
+   values, and they are doubled each time more space is needed. This ensures a
+   reasonable number of retries. */
 
 #define DEF_ENTRIES_ALLOC_SIZE	  256
 #define DEF_CHARS_ALLOC_SIZE	(4*1024)
@@ -842,7 +842,7 @@ int request_document(void) {
 /* The req_list_del() function works just fine; we just don't need it yet/any more. */
 
 /* Delete the nth string from the given request list. This will work regardelss of whether
-	the req_list has been finalized. */
+   the req_list has been finalized. */
 int req_list_del(req_list * const rl, int nth) {
 	char *str;
 	int len0, len, i;
@@ -878,13 +878,13 @@ void req_list_free(req_list * const rl) {
 }
 
 /* Initialize a request list. A comparison function may be provided; if it is provided,
-	that function will be used to keep the entries sorted. If NULL is provided instead,
-	entries are kept in the order they are added. The boolean allow_dupes determines
-	whether duplicate entries are allowed. If not, and if cmpfnc is NULL, then each
-	addition requires a linear search over the current entries. If a suffix character is
-	provided, it can optionally be added to individual entries as they are added, in which
-	case req_list_finalize() should be called before the entries are used in a
-	request_strings() call. */
+   that function will be used to keep the entries sorted. If NULL is provided instead,
+   entries are kept in the order they are added. The boolean allow_dupes determines
+   whether duplicate entries are allowed. If not, and if cmpfnc is NULL, then each
+   addition requires a linear search over the current entries. If a suffix character is
+   provided, it can optionally be added to individual entries as they are added, in which
+   case req_list_finalize() should be called before the entries are used in a
+   request_strings() call. */
 
 int req_list_init( req_list * const rl, int cmpfnc(const char *, const char *), const int allow_dupes, const int allow_reorder, const char suffix) {
 	rl->cmpfnc = cmpfnc;
@@ -907,14 +907,14 @@ int req_list_init( req_list * const rl, int cmpfnc(const char *, const char *), 
 }
 
 /* req_list strings are stored with a trailing '\0', followed by an optional suffix
-	character, and an additional trailing '\0'. This allows comparing strings w/o
-	having to consider the optional suffexes. Finalizing the req_list effectively
-	shifts the suffixes left, exchanging them for the preceeding '\0'. After this
-	operation, all the strings will be just strings, some of which happen to end
-	with the suffix character, and all of which are followed by two null bytes.
-		req_list_finalize() also initializes the orig_order array if allow_reorder
-	is true. If the array cannot be allocated, allow_reorder is simply reset to
-	false rather than returning an error. */
+   character, and an additional trailing '\0'. This allows comparing strings w/o
+   having to consider the optional suffexes. Finalizing the req_list effectively
+   shifts the suffixes left, exchanging them for the preceeding '\0'. After this
+   operation, all the strings will be just strings, some of which happen to end
+   with the suffix character, and all of which are followed by two null bytes.
+   	req_list_finalize() also initializes the orig_order array if allow_reorder
+   is true. If the array cannot be allocated, allow_reorder is simply reset to
+   false rather than returning an error. */
 void req_list_finalize(req_list * const rl) {
 	int i, len;
 	for (i=0; i<rl->cur_entries; i++) {
@@ -932,12 +932,12 @@ void req_list_finalize(req_list * const rl) {
 }
 
 /* Add a string plus an optional suffix to a request list.
-	We really add two null-terminated strings: the actual entry, and a
-	possibly empty suffix. These pairs should be merged later by
-	req_list_finalize(). If duplicates are not allowed (see req_list_init()) and
-	the str already exists in the table (according to the comparison function or
-	by strcmp if there is not comparison function), then the conflicting entry
-	is returned. */
+   We really add two null-terminated strings: the actual entry, and a
+   possibly empty suffix. These pairs should be merged later by
+   req_list_finalize(). If duplicates are not allowed (see req_list_init()) and
+   the str already exists in the table (according to the comparison function or
+   by strcmp if there is not comparison function), then the conflicting entry
+   is returned. */
 char *req_list_add(req_list * const rl, char * const str, const int suffix) {
 	int i, ins, cmp;
 	char *newstr, *p;

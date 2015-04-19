@@ -41,13 +41,13 @@ bigger just causes a reallocation. */
 #define PREF_FILE_SIZE_GUESS 256
 
 /* If we're saving default prefs, we include global prefs
-	that are not buffer specific. Likewise, if we're saving
-	auto prefs, we don't want to include global prefs. */
+   that are not buffer specific. Likewise, if we're saving
+   auto prefs, we don't want to include global prefs. */
 
 static int saving_global;
 
 /* Returns a pointer to the extension of a filename, or NULL if there is no
-	extension. Note that filename has to be non NULL. */
+   extension. Note that filename has to be non NULL. */
 
 const char *extension(const char * const filename) {
 
@@ -65,8 +65,8 @@ const char *extension(const char * const filename) {
 
 
 /* Returns a pointer to the absolute name of ne's prefs directory. The name is
-	cached internally, so it needs not to be free()ed. If the directory does not
-	exist, it is created. NULL is returned on failure. */
+   cached internally, so it needs not to be free()ed. If the directory does not
+   exist, it is created. NULL is returned on failure. */
 
 
 char *exists_prefs_dir(void) {
@@ -106,8 +106,8 @@ char *exists_prefs_dir(void) {
 
 
 /* Returns a pointer to the absolute name of ne's global prefs directory. The
-	name is cached internally, so it needs not to be free()ed. If the directory
-	does not exist, it is not created. NULL is returned on failure. */
+   name is cached internally, so it needs not to be free()ed. If the directory
+   does not exist, it is not created. NULL is returned on failure. */
 
 char *exists_gprefs_dir(void) {
 	static char *gprefs_dir = NULL;
@@ -140,7 +140,7 @@ char *exists_gprefs_dir(void) {
 
 
 /* Saves the preferences of the given buffer onto the given file name. If b or
-	name are NULL, ERROR is returned.  */
+   name are NULL, ERROR is returned.  */
 
 int save_prefs(buffer * const b, const char * const name) {
 
@@ -206,7 +206,7 @@ int save_prefs(buffer * const b, const char * const name) {
 
 
 /* Loads the given preferences file. The file is just executed, but with the
-	exec_only_options flag set. If b or name are NULL, ERROR is returned. */
+   exec_only_options flag set. If b or name are NULL, ERROR is returned. */
 
 int load_prefs(buffer * const b, const char * const name) {
 
@@ -231,7 +231,7 @@ int load_prefs(buffer * const b, const char * const name) {
 }
 
 /* Loads the given syntax, taking care to preserve the old 
-	syntax if the new one cannot be loaded. */
+   syntax if the new one cannot be loaded. */
 
 int load_syntax_by_name(buffer * const b, const char * const name) {
 	struct high_syntax *syn;
@@ -250,10 +250,10 @@ int load_syntax_by_name(buffer * const b, const char * const name) {
 
 
 /* Performs an automatic preferences operation, which can be loading or saving,
-	depending on the function pointed to by prefs_func. The extension given by
-	ext is used in order to locate the appropriate file. If ext is NULL, the
-	extension of the buffer filename is used instead. If b is NULL, ERROR is
-	returned.  */
+   depending on the function pointed to by prefs_func. The extension given by
+   ext is used in order to locate the appropriate file. If ext is NULL, the
+   extension of the buffer filename is used instead. If b is NULL, ERROR is
+   returned.  */
 
 static int do_auto_prefs(buffer *b, const char * ext, int (prefs_func)(buffer *, const char *)) {
 

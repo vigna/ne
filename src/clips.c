@@ -23,7 +23,7 @@
 
 
 /* A clip is a numbered node in the global clip list. The contents of the clip
-	are handled through the stream functions contained in streams.c.
+   are handled through the stream functions contained in streams.c.
 
 	At creation time, a clip is marked with an encoding. Clips, of course, may
 	be pasted only in buffers with a compatible encoding. 
@@ -53,7 +53,7 @@ clip_desc *alloc_clip_desc(int n, int size) {
 
 
 /* Reallocates a clip descriptor of the given size. If cd is NULL, this is
-	equivalent to calling alloc_clip_desc. */
+   equivalent to calling alloc_clip_desc. */
 
 clip_desc *realloc_clip_desc(clip_desc *cd, int n, int size) {
 
@@ -91,7 +91,7 @@ void free_clip_desc(clip_desc *cd) {
 
 
 /* Scans the global clip list, searching for a specific numbered clip. Returns
-	NULL on failure. */
+   NULL on failure. */
 
 clip_desc *get_nth_clip(int n) {
 	clip_desc *cd = (clip_desc *)clips.head;
@@ -110,10 +110,10 @@ clip_desc *get_nth_clip(int n) {
 
 
 /* Copies the characters between the cursor and the block marker of the given
-	buffer to the nth clip. If the cut flag is true, the characters are also
-	removed from the text. The code scans the text two times: the first time in
-	order to determine the exact length of the text, the second time in order to
-	actually copy it. */
+   buffer to the nth clip. If the cut flag is true, the characters are also
+   removed from the text. The code scans the text two times: the first time in
+   order to determine the exact length of the text, the second time in order to
+   actually copy it. */
 
 int copy_to_clip(buffer *b, int n, int cut) {
 
@@ -341,7 +341,7 @@ int erase_block(buffer *b) {
 
 
 /* Pastes a clip into a buffer. Since clips are streams, the operation is
-	definitely straightforward. */
+   definitely straightforward. */
 
 int paste_to_buffer(buffer *b, int n) {
 
@@ -372,9 +372,9 @@ int paste_to_buffer(buffer *b, int n) {
 
 
 /* Works like copy_to_clip(), but the region to copy is the rectangle defined
-	by the cursor and the marker. Same comments apply. Note that in case of a
-	cut we use start_undo_chain() in order to make the various deletions a
-	single undo operation. */
+   by the cursor and the marker. Same comments apply. Note that in case of a
+   cut we use start_undo_chain() in order to make the various deletions a
+   single undo operation. */
 
 int copy_vert_to_clip(buffer *b, int n, int cut) {
 
@@ -553,8 +553,8 @@ int erase_vert_block(buffer *b) {
 
 
 /* Performs a vertical paste. It has to be done via an insert_stream() for each
-	string of the clip. Again, the undo linking feature makes all these
-	operations a single undo step. */
+   string of the clip. Again, the undo linking feature makes all these
+   operations a single undo step. */
 
 int paste_vert_to_buffer(buffer *b, int n) {
 
@@ -610,7 +610,7 @@ int paste_vert_to_buffer(buffer *b, int n) {
 
 
 /* Loads a clip. It is just a load_stream, plus an insertion in the clip
-	list. If preserve_cr is TRUE, CRs are preserved. */
+   list. If preserve_cr is TRUE, CRs are preserved. */
 
 int load_clip(int n, const char *name, const int preserve_cr, const int binary) {
 	int error;
@@ -631,7 +631,7 @@ int load_clip(int n, const char *name, const int preserve_cr, const int binary) 
 
 
 /* Saves a clip to a file. If CRLF is true, the clip is saved with CR/LF pairs
-	as line terminators. */
+   as line terminators. */
 
 int save_clip(int n, const char *name, const int CRLF, const int binary) {
 

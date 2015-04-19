@@ -56,7 +56,7 @@ typedef struct {
 #define NAHL(x) x ## _NAME, x ##_ABBREV, x ## _HELP, HELP_LEN(x)
 
 /* This is the command vector. Note that the command names come from names.h,
-	and the help names come from help.h. This must be kept sorted. */
+   and the help names come from help.h. This must be kept sorted. */
 
 static const command commands[ACTION_COUNT] = {
 	{ NAHL(ABOUT         ), NO_ARGS                                                               },
@@ -202,7 +202,7 @@ static const command commands[ACTION_COUNT] = {
 
 
 /* Checks whether the command line m starts with the command c. Return 0 on
-	success, non-zero on failure. */
+   success, non-zero on failure. */
 
 int cmdcmp(const unsigned char *c, const unsigned char *m) {
 
@@ -222,18 +222,18 @@ int cmdcmp(const unsigned char *c, const unsigned char *m) {
 
 
 /* This table *can* have conflicts, so that we can keep its size much
-	smaller. */
+   smaller. */
 
 static macro_desc *macro_hash_table[MACRO_HASH_TABLE_SIZE];
 
 
 /* This is the command name hashing function.We consider only the 5 least
-	significant bits because they are the bits which distinguish characters,
-	independently of their case. We are not interested in strings which contain
-	non-alphabetical characters, because they will certainly generate an error
-	(the only exception notably being "R1"). We should subtract 1 to s[i], but
-	this doesn't seem to produce any improvement. hash_macro() act as hash(),
-	but uses MACRO_HASH_TABLE_SIZE for its modulo. */
+   significant bits because they are the bits which distinguish characters,
+   independently of their case. We are not interested in strings which contain
+   non-alphabetical characters, because they will certainly generate an error
+   (the only exception notably being "R1"). We should subtract 1 to s[i], but
+   this doesn't seem to produce any improvement. hash_macro() act as hash(),
+   but uses MACRO_HASH_TABLE_SIZE for its modulo. */
 
 
 static int hash_cmd(const unsigned char * const s, int len) {
@@ -254,16 +254,16 @@ static int hash_macro(const unsigned char * const s, int len) {
 
 
 /* Parses a command line. This function has an interface which is slightly
-	varied with respect to the other functions of ne. In case of a parsing
-	error, an error index *with sign inverted* is passed back. In case parsing
-	succeeds, an (greater or equal to zero) action is returned, and the
-	numerical or string argument is passed in the variables pointed to by
-	num_arg or string_arg, respectively, if they are non-NULL. Otherwise, the
-	argument is not passed back. The string argument is free()able. -1 and NULL
-	denote the lack of an optional numerical or string argument, respectively.
-	NOP is returned on a NOP command, or on a comment line (any line whose first
-	non-space character is a non alphabetic character). Note that the various
-	syntax flags are used here. */
+   varied with respect to the other functions of ne. In case of a parsing
+   error, an error index *with sign inverted* is passed back. In case parsing
+   succeeds, an (greater or equal to zero) action is returned, and the
+   numerical or string argument is passed in the variables pointed to by
+   num_arg or string_arg, respectively, if they are non-NULL. Otherwise, the
+   argument is not passed back. The string argument is free()able. -1 and NULL
+   denote the lack of an optional numerical or string argument, respectively.
+   NOP is returned on a NOP command, or on a comment line (any line whose first
+   non-space character is a non alphabetic character). Note that the various
+   syntax flags are used here. */
 
 action parse_command_line(const unsigned char * command_line, int * const num_arg, unsigned char ** const string_arg, const int exec_only_options) {
 
@@ -340,8 +340,8 @@ action parse_command_line(const unsigned char * command_line, int * const num_ar
 
 
 /* Parses and executes a command line. Standard error codes are returned. If
-	the search for a standard command fails, we try to execute a macro in ~/.ne
-	with the same name. */
+   the search for a standard command fails, we try to execute a macro in ~/.ne
+   with the same name. */
 
 int execute_command_line(buffer *b, const unsigned char *command_line) {
 
@@ -363,7 +363,7 @@ int execute_command_line(buffer *b, const unsigned char *command_line) {
 
 
 /* Allocates a macro descriptor. It does not allocate the internal character
-	stream, which has to be allocated and stuffed in separately. */
+   stream, which has to be allocated and stuffed in separately. */
 
 macro_desc *alloc_macro_desc(void) {
 	return calloc(1, sizeof(macro_desc));
@@ -387,9 +387,9 @@ void free_macro_desc(macro_desc *md) {
 
 
 /* Here we record an action in a character stream. The action name is expanded
-	in a short or long name, depending on the value of the verbose parameter.  A
-	numerical or string argument are expanded and copied, too. If the command
-	should not be recorded (for instance, ESCAPE_A) we return. */
+   in a short or long name, depending on the value of the verbose parameter.  A
+   numerical or string argument are expanded and copied, too. If the command
+   should not be recorded (for instance, ESCAPE_A) we return. */
 
 void record_action(char_stream *cs, action a, int c, unsigned char *p, int verbose) {
 
@@ -426,8 +426,8 @@ void record_action(char_stream *cs, action a, int c, unsigned char *p, int verbo
 
 
 /* A support function for optimize_macro(). It examines a string to see if it
-	is a valid "InsertChar ##" command. If it is, then insertchar_val() returns
-	the character code, otherwise it returns 0. */
+   is a valid "InsertChar ##" command. If it is, then insertchar_val() returns
+   the character code, otherwise it returns 0. */
 
 static int insertchar_val(const unsigned char *p) {
 	int h;
@@ -457,10 +457,10 @@ static int insertchar_val(const unsigned char *p) {
 }
 
 /* Optimizing macros is not safe if there are any subsequent undo commands
-	calls to macros (which may themselves contain undo commands). This function
-	looks through a stream for undo or non-built in commands, and returns 0
-	if any are found; returns 1 otherwise. */
-	
+   calls to macros (which may themselves contain undo commands). This function
+   looks through a stream for undo or non-built in commands, and returns 0
+   if any are found; returns 1 otherwise. */
+   
 int vet_optimize_macro_stream(char_stream *cs, int pos) {
 	int n, a;
 	unsigned char *p;
@@ -479,10 +479,10 @@ int vet_optimize_macro_stream(char_stream *cs, int pos) {
 }
 
 /* Looks through the macro stream for consecutive runs of InsertChar commands
-	and replaces them with appropriate InsertString commands. This makes macros
-	much easier to read if and when they have to be edited. Note that if the
-	character inserted by InsertChar is not an ASCII character, then we should
-	leave it as an InsertChar command to maximize portability of the macros. */
+   and replaces them with appropriate InsertString commands. This makes macros
+   much easier to read if and when they have to be edited. Note that if the
+   character inserted by InsertChar is not an ASCII character, then we should
+   leave it as an InsertChar command to maximize portability of the macros. */
 
 void optimize_macro(char_stream *cs, int verbose) {
 	char *cmd;
@@ -524,11 +524,11 @@ void optimize_macro(char_stream *cs, int verbose) {
   
 
 /* This function is the ultimate goal of this file. It plays a character
-	stream, considering each line as a command line. It polls the global stop
-	variable in order to check for the user interrupting. Note that the macro is
-	duplicated before execution: this is absolutely necessary, for otherwise a
-	call to CloseDoc, Record or UnloadMacros could free() the block of memory
-	which we are executing. */
+   stream, considering each line as a command line. It polls the global stop
+   variable in order to check for the user interrupting. Note that the macro is
+   duplicated before execution: this is absolutely necessary, for otherwise a
+   call to CloseDoc, Record or UnloadMacros could free() the block of memory
+   which we are executing. */
 
 int play_macro(buffer *b, char_stream *cs) {
 
@@ -574,11 +574,11 @@ int play_macro(buffer *b, char_stream *cs) {
 
 
 /* Loads a macro, and puts it in the global macro hash table.  file_part is
-	applied to the name argument before storing it and hashing it.  Note that if
-	the macro can't be opened, we retry prefixing its name with the preferences
-	directory name (~/.ne/). Thus, for instance, all autopreferences file whose
-	name does not conflict with internal commands can be executed transparently
-	just by typing their name. */
+   applied to the name argument before storing it and hashing it.  Note that if
+   the macro can't be opened, we retry prefixing its name with the preferences
+   directory name (~/.ne/). Thus, for instance, all autopreferences file whose
+   name does not conflict with internal commands can be executed transparently
+   just by typing their name. */
 
 
 macro_desc *load_macro(const char *name) {
@@ -697,7 +697,7 @@ void unload_macros(void) {
 }
 
 /* Find any key strokes that currently map to commands[i].name or commands[i].short_name.
-	Returns either NULL or a char string that must be freed by the caller. */
+   Returns either NULL or a char string that must be freed by the caller. */
 char *find_key_strokes(int c) {
 	int i;
 	char *str=NULL, *p;
@@ -732,9 +732,9 @@ char *find_key_strokes(int c) {
 }
 
 /* This function helps. The help text relative to the command name pointed to
-	by p is displayed (p can also contain arguments). If p is NULL, the
-	alphabetically ordered list of commands is displayed with the string
-	requester. The help finishes when the user escapes. */
+   by p is displayed (p can also contain arguments). If p is NULL, the
+   alphabetically ordered list of commands is displayed with the string
+   requester. The help finishes when the user escapes. */
 
 void help(char *p) {
 

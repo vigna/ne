@@ -1,5 +1,5 @@
 /* Terminal control based on terminfo capabilities.
-	Originally part of GNU Emacs. Vastly edited and modified for use within ne.
+   Originally part of GNU Emacs. Vastly edited and modified for use within ne.
 
 	Copyright (C) 1985, 1986, 1987 Free Software Foundation, Inc.
 	Copyright (C) 1993-1998 Sebastiano Vigna 
@@ -60,8 +60,8 @@ int ansi = FALSE;
 #endif
 
 /* Value is non-zero if attribute ATTR may be used with color.  ATTR
-	should be one of the enumerators from enum no_color_bit, or a bit set
-	built from them. */
+   should be one of the enumerators from enum no_color_bit, or a bit set
+   built from them. */
 
 #define MAY_USE_WITH_COLORS(ATTR) (color_ok && ! (ne_no_color_video & (ATTR)))
 
@@ -80,7 +80,7 @@ enum no_color_bit {
 };
 
 /* We use internal copies of the terminfo capabilities because we want to be
-	able to use a hardwired set. */
+   able to use a hardwired set. */
 
 int ne_generic_type;
 
@@ -204,7 +204,7 @@ struct cm Wcm;
 
 
 /* Terminal charateristics that higher levels want to look at.
-	These are all extern'd in termchar.h */
+   These are all extern'd in termchar.h */
 
 int	line_ins_del_ok;		/* Terminal can insert and delete lines */
 int	char_ins_del_ok;		/* Terminal can insert and delete chars */
@@ -393,7 +393,7 @@ static void standout_if_wanted(void) {
 }
 
 /* These functions are called on all terminals in order to handle highlighting,
-	but do nothing on terminals with a magic cookie (or without standout).  */
+   but do nothing on terminals with a magic cookie (or without standout).  */
  
 void standout_on (void) {
 	if (standout_ok) standout_wanted = TRUE;
@@ -405,8 +405,8 @@ void standout_off (void) {
 
 
 /* Depending on the value of io_utf8, this function will do a simple putchar(),
-	or a series of putchar() that expand the given character in UTF-8 encoding. 
-	If attr is -1, no attribute will be set. */
+   or a series of putchar() that expand the given character in UTF-8 encoding. 
+   If attr is -1, no attribute will be set. */
 
 static void out(int c, const int attr) {
 	int add_attr = 0;
@@ -488,7 +488,7 @@ static void out(int c, const int attr) {
 
 
 /* Rings a bell or flashes the screen. If the service is not available, the
-	other one is tried. */
+   other one is tried. */
 
 
 void ring_bell(void) {
@@ -503,8 +503,8 @@ void do_flash(void) {
 
 
 /* Sets correctly the scroll region (first line is line 0). This function
-	assumes scroll_region_ok == TRUE.  The cursor position is lost, as from the
-	terminfo specs. */
+   assumes scroll_region_ok == TRUE.  The cursor position is lost, as from the
+   terminfo specs. */
 
 static void set_scroll_region (const int start, const int stop) {
 
@@ -571,7 +571,7 @@ void reset_terminal_modes (void) {
 
 
 /* Sets the variable specified_window. Following line insert/delete operations
-	will be limited to lines 0 to (size-1). */
+   will be limited to lines 0 to (size-1). */
 
 void set_terminal_window(const int size) {
 
@@ -603,8 +603,8 @@ void move_cursor (const int row, const int col) {
 
 
 /* Clears from the cursor position to the end of line. It assumes that the line
-	is already clear starting at column first_unused_hpos. Note that the cursor
-	may be moved, on terminals lacking a `ce' string.  */
+   is already clear starting at column first_unused_hpos. Note that the cursor
+   may be moved, on terminals lacking a `ce' string.  */
 
 void clear_end_of_line(const int first_unused_hpos) {
 
@@ -663,11 +663,11 @@ void clear_entire_screen (void) {
 
 
 /* Outputs len characters pointed at by string, attributed as indicated by
-	a corresponding vector of attributes, which can be NULL, in which case
-	no attribute will be set. The characters will be truncated to the end
-	of the current line. Passing a NULL for string results in outputting
-	spaces. A len of 0 causes no action. If utf8 is TRUE, the string is
-	UTF-8 encoded. */
+   a corresponding vector of attributes, which can be NULL, in which case
+   no attribute will be set. The characters will be truncated to the end
+   of the current line. Passing a NULL for string results in outputting
+   spaces. A len of 0 causes no action. If utf8 is TRUE, the string is
+   UTF-8 encoded. */
 void output_chars(const unsigned char *string, const unsigned int *attr, const int raw_len, const int utf8) {
 
 	int i, c, len;
@@ -740,7 +740,7 @@ void output_string(const char * const s, const int utf8) {
 
 
 /* Outputs a single ISO 10646 character with a given set of attributes. If
-	attr == -1, no attribute is set. */
+   attr == -1, no attribute is set. */
 
 void output_char(const int c, const unsigned int attr, const int utf8) {
 	static unsigned char t[8];
@@ -903,8 +903,8 @@ static void do_multi_ins_del(char * const multi, const char * const single, int 
 
 
 /* Inserts n lines at vertical position vpos. If n is negative, it deletes -n
-	lines. specified_window is taken into account. This function assumes
-	line_ins_del_ok == TRUE. Returns TRUE if an insertion/deletion actually happened. */
+   lines. specified_window is taken into account. This function assumes
+   line_ins_del_ok == TRUE. Returns TRUE if an insertion/deletion actually happened. */
 
 int ins_del_lines (const int vpos, const int n) {
 
@@ -968,8 +968,8 @@ extern int evalcost(int);
 
 
 /* Performs the cursor motion cost setup, and sets the variable RPov to the
-	number of characters (with padding) which are really output when repeating
-	one character. RPov is disable using UTF-8 I/O. */
+   number of characters (with padding) which are really output when repeating
+   one character. RPov is disable using UTF-8 I/O. */
 
 static void calculate_costs (void) {
 
@@ -990,8 +990,8 @@ static void calculate_costs (void) {
 
 
 /* Gets the window size using TIOCGSIZE, TIOCGWINSZ, or LINES/COLUMNS as a
-	last resort. It is called by the signal handler for SIGWINCH on systems
-	that support it. Return 1 if the window size has changed. */
+   last resort. It is called by the signal handler for SIGWINCH on systems
+   that support it. Return 1 if the window size has changed. */
 
 int ttysize(void) {
 	int l, c;	
@@ -1032,7 +1032,7 @@ int ttysize(void) {
 #ifndef TERMCAP
 
 /* If we get capabilities from the database, then we copy them into our
-	internal counterparts. */
+   internal counterparts. */
 
 void copy_caps(void) {
 

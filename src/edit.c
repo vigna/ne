@@ -25,7 +25,7 @@
 #define NUM_BRACKETS 5
 
 /* Applies a given to_first() function to the first letter of the text starting at the cursor,
-	and to_rest() to the following alphabetical letters (see the functions below). */
+   and to_rest() to the following alphabetical letters (see the functions below). */
 
 static int to_something(buffer *b, int (to_first)(int), int (to_rest)(int)) {
 
@@ -104,8 +104,8 @@ static int to_something(buffer *b, int (to_first)(int), int (to_rest)(int)) {
 
 
 /* These functions upper case, lower case or capitalize the word the cursor is
-	on. They just call to_something(). Note the parentheses around the function
-	names, which inhibit the possible macros. */
+   on. They just call to_something(). Note the parentheses around the function
+   names, which inhibit the possible macros. */
 
 int to_upper(buffer *b) {
 	return b->encoding == ENC_UTF8 ? to_something(b, (utf8toupper), (utf8toupper)) : to_something(b, (toupper), (toupper));
@@ -124,7 +124,7 @@ int capitalize(buffer *b) {
 
 
 /* Finds which bracket matches the bracket under the cursor, and moves it
-	there. Various error codes can be returned. */
+   there. Various error codes can be returned. */
 
 int match_bracket(buffer *b) {
 
@@ -208,9 +208,9 @@ int find_matching_bracket(buffer *b, const int min_line, int max_line, int *matc
 
 
 /* This experimental alternative to word wrapping sets a bookmark, calls
-	paragraph(), then returns to the bookmark (which may have moved due to
-	insertions/deletions).  The number of characters existing on the new line is
-	returned, or ERROR if no word wrap was possible. */
+   paragraph(), then returns to the bookmark (which may have moved due to
+   insertions/deletions).  The number of characters existing on the new line is
+   returned, or ERROR if no word wrap was possible. */
 
 int word_wrap(buffer * const b) {
 	static char avcmd[16];
@@ -303,7 +303,7 @@ static char *pa_spots = NULL;    /* Where we keep leading non-alphanumerics */
 static int pa_spots_pos;         /* How long pa_spots is in chars */
 
 /* save_spots() is like save_space(), but it preserves the string of non-alphanumerics
-	immediately follow where save_space() left off. */
+   immediately follow where save_space() left off. */
 
 static int save_spots(line_desc * const ld, const int pos, const encoding_type encoding) {
 	int rc = 0;
@@ -327,11 +327,11 @@ static int   pa_space_len;         /* How long pa_space is when tabs are expande
 static int   pa_space_pos;         /* How long pa_space is without expanding tabs */
 
 /* save_space() sets pa_space, pa_space_len, and pa_space_pos to reflect the
-	space on the left end of the line ld refers to in the context of the given
-	tab size. If the line contains only space then it is treated identically to
-	an empty line, in which case save_space() returns 0 and pa_space,
-	pa_space_len, and pa_space_pos are cleared. Otherwise it returns 1. The
-	string pa_space points to is not null-terminated, so be careful how you use it. */
+   space on the left end of the line ld refers to in the context of the given
+   tab size. If the line contains only space then it is treated identically to
+   an empty line, in which case save_space() returns 0 and pa_space,
+   pa_space_len, and pa_space_pos are cleared. Otherwise it returns 1. The
+   string pa_space points to is not null-terminated, so be careful how you use it. */
 
 static int save_space(line_desc * const ld, const int tab_size, const encoding_type encoding) {
 	int pos;
@@ -367,8 +367,8 @@ static int save_space(line_desc * const ld, const int tab_size, const encoding_t
 
 
 /* trim_trailing_space() removes spaces from the end of the line referred to by
-	the line_desc ld. The int line is necessary if you want to be able to undo
-	later. */
+   the line_desc ld. The int line is necessary if you want to be able to undo
+   later. */
 
 static void trim_trailing_space(buffer * const b, line_desc *ld, const int line, const encoding_type encoding) {
 	int pos;
@@ -379,11 +379,11 @@ static void trim_trailing_space(buffer * const b, line_desc *ld, const int line,
 }
 
 /* is_part_of_paragraph() determines if the line ld refers to could be
-	considered part of a paragraph based on its leading spaces compared to
-	pa_space_len. If they are the same, is_part_of_paragraph() returns 1, and
-	*first_non_blank is set to the position of the first non-blank character on
-	the line. Otherwise, *first_non_blank is -1 and is_part_of_paragraph()
-	returns 0. */
+   considered part of a paragraph based on its leading spaces compared to
+   pa_space_len. If they are the same, is_part_of_paragraph() returns 1, and
+   *first_non_blank is set to the position of the first non-blank character on
+   the line. Otherwise, *first_non_blank is -1 and is_part_of_paragraph()
+   returns 0. */
 
 static int is_part_of_paragraph(const line_desc * const ld, const int tab_size, int * const first_non_blank, const encoding_type encoding) {
 	int pos = 0;
@@ -398,8 +398,8 @@ static int is_part_of_paragraph(const line_desc * const ld, const int tab_size, 
 }
 
 /* paragraph() reformats a paragraph following the current parameters for
-	right_margin (a value of 0 forces the use of the full screen width).  On
-	completion the cursor is positioned either:
+   right_margin (a value of 0 forces the use of the full screen width).  On
+   completion the cursor is positioned either:
 
   * on the first non-blank character after the paragraph if there is one, or
 
@@ -590,7 +590,7 @@ int paragraph(buffer * const b) {
 
 
 /* Centers the current line with respect to the right_margin parameter. If the
-	line (without spaces) is longer than the right margin, nothing happens. */
+   line (without spaces) is longer than the right margin, nothing happens. */
 
 int center(buffer * const b) {
 
@@ -623,8 +623,8 @@ int center(buffer * const b) {
 
 
 /* Indents a line of the amount of whitespace present on the previous line, stopping
-	at a given column (use INT_MAX for not stopping). The number of
-	inserted bytes is returned. */
+   at a given column (use INT_MAX for not stopping). The number of
+   inserted bytes is returned. */
 
 int auto_indent_line(buffer * const b, const int line, line_desc * const ld, const int up_to_col) {
 

@@ -27,8 +27,8 @@
 
 
 /* Allocates a stream of size bytes. Note that a size of 0 is legal, in which
-	case a char_stream structure is allocated, but its stream pointer is left
-	NULL. */
+   case a char_stream structure is allocated, but its stream pointer is left
+   NULL. */
 
 char_stream *alloc_char_stream(const int size) {
 	char_stream * const cs = calloc(1, sizeof *cs);
@@ -56,9 +56,9 @@ void free_char_stream(char_stream * const cs) {
 
 
 /* Reallocates a stream. If cs is NULL, it is equivalent to
-	alloc_char_stream(). Otherwise, the memory pointed by stream is
-	realloc()ated to size bytes. If the reallocation is successfull, cs is
-	returned, otherwise NULL. */
+   alloc_char_stream(). Otherwise, the memory pointed by stream is
+   realloc()ated to size bytes. If the reallocation is successfull, cs is
+   returned, otherwise NULL. */
 
 char_stream *realloc_char_stream(char_stream * const cs, const int size) {
 
@@ -84,7 +84,7 @@ char_stream *realloc_char_stream(char_stream * const cs, const int size) {
 
 
 /* Concatenates a block of len bytes pointed to by s to a stream. The stream is
-	extended if necessary. Returns an error code. */
+   extended if necessary. Returns an error code. */
 
 int add_to_stream(char_stream * const cs, const unsigned char * const s, const int len) {
 
@@ -103,7 +103,7 @@ int add_to_stream(char_stream * const cs, const unsigned char * const s, const i
 
 
 /* Inserts a block of len bytes pointed to by s into a stream at offset pos. The
-	stream is extended if necessary. Returns an error code. */
+   stream is extended if necessary. Returns an error code. */
 
 int insert_in_stream(char_stream *cs, const char *s, const int pos, const int len ) {
 	int tail;
@@ -128,7 +128,7 @@ int insert_in_stream(char_stream *cs, const char *s, const int pos, const int le
 
 
 /* Deletes a block of len bytes from stream cs at offset p. The stream size
-	does not change. Returns an error code. */
+   does not change. Returns an error code. */
 
 int delete_from_stream(char_stream * const cs, const int pos, int len) {
 
@@ -146,10 +146,10 @@ int delete_from_stream(char_stream * const cs, const int pos, int len) {
 
 
 /* Resets a character stream. If cs is NULL, an empty character stream is
-	returned. If it is non-NULL, everything inside it is freed. The stream
-	memory is deallocated, unless its size is smaller or equal to
-	2*CHAR_STREAM_SIZE_INC (so that we won't continously allocate and deallocate
-	small streams). */
+   returned. If it is non-NULL, everything inside it is freed. The stream
+   memory is deallocated, unless its size is smaller or equal to
+   2*CHAR_STREAM_SIZE_INC (so that we won't continously allocate and deallocate
+   small streams). */
 
 char_stream *reset_stream(char_stream * const cs) {
 
@@ -170,7 +170,7 @@ char_stream *reset_stream(char_stream * const cs) {
 
 
 /* Sets the encoding of this stream by guessing it. The source type is used to
-	avoid guessing UTF-8 when the source of this clip is ENC_8_BIT. */
+   avoid guessing UTF-8 when the source of this clip is ENC_8_BIT. */
 
 void set_stream_encoding(char_stream * const cs, const encoding_type source) {
 	cs->encoding = detect_encoding(cs->stream, cs->len);
@@ -179,9 +179,9 @@ void set_stream_encoding(char_stream * const cs, const encoding_type source) {
 
 
 /* These two functions load a stream in memory. Carriage returns and line feeds
-	are converted to NULLs. You can pass NULL for cs, and a char stream will be
-	allocated for you. If preserve_cr is TRUE, CRs are preserved. If binary 
-	is true, the stream is filled exactly with the file content. */
+   are converted to NULLs. You can pass NULL for cs, and a char stream will be
+   allocated for you. If preserve_cr is TRUE, CRs are preserved. If binary 
+   is true, the stream is filled exactly with the file content. */
 
 char_stream *load_stream(char_stream * cs, const char *name, const int preserve_cr, const int binary) {
 
@@ -250,8 +250,8 @@ char_stream *load_stream_from_fh(char_stream *cs, const int fh, const int preser
 
 
 /* These two functions save a stream to file. NULLs are converted to line
-	feeds. If CRLF is TRUE, we save CR/LF pairs as line terminators. If binary 
-	is true, the stream is dump literally. We return an error code. */
+   feeds. If CRLF is TRUE, we save CR/LF pairs as line terminators. If binary 
+   is true, the stream is dump literally. We return an error code. */
 
 int save_stream(const char_stream *const cs, const char *name, const int CRLF, const int binary) {
 

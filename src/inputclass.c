@@ -26,10 +26,10 @@ const char *input_class_names[INPUT_CLASS_COUNT] = {
 }; 
 
 /* This vector contains all key bindings. Each entry points to a command line
-	to be executed when the corresponding keystroke is input. The index
-	correspond to the ASCII code, and to the codes defined in keycodes.h for the
-	special keys. Note that it is nonsense to specify a binding for a key whose
-	class is not COMMAND. */
+   to be executed when the corresponding keystroke is input. The index
+   correspond to the ASCII code, and to the codes defined in keycodes.h for the
+   special keys. Note that it is nonsense to specify a binding for a key whose
+   class is not COMMAND. */
 
 #ifndef ALTPAGING
   #define PICK(A,B) A

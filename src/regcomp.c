@@ -2171,9 +2171,9 @@ parse_branch (re_string_t *regexp, regex_t *preg, re_token_t *token,
 }
 
 /* This function build the following tree, from regular expression a*:
-	 *
-	 |
-	 a
+    *
+    |
+    a
 */
 
 static bin_tree_t *
@@ -3402,7 +3402,7 @@ build_equiv_class (bitset_t sbcset, const unsigned char *name)
 	  cp = char_buf;
 	  idx2 = findidx (&cp);
 /*
-	  idx2 = table[ch];
+     idx2 = table[ch];
 */
 	  if (idx2 == 0)
 	    /* This isn't a valid character.  */

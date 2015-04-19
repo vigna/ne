@@ -25,14 +25,14 @@
 
 
 /* The functions in this file act as an interface between the main code and the
-	raw screen updating functions of term.c. The basic idea is that one has a
-	series of functions which normally just call the basic functions; however,
-	if more than turbo (or lines*2, if turbo is zero) lines have been updated,
-	the update stops and is delayed to the next call to refresh_window(). This
-	function should be called whenever the screen has to be sync'd with its
-	contents (for instance, whenever the user gets back in control). The 
-	mechanism allows for fast, responsive screen updates for short operations,
-	and one-in-all updates for long operations. */
+   raw screen updating functions of term.c. The basic idea is that one has a
+   series of functions which normally just call the basic functions; however,
+   if more than turbo (or lines*2, if turbo is zero) lines have been updated,
+   the update stops and is delayed to the next call to refresh_window(). This
+   function should be called whenever the screen has to be sync'd with its
+   contents (for instance, whenever the user gets back in control). The 
+   mechanism allows for fast, responsive screen updates for short operations,
+   and one-in-all updates for long operations. */
 
 
 #define TURBO (turbo ? turbo : ne_lines * 2)
@@ -43,9 +43,9 @@
 int need_attr_update;
 
 /* If window_needs_refresh, the window has to be refreshed from scratch,
-	starting from first_line and ending on last_line. Update calls keeps track
-	of the number of lines updated. If this number becomes greater than turbo,
-	and the turbo flag is set, we enter turbo mode. */
+   starting from first_line and ending on last_line. Update calls keeps track
+   of the number of lines updated. If this number becomes greater than turbo,
+   and the turbo flag is set, we enter turbo mode. */
 
 static int window_needs_refresh, first_line, last_line, updated_lines;
 
@@ -54,9 +54,9 @@ static int window_needs_refresh, first_line, last_line, updated_lines;
 static const int no_attr = -1;
 
 /* Prevents any other update from being actually done by setting updated_lines
-	to a value greater than TURBO. It is most useful when the we know that a
-	great deal of update is going to happen, most of which is useless (for
-	instance, when cutting clips). */
+   to a value greater than TURBO. It is most useful when the we know that a
+   great deal of update is going to happen, most of which is useless (for
+   instance, when cutting clips). */
 
 void delay_update() {
 	/* During tests, we never delay updates. */
@@ -138,15 +138,15 @@ void update_syntax_states(buffer *b, int row, line_desc *ld, line_desc *end_ld) 
 
 
 /* Outputs part of a line descriptor at the given screen row and column.
-	The output will start at the first character of the line with a column
-	position larger than or equal to from_col, and will continue until
-	num_cols have been filled (partially overflowing characters will *not*
-	be output). The TABs are expanded and considered in the computation of
-	the column position. from_col and num_cols are not constrained by the
-	length of the string (the string is really considered as terminating
-	with an infinite sequence of spaces). cleared_at_end has the same
-	meaning as in update_line() and update_partial_line(). If utf8 is TRUE,
-	then the line content is considered to be UTF-8 encoded.
+   The output will start at the first character of the line with a column
+   position larger than or equal to from_col, and will continue until
+   num_cols have been filled (partially overflowing characters will *not*
+   be output). The TABs are expanded and considered in the computation of
+   the column position. from_col and num_cols are not constrained by the
+   length of the string (the string is really considered as terminating
+   with an infinite sequence of spaces). cleared_at_end has the same
+   meaning as in update_line() and update_partial_line(). If utf8 is TRUE,
+   then the line content is considered to be UTF-8 encoded.
 
 	If attr is not NULL, it contains a the list of attributes for the line
 	descriptor; if diff is not NULL, the update is differential: we assume
@@ -231,10 +231,10 @@ void output_line_desc(const int row, const int col, line_desc *ld, const int fro
 }
 
 /* Updates part of a line given its number and a starting column. It can handle
-	lines with no associated line descriptor (such as lines after the end of the
-	buffer). It checks for updated_lines bypassing TURBO. if cleared_at_end is
-	TRUE, this function assumes that it doesn't have to clean up the rest of the
-	line if the string is not long enough to fill the line. 
+   lines with no associated line descriptor (such as lines after the end of the
+   buffer). It checks for updated_lines bypassing TURBO. if cleared_at_end is
+   TRUE, this function assumes that it doesn't have to clean up the rest of the
+   line if the string is not long enough to fill the line. 
 
 	If differential is nonzero, the line is update differentially w.r.t.
 	the content of b->attr_buf. The caller is thus responsible to guarantee
@@ -281,7 +281,7 @@ line_desc *update_partial_line(buffer * const b, const int row, const int from_c
 
 
 /* Similar to the previous call, but updates the whole line. If the updated line is the current line,
-	we update the local attribute buffer. */
+   we update the local attribute buffer. */
 
 void update_line(buffer * const b, const int n, const int cleared_at_end, const int differential) {
 	line_desc * const ld = update_partial_line(b, n, 0, cleared_at_end, differential);
@@ -297,10 +297,10 @@ void update_line(buffer * const b, const int n, const int cleared_at_end, const 
 
 
 /* Updates the text window between given lines. If doit is not true and the
-	number of lines that have been updated bypasses TURBO, the update is not
-	done. Rather, first_line, last_line and window_needs_refresh record that
-	some refresh is needed, and from where it should be done. Setting doit to
-	TRUE forces a real update. Generally, doit should be FALSE. */
+   number of lines that have been updated bypasses TURBO, the update is not
+   done. Rather, first_line, last_line and window_needs_refresh record that
+   some refresh is needed, and from where it should be done. Setting doit to
+   TRUE forces a real update. Generally, doit should be FALSE. */
 
 void update_window_lines(buffer * const b, const int start_line, const int end_line, const int doit) {
 	
@@ -338,16 +338,16 @@ void update_window_lines(buffer * const b, const int start_line, const int end_l
 
 
 /* Like update_window_lines(), but it updates the whole window, and never forces
-	an update. */
+   an update. */
 
 void update_window(buffer * const b) {
 	update_window_lines(b, 0, ne_lines - 2, FALSE);
 }
 
 /* Updates the current line, the following syntax states if necessary,
-	and finally updates all following lines. All operations are preceded by
-	a call to delay_update(). This is mainly written to fix the screen
-	state after a block operation. */
+   and finally updates all following lines. All operations are preceded by
+   a call to delay_update(). This is mainly written to fix the screen
+   state after a block operation. */
 
 void update_syntax_and_lines(buffer *b, line_desc *start_ld, line_desc *end_ld) {
 	delay_update();
@@ -360,20 +360,20 @@ void update_syntax_and_lines(buffer *b, line_desc *start_ld, line_desc *end_ld) 
 }
 
 /* The following functions update a character on the screen. Three operations
-	are supported---insertion, deletion, overwriting. The semantics is a bit
-	involved.  Essentially, they should be called *immediately* after the
-	modification has been done. They assume that the video is perfectly up to
-	date, and that only the given modification has been performed. Moreover,
-	in case of syntax highlighting, the functions must update the local
-	attribute buffer so that it reflects the current status of the line. In
-	particular, no update of the rest of the line must be performed for
-	syntactic reasons (it will be handled by the caller). Thus, for
-	instance, update_inserted_char() assumes that ld->line[pos] contains
-	the inserted character. The tough part is expanding/contracting the
-	tabs following the modified position in such a way to maintain them
-	consistent. Moreover, a lot of special cases are considered and
-	optimized (such as writing a space at the end of a line). TURBO is
-	taken into consideration. */
+   are supported---insertion, deletion, overwriting. The semantics is a bit
+   involved.  Essentially, they should be called *immediately* after the
+   modification has been done. They assume that the video is perfectly up to
+   date, and that only the given modification has been performed. Moreover,
+   in case of syntax highlighting, the functions must update the local
+   attribute buffer so that it reflects the current status of the line. In
+   particular, no update of the rest of the line must be performed for
+   syntactic reasons (it will be handled by the caller). Thus, for
+   instance, update_inserted_char() assumes that ld->line[pos] contains
+   the inserted character. The tough part is expanding/contracting the
+   tabs following the modified position in such a way to maintain them
+   consistent. Moreover, a lot of special cases are considered and
+   optimized (such as writing a space at the end of a line). TURBO is
+   taken into consideration. */
 
 void update_deleted_char(buffer * const b, const int c, const int a, const line_desc * const ld, int pos, int attr_pos, const int line, const int x) {
 
@@ -667,8 +667,8 @@ void update_overwritten_char(buffer * const b, const int old_char, const int new
 
 
 /* Resets the terminal status, updating the whole window and resetting the
-	status bar. It *never* does any real update; it is just used to mark that
-	the window and the status bar have to be completely rebuilt. */
+   status bar. It *never* does any real update; it is just used to mark that
+   the window and the status bar have to be completely rebuilt. */
 
 
 void reset_window(void) {
@@ -681,7 +681,7 @@ void reset_window(void) {
 
 
 /* Forces the screen update. It should be called whenever the user has to
-	interact, so that he is presented with a correctly updated display. */
+   interact, so that he is presented with a correctly updated display. */
 
 void refresh_window(buffer * const b) {
 	if (window_needs_refresh) update_window_lines(b, first_line, last_line, TRUE);

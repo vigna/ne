@@ -27,7 +27,7 @@ int utf8tolower(int c);
 int utf8toupper(int c);
 
 /* Computes the length of an UTF-8 sequence, given the first byte. If the byte
-	is not a legal sequence start, this function returns -1. */
+   is not a legal sequence start, this function returns -1. */
 
 #define utf8len(c) \
 	(((unsigned char)(c)) < 0x80 ?  1 : \

@@ -82,9 +82,9 @@ static void search_buff(const buffer *b, const unsigned char *p, const int encod
 }
 
 /* Returns a completion for the (non-NULL) prefix p, showing suffixes from
-	all buffers if ext is true. Note that p is free()'d by this function,
-	and that, in turn, the returned string must be free()'d by the caller
-	if it is non-NULL (a returned NULL means that no completion is available).
+   all buffers if ext is true. Note that p is free()'d by this function,
+   and that, in turn, the returned string must be free()'d by the caller
+   if it is non-NULL (a returned NULL means that no completion is available).
 
 	If there is more than one completion, this function will invoke request_strings()
 	(and subsequently reset_window()) after displaying req_msg. In any case, error 

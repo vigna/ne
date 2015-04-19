@@ -24,7 +24,7 @@
 #endif
 
 /* Pokes into the terminfo capability strings the ANSI definitions.
-	This is good for situation in which no database is available.
+   This is good for situation in which no database is available.
 
 	The keyboard is already fixed in keys.c, because key_may_set() will
 	poke into the keyboard capabilities all ANSI keyboard sequences.

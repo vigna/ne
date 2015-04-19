@@ -1,6 +1,6 @@
 /* Optimal cursor motion definitions.
-	Based primarily on public domain code written by Chris Torek.
-	Originally part of GNU Emacs.	Vastly edited and modified for use within ne.
+   Based primarily on public domain code written by Chris Torek.
+   Originally part of GNU Emacs.	Vastly edited and modified for use within ne.
 
 	Copyright (C) 1985, 1989 Free Software Foundation, Inc.
 	Copyright (C) 1993-1998 Sebastiano Vigna 

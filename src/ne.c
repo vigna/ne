@@ -92,8 +92,8 @@ list clips = { (node *)&clips.tail, NULL, (node *)&clips.head };
 list macros = { (node *)&macros.tail, NULL, (node *)&macros.head };
 
 /* global prefs, only saved in ~/.ne/.default#ap if their
-	current settings differ from these defaults. Make sure these
-	defaults match the conditionals in prefs.c:save_prefs(). */
+   current settings differ from these defaults. Make sure these
+   defaults match the conditionals in prefs.c:save_prefs(). */
 #ifndef ALTPAGING
 int req_order;
 #else

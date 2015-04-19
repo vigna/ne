@@ -71,14 +71,14 @@ familiar with this diagram.
 
 
 /* "Resyncs" cur_pos (the current character the cursor is on) with cur_x and
-	win_x. It has to take into account the TAB expansion, and can cause
-	left/right movement in order to properly land on a real character.  x is the
-	offset from the beginning of the line after TAB expansion. resync_pos()
-	assumes that tab_size < columns/2. Note that this function has to be called
-	whenever the cursor is moved to a different line, keeping the x position
-	constant. The only way of avoiding this problem is not supporting TABs,
-	which is of course unacceptable. Note that if x_wanted is TRUE, then the
-	wanted_x position is used rather tham cur_x+win_x. */
+   win_x. It has to take into account the TAB expansion, and can cause
+   left/right movement in order to properly land on a real character.  x is the
+   offset from the beginning of the line after TAB expansion. resync_pos()
+   assumes that tab_size < columns/2. Note that this function has to be called
+   whenever the cursor is moved to a different line, keeping the x position
+   constant. The only way of avoiding this problem is not supporting TABs,
+   which is of course unacceptable. Note that if x_wanted is TRUE, then the
+   wanted_x position is used rather tham cur_x+win_x. */
 
 void resync_pos(buffer * const b) {
 
@@ -251,7 +251,7 @@ void keep_cursor_on_screen(buffer * const b) {
 
 
 /* Moves win_x of n bytes to the left (n *has* to be a multiple of the current
-	TAB size). It is used by char_left(). cur_x is moved, too. */
+   TAB size). It is used by char_left(). cur_x is moved, too. */
 
 static void block_left(buffer * const b, const int n) {
 
@@ -581,8 +581,8 @@ int move_bos(buffer * const b) {
 }
 
 /* adjust_view() never moves the cursor. It is only concerned with shifting
-	win_x, cur_x, win_y and cur_y -- the variables which control which part
-	of the file is visible in the terminal window. */
+   win_x, cur_x, win_y and cur_y -- the variables which control which part
+   of the file is visible in the terminal window. */
 
 int adjust_view(buffer * const b, const unsigned char *p) {
 	int i, disp, mag, rc = OK;
@@ -828,7 +828,7 @@ void move_to_eol(buffer * const b) {
 
 
 /* Sets the variables like a move_to_sof(), but does not perform any
-	update. This is required in several places. */
+   update. This is required in several places. */
 
 void reset_position_to_sof(buffer * const b) {
 	b->x_wanted =
@@ -921,7 +921,7 @@ void toggle_sol_eol(buffer * const b) {
 
 
 /* Searches for the start of the next or previous word, depending on the value
-	of dir. */
+   of dir. */
 
 int search_word(buffer * const b, const int dir) {
 
@@ -992,7 +992,7 @@ int search_word(buffer * const b, const int dir) {
 
 
 /* Moves to the character after the end of the current word. It doesn't move at
-	all on US-ASCII spaces and punctuation. */
+   all on US-ASCII spaces and punctuation. */
 
 void move_to_eow(buffer * const b) {
 
@@ -1012,9 +1012,9 @@ void move_to_eow(buffer * const b) {
 
 
 /* Implements Brief's "incrementale move to the end": if we are in the middle
-	of a line, we mode to the end of line; otherwise, if we are in the middle of
-	a page, we move to the end of the page; otherwise, if we are in the middle
-	of a file we move to the end of file. */
+   of a line, we mode to the end of line; otherwise, if we are in the middle of
+   a page, we move to the end of the page; otherwise, if we are in the middle
+   of a file we move to the end of file. */
 
 void move_inc_down(buffer * const b) {
 

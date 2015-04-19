@@ -27,7 +27,7 @@
 
 
 /* Maximum number of key definitions from terminfo plus others
-	we may get from keys file -- i.e. key_may_set(). */
+   we may get from keys file -- i.e. key_may_set(). */
 
 #define MAX_TERM_KEY 512
 
@@ -104,7 +104,7 @@ void dump_keys(void)
 
 
 /* Sets the first free position in the key capabilities array to the cap_string
-	capability, and increment the first free position counter.
+   capability, and increment the first free position counter.
 */
 
 static void key_set(const char * const cap_string, const int code) {
@@ -392,8 +392,8 @@ void read_key_capabilities(void) {
 
 
 /* Sets the escape time, which is an option, but it's global to ne and it's not
-	saved in autopreferences files. However, an EscapeTime command can be
-	attached manually to any preferences file. */
+   saved in autopreferences files. However, an EscapeTime command can be
+   attached manually to any preferences file. */
 
 static int escape_time = 10;
 
@@ -403,8 +403,8 @@ void set_escape_time(const int new_escape_time) {
 
 
 /* Sets the current timeout in the termios structure relative to stdin. If the
-	timeout value (in tenth of a second) is positive, VMIN is set to 0,
-	otherwise to 1. */
+   timeout value (in tenth of a second) is positive, VMIN is set to 0,
+   otherwise to 1. */
 
 static void set_termios_timeout(const int timeout) {
 	struct termios termios;
@@ -419,9 +419,9 @@ static void set_termios_timeout(const int timeout) {
 
 
 /* Reads in characters, and tries to match them with the sequences
-	corresponding to special keys. Returns a positive number, denoting
-	a character (possibly INVALID_CHAR), or a negative number denoting a key
-	code (if x is the key code, -x-1 will be returned).
+   corresponding to special keys. Returns a positive number, denoting
+   a character (possibly INVALID_CHAR), or a negative number denoting a key
+   code (if x is the key code, -x-1 will be returned).
 
 	This function tries to be highly optimized and efficient by employing a
 	sorted array of strings for the terminal keys. An index keeps track of the

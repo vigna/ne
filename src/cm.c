@@ -1,6 +1,6 @@
 /* Optimal cursor motion functions.
-	Based primarily on public domain code written by Chris Torek.
-	Originally part of GNU Emacs.	Vastly edited and modified for use within ne.
+   Based primarily on public domain code written by Chris Torek.
+   Originally part of GNU Emacs.	Vastly edited and modified for use within ne.
 
 	Copyright (C) 1985, 1995 Free Software Foundation, Inc.
 	Copyright (C) 1993-1998 Sebastiano Vigna 
@@ -58,13 +58,13 @@ int cmputc (int c) {
 
 
 /* Terminals with magicwrap (xn) don't all behave identically.  The VT100
-	leaves the cursor in the last column but will wrap before printing the next
-	character.  I hear that the Concept terminal does the wrap immediately but
-	ignores the next newline it sees.  And some terminals just have buggy
-	firmware, and think that the cursor is still in limbo if we use direct
-	cursor addressing from the phantom column.  The only guaranteed safe thing
-	to do is to emit a CRLF immediately after we reach the last column; this
-	takes us to a known state. */
+   leaves the cursor in the last column but will wrap before printing the next
+   character.  I hear that the Concept terminal does the wrap immediately but
+   ignores the next newline it sees.  And some terminals just have buggy
+   firmware, and think that the cursor is still in limbo if we use direct
+   cursor addressing from the phantom column.  The only guaranteed safe thing
+   to do is to emit a CRLF immediately after we reach the last column; this
+   takes us to a known state. */
 
 void cmcheckmagic () {
 	if (curX == ScreenCols) {
@@ -78,8 +78,8 @@ void cmcheckmagic () {
 
 
 /* (Re)Initialises the cost factors, given the output speed of the terminal in
-	the variable ospeed.  (Note: this holds B300, B9600, etc -- ie stuff out of
-	<sgtty.h>.) */
+   the variable ospeed.  (Note: this holds B300, B9600, etc -- ie stuff out of
+   <sgtty.h>.) */
 
 void cmcostinit () {
 	char *p;
@@ -287,14 +287,14 @@ void cmgoto (int row, int col) {
 }
 
 /* Clears out all terminal info.  Used before copying into it the info on the
-	actual terminal. */
+   actual terminal. */
 
 void Wcm_clear () {
 	memset(&Wcm, 0, sizeof Wcm);
 }
 
 /* Initialises stuff. Returns 0 if can do CM, -1 if cannot, -2 if size not
-	specified. */
+   specified. */
 
 int Wcm_init () {
 	if (Wcm.cm_abs) return 0;

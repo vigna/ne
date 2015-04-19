@@ -165,10 +165,10 @@ unsigned char *lowerize(unsigned char *s) {
 }
 
 /* Parse one line.  Returns new state.
-	'syntax' is the loaded syntax definition for this buffer.
-	'line' is advanced to start of next line.
-	Global array 'attr_buf' end up with coloring for each character of line (attr_len characters).
-	'state' is initial parser state for the line (0 is initial state). */
+   'syntax' is the loaded syntax definition for this buffer.
+   'line' is advanced to start of next line.
+   Global array 'attr_buf' end up with coloring for each character of line (attr_len characters).
+   'state' is initial parser state for the line (0 is initial state). */
 
 int *attr_buf = 0;	
 int attr_size = 0;

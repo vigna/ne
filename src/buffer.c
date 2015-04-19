@@ -40,7 +40,7 @@ pool dimension, with respect to the number of lines of the given file. */
 #define STANDARD_LINE_INCREMENT (256)
 
 /* The size of the space array. Batch printing of spaces happens in blocks of
-	this size. */
+   this size. */
 
 #define MAX_STACK_SPACES (256)
 
@@ -100,8 +100,8 @@ void free_char_pool(char_pool * const cp) {
 
 
 /* Given a pointer in a character pool and a buffer, this function returns the
-	respective pool. It can return NULL if the pointer wasn't in any pool, but
-	this condition denotes a severe malfunctioning. */
+   respective pool. It can return NULL if the pointer wasn't in any pool, but
+   this condition denotes a severe malfunctioning. */
 
 char_pool *get_char_pool(buffer * const b, unsigned char * const p) {
 
@@ -125,8 +125,8 @@ char_pool *get_char_pool(buffer * const b, unsigned char * const p) {
 
 
 /* These functions allocate and deallocate line descriptor pools. The size of
-	the pool is the number of lines, and is forced to be at least
-	STD_LINE_DESC_POOL_SIZE. */
+   the pool is the number of lines, and is forced to be at least
+   STD_LINE_DESC_POOL_SIZE. */
 
 
 line_desc_pool *alloc_line_desc_pool(int pool_size) {
@@ -263,7 +263,7 @@ void free_buffer_contents(buffer * const b) {
 
 
 /* Removes all data in a buffer, but leaves in the current macro, the search,
-	replace and command_line strings, and an empty line. */
+   replace and command_line strings, and an empty line. */
 
 void clear_buffer(buffer * const b) {
 
@@ -313,9 +313,9 @@ void free_buffer(buffer * const b) {
 
 
 /* Computes how many characters have been "lost" in a buffer, that is, how many
-	free characters lie inside the first and last used characters of the
-	character pools. This characters can only be allocated by
-	alloc_chars_around(). */
+   free characters lie inside the first and last used characters of the
+   character pools. This characters can only be allocated by
+   alloc_chars_around(). */
 
 int calc_lost_chars(const buffer * const b) {
 
@@ -334,7 +334,7 @@ int calc_lost_chars(const buffer * const b) {
 
 
 /* Returns the nth buffer in the global buffer list, or NULL if less than n
-	buffers are available. */
+   buffers are available. */
 
 buffer *get_nth_buffer(int n) {
 
@@ -350,8 +350,8 @@ buffer *get_nth_buffer(int n) {
 
 
 /* Returns a buffer, given its name (i.e., the name of the file it
-	contains). Note that file_part() is applied *both* to the string passed
-	*and* to the buffer names, so that the path is immaterial. */
+   contains). Note that file_part() is applied *both* to the string passed
+   *and* to the buffer names, so that the path is immaterial. */
 
 buffer *get_buffer_named(const char *p) {
 
@@ -385,8 +385,8 @@ int modified_buffers(void) {
 
 
 /* Saves all buffers which have been modified since the last save. Returns an
-	error if a save is unsuccessful, a file on-disk was modified since last
-	loaded or saved, or if a buffer has no name. */
+   error if a save is unsuccessful, a file on-disk was modified since last
+   loaded or saved, or if a buffer has no name. */
 
 int save_all_modified_buffers(void) {
 
@@ -406,16 +406,16 @@ int save_all_modified_buffers(void) {
 
 
 /* Now we have the much more sophisticated allocation functions which create
-	small elements such as lines and line descriptors. The strategy is rather
-	complex. All the operations are in the context of a given buffer. Most of
-	these functions are protected internally against being interrupted by
-	signals, since auto_save could die miserably because of the inconsistent
-	state of a list. */
+   small elements such as lines and line descriptors. The strategy is rather
+   complex. All the operations are in the context of a given buffer. Most of
+   these functions are protected internally against being interrupted by
+   signals, since auto_save could die miserably because of the inconsistent
+   state of a list. */
 
 
 /* Allocates a line descriptor from the pools available in the given buffer. A
-	new pool is allocated and linked if necessary. New line descriptors are
-	created with an invalid syntax state, so they will always force an update. */
+   new pool is allocated and linked if necessary. New line descriptors are
+   created with an invalid syntax state, so they will always force an update. */
 
 line_desc *alloc_line_desc(buffer * const b) {
 	
@@ -473,7 +473,7 @@ line_desc *alloc_line_desc(buffer * const b) {
 
 
 /* Frees a line descriptor, (and the line descriptor pool containing it, should
-	it become empty). */
+   it become empty). */
 
 void free_line_desc(buffer * const b, line_desc * const ld) {
 
@@ -583,17 +583,17 @@ unsigned char *alloc_chars(buffer * const b, const int len) {
 
 
 /* This function is very important, since it embeds all the philosophy behind
-	ne's character pool management. It performs an allocation *locally*, that
-	is, it tries to see if there are enough free characters around the line
-	pointed to by a line descriptor by looking at non-nullness of surrounding
-	characters (if a character is set to 0, it is free). First the characters
-	after the line are checked, then the characters before (this can be reversed
-	via the check_first_before flag). The number of characters available *after*
-	the line is returned, or ERROR if the allocation failed. The caller can
-	recover the characters available before the line since he knows the length
-	of the allocation. Note that it is *only* through this function that the
-	"lost" characters can be allocated, but being editing a local activity, this
-	is what happens usually. */
+   ne's character pool management. It performs an allocation *locally*, that
+   is, it tries to see if there are enough free characters around the line
+   pointed to by a line descriptor by looking at non-nullness of surrounding
+   characters (if a character is set to 0, it is free). First the characters
+   after the line are checked, then the characters before (this can be reversed
+   via the check_first_before flag). The number of characters available *after*
+   the line is returned, or ERROR if the allocation failed. The caller can
+   recover the characters available before the line since he knows the length
+   of the allocation. Note that it is *only* through this function that the
+   "lost" characters can be allocated, but being editing a local activity, this
+   is what happens usually. */
 
 
 int alloc_chars_around(buffer * const b, line_desc * const ld, const int n, const int check_first_before) {
@@ -644,7 +644,7 @@ int alloc_chars_around(buffer * const b, line_desc * const ld, const int n, cons
 
 
 /* Frees a block of len characters pointed to by p. If the char pool containing
-	the block becomes completely free, it is removed from the list. */
+   the block becomes completely free, it is removed from the list. */
 
 void free_chars(buffer *const b, unsigned char *const p, const int len) {
 
@@ -682,19 +682,19 @@ void free_chars(buffer *const b, unsigned char *const p, const int len) {
 
 
 /* The following functions represent the only legal way of modifying a
-	buffer. They are all based on insert_stream and delete_stream (except for
-	the I/O functions). A stream is a sequence of NULL-terminated strings. The
-	semantics associated is that each string is a separate line terminated by a
-	line feed, *except for the last one*. Thus, a NULL-terminated string is a
-	line with no linefeed. All the functions accept a position specified via a
-	line descriptor and a position (which is the offset to be applied to the
-	line pointer of the line descriptor). Also the line number is usually
-	supplied, since it is necessary for recording the operation in the undo
-	buffer. */
+   buffer. They are all based on insert_stream and delete_stream (except for
+   the I/O functions). A stream is a sequence of NULL-terminated strings. The
+   semantics associated is that each string is a separate line terminated by a
+   line feed, *except for the last one*. Thus, a NULL-terminated string is a
+   line with no linefeed. All the functions accept a position specified via a
+   line descriptor and a position (which is the offset to be applied to the
+   line pointer of the line descriptor). Also the line number is usually
+   supplied, since it is necessary for recording the operation in the undo
+   buffer. */
 
 
 /* Inserts a line at the current position. The effect is obtained by inserting
-	a stream containing one NULL. */
+   a stream containing one NULL. */
 
 
 int insert_one_line(buffer * const b, line_desc * const ld, const int line, const int pos) {	
@@ -703,7 +703,7 @@ int insert_one_line(buffer * const b, line_desc * const ld, const int line, cons
 
 
 /* Deletes a whole line, putting it in the temporary line buffer used by the
-	UndelLine command. */
+   UndelLine command. */
 
 int delete_one_line(buffer * const b, line_desc * const ld, const int line) {
 	int error;
@@ -755,10 +755,10 @@ void delete_to_eol(buffer * const b, line_desc * const ld, const int line, const
 
 
 /* Inserts a stream in a line at a given position.  The position has to be
-	smaller or equal to the line length. Since the stream can contain many
-	lines, this function can be used for manipulating all insertions. It also
-	record the inverse operation in the undo buffer if b->opt.do_undo is
-	TRUE. */
+   smaller or equal to the line length. Since the stream can contain many
+   lines, this function can be used for manipulating all insertions. It also
+   record the inverse operation in the undo buffer if b->opt.do_undo is
+   TRUE. */
 
 int insert_stream(buffer * const b, line_desc * ld, int line, int pos, const unsigned char * const stream, const int stream_len) {
 
@@ -898,8 +898,8 @@ int insert_stream(buffer * const b, line_desc * ld, int line, int pos, const uns
 
 
 /* Inserts a single ISO 10646 character (it creates, if necessary, a suitable
-	temporary stream). The character must be compatible with the current buffer
-	encoding. */
+   temporary stream). The character must be compatible with the current buffer
+   encoding. */
 
 
 int insert_one_char(buffer * const b, line_desc * const ld, const int line, const int pos, const int c) {
@@ -944,8 +944,8 @@ int insert_spaces(buffer * const b, line_desc * const ld, const int line, const 
 
 
 /* Deletes a stream of len bytes, that is, deletes len bytes from the given
-	position, counting line feeds as a byte. The operation is recorded in the
-	undo buffer. */
+   position, counting line feeds as a byte. The operation is recorded in the
+   undo buffer. */
 
 int delete_stream(buffer * const b, line_desc * const ld, const int line, const int pos, int len) {
 	int n, m, mask;
@@ -1125,7 +1125,7 @@ int delete_one_char(buffer * const b, line_desc * const ld, const int line, cons
 
 
 /* Changes the buffer file name to the given string, which must have been
-	obtained through malloc(). */
+   obtained through malloc(). */
 
 void change_filename(buffer * const b, char * const name) {
 
@@ -1137,10 +1137,10 @@ void change_filename(buffer * const b, char * const name) {
 
 
 /* Here we load a file into a given buffer. The buffer lists are deallocated
-	first. If there is not write access to the file, the read-only flag is set.
-	Note that we consider line feeds 0x0A's, 0x0D's and 0x00's (the last being
-	made necessary by the way the pools are handled), unless the binary flag is
-	set, in which case we consider only the 0x00's. */
+   first. If there is not write access to the file, the read-only flag is set.
+   Note that we consider line feeds 0x0A's, 0x0D's and 0x00's (the last being
+   made necessary by the way the pools are handled), unless the binary flag is
+   set, in which case we consider only the 0x00's. */
 
 int load_file_in_buffer(buffer * const b, const char *name) {
 	int fh, result;
@@ -1168,10 +1168,10 @@ int load_file_in_buffer(buffer * const b, const char *name) {
 
 
 /* This function, together with insert_stream and delete_stream, is the only
-	way of modifying the contents of a buffer. While loading a file could have
-	passed through insert_stream, it would have been intolerably slow for large
-	files. The flexible pool struture of ne allows to load the file with a
-	single read in a big pool. */
+   way of modifying the contents of a buffer. While loading a file could have
+   passed through insert_stream, it would have been intolerably slow for large
+   files. The flexible pool struture of ne allows to load the file with a
+   single read in a big pool. */
 
 int load_fh_in_buffer(buffer *b, int fh) {
 	
@@ -1349,8 +1349,8 @@ void ensure_attr_buf(buffer * const b, const int capacity) {
 
 
 /* Here we save a buffer to a given file. If no file is specified, the
-	buffer filename field is used. The is_modified flag is set to 0,
-	and the mtime is updated. */
+   buffer filename field is used. The is_modified flag is set to 0,
+   and the mtime is updated. */
 
 
 int save_buffer_to_file(buffer *b, const char *name) {
@@ -1482,10 +1482,10 @@ int save_buffer_to_file(buffer *b, const char *name) {
 
 
 /* Autosaves a given buffer. If the buffer has a name, a '#' is prefixed to
-	it. If the buffer has no name, a fake name is generated using the PID of ne
-	and the pointer to the buffer structure. This ensures uniqueness. Autosave
-	never writes on the original file, also because it can be called during an
-	emergency exit caused by a signal. */
+   it. If the buffer has no name, a fake name is generated using the PID of ne
+   and the pointer to the buffer structure. This ensures uniqueness. Autosave
+   never writes on the original file, also because it can be called during an
+   emergency exit caused by a signal. */
 
 
 void auto_save(buffer *b) {

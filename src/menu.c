@@ -540,8 +540,8 @@ static void do_menu_action(void) {
 
 
 /* showing_msg tells draw_status_bar() that a message is currently shown, and
-	should be cancelled only on the next refresh. Bar gone says that the status
-	bar doesn't exists any longer, so we have to rebuild it entirely. */
+   should be cancelled only on the next refresh. Bar gone says that the status
+   bar doesn't exists any longer, so we have to rebuild it entirely. */
 
 static int showing_msg;
 static int bar_gone = TRUE;
@@ -549,7 +549,7 @@ static int bar_gone = TRUE;
 
 
 /* Resets the status bar. It does not perform the refresh, just sets bar_gone
-	to TRUE. */
+   to TRUE. */
 
 void reset_status_bar(void) {
 	bar_gone = TRUE;
@@ -625,10 +625,10 @@ char *gen_flag_string(const buffer * const b) {
 
 
 /* Draws the status bar. If showing_msg is TRUE, it is set to FALSE, bar_gone
-	is set to TRUE and the update is deferred to the next call. If the bar is
-	not completely gone, we try to just update the line and column numbers, and
-	the flags. The function keeps track internally of their last values, so that
-	unnecessary printing is avoided. */
+   is set to TRUE and the update is deferred to the next call. If the bar is
+   not completely gone, we try to just update the line and column numbers, and
+   the flags. The function keeps track internally of their last values, so that
+   unnecessary printing is avoided. */
 
 
 void draw_status_bar(void) {
@@ -747,9 +747,9 @@ void draw_status_bar(void) {
 
 
 /* Prints a message over the status bar. It also sets showing_msg and
-	bar_gone. If message is NULL and showing_msg is true, we reprint
-	the last message. That necessitates caching the message when it
-	isn't NULL. */
+   bar_gone. If message is NULL and showing_msg is true, we reprint
+   the last message. That necessitates caching the message when it
+   isn't NULL. */
 
 void print_message(const char * const message) {
 
@@ -785,8 +785,8 @@ void print_message(const char * const message) {
 
 
 /* Prints an error on the status bar. error_num is a global error code. The
-	function returns the error code passed, and does not do anything if the
-	error code is OK or ERROR. */
+   function returns the error code passed, and does not do anything if the
+   error code is OK or ERROR. */
 
 int print_error(const int error_num) {
 
@@ -802,7 +802,7 @@ int print_error(const int error_num) {
 
 
 /* Prints an information on the status bar. info_num is a global information
-	code. Note that no beep is generated. */
+   code. Note that no beep is generated. */
 
 
 void print_info(const int info_num) {
@@ -824,11 +824,11 @@ void alert(void) {
 
 
 /* Handles the menu system: it displays the menus, parses the keyboard input,
-	and eventually executes the correct command line. Note that we support ':'
-	for going to the command line, alphabetic search (upper case for menus,
-	lower case for items) and the cursor movement keys (by line, character,
-	page). Note also the all other actions are executed, so that you can use
-	shortcuts while using menus. */
+   and eventually executes the correct command line. Note that we support ':'
+   for going to the command line, alphabetic search (upper case for menus,
+   lower case for items) and the cursor movement keys (by line, character,
+   page). Note also the all other actions are executed, so that you can use
+   shortcuts while using menus. */
 
 void handle_menus(void) {
 
@@ -1023,7 +1023,7 @@ static void get_menu_conf(const char * menu_conf_name, char * (exists_prefs_func
 }
 
 /* Menu configs are all or nothing, so if the user has one,
-	skip any global one. */
+   skip any global one. */
 void get_menu_configuration(const char * menu_conf_name) {
 	get_menu_conf(menu_conf_name, exists_prefs_dir);
 	if (menus == def_menus) get_menu_conf(menu_conf_name, exists_gprefs_dir);
@@ -1111,7 +1111,7 @@ char *cur_dir(void) {
 }
 
 /* Key bindings override easily, so pull in any global bindings
-	first, then override with the users bindings. */
+   first, then override with the users bindings. */
 void get_key_bindings(const char * key_bindings_name) {
 	get_key_bind(key_bindings_name, exists_gprefs_dir);
 	get_key_bind(key_bindings_name, exists_prefs_dir);
