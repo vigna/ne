@@ -67,7 +67,9 @@ package:
 	#
 	# Then do a "make install" as root (delete INSTALL to make it work) and run this target.
 	# Finally, create using /Developer/Applications/Utilities/PackageMaker a package whose only content is 
-	# /tmp/package, build it, and use Disk Utility to create a (properly named) 10MB disk image containing the package.
+	# /tmp/package, build it, and use Disk Utility to create a (properly named) small disk image 
+	# containing the package. Finally, use the right button and "Convert" to store the image in compressed form.
+
 	-rm -fr /tmp/package
 	mkdir -p /tmp/package/usr/local/bin
 	mkdir -p /tmp/package/usr/local/share/doc
