@@ -47,12 +47,13 @@ install:
 	( cd src; make clean; make NE_GLOBAL_DIR=$(PREFIX)/share/ne )
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
 	mkdir -p $(DESTDIR)$(PREFIX)/share/ne/syntax
+	mkdir -p $(DESTDIR)$(PREFIX)/share/ne/macros
 	mkdir -p $(DESTDIR)$(PREFIX)/share/man/man1
 	mkdir -p $(DESTDIR)$(PREFIX)/share/doc/ne
 	mkdir -p $(DESTDIR)$(PREFIX)/share/info
 	cp -pf src/ne$(CMDSUFFIX) $(DESTDIR)$(PREFIX)/bin
 	cp -p syntax/*.jsf $(DESTDIR)$(PREFIX)/share/ne/syntax
-	cp -p macros/*     $(DESTDIR)$(PREFIX)/share/ne
+	cp -p macros/*     $(DESTDIR)$(PREFIX)/share/ne/macros
 	cp -p doc/ne.1 $(DESTDIR)$(PREFIX)/share/man/man1
 	cp -pr doc/ne.pdf doc/html doc/ne.txt doc/default.* README COPYING NEWS CHANGES $(DESTDIR)$(PREFIX)/share/doc/ne
 	cp -p doc/ne.info.gz $(DESTDIR)$(PREFIX)/share/info
