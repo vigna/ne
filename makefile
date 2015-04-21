@@ -38,10 +38,10 @@ source: version
 cygwin:
 	( cd src; make clean; make NE_GLOBAL_DIR=/usr/share/ne NE_TERMCAP=1 NE_ANSI=1 )
 	make install PREFIX=/usr CMDSUFFIX=.exe
-	tar zcvf ne-cygwin-ansi-$(VERSION).tar.gz /usr/share/ne /usr/bin/ne.exe /usr/share/doc/ne /usr/share/info/ne.info.gz /usr/share/man/man1/ne.1
+	tar zcvf ne-cygwin-ansi-$(VERSION)-$(shell uname -m).tar.gz /usr/share/ne /usr/bin/ne.exe /usr/share/doc/ne /usr/share/info/ne.info.gz /usr/share/man/man1/ne.1
 	( cd src; make clean; make NE_GLOBAL_DIR=/usr/share/ne )
 	make install PREFIX=/usr CMDSUFFIX=.exe
-	tar zcvf ne-cygwin-$(VERSION).tar.gz /usr/share/ne /usr/bin/ne.exe /usr/share/doc/ne /usr/share/info/ne.info.gz /usr/share/man/man1/ne.1
+	tar zcvf ne-cygwin-$(VERSION)-$(shell uname -m).tar.gz /usr/share/ne /usr/bin/ne.exe /usr/share/doc/ne /usr/share/info/ne.info.gz /usr/share/man/man1/ne.1
 
 install:
 	( cd src; make clean; make NE_GLOBAL_DIR=$(PREFIX)/share/ne )
