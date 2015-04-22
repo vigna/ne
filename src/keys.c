@@ -119,24 +119,30 @@ static void key_set(const char * const cap_string, const int code) {
 
 
 
-/* key_may_set() sets a key capability string IFF it isn't already
-assigned. It assumes the array is already sorted, and it keeps it
-that way. This is part of the horrible hack to make cursor and
-function keys work on numerous terminals which have broken terminfo
-and termcap entries, or for weak terminal emulators which happen to
-produce well-known sequences. Returns
-	> 0 on success,
-	==0 if table is full (or no cap_string supplied)
-	< 0 if string is already defined.
- */
-
-
-int key_may_set(const char * const cap_string, const int code) {
+/* key_may_set() maps a key capability string to a key code number.
+   It assumes the array is already sorted, and it keeps it that way.
+   If the code number is positive and the cap_string is already in
+   the key map, no mapping is done. If the code number is negative
+   and the cap_string is already in the key vector, the matching code
+   is replaced with the positive counterpart of the code passed in.
+      This is part of the horrible hack to make cursor and
+   function keys work on numerous terminals which have broken terminfo
+   and termcap entries, or for weak terminal emulators which happen to
+   produce well-known sequences. Returns
+	   > 0 on success,
+	   ==0 if table is full (or no cap_string supplied)
+	   < 0 if string was already defined.   
+*/
+int key_may_set(const char * const cap_string, int code) {
 	int pos=0;
 
 	if (num_keys >= MAX_TERM_KEY - 1) return 0;
-	if (!cap_string || (pos = binsearch(cap_string)) < 0) return pos;
-
+	if (!cap_string || (pos = binsearch(cap_string)) < 0) {
+		if (code < 0)
+			key[-pos-1].code = -code - 1;
+		return pos;
+	}
+   if (code < 0) code = -code - 1;
 	memmove(key + pos + 1, key + pos, (num_keys - pos) * sizeof *key);
 	key[pos].string = (unsigned char *)cap_string;
 	key[pos].code = code;
