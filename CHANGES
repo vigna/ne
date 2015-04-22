@@ -4,6 +4,9 @@
 
   * Allow remapping of character SEQuences in .keys files.
 
+  * Global macros are now loaded from NE_GLOBAL_DIR/macros rather than
+    NE_GLOBAL_DIR (/usr/local/share/ne/macros vs /usr/local/share/ne).
+
 2.6  2015-04-17
 
   * Ancient bug with vertical clip edges fixed.

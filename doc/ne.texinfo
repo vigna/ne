@@ -662,7 +662,7 @@ Built-in command names are always searched before the @code{ne} command
 interpreter looks for macros.
 
 The system administrator may make some macros available from
-@code{ne}'s global directory. @xref{Arguments}.
+the @file{macros} subdirectory of @code{ne}'s global directory. @xref{Arguments}.
 
 Since loading a macro each time it is invoked would be a rather slow and
 expensive process, once a macro has been executed it is cached internally.
@@ -3139,11 +3139,10 @@ command line.
 Note that macros whose names do not conflict with a command can be called
 without using @code{Macro}. Whenever @code{ne} is required to perform a command
 it cannot find in its internal tables, it will look for a macro by that
-name in the current directory. If this search also fails, @code{ne}
-looks in @file{~/.ne} and finally in @code{ne}'s  global directory
-(defined when @code{ne} was built, or in a place specified by your
-@code{NE_GLOBAL_DIR} environment variable) for a macro file by that
-name.
+name in the current directory. If this search also fails, @code{ne} looks in
+@file{~/.ne} and finally in the @file{macros} subdirectory of @code{ne}'s
+global directory (defined when @code{ne} was built, or in a place specified by
+your @code{NE_GLOBAL_DIR} environment variable) for a macro file by that name.
 
 @noindent @strong{Warning:} the first time a macro is executed it is cached
 into a hash table and is kept @emph{forever} in memory unless the

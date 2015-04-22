@@ -600,8 +600,8 @@ macro_desc *load_macro(const char *name) {
 		free(macro_dir);
 	}
 
-	if (!cs && (prefs_dir = exists_gprefs_dir()) && (macro_dir = malloc(strlen(prefs_dir) + 2 + strlen(name)))) {
-		strcat(strcpy(macro_dir, prefs_dir), name);
+	if (!cs && (prefs_dir = exists_gprefs_dir()) && (macro_dir = malloc(strlen(prefs_dir) + 2 + strlen(name) + 7))) {
+		strcat(strcat(strcpy(macro_dir, prefs_dir), "macros/"), name);
 		cs = load_stream(md->cs, macro_dir, FALSE, FALSE);
 		free(macro_dir);
 	}
