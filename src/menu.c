@@ -1082,8 +1082,6 @@ static void get_key_bind(const char * key_bindings_name, char * (exists_prefs_fu
 							if (*p && sscanf(p, "%x %*s", &c) == 1) {	 /* convert key code */
 								if (c >= 0 && c < NUM_KEYS) {
 									if (c != 27 && c != 13) {
-										/* if ((c=key_may_set(buf,c)) < 0)
-											error_in_key_bindings(line, "sequence already assigned." ); */
 										if (key_may_set(buf, -c - 1) == 0)
 											error_in_key_bindings(line, "sequence table full." );
 									}

@@ -1,5 +1,9 @@
 (This file, CHANGES, lists fixes. See NEWS for new features and enhancements.)
 
+2.6.x (not yet released)
+
+  * Allow remapping of character SEQuences in .keys files.
+
 2.6  2015-04-17
 
   * Ancient bug with vertical clip edges fixed.
