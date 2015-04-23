@@ -635,7 +635,7 @@ macro list, it is loaded. A standard error code is returned. */
 
 int execute_macro(buffer *b, const char *name) {
 
-	static call_depth = 0;
+	static int call_depth = 0;
 	const char *p;
 	macro_desc *md;
 	int h;

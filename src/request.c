@@ -22,7 +22,6 @@
 #include "ne.h"
 #include "termchar.h"
 #include <dirent.h>
-#include "strings.h"
 
 
 /* This is the expected max length of the current directory name. */
