@@ -22,6 +22,7 @@
 #include "ne.h"
 #include "termchar.h"
 #include <dirent.h>
+#include "strings.h"
 
 
 /* This is the expected max length of the current directory name. */
@@ -971,7 +972,7 @@ char *req_list_add(req_list * const rl, char * const str, const int suffix) {
 		ins = rl->cur_entries; /* append to end */
 		if (!rl->allow_dupes) {
 			for(i=0; i<rl->cur_entries; i++)
-				if(!strcmp(rl->entries[i],newstr)) return rl->entries[i];
+				if(!strcmp(rl->entries[i],str)) return rl->entries[i];
 		}
 	}
 
