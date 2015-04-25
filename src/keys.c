@@ -454,7 +454,7 @@ int get_key_code(void) {
 			we have to check. */
 
 			while(last_match < cur_len) {
-				if (last_match == 0 && io_utf8 && kbd_buffer[0] >= 0x80) {
+				if (last_match == 0 && io_utf8 && (unsigned char)kbd_buffer[0] >= 0x80) {
 					partial_is_utf8 = TRUE;
 					last_match++;
 				}

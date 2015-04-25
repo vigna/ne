@@ -714,7 +714,7 @@ void output_chars(const unsigned char *string, const unsigned int *attr, const i
 	} else
 		for(i = 0; i < len; i++) {
 			if (attr) set_attr(attr[i]);
-			c = utf8 ? *string : utf8char(string);
+			c = utf8 ? utf8char(string) : *string;
 
 			if (c == '_' && ne_transparent_underline) {
 				putchar (' ');
