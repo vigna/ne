@@ -9,18 +9,12 @@
 #     make NE_ANSI=1
 #     make NE_TERMCAP=1
 # 
-# If you use NE_ANSI=1 or NE_TERMCAP=1, no external library is needed. You
-# can also add the definition NE_POSIX=1 if you get errors, like this:
-# 
-#     make NE_POSIX=1 NE_TERMCAP=1
-# 
+# If you use NE_ANSI=1 or NE_TERMCAP=1, no external library is needed.
+#
 # Specifying NE_DEBUG=1 will enable debugging info and will compile in a
 # number of assertions. Moreover, specifying NE_NOWCHAR=1 will remove the
 # calls to wide character versions of toupper(), tolower(), isspace(), etc.,
-# and also calls to wcwidth(). Another good idea if you are using gcc is to
-# try OPTS=-ansi like so:
-# 
-#     make OPTS=-ansi
+# and also calls to wcwidth().
 # 
 # Defining ALTPAGING will create an ne which by default will bind the PageUp
 # and PageDown commands to the ^p and ^n keys as well as the PgUp and PgDn
@@ -81,18 +75,20 @@ TERMCAPOBJS   = tparam.o \
 		info2cap.o \
 		termcap.o
 
-NE_POSIX=
 NE_TERMCAP=
 NE_ANSI=
 NE_NOWCHAR=
 NE_DEBUG=
 NE_TEST=
 
-CFLAGS=$(OPTS) \
-	-std=c99 \
-	-Wall -Wno-parentheses \
+CC=c99
+
+ifeq ($(CC),gcc)
+GCCFLAGS=-std=c99 -Wall -Wno-parentheses
+endif
+
+CFLAGS=$(OPTS) $(GCCFLAGS) \
 	-D_GNU_SOURCE -D__USE_GNU -DSTDC_HEADERS -Dinline=__inline__ \
-	$(if $(NE_POSIX),   -D_POSIX_C_SOURCE=199506L,) \
 	$(if $(NE_NOWCHAR), -DNOWCHAR,) \
 	$(if $(NE_TEST),    -DNE_TEST -coverage,) \
 	$(if $(NE_DEBUG),   -g,-O3 -DNDEBUG) \
@@ -111,7 +107,7 @@ clean:
 really-clean: clean
 	rm -f ne hash.h hash.c help.c help.h names.c names.h enums.h ext.c
 
-.PHONY: coverage
+.PHONY: coverage neh
 
 coverage:
 	geninfo .
@@ -129,7 +125,8 @@ ne.texinfo:
 version.texinfo: ../doc/version.texinfo
 	-ln -sf ../doc/version.texinfo
 
-ne.h: enums.h utf8.h
+SYNH = syn_types.h syn_hash.h syn_regex.h syn_utf8.h syn_utils.h
+MAINH = ne.h enums.h utf8.h syntax.h termchar.h info2cap.h $(SYNH)
 
 ext.c: ext.c.in
 
@@ -138,56 +135,66 @@ enums.h names.c names.h hash.c hash.h help.c help.h ext.c: ne.texinfo version.te
 	perl info2src.pl
 	rm -f ne.info*
 
-actions.o: ne.h	keycodes.h names.h names.c errors.h errors.c protos.h version.h
+actions.o: $(MAINH)	keycodes.h names.h names.c errors.h errors.c protos.h version.h
 
-autocomp.o: ne.h protos.h
+autocomp.o: $(MAINH) protos.h
 
-buffer.o: ne.h keycodes.h names.h errors.h protos.h
+buffer.o: $(MAINH) keycodes.h names.h errors.h protos.h
 
-clips.o: ne.h keycodes.h names.h errors.h protos.h
+clips.o: $(MAINH) keycodes.h names.h errors.h protos.h
 
 cm.o: cm.h
 
-command.o: ne.h keycodes.h names.h errors.h protos.h help.h hash.h
+command.o: $(MAINH) keycodes.h names.h errors.h protos.h help.h hash.h
 
-display.o: ne.h keycodes.h names.h errors.h protos.h termchar.h
+display.o: $(MAINH) keycodes.h names.h errors.h protos.h termchar.h
 
-edit.o: ne.h keycodes.h names.h errors.h protos.h
+edit.o: $(MAINH) keycodes.h names.h errors.h protos.h
 
 errors.o: errors.h
 
-exec.o: ne.h keycodes.h names.h errors.h protos.h
+exec.o: $(MAINH) keycodes.h names.h errors.h protos.h
 
 hash.o: hash.h
 
 info2cap.o: info2cap.h
 
-input.o: ne.h keycodes.h names.h errors.h protos.h
+input.o: $(MAINH) keycodes.h names.h errors.h protos.h
 
-inputclass.o: ne.h keycodes.h names.h errors.h protos.h
+inputclass.o: $(MAINH) keycodes.h names.h errors.h protos.h
 
-keys.o: ne.h keycodes.h names.h errors.h protos.h
+keys.o: $(MAINH) keycodes.h names.h errors.h protos.h
 
-menu.o: ne.h keycodes.h names.h errors.h protos.h
+menu.o: $(MAINH) keycodes.h names.h errors.h protos.h
 
-navigation.o: ne.h keycodes.h names.h errors.h protos.h
+navigation.o: $(MAINH) keycodes.h names.h errors.h protos.h
 
-ne.o: ne.h keycodes.h names.h errors.h protos.h version.h regex.h
+ne.o: $(MAINH) keycodes.h names.h errors.h protos.h version.h regex.h
 
-prefs.o: ne.h keycodes.h names.h errors.h protos.h
+prefs.o: $(MAINH) keycodes.h names.h errors.h protos.h
 
-regex.o: regex.h regex_internal.c regex_internal.h regexec.c
+regex.o: regex.h regex_internal.h regex_internal.c regexec.c regcomp.c
 
-request.o: ne.h keycodes.h names.h errors.h protos.h
+request.o: $(MAINH) keycodes.h names.h errors.h protos.h
 
-search.o: ne.h keycodes.h names.h errors.h protos.h regex.h
+search.o: $(MAINH) keycodes.h names.h errors.h protos.h regex.h
 
-signals.o: ne.h keycodes.h names.h errors.h protos.h
+signals.o: $(MAINH) keycodes.h names.h errors.h protos.h
 
-streams.o: ne.h keycodes.h names.h errors.h protos.h
+streams.o: $(MAINH) keycodes.h names.h errors.h protos.h
 
-support.o: ne.h keycodes.h names.h errors.h protos.h support.c
+support.o: $(MAINH) keycodes.h names.h errors.h protos.h
 	$(CC) $(CFLAGS) -DGLOBALDIR=\"$(NE_GLOBAL_DIR)\" -c support.c
+
+syntax.o: $(MAINH)
+
+syn_hash.o: $(SYNH)
+
+syn_regex.o: $(SYNH)
+
+syn_utf8.o: $(SYNH)
+
+syn_utils.o: $(SYNH)
 
 term.o: termchar.h cm.h ansi.h
 
@@ -195,6 +202,6 @@ termcap.o: termcap.h
 
 tparam.o: termcap.h
 
-undo.o: ne.h keycodes.h names.h errors.h protos.h
+undo.o: $(MAINH) keycodes.h names.h errors.h protos.h
 
 utf8.o: utf8.h
