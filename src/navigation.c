@@ -680,7 +680,7 @@ void goto_line(buffer * const b, const int64_t n) {
 		b->cur_y = n - b->win_y;
 		b->cur_line = n;
 		ld = b->top_line_desc;
-		for(int i = 0; i < b->cur_y; i++) ld = (line_desc *)ld->ld_node.next;
+		for(int64_t i = 0; i < b->cur_y; i++) ld = (line_desc *)ld->ld_node.next;
 		b->cur_line_desc = ld;
 		resync_pos(b);
 		return;
@@ -699,11 +699,11 @@ void goto_line(buffer * const b, const int64_t n) {
 
 	if (n < b->num_lines / 2) {
 		ld = (line_desc *)b->line_desc_list.head;
-		for(int i = 0; i < b->win_y; i++) ld = (line_desc *)ld->ld_node.next;
+		for(int64_t i = 0; i < b->win_y; i++) ld = (line_desc *)ld->ld_node.next;
 	}
 	else {
 		ld = (line_desc *)b->line_desc_list.tail_pred;
-		for(int i = b->num_lines - 1; i > b->win_y; i--) ld = (line_desc *)ld->ld_node.prev;
+		for(int64_t i = b->num_lines - 1; i > b->win_y; i--) ld = (line_desc *)ld->ld_node.prev;
 	}
 
 	b->top_line_desc = ld;
