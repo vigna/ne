@@ -90,7 +90,7 @@ NE_TEST=
 
 CFLAGS=$(OPTS) \
 	-std=c99 \
-	-Wall -Wno-parentheses -Wno-switch \
+	-Wall -Wno-parentheses \
 	-D_GNU_SOURCE -D__USE_GNU -DSTDC_HEADERS -Dinline=__inline__ \
 	$(if $(NE_POSIX),   -D_POSIX_C_SOURCE=199506L,) \
 	$(if $(NE_NOWCHAR), -DNOWCHAR,) \
