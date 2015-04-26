@@ -20,6 +20,7 @@
 
 
 #include <assert.h>
+#include <ctype.h>
 #include "utf8.h"
 
 
