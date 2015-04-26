@@ -26,7 +26,7 @@
 
 /* Convert color/attribute name into internal code */
 
-int meta_color_single(unsigned char *s)
+uint32_t meta_color_single(unsigned char *s)
 {
 	if(!zcmp(s,USTR "inverse"))
 		return INVERSE;
@@ -136,9 +136,9 @@ int meta_color_single(unsigned char *s)
 		return 0;
 }
 
-int meta_color(unsigned char *s)
+uint32_t meta_color(unsigned char *s)
 {
-	int code = 0;
+	uint32_t code = 0;
 	while (*s) {
 		unsigned char buf[32];
 		int x = 0;
@@ -175,7 +175,7 @@ int64_t attr_size = 0;
 int64_t attr_len = 0;
 int stack_count = 0;
 
-HIGHLIGHT_STATE parse(struct high_syntax *syntax, line_desc *ld, HIGHLIGHT_STATE h_state, int utf8)
+HIGHLIGHT_STATE parse(struct high_syntax * const syntax, line_desc * const ld, HIGHLIGHT_STATE h_state, const bool utf8)
 {
 	struct high_frame *stack = h_state.stack;
 
@@ -198,7 +198,7 @@ HIGHLIGHT_STATE parse(struct high_syntax *syntax, line_desc *ld, HIGHLIGHT_STATE
 	int mark_en = 0;			/* set if marking */
 	int recolor_delimiter_or_keyword;
 
-	unsigned char *p = (unsigned char *)ld->line;			
+	const unsigned char *p = (const unsigned char *)ld->line;
 	unsigned char *q = (unsigned char *)(ld->line  + ld->line_len);
 
 	buf[0]=0;				/* Forgot this originally... took 5 months to fix! */

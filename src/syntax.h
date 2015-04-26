@@ -27,7 +27,7 @@
 struct high_color {
 	struct high_color *next;
 	unsigned char *name;		/* Symbolic name of color */
-	int color;			/* Color value */
+	uint32_t color;			/* Color value */
 };
 
 /* State */
@@ -35,7 +35,7 @@ struct high_color {
 struct high_state {
 	int no;				/* State number */
 	unsigned char *name;		/* Highlight state name */
-	int color;			/* Color for this state */
+	uint32_t color;			/* Color for this state */
 	struct high_cmd *cmd[256];	/* Character table */
 	struct high_cmd *delim;		/* Matching delimiter */
 };
@@ -102,7 +102,7 @@ struct high_syntax *load_syntax PARAMS((unsigned char *name));
 
 extern uint32_t *attr_buf;
 extern int64_t attr_len;
-HIGHLIGHT_STATE parse PARAMS((struct high_syntax *syntax, line_desc *ld, HIGHLIGHT_STATE h_state, int utf8));
+HIGHLIGHT_STATE parse PARAMS((struct high_syntax *syntax, line_desc *ld, HIGHLIGHT_STATE h_state, bool utf8));
 
 #define clear_state(s) (((s)->saved_s[0] = 0), ((s)->state = 0), ((s)->stack = 0))
 #define invalidate_state(s) ((s)->state = -1)
