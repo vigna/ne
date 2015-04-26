@@ -262,7 +262,7 @@ static int hash_macro(const char * const s, int len) {
    non-space character is a non alphabetic character). Note that the various
    syntax flags are used here. */
 
-int parse_command_line(const char * command_line, int64_t * const num_arg, char ** const string_arg, const int exec_only_options) {
+int parse_command_line(const char * command_line, int64_t * const num_arg, char ** const string_arg, const bool exec_only_options) {
 	if (!command_line || !*command_line) return NOP_A;
 	if (num_arg) *num_arg = -1;
 	if (string_arg) *string_arg = NULL;

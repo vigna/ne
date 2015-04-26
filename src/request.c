@@ -682,7 +682,7 @@ char *request_syntax() {
    check which key the user pressed). */
 
 
-char *request_files(const char * const filename, int use_prefix) {
+char *request_files(const char * const filename, bool use_prefix) {
 
 	char * const cur_dir_name = ne_getcwd(CUR_DIR_MAX_SIZE);
 	if (!cur_dir_name) return NULL;
@@ -887,7 +887,7 @@ void req_list_free(req_list * const rl) {
    case req_list_finalize() should be called before the entries are used in a
    request_strings() call. */
 
-int req_list_init( req_list * const rl, int cmpfnc(const char *, const char *), const int allow_dupes, const int allow_reorder, const char suffix) {
+int req_list_init( req_list * const rl, int cmpfnc(const char *, const char *), const bool allow_dupes, const bool allow_reorder, const char suffix) {
 	rl->cmpfnc = cmpfnc;
 	rl->allow_dupes = allow_dupes;
 	rl->allow_reorder = allow_reorder;

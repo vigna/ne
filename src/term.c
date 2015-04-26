@@ -36,6 +36,7 @@
 #include <termios.h>
 #include <sys/ioctl.h>
 
+#include "term.h"
 #include "ansi.h"
 #include "termchar.h"
 #include "cm.h"

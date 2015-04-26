@@ -19,6 +19,8 @@
 	along with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
 
+#include "term.h"
+
 /* actions.c */
 int do_action(buffer *b, action a, int64_t c, char *p);
 
@@ -81,7 +83,7 @@ int save_clip(int n, const char *name, bool CRLF, bool binary);
 /* command.c */
 void build_hash_table(void);
 void build_command_name_table(void);
-int parse_command_line(const char *command_line, int64_t *num_arg, char **string_arg, int exec_only_options);
+int parse_command_line(const char *command_line, int64_t *num_arg, char **string_arg, bool exec_only_options);
 int execute_command_line(buffer *b, const char *command_line);
 macro_desc *alloc_macro_desc(void);
 void free_macro_desc(macro_desc *md);
@@ -226,13 +228,13 @@ char *request(const char *prompt, const char *default_string, bool alpha_allowed
 /* request.c */
 int   request_strings(req_list * const rl, int default_entry);
 char *request_syntax();
-char *request_files(const char *filename, int use_prefix);
+char *request_files(const char *filename, bool use_prefix);
 char *request_file(const buffer *b, const char *prompt, const char *default_name);
 int   request_document(void);
 char *complete_filename(const char *start_prefix);
 /* int   req_list_del(req_list * const rl, int nth); */
 void  req_list_free(req_list * const rl);
-int   req_list_init(req_list * const rl, int cmpfnc(const char *, const char *), const int allow_dupes, const int allow_reorder, const char suffix);
+int   req_list_init(req_list * const rl, int cmpfnc(const char *, const char *), const bool allow_dupes, const bool allow_reorder, const char suffix);
 char *req_list_add(req_list * const rl, char * const str, const int suffix);
 void  req_list_finalize(req_list * const rl);
 
@@ -310,34 +312,6 @@ bool ne_isspace(const int c, const int encoding);
 bool ne_isword(const int c, const int encoding);
 int context_prefix(const buffer *b, char **p, int64_t *prefix_pos);
 line_desc *nth_line_desc(const buffer *b, const int n);
-
-/* term.c */
-int output_width(int c);
-void ring_bell(void);
-void do_flash(void);
-void set_terminal_modes(void);
-void reset_terminal_modes(void);
-void set_terminal_window(int size);
-void standout_on(void);
-void standout_off(void);
-void cursor_on(void);
-void cursor_off(void);
-void move_cursor(int row, int col);
-void clear_end_of_line(int first_unused_hpos);
-void clear_to_eol(void);
-void clear_to_end(void);
-void clear_entire_screen(void);
-void set_attr(const unsigned int);
-void output_chars(const char *string, const unsigned int *attr, int raw_len, int utf8);
-void output_string(const char *s, int utf8);
-void output_spaces(int n, const unsigned int *attr);
-void output_char(int c, unsigned int attr, int utf8);
-void insert_chars(const char *start, const unsigned int *attr, int raw_len, int utf8);
-void insert_char(int c, const unsigned int attr, int utf8);
-void delete_chars(int n);
-int ins_del_lines(int vpos, int n);
-int ttysize(void);
-void term_init(void);
 
 /* undo.c */
 void start_undo_chain(buffer *b);
