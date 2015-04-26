@@ -107,7 +107,7 @@ clean:
 really-clean: clean
 	rm -f ne hash.h hash.c help.c help.h names.c names.h enums.h ext.c
 
-.PHONY: coverage neh
+.PHONY: coverage
 
 coverage:
 	geninfo .
