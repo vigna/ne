@@ -30,10 +30,10 @@
 /* A boolean recording whether the last replace was for an empty string 
    (of course, this can happen only with regular expressions). */
 
-int last_replace_empty_match;
+bool last_replace_empty_match;
 
 /* This array is used both by the Boyer-Moore algorithm and by the regex
-library. It is updated if b->find_string_changed is TRUE (it should always
+library. It is updated if b->find_string_changed is true (it should always
 be the first time the string is searched for). */
 
 static unsigned int d[256];
@@ -48,12 +48,12 @@ sense_case. It is used in find(). Note that the argument *MUST* be unsigned. */
 lower case characters to upper case characters. It's normally adjusted
 on startup according to the current locale. */
 
-unsigned char localised_up_case[256];
+char localised_up_case[256];
 
 /* This vector is a translation table for the regex library which maps
 ASCII lower case characters to upper case characters. */
 
-const unsigned char ascii_up_case[256] = {
+const char ascii_up_case[256] = {
 	0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
 	0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F,
 	0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E, 0x2F,
@@ -76,47 +76,43 @@ const unsigned char ascii_up_case[256] = {
 
 /* Performs a search for the given pattern with a simplified Boyer-Moore
    algorithm starting at the given position, in the given direction, skipping a
-   possible match at the current cursor position if skip_first is TRUE. The 
+   possible match at the current cursor position if skip_first is true. The 
    search direction depends on b->opt.search_back. If pattern is NULL, it is
    fetched from b->find_string. In this case, b->find_string_changed is
-   checked, and, if it is FALSE, the string is not recompiled. Please check to
+   checked, and, if it is false, the string is not recompiled. Please check to
    set b->find_string_changed whenever a new string is set in
    b->find_string. The cursor is moved on the occurrence position if a match is
    found. */
 
-int find(buffer * const b, const unsigned char *pattern, const int skip_first) {
+int find(buffer * const b, const char *pattern, const bool skip_first) {
 
-	const unsigned char * const up_case = b->encoding == ENC_UTF8 ? ascii_up_case : localised_up_case;
-	const int sense_case = (b->opt.case_search != 0);
-	unsigned char c, first_char;
-	unsigned char *p;
-	long i, m;
-	int recompile_string;
-	long y;
-	line_desc *ld;
+	bool recompile_string;
 
 	if (!pattern) {
 		pattern = b->find_string;
 		recompile_string = b->find_string_changed || b->last_was_regexp;
 	}
-	else recompile_string = TRUE;
+	else recompile_string = true;
 
-	if (!pattern || !(m = strlen(pattern))) return ERROR;
+	const int m = strlen(pattern);
+	if (!pattern || !m) return ERROR;
 
-	if (recompile_string) for(i = 0; i < sizeof d / sizeof *d; i++) d[i] = m;
+	if (recompile_string) for(int i = 0; i < sizeof d / sizeof *d; i++) d[i] = m;
 
-	ld = b->cur_line_desc;
-	y = b->cur_line;
+	const char * const up_case = b->encoding == ENC_UTF8 ? ascii_up_case : localised_up_case;
+	const bool sense_case = (b->opt.case_search != 0);
+	line_desc *ld = b->cur_line_desc;
+	int64_t y = b->cur_line;
 
 	if (! b->opt.search_back) {
 
 		if (recompile_string) {
-			for(i = 0; i < m - 1; i++) d[CONV(pattern[i])] = m - i-1;
+			for(int i = 0; i < m - 1; i++) d[CONV((unsigned char)pattern[i])] = m - i-1;
 			b->find_string_changed = 0;
 		}
 
-		p = ld->line + b->cur_pos + m - 1 + (skip_first ? 1 : 0);
-		first_char = CONV(pattern[m - 1]);
+		char * p = ld->line + b->cur_pos + m - 1 + (skip_first ? 1 : 0);
+		const unsigned char first_char = CONV((unsigned char)pattern[m - 1]);
 
 		while(y < b->num_lines) {
 
@@ -125,12 +121,13 @@ int find(buffer * const b, const unsigned char *pattern, const int skip_first) {
 			if (ld->line_len >= m) {
 
 				while((p - ld->line) < ld->line_len) {
-
-					if ((c = CONV(*p)) != first_char) p+=d[c];
+					const unsigned char c = CONV((unsigned char)*p);
+					if (c != first_char) p += d[c];
 					else {
+						int i;
 						for (i = 1; i < m; i++)
-							if (CONV(*(p - i)) != CONV(pattern[m - i-1])) {
-								p+=d[c];
+							if (CONV((unsigned char)*(p - i)) != CONV((unsigned char)pattern[m - i-1])) {
+								p += d[c];
 								break;
 							}
 						if (i == m) {
@@ -150,12 +147,12 @@ int find(buffer * const b, const unsigned char *pattern, const int skip_first) {
 	else {
 
 		if (recompile_string) {
-			for(i = m - 1; i > 0; i--) d[(unsigned char)CONV(pattern[i])] = i;
+			for(int i = m - 1; i > 0; i--) d[CONV((unsigned char)pattern[i])] = i;
 			b->find_string_changed = 0;
 		}
 
-		p = ld->line + (b->cur_pos > ld->line_len - m ? ld->line_len - m : b->cur_pos + (skip_first ? -1 : 0));
-		first_char = CONV(pattern[0]);
+		char * p = ld->line + (b->cur_pos > ld->line_len - m ? ld->line_len - m : b->cur_pos + (skip_first ? -1 : 0));
+		const unsigned char first_char = CONV((unsigned char)pattern[0]);
 
 		while(y >= 0) {
 
@@ -165,10 +162,12 @@ int find(buffer * const b, const unsigned char *pattern, const int skip_first) {
 
 				while((p - ld->line) >= 0) {
 
-					if ((c = CONV(*p)) != first_char) p-=d[c];
+					const unsigned char c = CONV((unsigned char)*p);
+					if (c != first_char) p -= d[c];
 					else {
+						int i;
 						for (i = 1; i < m; i++)
-							if (CONV(*(p + i)) != CONV(pattern[i])) {
+							if (CONV((unsigned char)*(p + i)) != CONV((unsigned char)pattern[i])) {
 								p-=d[c];
 								break;
 							}
@@ -197,11 +196,11 @@ int find(buffer * const b, const unsigned char *pattern, const int skip_first) {
 
 int replace(buffer * const b, const int n, const char * const string) {
 
-	int len;
+	int64_t len;
 
 	assert(string != NULL);
 
-	last_replace_empty_match = FALSE;
+	last_replace_empty_match = false;
 
 	len = strlen(string);
 
@@ -254,18 +253,16 @@ static int map_group[RE_NREGS];
 
 /* Works exactly like find(), but uses the regex library instead. */
 
-int find_regexp(buffer * const b, const unsigned char *regex, const int skip_first) {
+int find_regexp(buffer * const b, const char *regex, const bool skip_first) {
 
-	const unsigned char * const up_case = b->encoding == ENC_UTF8 ? ascii_up_case : localised_up_case;
-	const unsigned char *p;
-	int recompile_string, i, y, start_pos;
-	line_desc *ld;
+	const char * const up_case = b->encoding == ENC_UTF8 ? ascii_up_case : localised_up_case;
+	bool recompile_string;
 
 	if (!regex) {
 		regex = b->find_string;
 		recompile_string = b->find_string_changed || !b->last_was_regexp;
 	}
-	else recompile_string = TRUE;
+	else recompile_string = true;
 
 	if (!regex || !strlen(regex)) return ERROR;
 
@@ -280,16 +277,16 @@ int find_regexp(buffer * const b, const unsigned char *regex, const int skip_fir
 	is possible that case sensitivity has. In this case, we force recompilation. */
 
 	if (b->opt.case_search) {
-		if (re_pb.translate != 0) recompile_string = TRUE;
+		if (re_pb.translate != 0) recompile_string = true;
 		re_pb.translate = 0;
 	}
 	else {
-		if (re_pb.translate != up_case) recompile_string = TRUE;
+		if (re_pb.translate != (unsigned char *)up_case) recompile_string = true;
 		re_pb.translate = (unsigned char *)up_case;
 	}
 
 	if (recompile_string) {
-		const unsigned char *actual_regex = regex;
+		const char *actual_regex = regex;
 
 		/* If the buffer encoding is UTF-8, we need to replace dots with UTF8DOT,
 			non-word-constituents (\W) with UTF8NONWORD, and embed complemented
@@ -298,9 +295,9 @@ int find_regexp(buffer * const b, const unsigned char *regex, const int skip_fir
 			to the actual groups caused by the new groups thus introduced. */
 
 		if (b->encoding == ENC_UTF8) {
-			const unsigned char *s;
-			unsigned char *q;
-			int virtual_group = 0, real_group = 0, escape = FALSE, dots = 0, comps = 0, nonwords = 0;
+			const char *s;
+			char *q;
+			int virtual_group = 0, real_group = 0, escape = false, dots = 0, comps = 0, nonwords = 0;
 
 			s = regex;
 
@@ -322,18 +319,18 @@ int find_regexp(buffer * const b, const unsigned char *regex, const int skip_fir
 						do if (utf8len(*(++s)) != 1) return UTF8_REGEXP_CHARACTER_CLASS_NOT_SUPPORTED; while(*s && *s != ']');
 					}
 					else if (*s == '\\') {
-						escape = TRUE;
+						escape = true;
 						continue;
 					}
 				}
 				else if (*s == 'W') nonwords++;
-				escape = FALSE;
+				escape = false;
 			} while(*(++s));
 
 			actual_regex = q = malloc(strlen(regex) + 1 + (strlen(UTF8DOT) - 1) * dots + (strlen(UTF8NONWORD) - 2) * nonwords + (strlen(UTF8COMP) - 1) * comps);
 			if (!actual_regex) return OUT_OF_MEMORY;
 			s = regex;
-			escape = FALSE;
+			escape = false;
 
 			do {
 				if (escape || *s != '.' && *s != '(' && *s != '[' && *s != '\\') {
@@ -347,7 +344,7 @@ int find_regexp(buffer * const b, const unsigned char *regex, const int skip_fir
 				}
 				else {
 					if (*s == '\\') {
-						escape = TRUE;
+						escape = true;
 						*(q++) = '\\';
 						continue;
 					}
@@ -379,14 +376,14 @@ int find_regexp(buffer * const b, const unsigned char *regex, const int skip_fir
 					}
 				}
 
-				escape = FALSE;
+				escape = false;
 			} while(*(s++));
 
 			/* This assert may be false if a [ is not closed. */
 			assert(strlen(actual_regex) == strlen(regex) + (strlen(UTF8DOT) - 1) * dots + (strlen(UTF8NONWORD) - 2) * nonwords + (strlen(UTF8COMP) - 1) * comps);
 		}
 
-		p = re_compile_pattern(actual_regex, strlen(actual_regex), &re_pb);
+		const char * p = re_compile_pattern(actual_regex, strlen(actual_regex), &re_pb);
 
 		if (b->encoding == ENC_UTF8) free((void*)actual_regex);
 
@@ -403,21 +400,22 @@ int find_regexp(buffer * const b, const unsigned char *regex, const int skip_fir
 
 	b->find_string_changed = 0;
 
-	ld = b->cur_line_desc;
-	y = b->cur_line;
+	line_desc *ld = b->cur_line_desc;
+	int64_t y = b->cur_line;
 
 	if (! b->opt.search_back) {
 
-		start_pos = b->cur_pos + (skip_first ? 1 : 0);
+		int64_t start_pos = b->cur_pos + (skip_first ? 1 : 0);
 
 		while(y < b->num_lines) {
 
 			assert(ld->ld_node.next != NULL);
 
+			int64_t pos;
 			if (start_pos <= ld->line_len &&
-				 (i = re_search(&re_pb, ld->line ? ld->line : (unsigned char *)"", ld->line_len, start_pos, ld->line_len - start_pos, &re_reg))>=0) {
+				 (pos = re_search(&re_pb, ld->line ? ld->line : (char *)"", ld->line_len, start_pos, ld->line_len - start_pos, &re_reg))>=0) {
 				goto_line(b, y);
-				goto_pos(b, i);
+				goto_pos(b, pos);
 				return OK;
 			}
 
@@ -428,16 +426,17 @@ int find_regexp(buffer * const b, const unsigned char *regex, const int skip_fir
 	}
 	else {
 
-		start_pos = b->cur_pos + (skip_first ? -1 : 0);
+		int64_t start_pos = b->cur_pos + (skip_first ? -1 : 0);
 
 		while(y >= 0) {
 
 			assert(ld->ld_node.prev != NULL);
 
+			int64_t pos;
 			if (start_pos >= 0 &&
-				 (i =re_search(&re_pb, ld->line ? ld->line : (unsigned char *)"", ld->line_len, start_pos, -start_pos - 1, &re_reg))>=0) {
+				 (pos = re_search(&re_pb, ld->line ? ld->line : (char *)"", ld->line_len, start_pos, -start_pos - 1, &re_reg)) >= 0) {
 				goto_line(b, y);
-				goto_pos(b, i);
+				goto_pos(b, pos);
 				return OK;
 			}
 
@@ -457,22 +456,20 @@ int find_regexp(buffer * const b, const unsigned char *regex, const int skip_fir
    string). */
 
 int replace_regexp(buffer * const b, const char * const string) {
-
-	int i, pos, len, c, reg_used = FALSE;
-	unsigned char *p, *q, *t = NULL;
-
 	assert(string != NULL);
 
+	bool reg_used = false;
+	char *p, *q, *t = NULL;
 	if (q = p = str_dup(string)) {
 
-		len = strlen(p);
+		int len = strlen(p);
 
-		while(TRUE) {
+		while(true) {
 			while(*q && *q != '\\') q++;
 
 			if (!*q) break;
 
-			i = *(q + 1) - '0';
+			int i = *(q + 1) - '0';
 
 			if (*(q + 1) == '\\') {
 				memmove(q, q + 1, strlen(q + 1) + 1);
@@ -490,7 +487,7 @@ int replace_regexp(buffer * const b, const char * const string) {
 				}
 				*q++ = 0;
 				*q++ = i;
-				reg_used = TRUE;
+				reg_used = true;
 			}
 			else {
 				free(p);
@@ -509,7 +506,7 @@ int replace_regexp(buffer * const b, const char * const string) {
 			}
 		}
 
-		for(i = re_reg.num_regs; i-- != 0;) {
+		for(int i = re_reg.num_regs; i-- != 0;) {
 			re_reg.end[i] -= re_reg.start[0];
 			re_reg.start[i] -= re_reg.start[0];
 		}
@@ -519,9 +516,9 @@ int replace_regexp(buffer * const b, const char * const string) {
 		delete_stream(b, b->cur_line_desc, b->cur_line, b->cur_pos, re_reg.end[0]);
 
 		q = p;
-		pos = 0;
+		int64_t pos = 0;
 
-		while(TRUE) {
+		while(true) {
 			if (strlen(q)) {
 				insert_stream(b, b->cur_line_desc, b->cur_line, b->cur_pos + pos, q, strlen(q));
 				pos += strlen(q);
@@ -533,16 +530,16 @@ int replace_regexp(buffer * const b, const char * const string) {
 
 			assert(*q < RE_NREGS);
 
-			if (re_reg.end[*q] - re_reg.start[*q]) {
+			if (re_reg.end[*(unsigned char *)q] - re_reg.start[*(unsigned char *)q]) {
 
-				c = t[re_reg.end[*q]];
-				t[re_reg.end[*q]] = 0;
+				char c = t[re_reg.end[*(unsigned char *)q]];
+				t[re_reg.end[*(unsigned char *)q]] = 0;
 
-				insert_stream(b, b->cur_line_desc, b->cur_line, b->cur_pos + pos, t + re_reg.start[*q], re_reg.end[*q] - re_reg.start[*q]);
+				insert_stream(b, b->cur_line_desc, b->cur_line, b->cur_pos + pos, t + re_reg.start[*(unsigned char *)q], re_reg.end[*(unsigned char *)q] - re_reg.start[*(unsigned char *)q]);
 
-				t[re_reg.end[*q]] = c;
+				t[re_reg.end[*(unsigned char *)q]] = c;
 
-				pos += re_reg.end[*q] - re_reg.start[*q];
+				pos += re_reg.end[*(unsigned char *)q] - re_reg.start[*(unsigned char *)q];
 			}
 
 			q++;

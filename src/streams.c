@@ -30,7 +30,7 @@
    case a char_stream structure is allocated, but its stream pointer is left
    NULL. */
 
-char_stream *alloc_char_stream(const int size) {
+char_stream *alloc_char_stream(const int64_t size) {
 	char_stream * const cs = calloc(1, sizeof *cs);
 	if (cs) {
 		if (!size || (cs->stream = calloc(size, sizeof *cs->stream))) {
@@ -60,7 +60,7 @@ void free_char_stream(char_stream * const cs) {
    realloc()ated to size bytes. If the reallocation is successfull, cs is
    returned, otherwise NULL. */
 
-char_stream *realloc_char_stream(char_stream * const cs, const int size) {
+char_stream *realloc_char_stream(char_stream * const cs, const int64_t size) {
 
 	if (!cs) return alloc_char_stream(size);
 
@@ -86,7 +86,7 @@ char_stream *realloc_char_stream(char_stream * const cs, const int size) {
 /* Concatenates a block of len bytes pointed to by s to a stream. The stream is
    extended if necessary. Returns an error code. */
 
-int add_to_stream(char_stream * const cs, const unsigned char * const s, const int len) {
+int add_to_stream(char_stream * const cs, const char * const s, const int64_t len) {
 
 	if (!s) return OK;
 
@@ -105,8 +105,8 @@ int add_to_stream(char_stream * const cs, const unsigned char * const s, const i
 /* Inserts a block of len bytes pointed to by s into a stream at offset pos. The
    stream is extended if necessary. Returns an error code. */
 
-int insert_in_stream(char_stream *cs, const char *s, const int pos, const int len ) {
-	int tail;
+int insert_in_stream(char_stream *cs, const char *s, const int64_t pos, const int64_t len) {
+	int64_t tail;
 
 	if (!s || !len ) return OK;
 
@@ -130,7 +130,7 @@ int insert_in_stream(char_stream *cs, const char *s, const int pos, const int le
 /* Deletes a block of len bytes from stream cs at offset p. The stream size
    does not change. Returns an error code. */
 
-int delete_from_stream(char_stream * const cs, const int pos, int len) {
+int delete_from_stream(char_stream * const cs, const int64_t pos, int64_t len) {
 
 	if (!len) return OK;
 
@@ -180,12 +180,10 @@ void set_stream_encoding(char_stream * const cs, const encoding_type source) {
 
 /* These two functions load a stream in memory. Carriage returns and line feeds
    are converted to NULLs. You can pass NULL for cs, and a char stream will be
-   allocated for you. If preserve_cr is TRUE, CRs are preserved. If binary 
+   allocated for you. If preserve_cr is true, CRs are preserved. If binary 
    is true, the stream is filled exactly with the file content. */
 
-char_stream *load_stream(char_stream * cs, const char *name, const int preserve_cr, const int binary) {
-
-	int fh;
+char_stream *load_stream(char_stream * cs, const char *name, const bool preserve_cr, const bool binary) {
 
 	assert_char_stream(cs);
 
@@ -195,24 +193,22 @@ char_stream *load_stream(char_stream * cs, const char *name, const int preserve_
 
 	if (is_directory(name) || is_migrated(name)) return NULL;
 
-	cs = load_stream_from_fh(cs, fh = open(name, READ_FLAGS), preserve_cr, binary);
+	const int fh = open(name, READ_FLAGS);
+	cs = load_stream_from_fh(cs, fh, preserve_cr, binary);
 	if (fh >= 0) close(fh);
 
 	return cs;
 }
 
-char_stream *load_stream_from_fh(char_stream *cs, const int fh, const int preserve_cr, const int binary) {
-
-	int i, j, len;
-	char terminators[] = { 0x0d, 0x0a };
-
-	if (preserve_cr) terminators[0] = 0;
-
+char_stream *load_stream_from_fh(char_stream *cs, const int fh, const bool preserve_cr, const bool binary) {
 	if (fh < 0) return NULL;
+
+	char terminators[] = { 0x0d, 0x0a };
+	if (preserve_cr) terminators[0] = 0;
 
 	assert_char_stream(cs);
 
-	len = lseek(fh, 0, SEEK_END);
+	off_t len = lseek(fh, 0, SEEK_END);
 
 	if (len < 0) return NULL;
 
@@ -220,7 +216,7 @@ char_stream *load_stream_from_fh(char_stream *cs, const int fh, const int preser
 
 	if (!(cs = realloc_char_stream(cs, len))) return NULL;
 
-	if (read(fh, cs->stream, len) < len) {
+	if (read_safely(fh, cs->stream, len) < len) {
 		free_char_stream(cs);
 		return NULL;
 	}
@@ -231,7 +227,8 @@ char_stream *load_stream_from_fh(char_stream *cs, const int fh, const int preser
 		return cs;
 	}
 
-	for(i = j = 0; i < len; i++, j++) {
+	int j;
+	for(int i = j = 0; i < len; i++, j++) {
 		if (i < len - 1 && !preserve_cr && cs->stream[i] == '\r' && cs->stream[i + 1] == '\n') i++;
 		cs->stream[j] = cs->stream[i];
 
@@ -250,13 +247,10 @@ char_stream *load_stream_from_fh(char_stream *cs, const int fh, const int preser
 
 
 /* These two functions save a stream to file. NULLs are converted to line
-   feeds. If CRLF is TRUE, we save CR/LF pairs as line terminators. If binary 
+   feeds. If CRLF is true, we save CR/LF pairs as line terminators. If binary 
    is true, the stream is dump literally. We return an error code. */
 
-int save_stream(const char_stream *const cs, const char *name, const int CRLF, const int binary) {
-
-	int fh, error;
-
+int save_stream(const char_stream *const cs, const char *name, const bool CRLF, const bool binary) {
 	if (!cs) return ERROR;
 
 	assert_char_stream(cs);
@@ -268,8 +262,9 @@ int save_stream(const char_stream *const cs, const char *name, const int CRLF, c
 	if (is_directory(name)) return  FILE_IS_DIRECTORY ;
 	if (is_migrated(name)) return  FILE_IS_MIGRATED ;
 
-	if ((fh = open(name, WRITE_FLAGS, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH))>=0) {
-		error = save_stream_to_fh(cs, fh, CRLF, binary);
+	const int fh = open(name, WRITE_FLAGS, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+	if (fh >= 0) {
+		const int error = save_stream_to_fh(cs, fh, CRLF, binary);
 		close(fh);
 		return error;
 	}
@@ -278,9 +273,7 @@ int save_stream(const char_stream *const cs, const char *name, const int CRLF, c
 }
 
 
-int save_stream_to_fh(const char_stream *const cs, const int fh, const int CRLF, const int binary) {
-
-	int pos = 0, len;
+int save_stream_to_fh(const char_stream *const cs, const int fh, const bool CRLF, const bool binary) {
 
 	if (!cs) return ERROR;
 
@@ -291,16 +284,17 @@ int save_stream_to_fh(const char_stream *const cs, const int fh, const int CRLF,
 		return OK;
 	}
 
-	while(pos < cs->len) {
-		len = strnlen_ne(cs->stream + pos, cs->len - pos);
+	for(int64_t pos = 0; pos < cs->len; ) {
+		const int64_t len = strnlen_ne(cs->stream + pos, cs->len - pos);
 
+		// ALERT: must fraction this and other write/read in gigabyte batches
 		if (write(fh, cs->stream + pos, len) < len) return ERROR_WHILE_WRITING;
 
 		if (pos + len < cs->len) {
 			if (CRLF && write(fh, "\r", 1) < 1) return ERROR_WHILE_WRITING;
 			if (write(fh, "\n", 1) < 1) return ERROR_WHILE_WRITING;
 		}
-
+		
 		pos += len + 1;
 	}
 

@@ -121,12 +121,10 @@ for $n ( 1 .. $M ) {
 #define DY                (req_order ? BC_DY                : BR_DY               )
 
 int common_prefix_len(req_list *rlp) {
-	int len, i;
-	char *p0, *p1;
-	p0 = rlp->entries[0];
-	len = strlen(p0);
-	for (i = 0; len && i < rlp->cur_entries; i++) {
-		p1 = rlp->entries[i];
+	char * const p0 = rlp->entries[0];
+	int len = strlen(p0);
+	for (int i = 0; len && i < rlp->cur_entries; i++) {
+		char * const p1 = rlp->entries[i];
 		for ( ; len && strncasecmp(p0, p1, len); len--)
 			;
 	}
@@ -138,19 +136,17 @@ strings from the entries array existing in a certain page (a page contains
 (lines-1)*max_names_per_line items) with rl.max_entry_len maximum width. */
 
 static void print_strings() {
-
-	int row,col,dx = rl.max_entry_len + 1 + (rl.suffix ? 1 : 0);
-	const char *p;
+	const int dx = rl.max_entry_len + 1 + (rl.suffix ? 1 : 0);
 
 	set_attr(0);
-	for(row = 0; row < max_names_per_col; row++) {
+	for(int row = 0; row < max_names_per_col; row++) {
 		move_cursor(row, 0);
 		clear_to_eol();
 		if (row < NAMES_PER_COL(page)) {
-			for(col = 0; col < NAMES_PER_LINE(page); col++) {
+			for(int col = 0; col < NAMES_PER_LINE(page); col++) {
 				if (PXY2N(page,col,row) < rl.cur_entries) {
 					move_cursor(row, col * dx);
-					p = rl.entries[PXY2N(page,col,row)];
+					const char * const p = rl.entries[PXY2N(page,col,row)];
 					if (rl.suffix) set_attr(p[strlen(p) - 1] == rl.suffix ? BOLD : 0);
 					output_string(p, io_utf8);
 				}
@@ -160,7 +156,7 @@ static void print_strings() {
 }
 
 static void normalize(int n) {
-	int p = page;
+	const int p = page;
 
 	if (n < 0 ) n = 0;
 	if (n >= rl.cur_entries ) n = rl.cur_entries - 1;
@@ -265,14 +261,13 @@ static void request_move_right(void) {
 /* Reorder (i.e. swap) the current entry n with entry n+dir. dir should be
    either 1 or -1. */
 static int request_reorder(const int dir) {
-	int n1, n0;
-	int i0, i1, i;
-	char *p0, *p1, *ptmp;
 	if (! rl0->allow_reorder || rl.cur_entries < 2) return 0;
-	n0 = PXY2N(page,x,y);
-	n1 = (n0 + dir + rl.cur_entries ) % rl.cur_entries; /* Allows wrap around. */
-	p0 = rl.entries[n0];
-	p1 = rl.entries[n1];
+
+	const int n0 = PXY2N(page,x,y);
+	const int n1 = (n0 + dir + rl.cur_entries ) % rl.cur_entries; /* Allows wrap around. */
+	char * const p0 = rl.entries[n0];
+	char * const p1 = rl.entries[n1];
+	int i0, i1, i;
 	for (i=0, i0=-1, i1=-1; i<rl0->cur_entries && (i0<0 || i1<0); i++) {
 		if (i0 < 0 && p0 == rl0->entries[i] ) {
 			i0 = i;
@@ -301,19 +296,19 @@ static int request_reorder(const int dir) {
    from the original req_list *rl0 in such a way as to preserve original order. */
 
 static void fuzz_back() {
-	int cmp, i, j, n1, n0 = PXY2N(page,x,y);
-	int orig_entries = rl.cur_entries;
-	const char *p1, *p0 = rl.entries[n0];
+	const int orig_entries = rl.cur_entries;
+	const char * const p0 = rl.entries[PXY2N(page,x,y)];
 
 	if (fuzz_len == 0 || orig_entries == rl0->cur_entries) return;
 
+	int n1;
 	while (rl.cur_entries == orig_entries) {
 		fuzz_len = max(0,fuzz_len-1);
-		for (n1=i=j=0; j<rl0->cur_entries; j++) {
-			p1 = rl0->entries[j];
+		int i;
+		for (int j = n1 = i = 0; j < rl0->cur_entries; j++) {
+			const char * const p1 = rl0->entries[j];
 			if ( ! strncasecmp(p0, p1, fuzz_len) ) {
-				if (p1 == p0)
-					n1 = i;
+				if (p1 == p0) n1 = i;
 				rl.entries[i++] = (char *)p1;
 			}
 		}
@@ -328,14 +323,14 @@ static void fuzz_back() {
    Note that relative order of rl.entries[] is preserved. */
 
 static void fuzz_forward(const int c) {
-	int cmp, i, j, n1, n0 = PXY2N(page,x,y);
-	const char *p1, *p0 = rl.entries[n0];
+	const char * const p0 = rl.entries[PXY2N(page,x,y)];
 
 	assert(fuzz_len >= 0);
 
-	for (n1=i=j=0; j<rl.cur_entries; j++) {
-		p1 = rl.entries[j];
-		cmp = strncasecmp(p0, p1, fuzz_len);
+	int i = 0, n1 = 0;
+	for (int j = 0; j < rl.cur_entries; j++) {
+		const char * const p1 = rl.entries[j];
+		const int cmp = strncasecmp(p0, p1, fuzz_len);
 		if (! cmp && strlen(p1) > fuzz_len && localised_up_case[(unsigned char)p1[fuzz_len]] == c) {
 			if (p1 == p0)
 				n1 = i;
@@ -371,19 +366,18 @@ static int request_strings_init(req_list *rlp0) {
 }
 
 static int request_strings_cleanup(int reordered) {
-	int i, n = PXY2N(page,x,y);
-	char *p0 = rl.entries[n];
-	for (i=0; i<rl0->cur_entries; i++) {
+	int n = PXY2N(page,x,y);
+	const char * const p0 = rl.entries[n];
+	for (int i = 0; i<rl0->cur_entries; i++) {
 		if (rl0->entries[i] == p0) {
 			n = i;
 			break;
 		}
 	}
-	if (rl.entries)
-		free(rl.entries);
+	if (rl.entries) free(rl.entries);
 	rl.entries = NULL;
-	if (reordered) rl0->reordered = TRUE;
-		else rl0->reordered = FALSE;
+	if (reordered) rl0->reordered = true;
+	else rl0->reordered = false;
 	return n;
 }
 
@@ -394,20 +388,17 @@ static int request_strings_cleanup(int reordered) {
    -n - 2  User selected string n with the TAB key.
    (Yes, it's kind of evil, but it's nothing compared to what request() does!) */
 
-int request_strings(req_list *rlp0, int n ) {
-
-	action a;
-	input_class ic;
-	int c, i, ne_lines0, ne_columns0, dx, reordered=0;
+int request_strings(req_list *rlp0, int n) {
 
 	assert(rlp0->cur_entries > 0);
 
-	ne_lines0 = ne_columns0 = max_names_per_line = max_names_per_col = x = y = page = fuzz_len = 0;
+	int ne_lines0 = 0, ne_columns0 = 0, reordered = 0;
+	max_names_per_line = max_names_per_col = x = y = page = fuzz_len = 0;
 	if ( ! request_strings_init(rlp0) ) return ERROR;
 
-	dx = rl.max_entry_len + 1 + (rl.suffix ? 1 : 0);
+	const int dx = rl.max_entry_len + 1 + (rl.suffix ? 1 : 0);
 
-	while(TRUE) {
+	while(true) {
 		if (ne_lines0 != ne_lines || ne_columns0 != ne_columns) {
 			if (ne_lines0 && ne_columns0 ) n = PXY2N(page,x,y);
 			if (!(max_names_per_line = ne_columns / dx)) max_names_per_line = 1;
@@ -430,6 +421,8 @@ int request_strings(req_list *rlp0, int n ) {
 
 		move_cursor(y, x * dx + fuzz_len);
 
+		int c;
+		input_class ic;
 		do c = get_key_code(); while((ic = CHAR_CLASS(c)) == IGNORE || ic == INVALID);
 
 		switch(ic) {
@@ -457,7 +450,8 @@ int request_strings(req_list *rlp0, int n ) {
 
 			case COMMAND:
 				if (c < 0) c = -c - 1;
-				if ((a = parse_command_line(key_binding[c], NULL, NULL, FALSE))>=0) {
+				const int a = parse_command_line(key_binding[c], NULL, NULL, false);
+				if (a >= 0) {
 					switch(a) {
 					case BACKSPACE_A:
 						fuzz_back();
@@ -561,17 +555,14 @@ int request_strings(req_list *rlp0, int n ) {
 
 char *complete_filename(const char *start_prefix) {
 
-	int is_dir, unique = TRUE;
-	char *p, *dir_name, *cur_dir_name, *cur_prefix = NULL, *result = NULL;
-	DIR *d;
-	struct dirent *de;
-
 	/* This might be NULL if the current directory has been unlinked, or it is not readable.
 		in that case, we end up moving to the completion directory. */
-	cur_dir_name = ne_getcwd(CUR_DIR_MAX_SIZE);
+	char * const cur_dir_name = ne_getcwd(CUR_DIR_MAX_SIZE);
 
-	if (dir_name = str_dup(start_prefix)) {
-		*(p = (char *)file_part(dir_name)) = 0;
+	char * const dir_name = str_dup(start_prefix);
+	if (dir_name) {
+		char * const p = (char *)file_part(dir_name);
+		*p = 0;
 		if (p != dir_name && chdir(tilde_expand(dir_name)) == -1) {
 			free(dir_name);
 			return NULL;
@@ -579,15 +570,17 @@ char *complete_filename(const char *start_prefix) {
 	}
 
 	start_prefix = file_part(start_prefix);
+	int is_dir;
+	bool unique = true;
+	char *cur_prefix = NULL;
+	DIR * const d = opendir(CURDIR);
 
-	if (d = opendir(CURDIR)) {
-
-		while(!stop && (de = readdir(d))) {
-
+	if (d) {
+		for(struct dirent * de; !stop && (de = readdir(d)); ) {
 			if (is_prefix(start_prefix, de->d_name))
 				if (cur_prefix) {
 					cur_prefix[max_prefix(cur_prefix, de->d_name)] = 0;
-					unique = FALSE;
+					unique = false;
 				}
 				else {
 					cur_prefix = str_dup(de->d_name);
@@ -597,6 +590,8 @@ char *complete_filename(const char *start_prefix) {
 
 		closedir(d);
 	}
+
+	char * result = NULL;
 
 	if (cur_prefix) {
 		result = malloc(strlen(dir_name) + strlen(cur_prefix) + 2);
@@ -614,14 +609,13 @@ char *complete_filename(const char *start_prefix) {
 }
 
 static void load_syntax_names(req_list *rl, DIR *d, int flag) {
-	struct dirent *de;
-	int len, extlen = strlen(SYNTAX_EXT);
 
-	stop = FALSE;
+	const int extlen = strlen(SYNTAX_EXT);
+	stop = false;
 
-	while(!stop && (de = readdir(d))) {
+	for( struct dirent *de; !stop && (de = readdir(d)); ) {
 		if (is_directory(de->d_name)) continue;
-		len = strlen(de->d_name);
+		const int len = strlen(de->d_name);
 		if (len > extlen && !strcmp(de->d_name+len - extlen, SYNTAX_EXT)) {
 			char ch = de->d_name[len-extlen];
 			de->d_name[len-extlen] = '\0';
@@ -639,36 +633,36 @@ static void load_syntax_names(req_list *rl, DIR *d, int flag) {
    is a NUL, so callers (currently only request()) must take care to handle this
    case. */
 
-char *request_syntax(const char * const prefix, int use_prefix) {
-	unsigned char syn_dir_name[512];
-	unsigned char *p, *q;
+char *request_syntax() {
+	char syn_dir_name[512];
+	char *p;
 	req_list rl;
 	DIR *d;
-	int i;
 
-	if (req_list_init(&rl, filenamecmp, FALSE, FALSE, '*') != OK) return NULL;
+	if (req_list_init(&rl, filenamecmp, false, false, '*') != OK) return NULL;
 	if ((p = exists_prefs_dir()) && strlen(p) + 2 + strlen(SYNTAX_DIR) < sizeof syn_dir_name) {
 		strcat(strcpy(syn_dir_name, p), SYNTAX_DIR);
 		if (d = opendir(syn_dir_name)) {
-			load_syntax_names(&rl,d,TRUE);
+			load_syntax_names(&rl,d,true);
 			closedir(d);
 		}
 	}
 	if ((p = exists_gprefs_dir()) && strlen(p) + 2 + strlen(SYNTAX_DIR) < sizeof syn_dir_name) {
 		strcat(strcpy(syn_dir_name, p), SYNTAX_DIR);
 		if (d = opendir(syn_dir_name)) {
-			load_syntax_names(&rl,d,FALSE);
+			load_syntax_names(&rl,d,false);
 			closedir(d);
 		}
 	}
 	req_list_finalize(&rl);
 	p = NULL;
-	if (rl.cur_entries && (i = request_strings(&rl, 0)) != ERROR) {
-		q = rl.entries[i >= 0 ? i : -i - 2];
+	int result;
+	if (rl.cur_entries && (result = request_strings(&rl, 0)) != ERROR) {
+		char * const q = rl.entries[result >= 0 ? result : -result - 2];
 		if (p = malloc(strlen(q)+3)) {
 			strcpy(p,q);
 			if (p[strlen(p)-1] == rl.suffix) p[strlen(p)-1] = '\0';
-			if (i < 0) {
+			if (result < 0) {
 				memmove(p + 1, p, strlen(p) + 1);
 				p[0] = '\0';
 			}
@@ -690,35 +684,34 @@ char *request_syntax(const char * const prefix, int use_prefix) {
 
 char *request_files(const char * const filename, int use_prefix) {
 
-	int i, next_dir, is_dir;
-	char *dir_name, *cur_dir_name, *result = NULL, *p;
-	req_list rl;
+	char * const cur_dir_name = ne_getcwd(CUR_DIR_MAX_SIZE);
+	if (!cur_dir_name) return NULL;
 
-	DIR *d;
-	struct dirent *de;
-
-	if (!(cur_dir_name = ne_getcwd(CUR_DIR_MAX_SIZE))) return NULL;
-
-	if (dir_name = str_dup(filename)) {
-		i = 0;
-		if ((p = (char *)file_part(dir_name)) != dir_name) {
+	char * const dir_name = str_dup(filename);
+	if (dir_name) {
+		int result = 0;
+		char * const p = (char *)file_part(dir_name);
+		if (p != dir_name) {
 			*p = 0;
-			i = chdir(tilde_expand(dir_name));
+			result = chdir(tilde_expand(dir_name));
 		}
 		free(dir_name);
-		if (i == -1) return NULL;
+		if (result == -1) return NULL;
 	}
 
+	req_list rl;
+	bool next_dir;
+	char *result = NULL;
 	do {
-		next_dir = FALSE;
-		if (req_list_init(&rl, filenamecmp, TRUE, FALSE, '/') != OK) break;
+		next_dir = false;
+		if (req_list_init(&rl, filenamecmp, true, false, '/') != OK) break;
 
-		if (d = opendir(CURDIR)) {
+		DIR * const d = opendir(CURDIR);
+		if (d) {
 
-			stop = FALSE;
-
-			while(!stop && (de = readdir(d))) {
-				is_dir = is_directory(de->d_name);
+			stop = false;
+			for(struct dirent * de; !stop && (de = readdir(d)); ) {
+				const bool is_dir = is_directory(de->d_name);
 				if (use_prefix && !is_prefix(file_part(filename), de->d_name)) continue;
 				if (!req_list_add(&rl, de->d_name, is_dir)) break;
 			}
@@ -728,19 +721,20 @@ char *request_files(const char * const filename, int use_prefix) {
 			if (rl.cur_entries) {
 				/* qsort(rl.entries, rl.cur_entries, sizeof(char *), filenamecmpp); */
 
-				if ((i = request_strings(&rl, 0)) != ERROR) {
-					p = rl.entries[i >= 0 ? i : -i - 2];
-					if (p[strlen(p) - 1] == '/' && i >= 0) {
+				const int t = request_strings(&rl, 0);
+				if (t != ERROR) {
+					char * const p = rl.entries[t >= 0 ? t : -t - 2];
+					if (p[strlen(p) - 1] == '/' && t >= 0) {
 						p[strlen(p) - 1] = 0;
 						if (chdir(p)) alert();
-						else use_prefix = FALSE;
-						next_dir = TRUE;
+						else use_prefix = false;
+						next_dir = true;
 					}
 					else {
 						result = ne_getcwd(CUR_DIR_MAX_SIZE + strlen(p) + 2);
 						if (strcmp(result, "/")) strcat(result, "/");
 						strcat(result, p);
-						if (i < 0) {
+						if (t < 0) {
 							memmove(result + 1, result, strlen(result) + 1);
 							result[0] = 0;
 						}
@@ -761,8 +755,8 @@ char *request_files(const char * const filename, int use_prefix) {
 }
 
 
-/* Requests a file name. If no_file_req is FALSE, the file requester is firstly
-   presented. If no_file_req is TRUE, or the file requester is escaped, a long
+/* Requests a file name. If no_file_req is false, the file requester is firstly
+   presented. If no_file_req is true, or the file requester is escaped, a long
    input is performed with the given prompt and default_name. */
 
 char *request_file(const buffer *b, const char *prompt, const char *default_name) {
@@ -771,13 +765,13 @@ char *request_file(const buffer *b, const char *prompt, const char *default_name
 
 	if (!b->opt.no_file_req) {
 		print_message(info_msg[PRESSF1]);
-		p = request_files(default_name, FALSE);
+		p = request_files(default_name, false);
 		reset_window();
 		draw_status_bar();
 		if (p && *p) return p;
 	}
 
-	if (p = request_string(prompt, p ? p + 1 : default_name, FALSE, COMPLETE_FILE, io_utf8)) return p;
+	if (p = request_string(prompt, p ? p + 1 : default_name, false, COMPLETE_FILE, io_utf8)) return p;
 
 	return NULL;
 }
@@ -788,19 +782,20 @@ char *request_file(const buffer *b, const char *prompt, const char *default_name
 
 int request_document(void) {
 
-	int i = -1, cur_entry = 0, j;
-	buffer *b = (buffer *)buffers.head;
+	int i = -1;
 	req_list rl;
+	buffer *b = (buffer *)buffers.head;
 
-	if (b->b_node.next && req_list_init(&rl, NULL, TRUE, TRUE, '*')==OK) {
+	if (b->b_node.next && req_list_init(&rl, NULL, true, true, '*')==OK) {
 		i = 0;
+		int cur_entry = 0;
 		while(b->b_node.next) {
 			if (b == cur_buffer) cur_entry = i;
 			req_list_add(&rl, b->filename ? b->filename : UNNAMED_NAME, b->is_modified);
 			b = (buffer *)b->b_node.next;
 			i++;
 		}
-		rl.ignore_tab = TRUE;
+		rl.ignore_tab = true;
 		req_list_finalize(&rl);
 		print_message(info_msg[SELECT_DOC]);
 		i = request_strings(&rl, cur_entry);
@@ -810,13 +805,14 @@ int request_document(void) {
 			/* We're going to cheat big time here. We have an array of pointers
 				at rl.entries that's big enough to hold all the buffer pointers,
 				and that's exactly what we're going to use it for now. */
-			for (j=0, b=(buffer *)buffers.head; b->b_node.next; j++ ) {
+			b = (buffer *)buffers.head;
+			for (int j = 0; b->b_node.next; j++ ) {
 				rl.entries[j] = (char *)b;
 				b = (buffer *)b->b_node.next;
 				rem(b->b_node.prev);
 			}
 			/* Ack! We're removed all our buffers! */
-			for (j=0; j<rl.cur_entries; j++) {
+			for (int j = 0; j < rl.cur_entries; j++) {
 				add_tail(&buffers, (node *)rl.entries[rl.orig_order[j]]);
 			}
 		}
@@ -843,23 +839,28 @@ int request_document(void) {
 
 /* Delete the nth string from the given request list. This will work regardelss of whether
    the req_list has been finalized. */
+
 int req_list_del(req_list * const rl, int nth) {
-	char *str;
-	int len0, len, i;
+
 	if (nth < 0 || nth >= rl->cur_entries ) return ERROR;
-	str = rl->entries[nth];
-	len0 = len = strlen(str);
-	len +=  str[len+1] ? 3 : 2;  /* 'a b c \0 Suffix \0' or 'a b c \0 \0' or 'a b c Suffix \0 \0' */
-	memmove(str, str+len, sizeof(char)*(rl->cur_chars - ((str+len)-rl->chars)));
-	for(i=0; i<rl->cur_entries; i++)
+	const char * const str = rl->entries[nth];
+	const int len0 = strlen(str);
+	int len = len0;
+
+	len += str[len + 1] ? 3 : 2;  /* 'a b c \0 Suffix \0' or 'a b c \0 \0' or 'a b c Suffix \0 \0' */
+	memmove(str, str + len, sizeof(char)*(rl->cur_chars - ((str + len) - rl->chars)));
+
+	for(int i = 0; i < rl->cur_entries; i++)
 		if (rl->entries[i] > str )
 			rl->entries[i] -= len;
+
 	rl->cur_chars -= len;
-	memmove(&rl->entries[nth],&rl->entries[nth+1], sizeof(char *)*(rl->cur_entries - nth));
+	memmove(&rl->entries[nth], &rl->entries[nth+1], sizeof(char *)*(rl->cur_entries - nth));
 	rl->cur_entries--;
 	/* did we just delete longest string? */
+
 	if (len0 == rl->max_entry_len) {
-		for (i = rl->max_entry_len = 0; i < rl->cur_entries; i++) {
+		for (int i = rl->max_entry_len = 0; i < rl->cur_entries; i++) {
 			if ((len = strlen(rl->entries[i])) > rl->max_entry_len)
 				rl->max_entry_len = len;
 		}
@@ -890,7 +891,7 @@ int req_list_init( req_list * const rl, int cmpfnc(const char *, const char *), 
 	rl->cmpfnc = cmpfnc;
 	rl->allow_dupes = allow_dupes;
 	rl->allow_reorder = allow_reorder;
-	rl->ignore_tab = FALSE;
+	rl->ignore_tab = false;
 	rl->suffix = suffix;
 	rl->cur_entries = rl->alloc_entries = rl->max_entry_len = 0;
 	rl->cur_chars = rl->alloc_chars = 0;
@@ -916,18 +917,17 @@ int req_list_init( req_list * const rl, int cmpfnc(const char *, const char *), 
    is true. If the array cannot be allocated, allow_reorder is simply reset to
    false rather than returning an error. */
 void req_list_finalize(req_list * const rl) {
-	int i, len;
-	for (i=0; i<rl->cur_entries; i++) {
-		len = strlen(rl->entries[i]);
+	for (int i = 0; i < rl->cur_entries; i++) {
+		const int len = strlen(rl->entries[i]);
 		*(rl->entries[i]+len) = *(rl->entries[i]+len+1);
 		*(rl->entries[i]+len+1) = '\0';
 	}
 	if (rl->allow_reorder ) {
 		if ( rl->orig_order = malloc(sizeof(int) * rl->cur_entries)) {
-			for (i=0; i<rl->cur_entries; i++) {
+			for (int i = 0; i < rl->cur_entries; i++)
 				rl->orig_order[i] = i;
-			}
-		} else rl->allow_reorder = FALSE;
+		} 
+		else rl->allow_reorder = false;
 	}
 }
 
@@ -939,39 +939,38 @@ void req_list_finalize(req_list * const rl) {
    by strcmp if there is not comparison function), then the conflicting entry
    is returned. */
 char *req_list_add(req_list * const rl, char * const str, const int suffix) {
-	int i, ins, cmp;
-	char *newstr, *p;
-	int len = strlen(str);
-	int lentot = len + ((rl->suffix && suffix) ? 3 : 2); /* 'a b c \0 Suffix \0' or 'a b c \0 \0' */
+	const int len = strlen(str);
+	const int lentot = len + ((rl->suffix && suffix) ? 3 : 2); /* 'a b c \0 Suffix \0' or 'a b c \0 \0' */
 
+	int ins;
 	if (rl->cmpfnc) { /* implies the entries are sorted */
-		int l=i=0;
-		int r=rl->cur_entries - 1;
+		int l = 0, m = 0;
+		int r = rl->cur_entries - 1;
 		while(l <= r) {
-			i=(r+l)/2;
-			cmp = (*rl->cmpfnc)(str, rl->entries[i]);
+			m = (r + l)/2;
+			const int cmp = (*rl->cmpfnc)(str, rl->entries[m]);
 			if (cmp < 0 )
-				r = i - 1;
+				r = m - 1;
 			else if (cmp > 0)
-				l = i + 1;
+				l = m + 1;
 			else {
-				i = - i - 1;
+				m = - m - 1;
 				break;
 			}
 		}
-		if (i < 0) { /* found a match at -i - 1 */
-			if (!rl->allow_dupes) return rl->entries[-i-1];
-			ins = -i;
+		if (m < 0) { /* found a match at -m - 1 */
+			if (!rl->allow_dupes) return rl->entries[-m - 1];
+			ins = -m;
 		}
-		else if (r < i ) { ins = i; /* insert at i */ }
-		else if (l > i ) { ins = i + 1; /* insert at i + 1 */ }
+		else if (r < m) { ins = m; /* insert at i */ }
+		else if (l > m) { ins = m + 1; /* insert at i + 1 */ }
 		else { /* impossible! */ ins = rl->cur_entries; }
 	}
 	else {/* not ordered */
 		ins = rl->cur_entries; /* append to end */
 		if (!rl->allow_dupes) {
-			for(i=0; i<rl->cur_entries; i++)
-				if(!strcmp(rl->entries[i],str)) return rl->entries[i];
+			for(int i = 0; i < rl->cur_entries; i++)
+				if(!strcmp(rl->entries[i], str)) return rl->entries[i];
 		}
 	}
 
@@ -986,7 +985,7 @@ char *req_list_add(req_list * const rl, char * const str, const int suffix) {
 		rl->alloc_chars = rl->alloc_chars * 2 + lentot;
 		rl->chars = p1;
 		/* all the strings just moved from *p0 to *p1, so adjust accordingly */
-		for (i=0; i<rl->cur_entries; i++)
+		for (int i = 0; i < rl->cur_entries; i++)
 			rl->entries[i] += ( p1 - p0 );
 	}
 	/* make enough slots to hold the string pointer */
@@ -998,8 +997,8 @@ char *req_list_add(req_list * const rl, char * const str, const int suffix) {
 		rl->entries = t;
 	}
 
-	newstr = &rl->chars[rl->cur_chars];
-	p=strcpy(newstr,str)+len+1;
+	char * const newstr = &rl->chars[rl->cur_chars];
+	char * p = strcpy(newstr,str)+len+1;
 	if (rl->suffix && suffix) *p++ = rl->suffix;
 	*p = '\0';
 	rl->cur_chars += lentot;

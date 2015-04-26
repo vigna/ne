@@ -17,28 +17,15 @@ the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 /* Emacs config.h may rename various library functions such as malloc.  */
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
 
-#ifdef emacs
-#include "lisp.h"		/* for xmalloc */
-#else
-
-#ifdef STDC_HEADERS
 #include <stdlib.h>
 #include <string.h>
-#else
-char *malloc ();
-char *realloc ();
-#endif
+#include <unistd.h>
 
 /* Do this after the include, in case string.h prototypes bcopy.  */
-#if (defined(HAVE_STRING_H) || defined(STDC_HEADERS)) && !defined(bcopy)
+#if !defined(bcopy)
 #define bcopy(s, d, n) memcpy ((d), (s), (n))
 #endif
-
-#endif /* not emacs */
 
 #ifndef NULL
 #define NULL (char *) 0

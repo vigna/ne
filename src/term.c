@@ -54,9 +54,9 @@ correct name. */
 /* If true, we want the use the built-in ANSI terminal, not a real one. */
 
 #ifdef ANSI
-int ansi = TRUE;
+bool ansi = true;
 #else
-int ansi = FALSE;
+bool ansi = false;
 #endif
 
 /* Value is non-zero if attribute ATTR may be used with color.  ATTR
@@ -82,7 +82,7 @@ enum no_color_bit {
 /* We use internal copies of the terminfo capabilities because we want to be
    able to use a hardwired set. */
 
-int ne_generic_type;
+bool ne_generic_type;
 
 int ne_lines;
 int ne_columns;
@@ -124,7 +124,7 @@ char *ne_enter_standout_mode;
 char *ne_enter_bold_mode;
 char *ne_exit_standout_mode;
 int ne_magic_cookie_glitch;
-int ne_move_standout_mode;
+bool ne_move_standout_mode;
 
 char *ne_change_scroll_region;
 
@@ -140,7 +140,7 @@ char *ne_parm_ich;
 char *ne_delete_character;
 char *ne_parm_dch;
 
-int ne_move_insert_mode;
+bool ne_move_insert_mode;
 
 char *ne_cursor_invisible;
 char *ne_cursor_normal;
@@ -156,10 +156,10 @@ char *ne_exit_alt_charset_mode;
 
 char *ne_repeat_char;
 
-int ne_tilde_glitch;
-int ne_memory_below;
+bool ne_tilde_glitch;
+bool ne_memory_below;
 
-int ne_has_meta_key;
+bool ne_has_meta_key;
 char *ne_meta_on;
 char *ne_meta_off;
 
@@ -169,7 +169,7 @@ char *ne_keypad_local;
 char *ne_keypad_xmit;
 
 char *ne_clr_eol;
-int ne_transparent_underline;
+bool ne_transparent_underline;
 
 char *ne_set_background;
 char *ne_set_foreground;
@@ -206,26 +206,26 @@ struct cm Wcm;
 /* Terminal charateristics that higher levels want to look at.
    These are all extern'd in termchar.h */
 
-int	line_ins_del_ok;		/* Terminal can insert and delete lines */
-int	char_ins_del_ok;		/* Terminal can insert and delete chars */
-int	scroll_region_ok;		/* Terminal supports setting the scroll window */
-int	standout_ok;			/* Terminal supports standout without magic cookies */
-int	cursor_on_off_ok;		/* Terminal can make the cursor visible or invisible */
-int	ansi_color_ok;			/* Terminal supports ANSI color */
-int	color_ok;				/* Terminal supports color */
+bool	line_ins_del_ok;		/* Terminal can insert and delete lines */
+bool	char_ins_del_ok;		/* Terminal can insert and delete chars */
+bool	scroll_region_ok;		/* Terminal supports setting the scroll window */
+bool	standout_ok;			/* Terminal supports standout without magic cookies */
+bool	cursor_on_off_ok;		/* Terminal can make the cursor visible or invisible */
+bool	ansi_color_ok;			/* Terminal supports ANSI color */
+bool	color_ok;				/* Terminal supports color */
 
 
 static int	RPov;		/* Least number of chars to start a TS_repeat.
 								Less wouldn't be worth. */
 
-static int	delete_in_insert_mode;	/* delete mode == insert mode */
-static int	se_is_so;					/* 1 if same string both enters and leaves standout mode */
-static int	esm_is_eam;					/* 1 if exiting standout mode turns off all attributes */
+static bool	delete_in_insert_mode;	/* True if delete mode == insert mode */
+static bool	se_is_so;					/* True if same string both enters and leaves standout mode */
+static bool	esm_is_eam;					/* True if exiting standout mode turns off all attributes */
 
-static int	insert_mode;			/* Nonzero when in insert mode. */
-static int	standout_mode;			/* Nonzero when in standout mode. */
-static int	standout_wanted;		/* Nonzero if we should be writing in standout mode. */
-static int	curr_attr;				/* The current video attributes. */
+static bool	insert_mode;			/* True when in insert mode. */
+static bool	standout_mode;			/* True when in standout mode. */
+static bool	standout_wanted;		/* True if we should be writing in standout mode. */
+static uint32_t curr_attr;			/* The current video attributes. */
 
 /* Size of window specified by higher levels. This is the number of lines,
 starting from top of screen, to participate in ins/del line operations.
@@ -234,9 +234,9 @@ those operations.  */
 
 int	specified_window;
 
-/* If TRUE, then all I/O is to be performed in UTF-8. */
+/* If true, then all I/O is to be performed in UTF-8. */
 
-int	io_utf8;
+bool	io_utf8;
 
 /* Returns the output width of the given character. It is maximised with 1
  w.r.t. wcwidth(), so its result is equivalent to the width of the character
@@ -252,7 +252,7 @@ the width of the string exceeds maxWidth, modifies len so that it contains the
 longest prefix of s whose width is not greater than maxWidth, and returns the
 corresponding width. */
 
-static int string_output_width(const unsigned char *s, int *len, int maxWidth, int utf8) {
+static int string_output_width(const char *s, int *len, int maxWidth, bool utf8) {
 	if (s == NULL) {
 		if (*len > maxWidth) *len = maxWidth;
 		return *len;
@@ -306,8 +306,7 @@ static int joe2color(const int joe_color) {
 
 #ifdef PLAIN_SET_ATTR
 
-void set_attr(const unsigned int attr) {
-	char *buf;
+void set_attr(const uint32_t attr) {
 	OUTPUT1(ne_exit_attribute_mode);
 
 	if (attr & INVERSE) OUTPUT1(ne_enter_reverse_mode); 
@@ -318,11 +317,11 @@ void set_attr(const unsigned int attr) {
 
 	if (color_ok) {
 		if (attr & FG_NOT_DEFAULT) {
-			buf = tparm(ne_set_foreground , joe2color(attr >> FG_SHIFT));
+			const char * const buf = tparm(ne_set_foreground , joe2color(attr >> FG_SHIFT));
 			OUTPUT1(buf);
 		}
 		if (attr & BG_NOT_DEFAULT) {
-			buf = tparm(ne_set_background , joe2color(attr >> BG_SHIFT));
+			const char * const buf = tparm(ne_set_background , joe2color(attr >> BG_SHIFT));
 			OUTPUT1(buf);
 		}
 	}
@@ -331,9 +330,8 @@ void set_attr(const unsigned int attr) {
 #else
 
 
-void set_attr(const unsigned int attr) {
-	int attr_reset = FALSE;
-	char *buf;
+void set_attr(const uint32_t attr) {
+	bool attr_reset = false;
 
 	/* If we have to set a different subset of attributes, or if we have to
 		set to the default at least one of the colors
@@ -343,7 +341,7 @@ void set_attr(const unsigned int attr) {
 			|| (!(attr & BG_NOT_DEFAULT) && (curr_attr & BG_NOT_DEFAULT))) {
 
 		OUTPUT1_IF(ne_exit_attribute_mode)
-		attr_reset = TRUE;
+		attr_reset = true;
 
 		if ((attr & INVERSE) && MAY_USE_WITH_COLORS(NC_REVERSE)) OUTPUT1_IF(ne_enter_reverse_mode)
 		if ((attr & BOLD) && MAY_USE_WITH_COLORS(NC_BOLD)) OUTPUT1_IF(ne_enter_bold_mode)
@@ -358,13 +356,13 @@ void set_attr(const unsigned int attr) {
 
 		if (attr_reset && (attr & FG_NOT_DEFAULT) || (attr & FG_MASK) != (curr_attr & FG_MASK)) {
 			if (attr & FG_NOT_DEFAULT) {
-				buf = tparm(ne_set_foreground , joe2color(attr >> FG_SHIFT));
+				const char * const buf = tparm(ne_set_foreground , joe2color(attr >> FG_SHIFT));
 				OUTPUT1(buf);
 			}
 		}
 		if (attr_reset && (attr & BG_NOT_DEFAULT) || (attr & BG_MASK) != (curr_attr & BG_MASK)) {
 			if (attr & BG_NOT_DEFAULT) {
-				buf = tparm(ne_set_background , joe2color(attr >> BG_SHIFT));
+				const char * const buf = tparm(ne_set_background , joe2color(attr >> BG_SHIFT));
 				OUTPUT1(buf);
 			}
 		}
@@ -379,14 +377,14 @@ static void turn_off_standout(void) {
 	OUTPUT1(ne_exit_standout_mode);
 	/* We exiting standout mode deletes all attributes, we update curr_attr. */
 	if (esm_is_eam) curr_attr = 0;
-	standout_mode = FALSE;
+	standout_mode = false;
 }
 
 static void standout_if_wanted(void) {
 	if (standout_mode != standout_wanted) {
 		if (standout_wanted) {
 			OUTPUT1(ne_enter_standout_mode);
-			standout_mode = TRUE;
+			standout_mode = true;
 		}
 		else turn_off_standout();
 	}
@@ -396,11 +394,11 @@ static void standout_if_wanted(void) {
    but do nothing on terminals with a magic cookie (or without standout).  */
 
 void standout_on (void) {
-	if (standout_ok) standout_wanted = TRUE;
+	if (standout_ok) standout_wanted = true;
 }
 
 void standout_off (void) {
-	standout_wanted = FALSE;
+	standout_wanted = false;
 }
 
 
@@ -408,8 +406,8 @@ void standout_off (void) {
    or a series of putchar() that expand the given character in UTF-8 encoding. 
    If attr is -1, no attribute will be set. */
 
-static void out(int c, const int attr) {
-	int add_attr = 0;
+static void out(int c, const uint32_t attr) {
+	uint32_t add_attr = 0;
 
 	/* PORTABILITY PROBLEM: this code is responsible for filtering nonprintable
 		characters. On systems with a wider system character set, it could be
@@ -503,17 +501,16 @@ void do_flash(void) {
 
 
 /* Sets correctly the scroll region (first line is line 0). This function
-   assumes scroll_region_ok == TRUE.  The cursor position is lost, as from the
+   assumes scroll_region_ok == true.  The cursor position is lost, as from the
    terminfo specs. */
 
 static void set_scroll_region (const int start, const int stop) {
-
-	char *buf;
 
 	assert(scroll_region_ok);
 
 	/* Both control string have line range 0 to lines-1 */
 
+	char *buf;
 	if (ne_change_scroll_region) buf = tparm (ne_change_scroll_region, start, stop);
 	else buf = tparm (ne_set_window, start, stop, 0, ne_columns - 1);
 
@@ -524,13 +521,13 @@ static void set_scroll_region (const int start, const int stop) {
 
 static void turn_on_insert (void) {
 	if (!insert_mode) OUTPUT1(ne_enter_insert_mode);
-	insert_mode = TRUE;
+	insert_mode = true;
 }
 
 
 static void turn_off_insert (void) {
 	if (insert_mode) OUTPUT1(ne_exit_insert_mode);
-	insert_mode = FALSE;
+	insert_mode = false;
 }
 
 
@@ -607,9 +604,6 @@ void move_cursor (const int row, const int col) {
    may be moved, on terminals lacking a `ce' string.  */
 
 void clear_end_of_line(const int first_unused_hpos) {
-
-	int i;
-
 	if (curX >= first_unused_hpos) return;
 
 	if (curr_attr & BG_NOT_DEFAULT) set_attr(0);
@@ -617,7 +611,7 @@ void clear_end_of_line(const int first_unused_hpos) {
 	else {
 		/* We have to do it the hard way. */
 		turn_off_insert ();
-		for (i = curX; i < first_unused_hpos; i++) putchar (' ');
+		for (int i = curX; i < first_unused_hpos; i++) putchar (' ');
 		cmplus (first_unused_hpos - curX);
 	}
 }
@@ -637,9 +631,7 @@ void clear_to_end (void) {
 
 	if (ne_clr_eos) OUTPUT(ne_clr_eos);
 	else {
-		int i;
-
-		for (i = curY; i < ne_lines; i++) {
+		for (int i = curY; i < ne_lines; i++) {
 			move_cursor (i, 0);
 			clear_to_eol();
 		}
@@ -662,25 +654,21 @@ void clear_entire_screen (void) {
 }
 
 
-/* Outputs len characters pointed at by string, attributed as indicated by
-   a corresponding vector of attributes, which can be NULL, in which case
-   no attribute will be set. The characters will be truncated to the end
-   of the current line. Passing a NULL for string results in outputting
-   spaces. A len of 0 causes no action. If utf8 is TRUE, the string is
-   UTF-8 encoded. */
-void output_chars(const unsigned char *string, const unsigned int *attr, const int raw_len, const int utf8) {
-
-	int i, c, len;
-	const unsigned char *first_check;
-
+/* Outputs raw_len characters pointed at by string, attributed as
+   indicated by a corresponding vector of attributes, which can be NULL,
+   in which case no attribute will be set. The characters will be
+   truncated to the end of the current line. Passing a NULL for string
+   results in outputting spaces. A len of 0 causes no action. If utf8 is
+   true, the string is UTF-8 encoded. */
+  
+void output_chars(const char *string, const uint32_t *attr, const int raw_len, const bool utf8) {
 	if (raw_len == 0) return;
 
 	turn_off_insert();
 	standout_if_wanted();
 
 	/* If the string is UTF-8 encoded, compute its real length. */
-	if (utf8 && string != NULL) len = utf8strlen(string, raw_len);
-	else len = raw_len;
+	int len = utf8 && string != NULL ? utf8strlen(string, raw_len) : raw_len;
 
 	/* If the width of the string exceeds the remaining columns, we reduce
 		len. Moreover, we don't dare write in last column of bottom line, if
@@ -689,7 +677,7 @@ void output_chars(const unsigned char *string, const unsigned int *attr, const i
 	cmplus(string_output_width(string, &len, ne_columns - curX - (AutoWrap && curY == ne_lines - 1), utf8));
 
 	if (string == NULL) {
-		for(i = 0; i < len; i++) {
+		for(int i = 0; i < len; i++) {
 			/* When outputting spaces, it's only the first attribute that's used. */
 			if (attr) set_attr(*attr);
 			putchar(' ');
@@ -697,32 +685,30 @@ void output_chars(const unsigned char *string, const unsigned int *attr, const i
 		return;
 	}
 
-	first_check = string;
-
 	if (!ne_transparent_underline && !ne_tilde_glitch) {
-		for(i = 0; i < len; i++) {
+		for(int i = 0; i < len; i++) {
 			if (utf8) {
-				c = utf8char(string);
+				const int c = utf8char(string);
 				string += utf8len(*string);
 				out(c, attr ? attr[i] : -1);
 			}
 			else {
-				c = *string++;
+				const int c = (unsigned char)*string++;
 				out(c, attr ? attr[i] : -1);
 			}
 		}
-	} else
-		for(i = 0; i < len; i++) {
+	} 
+	else
+		for(int i = 0; i < len; i++) {
 			if (attr) set_attr(attr[i]);
-			c = utf8 ? utf8char(string) : *string;
+			int c = utf8 ? utf8char(string) : (unsigned char)*string;
 
 			if (c == '_' && ne_transparent_underline) {
 				putchar (' ');
 				OUTPUT1(Left);
 			}
 
-			if (ne_tilde_glitch && c == '~')
-				c = '`';
+			if (ne_tilde_glitch && c == '~') c = '`';
 
 			out(c, attr ? attr[i] : -1);
 			string += utf8 ? utf8len(*string) : 1;
@@ -733,7 +719,7 @@ void output_chars(const unsigned char *string, const unsigned int *attr, const i
 
 /* Outputs a NULL-terminated string without setting attributes. */
 
-void output_string(const char * const s, const int utf8) {
+void output_string(const char * const s, const bool utf8) {
 	assert(s != NULL);
 	output_chars(s, NULL, strlen(s), utf8);
 }
@@ -742,8 +728,8 @@ void output_string(const char * const s, const int utf8) {
 /* Outputs a single ISO 10646 character with a given set of attributes. If
    attr == -1, no attribute is set. */
 
-void output_char(const int c, const unsigned int attr, const int utf8) {
-	static unsigned char t[8];
+void output_char(const int c, const uint32_t attr, const bool utf8) {
+	static char t[8];
 
 	if (utf8) {
 		memset(t, 0, sizeof t);
@@ -762,34 +748,30 @@ void output_char(const int c, const unsigned int attr, const int utf8) {
 
 /* Outputs spaces. */
 
-void output_spaces(const int n, const unsigned int *attr) {
-	output_chars(NULL, attr, n, FALSE);
+void output_spaces(const int n, const uint32_t * const attr) {
+	output_chars(NULL, attr, n, false);
 }
 
 /* Same as output_chars(), but inserts instead. */
 
-void insert_chars(const unsigned char * start, const unsigned int * const attr, const int raw_len, const int utf8) {
-
-	const unsigned char *buf;
-	int i, c, len;
-
+void insert_chars(const char * start, const uint32_t * const attr, const int raw_len, const bool utf8) {
 	if (raw_len == 0) return;
+
 	standout_if_wanted();
 
 	/* If the string is non-NULL and UTF-8 encoded, compute its real length. */
-	if (utf8 && start != NULL) len = utf8strlen(start, raw_len);
-	else len = raw_len;
+	int len = utf8 && start != NULL ? utf8strlen(start, raw_len) : raw_len;
 
 	if (ne_parm_ich) {
-		int i, width = 0;
+		int width = 0;
 
 		if (start != NULL) {
-			if (utf8) for(i = 0; i < raw_len; i += utf8len(start[i])) width += output_width(utf8char(start + i));
-			else for(i = 0; i < raw_len; i++) width += output_width(start[i]);
+			if (utf8) for(int i = 0; i < raw_len; i += utf8len(start[i])) width += output_width(utf8char(start + i));
+			else for(int i = 0; i < raw_len; i++) width += output_width(start[i]);
 		}
 		else width = len;
 
-		buf = tparm (ne_parm_ich, width);
+		const char * const buf = tparm (ne_parm_ich, width);
 		OUTPUT1 (buf);
 
 		if (start) output_chars(start, attr, raw_len, utf8);
@@ -808,18 +790,19 @@ void insert_chars(const unsigned char * start, const unsigned int * const attr, 
 
 	if (!ne_transparent_underline && !ne_tilde_glitch && start
 		  && ne_insert_padding == NULL && ne_insert_character == NULL) {
-		for(i = 0; i < len; i++) {
+		for(int i = 0; i < len; i++) {
 			if (attr) set_attr(attr[i]);
+			int c;
 			if (utf8) {
 				c = utf8char(start);
 				start += utf8len(*start);
 			}
-			else c = *start++;
+			else c = (unsigned char)*start++;
 			out(c, attr ? attr[i] : -1);
 		}
 	}
 	else
-		for(i = 0; i < len; i++) {
+		for(int i = 0; i < len; i++) {
 
 			OUTPUT1_IF (ne_insert_character);
 
@@ -829,11 +812,12 @@ void insert_chars(const unsigned char * start, const unsigned int * const attr, 
 			}
 			else {
 				if (attr) set_attr(attr[i]);
+				int c;
 				if (utf8) {
 					c = utf8char(start);
 					start += utf8len(*start);
 				}
-				else c = *start++;
+				else c = (unsigned char)*start++;
 
 				if (ne_tilde_glitch && c == '~') c = '`';
 
@@ -847,8 +831,8 @@ void insert_chars(const unsigned char * start, const unsigned int * const attr, 
 
 /* Inserts a single ISO 10646 character. If attr == -1, no attribute is set. */
 
-void insert_char(const int c, const unsigned int attr, const int utf8) {
-	static unsigned char t[8];
+void insert_char(const int c, const uint32_t attr, const bool utf8) {
+	static char t[8];
 
 	if (utf8) {
 		memset(t, 0, sizeof t);
@@ -867,9 +851,6 @@ void insert_char(const int c, const unsigned int attr, const int utf8) {
 /* Deletes n characters at the current cursor position. */
 
 void delete_chars (int n) {
-
-	char *buf;
-
 	if (n == 0) return;
 
 	standout_if_wanted();
@@ -880,7 +861,7 @@ void delete_chars (int n) {
 	}
 
 	if (ne_parm_dch) {
-		buf = tparm(ne_parm_dch, n);
+		const char * const buf = tparm(ne_parm_dch, n);
 		OUTPUT1(buf);
 	}
 	else while(n-- != 0) OUTPUT1(ne_delete_character);
@@ -895,7 +876,7 @@ for that purpose. */
 
 static void do_multi_ins_del(char * const multi, const char * const single, int n) {
 	if (multi) {
-		char *const buf = tparm(multi, n);
+		const char * const buf = tparm(multi, n);
 		OUTPUT(buf);
 	}
 	else while(n-- != 0) OUTPUT(single);
@@ -904,7 +885,7 @@ static void do_multi_ins_del(char * const multi, const char * const single, int 
 
 /* Inserts n lines at vertical position vpos. If n is negative, it deletes -n
    lines. specified_window is taken into account. This function assumes
-   line_ins_del_ok == TRUE. Returns TRUE if an insertion/deletion actually happened. */
+   line_ins_del_ok == true. Returns true if an insertion/deletion actually happened. */
 
 int ins_del_lines (const int vpos, const int n) {
 
@@ -914,9 +895,9 @@ int ins_del_lines (const int vpos, const int n) {
 	assert(i != 0);
 	assert(vpos < specified_window);
 
-	if (scroll_region_ok && vpos + i >= specified_window) return FALSE;
+	if (scroll_region_ok && vpos + i >= specified_window) return false;
 
-	if (!ne_memory_below && vpos + i >= ne_lines) return FALSE;
+	if (!ne_memory_below && vpos + i >= ne_lines) return false;
 
 	standout_if_wanted();
 
@@ -959,7 +940,7 @@ int ins_del_lines (const int vpos, const int n) {
 		}
 	}
 
-	return TRUE;
+	return true;
 }
 
 
@@ -994,26 +975,25 @@ static void calculate_costs (void) {
    that support it. Return 1 if the window size has changed. */
 
 int ttysize(void) {
-	int l, c;	
 #ifdef TIOCGSIZE
 	/* try using the TIOCGSIZE call, if defined */
 	struct ttysize size;
 	D(fprintf(stderr,"ttysize (TIOCGSIZE): CHECKING...\n");)
 	if (ioctl(0, TIOCGSIZE, &size)) return 0;
-	l = size.ts_lines;
-	c = size.ts_cols;
+	const int l = size.ts_lines;
+	const int c = size.ts_cols;
 #elif defined(TIOCGWINSZ)
 	/* try using the TIOCGWINSZ call, if defined */
 	struct winsize size;
 	D(fprintf(stderr,"ttysize (TIOCGWINSZ): CHECKING...\n");)
 	if (ioctl(0, TIOCGWINSZ, &size)) return 0;
-	l = size.ws_row;
-	c = size.ws_col;
+	const int l = size.ws_row;
+	const int c = size.ws_col;
 #else
 	/* As a last resort, we try to read LINES and COLUMNS, falling back to the terminal-specified size. */
 	if (! getenv("LINES") || ! getenv("COLUMNS")) return 0;
-	l = strtol(getenv("LINES"), NULL, 10);
-	c = strtol(getenv("COLUMNS"), NULL, 10);
+	const int l = strtol(getenv("LINES"), NULL, 10);
+	const int c = strtol(getenv("COLUMNS"), NULL, 10);
 #endif
 	D(fprintf(stderr,"ttysize:...size is (%d,%d)\n", l, c);)
 	if (((ne_lines != l) || (ne_columns != c)) && l > 0 && c > 0) {

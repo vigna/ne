@@ -88,11 +88,9 @@ NE_NOWCHAR=
 NE_DEBUG=
 NE_TEST=
 
-ifeq ($(CC),gcc)
-NO_SIGN=-Wno-pointer-sign
-endif
-
-CFLAGS=$(OPTS) $(NO_SIGN) \
+CFLAGS=$(OPTS) \
+	-std=c99 \
+	-Wall -Wno-parentheses -Wno-switch \
 	-D_GNU_SOURCE -D__USE_GNU -DSTDC_HEADERS -Dinline=__inline__ \
 	$(if $(NE_POSIX),   -D_POSIX_C_SOURCE=199506L,) \
 	$(if $(NE_NOWCHAR), -DNOWCHAR,) \
@@ -108,7 +106,7 @@ ne:	$(OBJS) $(if $(NE_TERMCAP)$(NE_ANSI),$(TERMCAPOBJS),)
 	$(CC) $(OPTS) $(LDFLAGS) $(if $(NE_TEST), -coverage,) $^ -lm $(LIBS) -o $(PROGRAM)
 
 clean:
-	rm -f *.o *.gcda *.gcda.info *.gcno core
+	rm -f ne *.o *.gcda *.gcda.info *.gcno core
 
 really-clean: clean
 	rm -f ne hash.h hash.c help.c help.h names.c names.h enums.h ext.c

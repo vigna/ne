@@ -73,5 +73,5 @@ void setup_ansi_term(void) {
 	ne_clr_eol = "\x1b[K";
 	ne_transparent_underline = 0;
 	ne_no_color_video = 3;
-	ansi_color_ok = TRUE;
+	ansi_color_ok = true;
 }

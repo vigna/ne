@@ -95,18 +95,18 @@ list macros = { (node *)&macros.tail, NULL, (node *)&macros.head };
    current settings differ from these defaults. Make sure these
    defaults match the conditionals in prefs.c:save_prefs(). */
 #ifndef ALTPAGING
-int req_order;
+bool req_order;
 #else
-int req_order = TRUE;
+bool req_order = true;
 #endif
-int fast_gui;
-int status_bar = TRUE;
-int verbose_macros = TRUE;
+bool fast_gui;
+bool status_bar = true;
+bool verbose_macros = true;
 /* end of global prefs */
 
 buffer *cur_buffer;
 int turbo;
-int do_syntax = TRUE;
+bool do_syntax = true;
 
 /* These function live here because they access cur_buffer. new_buffer()
 creates a new buffer, adds it to the buffer list, and assign it to
@@ -140,37 +140,37 @@ int delete_buffer(void) {
 
 	if (pb->b_node.prev) {
 		cur_buffer = pb;
-		return TRUE;
+		return true;
 	}
 
 	if (nb->b_node.next) {
 		cur_buffer = nb;
-		return TRUE;
+		return true;
 	}
 
-	return FALSE;
+	return false;
 }
 
-void about(int show) {
-	int i;
+void about(bool show) {
 
 	if (show) {
 		clear_entire_screen();
+		int i;
 		for(i = 0; NO_WARRANTY_msg[i]; i++) {
 			if (i == ne_lines - 1) break;
 			move_cursor(i, 0);
-			output_string(NO_WARRANTY_msg[i], FALSE);
+			output_string(NO_WARRANTY_msg[i], false);
 		}
 		if (++i < ne_lines - 1) {
 			move_cursor(i, 0);
 			if (exists_gprefs_dir()) {
-				output_string("Global Directory: ", FALSE);
-				output_string(exists_gprefs_dir(), FALSE);
+				output_string("Global Directory: ", false);
+				output_string(exists_gprefs_dir(), false);
 			}
 			else {
-				output_string("Global directory \"", FALSE);
-				output_string(get_global_dir(), FALSE);
-				output_string("\" not found!", FALSE);
+				output_string("Global directory \"", false);
+				output_string(get_global_dir(), false);
+				output_string("\" not found!", false);
 			}
 		}
 		print_message(ABOUT_MSG);
@@ -188,18 +188,8 @@ event loop. */
 
 int main(int argc, char **argv) {
 
-	input_class ic;
-	int i, c, no_config = FALSE, displaying_info = FALSE, first_line = 0;
-	char *macro_name = NULL, *key_bindings_name = NULL, *menu_conf_name = NULL;
-
-	clip_desc *cd;
-	char *skiplist, *locale;
-
-	if (!(skiplist = calloc(argc, 1)))  /* We need this many flags. */
-	  exit(1);									  /* This would be bad.		 */
-
-	locale = setlocale(LC_ALL, "");
-	for(i = 0; i < 256; i++) localised_up_case[i] = toupper(i);
+	char *locale = setlocale(LC_ALL, "");
+	for(int i = 0; i < 256; i++) localised_up_case[i] = toupper(i);
 
 	if (locale) {
 		struct re_pattern_buffer re_pb;
@@ -207,16 +197,22 @@ int main(int argc, char **argv) {
 		memset(&re_pb, 0, sizeof re_pb);
 		memset(&re_reg, 0, sizeof re_reg);
 
-		re_pb.translate = (char *)localised_up_case;
+		re_pb.translate = (unsigned char *)localised_up_case;
 		re_compile_pattern(LOCALE_REGEX, strlen(LOCALE_REGEX), &re_pb);
 		if (re_search(&re_pb, locale, strlen(locale), 0, strlen(locale), &re_reg) >= 0) {
-			if (re_reg.start[1] >= 0) io_utf8 = TRUE;
+			if (re_reg.start[1] >= 0) io_utf8 = true;
 		}
 		free(re_reg.start);
 		free(re_reg.end);
 	}
 
-	for(i = 1; i < argc; i++) {
+	bool no_config = false, displaying_info = false;
+	char *macro_name = NULL, *key_bindings_name = NULL, *menu_conf_name = NULL;
+
+	char * const skiplist = calloc(argc, 1);
+	if (!skiplist) exit(1);  /* We need this many flags. */
+
+	for(int i = 1; i < argc; i++) {
 
 		/* Special arguments start with two dashes. If we find one, we
 		cancel its entry in argv[], so that it will be skipped when opening
@@ -230,27 +226,27 @@ int main(int argc, char **argv) {
 				exit(0);
 			}
 			else if (!strcmp(&argv[i][2], "noconfig") || !strcmp(&argv[i][2], "no-config")) {
-				no_config = TRUE;
+				no_config = true;
 				skiplist[i] = 1; /* argv[i] = NULL; */
 			}
 			else if (!strcmp(&argv[i][2], "noansi") || !strcmp(&argv[i][2], "no-ansi")) {
-				ansi = FALSE;
+				ansi = false;
 				skiplist[i] = 1; /* argv[i] = NULL; */
 			}
 			else if (!strcmp(&argv[i][2], "no-syntax")) {
-				do_syntax = FALSE;
+				do_syntax = false;
 				skiplist[i] = 1; /* argv[i] = NULL; */
 			}
 			else if (!strcmp(&argv[i][2], "ansi")) {
-				ansi = TRUE;
+				ansi = true;
 				skiplist[i] = 1; /* argv[i] = NULL; */
 			}
 			else if (!strcmp(&argv[i][2], "utf8")) {
-				io_utf8 = TRUE;
+				io_utf8 = true;
 				skiplist[i] = 1; /* argv[i] = NULL; */
 			}
 			else if (!strcmp(&argv[i][2], "no-utf8")) {
-				io_utf8 = FALSE;
+				io_utf8 = false;
 				skiplist[i] = 1; /* argv[i] = NULL; */
 			}
 			else if (!strcmp(&argv[i][2], "macro")) {
@@ -277,6 +273,7 @@ int main(int argc, char **argv) {
 #ifdef NE_TEST
 	/* Dump the builtin menu and key bindings to compare to
 		doc/default.menus and doc/default.keys. */
+	int dump_config(void);
 	dump_config();
 #endif
 
@@ -296,7 +293,8 @@ int main(int argc, char **argv) {
 
 	/* The INT_MAX clip always exists, and it is used by the Through command. */
 
-	if (!(cd = alloc_clip_desc(INT_MAX, 0))) exit(1);
+	clip_desc * const cd = alloc_clip_desc(INT_MAX, 0);
+	if (!cd) exit(1);
 
 	add_head(&clips, &cd->cd_node);
 
@@ -343,15 +341,15 @@ int main(int argc, char **argv) {
 		file loading can be interrupted (wildcarding can sometimes produce
 		unwanted results). */
 
-		int first_file = TRUE;
-		int first_line=0, first_col=0, binary=0, skip_plus=0;
-		char *d;
-		stop = FALSE;
+		bool first_file = true;
+		int first_line = 0, first_col = 0;
+		bool binary = false, skip_plus = false;
+		stop = false;
 
-		for(i = 1; i < argc && !stop; i++) {
+		for(int i = 1; i < argc && !stop; i++) {
 			if (argv[i] && !skiplist[i]) {
 				if (argv[i][0] == '+' && !skip_plus) {	/* looking for "+", or "+N" or "+N,M"  */
-					int tmp_l=INT_MAX, tmp_c=0;
+					int tmp_l = INT_MAX, tmp_c = 0;
 					char *d;
 					errno = 0;
 					if (argv[i][1]) {
@@ -374,25 +372,25 @@ int main(int argc, char **argv) {
 						first_col  = tmp_c;
 					}
 					else {
-						skip_plus = 1;
+						skip_plus = true;
 						i--;
 					}
 				}
 				else if (!strcmp(argv[i],"--binary")) {
-					binary = 1;
+					binary = true;
 				}
 				else {
 					if (!strcmp(argv[i],"--")) i++;
 					if (!first_file) do_action(cur_buffer, NEWDOC_A, -1, NULL);
-					else first_file = FALSE;
+					else first_file = false;
 					cur_buffer->opt.binary = binary;
 					if (i<argc) do_action(cur_buffer, OPEN_A, 0, str_dup(argv[i]));
 					if (first_line) do_action(cur_buffer, GOTOLINE_A, first_line, NULL);
 					if (first_col)  do_action(cur_buffer, GOTOCOLUMN_A, first_col, NULL);
-					skip_plus  =
 					first_line =
-					first_col  =
-					binary	  = 0;
+					first_col  = 0;
+					skip_plus  =
+					binary	  = false;
 				}
 			}
 		}
@@ -418,38 +416,38 @@ int main(int argc, char **argv) {
 		the "NO WARRANTY" message. */
 
 		about(1);
-		displaying_info = TRUE;
+		displaying_info = true;
 	}
 
-	while(TRUE) {
+	while(true) {
 
 		/* If we are displaying the "NO WARRANTY" info, we should not refresh the
 		window now */
 
 		if (!displaying_info) {
 			refresh_window(cur_buffer);
-			if (cur_buffer->opt.automatch) automatch_bracket(cur_buffer, TRUE);
+			if (cur_buffer->opt.automatch) automatch_bracket(cur_buffer, true);
 		}
 
 		draw_status_bar();
 		move_cursor(cur_buffer->cur_y, cur_buffer->cur_x);
 
-		c = get_key_code();
+		int c = get_key_code();
 
 		if (window_changed_size) {
 			print_error(do_action(cur_buffer, REFRESH_A, 0, NULL));
-			window_changed_size = FALSE;
+			window_changed_size = false;
 			cur_buffer->automatch.shown = 0;
 		}
 
 		if ( c == INVALID_CHAR ) continue; /* Window resizing. */
-		ic = CHAR_CLASS(c);
+		const input_class ic = CHAR_CLASS(c);
 
 		if (displaying_info) {
 			about(0);
-			displaying_info = FALSE;
+			displaying_info = false;
 		}
-		else if (cur_buffer->automatch.shown) automatch_bracket(cur_buffer, FALSE);
+		else if (cur_buffer->automatch.shown) automatch_bracket(cur_buffer, false);
 
 		switch(ic) {
 		case INVALID:

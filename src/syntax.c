@@ -170,9 +170,9 @@ unsigned char *lowerize(unsigned char *s) {
    Global array 'attr_buf' end up with coloring for each character of line (attr_len characters).
    'state' is initial parser state for the line (0 is initial state). */
 
-int *attr_buf = 0;	
-int attr_size = 0;
-int attr_len = 0;
+uint32_t *attr_buf = 0;	
+int64_t attr_size = 0;
+int64_t attr_len = 0;
 int stack_count = 0;
 
 HIGHLIGHT_STATE parse(struct high_syntax *syntax, line_desc *ld, HIGHLIGHT_STATE h_state, int utf8)
@@ -189,8 +189,8 @@ HIGHLIGHT_STATE parse(struct high_syntax *syntax, line_desc *ld, HIGHLIGHT_STATE
 	int buf_idx=0;				/* Index into buffer */
 	int c;					/* Current character */
 	int c_len;				/* Character length in bytes */
-	int *attr = attr_buf;
-	int *attr_end = attr_buf+attr_size;
+	uint32_t *attr = attr_buf;
+	uint32_t *attr_end = attr_buf+attr_size;
 	int buf_en = 0;				/* Set for name buffering */
 	int ofst = 0;				/* record offset after we've stopped buffering */
 	int mark1 = 0;  			/* offset to mark start from current pos */
@@ -198,8 +198,8 @@ HIGHLIGHT_STATE parse(struct high_syntax *syntax, line_desc *ld, HIGHLIGHT_STATE
 	int mark_en = 0;			/* set if marking */
 	int recolor_delimiter_or_keyword;
 
-	unsigned char *p = ld->line;			
-	unsigned char *q = ld->line  + ld->line_len;
+	unsigned char *p = (unsigned char *)ld->line;			
+	unsigned char *q = (unsigned char *)(ld->line  + ld->line_len);
 
 	buf[0]=0;				/* Forgot this originally... took 5 months to fix! */
 
@@ -211,7 +211,7 @@ HIGHLIGHT_STATE parse(struct high_syntax *syntax, line_desc *ld, HIGHLIGHT_STATE
 		int x;
 
 		if (p == q) c = '\n';
-		else c = utf8 ? get_char(p, ENC_UTF8) : *p;
+		else c = utf8 ? get_char((const char*)p, ENC_UTF8) : *p;
 
 		c_len = utf8 ? utf8seqlen(c) : 1;
 		p += c_len;	
@@ -692,13 +692,13 @@ struct high_state *load_dfa(struct high_syntax *syntax)
 
 	/* Load it */
 
-	if ((p = exists_prefs_dir()) && strlen(p) + 2 + strlen(SYNTAX_DIR) + strlen(SYNTAX_EXT) + strlen(syntax->name) < sizeof name) {
-		strcat(strcat(strcat(strcat(strcpy(name, p), SYNTAX_DIR), "/"), syntax->name), SYNTAX_EXT);
+	if ((p = (unsigned char *)exists_prefs_dir()) && strlen((const char *)p) + 2 + strlen(SYNTAX_DIR) + strlen(SYNTAX_EXT) + strlen((const char *)syntax->name) < sizeof name) {
+		strcat(strcat(strcat(strcat(strcpy((char *)name, (const char *)p), SYNTAX_DIR), "/"), (const char *)syntax->name), SYNTAX_EXT);
 		f = fopen((char *)name,"r");
 	}
 
-	if (!f && (p = exists_gprefs_dir()) && strlen(p) + 2 + strlen(SYNTAX_DIR) + strlen(SYNTAX_EXT) + strlen(syntax->name) < sizeof name) {
-		strcat(strcat(strcat(strcat(strcpy(name, p), SYNTAX_DIR), "/"), syntax->name), SYNTAX_EXT);
+	if (!f && (p = (unsigned char*)exists_gprefs_dir()) && strlen((const char *)p) + 2 + strlen(SYNTAX_DIR) + strlen(SYNTAX_EXT) + strlen((const char *)syntax->name) < sizeof name) {
+		strcat(strcat(strcat(strcat(strcpy((char *)name, (const char *)p), SYNTAX_DIR), "/"), (const char *)syntax->name), SYNTAX_EXT);
 		f = fopen((char *)name,"r");
 	}
 

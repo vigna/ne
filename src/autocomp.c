@@ -24,7 +24,7 @@
 
 static req_list rl;
 
-static void add_string(unsigned char * const s, const int len, const int ext) {
+static void add_string(const char * const s, const int len, const int ext) {
 	static char *buf = NULL;
 	static int buflen = 0;
 	char *buf_new;
@@ -37,21 +37,21 @@ static void add_string(unsigned char * const s, const int len, const int ext) {
 		return;
 	}
 	if (len > buflen) {
-		if (buf_new = realloc(buf,len * 2 + 1)) {
+		if (buf_new = realloc(buf, len * 2 + 1)) {
 			buflen = len * 2 + 1;
 			buf = buf_new;
 		}
 		else cplen = buflen - 1;
 	}
-	strncpy(buf,s,cplen);
+	strncpy(buf, s, cplen);
 	buf[cplen] = '\0';
-	req_list_add(&rl,buf,ext);
+	req_list_add(&rl, buf, ext);
 }
 
-static void search_buff(const buffer *b, const unsigned char *p, const int encoding, const int case_search, const int ext) {
+static void search_buff(const buffer *b, char * p, const int encoding, const int case_search, const int ext) {
 	line_desc *ld = (line_desc *)b->line_desc_list.head, *next;
 	int p_len = strlen(p);
-	int l, r;
+	int64_t l, r;
 
 	assert(p);
 
@@ -90,14 +90,14 @@ static void search_buff(const buffer *b, const unsigned char *p, const int encod
    (and subsequently reset_window()) after displaying req_msg. In any case, error 
    will contain a value out of those in the enum info that start with AUTOCOMPLETE_. */
 
-unsigned char *autocomplete(unsigned char *p, char *req_msg, const int ext, int * const error) {
-	int i, j, l, m, max_len = 0, min_len = INT_MAX, prefix_len = strlen(p);
+char *autocomplete(char *p, char *req_msg, const int ext, int * const error) {
+	int max_len = 0, min_len = INT_MAX, prefix_len = strlen(p);
 
 	assert(p);
 
-	req_list_init(&rl, (cur_buffer->opt.case_search ? strcmp : strdictcmp), FALSE, FALSE, EXTERNAL_FLAG_CHAR);
+	req_list_init(&rl, (cur_buffer->opt.case_search ? strcmp : strdictcmp), false, false, EXTERNAL_FLAG_CHAR);
 
-	search_buff(cur_buffer, p, cur_buffer->encoding, cur_buffer->opt.case_search, FALSE);
+	search_buff(cur_buffer, p, cur_buffer->encoding, cur_buffer->opt.case_search, false);
 	if (stop) {
 		req_list_free(&rl);
 		free(p);
@@ -108,7 +108,7 @@ unsigned char *autocomplete(unsigned char *p, char *req_msg, const int ext, int 
 		buffer *b = (buffer *)buffers.head;
 		while (b->b_node.next) {
 			if (b != cur_buffer) {
-				search_buff(b, p, cur_buffer->encoding, cur_buffer->opt.case_search, TRUE);
+				search_buff(b, p, cur_buffer->encoding, cur_buffer->opt.case_search, true);
 				if (stop) {
 					req_list_free(&rl);
 					free(p);
@@ -119,8 +119,8 @@ unsigned char *autocomplete(unsigned char *p, char *req_msg, const int ext, int 
 		}
  	}
 
-	for(i = 0; i < rl.cur_entries; i++) {
-		l = strlen(rl.entries[i]);
+	for(int i = 0; i < rl.cur_entries; i++) {
+		const int l = strlen(rl.entries[i]);
 		if (max_len < l) max_len = l;
 		if (min_len > l) min_len = l;
 	}
@@ -145,9 +145,10 @@ unsigned char *autocomplete(unsigned char *p, char *req_msg, const int ext, int 
 	if (rl.cur_entries > 0) {
 		qsort(rl.entries, rl.cur_entries, sizeof(char *), strdictcmpp);
 		/* Find maximum common prefix. */
-		m = strlen(rl.entries[0]);
+		int m = strlen(rl.entries[0]);
 		if (rl.entries[0][m-1] == EXTERNAL_FLAG_CHAR) m--;
-		for(i = 1; i < rl.cur_entries; i++) {
+		for(int i = 1; i < rl.cur_entries; i++) {
+			int j;
 			for(j = 0; j < m; j++) 
 				if (rl.entries[i][j] != rl.entries[0][j]) break;
 			m = j;
@@ -163,11 +164,12 @@ unsigned char *autocomplete(unsigned char *p, char *req_msg, const int ext, int 
 		}
 		else {
 			if (req_msg) print_message(req_msg);
-			if ((i = request_strings(&rl, 0)) != ERROR) {
-				i = i >= 0 ? i : -i - 2;
+			int result = request_strings(&rl, 0);
+			if (result != ERROR) {
+				result = result >= 0 ? result : -result - 2;
 				/* Delete EXTERNAL_FLAG_CHAR at the end of the strings if necessary. */
-				if (rl.entries[i][strlen(rl.entries[i]) - 1] == EXTERNAL_FLAG_CHAR) rl.entries[i][strlen(rl.entries[i]) - 1] = 0;
-				p = str_dup(rl.entries[i]);
+				if (rl.entries[result][strlen(rl.entries[result]) - 1] == EXTERNAL_FLAG_CHAR) rl.entries[result][strlen(rl.entries[result]) - 1] = 0;
+				p = str_dup(rl.entries[result]);
 				*error = AUTOCOMPLETE_COMPLETED;
 			}
 			else *error = AUTOCOMPLETE_CANCELLED;

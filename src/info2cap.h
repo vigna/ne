@@ -143,8 +143,3 @@ extern char *key_f63;
 
 #define resetterm()
 #define fixterm()
-
-/* These are defined in curses.h. The code relies on them. */
-
-#define TRUE 1
-#define FALSE 0

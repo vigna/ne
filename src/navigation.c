@@ -77,14 +77,11 @@ familiar with this diagram.
    assumes that tab_size < columns/2. Note that this function has to be called
    whenever the cursor is moved to a different line, keeping the x position
    constant. The only way of avoiding this problem is not supporting TABs,
-   which is of course unacceptable. Note that if x_wanted is TRUE, then the
+   which is of course unacceptable. Note that if x_wanted is true, then the
    wanted_x position is used rather tham cur_x+win_x. */
 
 void resync_pos(buffer * const b) {
-
-	line_desc *ld = b->cur_line_desc;
-	int pos, i, width, last_char_width, x = b->win_x + b->cur_x;
-
+	int64_t x = b->win_x + b->cur_x;
 	if (b->x_wanted) x = b->wanted_x;
 
 	assert(b->opt.tab_size < ne_columns / 2);
@@ -94,6 +91,8 @@ void resync_pos(buffer * const b) {
 		return;
 	}
 
+	line_desc *ld = b->cur_line_desc;
+	int64_t i, pos, width, last_char_width;
 	for(i = pos = width = 0; pos < ld->line_len; pos = next_pos(ld->line, pos, b->encoding), i++) {
 
 		if (ld->line[pos] != '\t') width += (last_char_width = get_char_width(&ld->line[pos], b->encoding));
@@ -225,9 +224,9 @@ int line_down(buffer * const b) {
  */
 
 void keep_cursor_on_screen(buffer * const b) {
-	int shift_right;
 	b->opt.tab_size = min(b->opt.tab_size, max(ne_columns / 2 - 1,1));
-	if (shift_right = b->win_x % b->opt.tab_size) {
+	const int shift_right = b->win_x % b->opt.tab_size;
+	if (shift_right) {
 		b->win_x -= shift_right;
 		b->cur_x += shift_right;
 	}
@@ -239,7 +238,7 @@ void keep_cursor_on_screen(buffer * const b) {
 			b->top_line_desc = (line_desc *)b->top_line_desc->ld_node.next;
 		}
 		assert(b->win_y = b->cur_line - b->cur_y);
-		b->y_wanted = FALSE;
+		b->y_wanted = false;
 	}
 
 	while(b->cur_x >= ne_columns) {
@@ -255,7 +254,7 @@ void keep_cursor_on_screen(buffer * const b) {
 
 static void block_left(buffer * const b, const int n) {
 
-	int t = b->win_x;
+	const int64_t t = b->win_x;
 
 	assert(n <= ne_columns);
 	assert(!(n % b->opt.tab_size));
@@ -348,9 +347,6 @@ int char_right(buffer * const b) {
 
 int prev_page(buffer * const b) {
 
-	int i;
-	line_desc *ld_top, *ld_cur;
-
 	b->y_wanted = 0;
 
 	if (b->cur_y > 0) {
@@ -370,10 +366,10 @@ int prev_page(buffer * const b) {
 
 	if ((b->win_y -= ne_lines - 2)<0) b->win_y = 0;
 
-	ld_top = b->top_line_desc;
-	ld_cur = b->cur_line_desc;
+	line_desc *ld_top = b->top_line_desc;
+	line_desc *ld_cur = b->cur_line_desc;
 
-	for(i = 0; i < ne_lines - 2 && ld_top->ld_node.prev->prev; i++) {
+	for(int i = 0; i < ne_lines - 2 && ld_top->ld_node.prev->prev; i++) {
 		ld_top = (line_desc *)ld_top->ld_node.prev;
 		ld_cur = (line_desc *)ld_cur->ld_node.prev;
 		b->cur_line--;
@@ -390,15 +386,14 @@ int prev_page(buffer * const b) {
 
 
 int next_page(buffer * const b) {
-	int i, disp;
-	line_desc *ld_top, *ld_cur;
-
 	b->y_wanted = 0;
 
 	if (b->cur_y < ne_lines - 2) {
 		update_syntax_states(b, b->cur_y, b->cur_line_desc, NULL);
+		line_desc *ld_cur;
 		if (b->win_y >= b->num_lines - (ne_lines - 1)) {
 			ld_cur = b->top_line_desc;
+			int i;
 			for(i = 0; i < ne_lines - 2 && ld_cur->ld_node.next->next; i++)
 				ld_cur = (line_desc *)ld_cur->ld_node.next;
 			b->cur_line += (i - b->cur_y);
@@ -408,7 +403,7 @@ int next_page(buffer * const b) {
 			b->cur_line += (ne_lines - 2 - b->cur_y);
 			b->cur_y = ne_lines - 2;
 			ld_cur = b->top_line_desc;
-			for(i = 0; i < ne_lines - 2; i++)
+			for(int i = 0; i < ne_lines - 2; i++)
 			  ld_cur = (line_desc *)ld_cur->ld_node.next;
 		}
 		b->attr_len = -1;
@@ -422,7 +417,7 @@ int next_page(buffer * const b) {
 	update_syntax_states(b, -1, b->cur_line_desc, NULL);
 	b->attr_len = -1;
 
-	disp = ne_lines - 2;
+	int disp = ne_lines - 2;
 
 	if (b->win_y + disp > b->num_lines - (ne_lines - 1))
 		disp = b->num_lines - (ne_lines - 1) - b->win_y;
@@ -430,10 +425,10 @@ int next_page(buffer * const b) {
 	b->win_y += disp;
 	b->cur_line += disp;
 
-	ld_top = b->top_line_desc;
-	ld_cur = b->cur_line_desc;
+	line_desc *ld_top = b->top_line_desc;
+	line_desc *ld_cur = b->cur_line_desc;
 
-	for(i = 0; i < disp && ld_top->ld_node.next->next; i++) {
+	for(int i = 0; i < disp && ld_top->ld_node.next->next; i++) {
 		ld_top = (line_desc *)ld_top->ld_node.next;
 		ld_cur = (line_desc *)ld_cur->ld_node.next;
 	}
@@ -447,11 +442,6 @@ int next_page(buffer * const b) {
 }
 
 int page_up(buffer * const b) {
-
-	int i, disp;
-
-	disp = ne_lines - 2;
-
 	/* Already on the top line? */
 	if (b->cur_line == 0) return OK;
 
@@ -459,12 +449,12 @@ int page_up(buffer * const b) {
 	b->attr_len = -1;
 
 	if (!b->y_wanted) {
-		b->y_wanted = TRUE;
+		b->y_wanted = true;
 		b->wanted_y = b->cur_line;
 		b->wanted_cur_y = b->cur_y;
 	}
 
-	for (i = 0; i < disp; i++) {
+	for (int i = 0; i < ne_lines - 2; i++) {
 		b->wanted_y--; /* We want to move up */
 
 		/* Can we move up? */
@@ -491,11 +481,6 @@ int page_up(buffer * const b) {
 }
 
 int page_down(buffer * const b) {
-
-	int i, disp, shift_view;
-
-	disp = ne_lines - 2;
-
 	/* Already on the bottom line? */
 	if (b->cur_line == b->num_lines - 1) return OK;
 
@@ -503,14 +488,15 @@ int page_down(buffer * const b) {
 	b->attr_len = -1;
 
 	if (!b->y_wanted) {
-		b->y_wanted = TRUE;
+		b->y_wanted = true;
 		b->wanted_y = b->cur_line;
 		b->wanted_cur_y = b->cur_y;
 	}
 
-	shift_view = (b->win_y + disp < b->num_lines); /* can't already see the last line */
+	const int disp = ne_lines - 2;
+	const int shift_view = (b->win_y + disp < b->num_lines); /* can't already see the last line */
 
-	for (i = 0; i < disp; i++) {
+	for (int i = 0; i < disp; i++) {
 		b->wanted_y++; /* We want to move down */
 
 		/* Can we move down? */
@@ -552,16 +538,16 @@ int move_tos(buffer * const b) {
 }
 
 int move_bos(buffer * const b) {
-	int i;
-	line_desc *ld_cur;
 
 	b->y_wanted = 0;
 
 	if (b->cur_y < ne_lines - 2) {
 		update_syntax_states(b, b->cur_y, b->cur_line_desc, NULL);
 		b->attr_len = -1;
+		line_desc *ld_cur;
 		if (b->win_y >= b->num_lines - (ne_lines - 1)) {
 			ld_cur = b->top_line_desc;
+			int i;
 			for(i = 0; i < ne_lines - 2  &&	ld_cur->ld_node.next->next; i++)
 				ld_cur = (line_desc *)ld_cur->ld_node.next;
 			b->cur_line += (i - b->cur_y);
@@ -571,7 +557,7 @@ int move_bos(buffer * const b) {
 			b->cur_line += (ne_lines - 2 - b->cur_y);
 			b->cur_y = ne_lines - 2;
 			ld_cur = b->top_line_desc;
-			for(i = 0; i < ne_lines - 2; i++)
+			for(int i = 0; i < ne_lines - 2; i++)
 			  ld_cur = (line_desc *)ld_cur->ld_node.next;
 		}
 		b->cur_line_desc = ld_cur;
@@ -584,17 +570,16 @@ int move_bos(buffer * const b) {
    win_x, cur_x, win_y and cur_y -- the variables which control which part
    of the file is visible in the terminal window. */
 
-int adjust_view(buffer * const b, const unsigned char *p) {
-	int i, disp, mag, rc = OK;
-	char *q;
-
+int adjust_view(buffer * const b, const char *p) {
 	b->y_wanted = 0;
 
 	if (!p) p = "t";
+	int rc = OK;
 
 	while(*p) {
-		disp = 0;
-		mag = max(0,strtol(p+1, &q, 0));
+		int disp = 0;
+		char *q;
+		int mag = max(0,strtol(p+1, &q, 0));
 		switch (*p) {
 			case 't' :
 			case 'T' :
@@ -660,14 +645,14 @@ int adjust_view(buffer * const b, const unsigned char *p) {
 				break;
 		}
 		if (disp > 0) {
-			for(i = 0; i < disp && b->top_line_desc->ld_node.prev->prev; i++) {
+			for(int i = 0; i < disp && b->top_line_desc->ld_node.prev->prev; i++) {
 				b->win_y--;
 				b->cur_y++;
 				b->top_line_desc = (line_desc *)b->top_line_desc->ld_node.prev;
 			}
 		}
 		else if (disp < 0) {
-			for(i = 0; i > disp && b->top_line_desc->ld_node.next->next; i--) {
+			for(int i = 0; i > disp && b->top_line_desc->ld_node.next->next; i--) {
 				b->win_y++;
 				b->cur_y--;
 				b->top_line_desc = (line_desc *)b->top_line_desc->ld_node.next;
@@ -683,10 +668,8 @@ int adjust_view(buffer * const b, const unsigned char *p) {
 
 
 
-void goto_line(buffer * const b, const int n) {
-	int i;
+void goto_line(buffer * const b, const int64_t n) {
 	line_desc *ld;
-
 	b->y_wanted = 0;
 
 	if (n >= b->num_lines || n == b->cur_line) return;
@@ -697,7 +680,7 @@ void goto_line(buffer * const b, const int n) {
 		b->cur_y = n - b->win_y;
 		b->cur_line = n;
 		ld = b->top_line_desc;
-		for(i = 0; i < b->cur_y; i++) ld = (line_desc *)ld->ld_node.next;
+		for(int i = 0; i < b->cur_y; i++) ld = (line_desc *)ld->ld_node.next;
 		b->cur_line_desc = ld;
 		resync_pos(b);
 		return;
@@ -716,15 +699,15 @@ void goto_line(buffer * const b, const int n) {
 
 	if (n < b->num_lines / 2) {
 		ld = (line_desc *)b->line_desc_list.head;
-		for(i = 0; i < b->win_y; i++) ld = (line_desc *)ld->ld_node.next;
+		for(int i = 0; i < b->win_y; i++) ld = (line_desc *)ld->ld_node.next;
 	}
 	else {
 		ld = (line_desc *)b->line_desc_list.tail_pred;
-		for(i = b->num_lines - 1; i > b->win_y; i--) ld = (line_desc *)ld->ld_node.prev;
+		for(int i = b->num_lines - 1; i > b->win_y; i--) ld = (line_desc *)ld->ld_node.prev;
 	}
 
 	b->top_line_desc = ld;
-	for(i = 0; i < b->cur_y; i++) ld = (line_desc *)ld->ld_node.next;
+	for(int i = 0; i < b->cur_y; i++) ld = (line_desc *)ld->ld_node.next;
 	b->cur_line_desc = ld;
 
 	if (b == cur_buffer) update_window(b);
@@ -733,7 +716,7 @@ void goto_line(buffer * const b, const int n) {
 
 
 
-void goto_column(buffer * const b, const int n) {
+void goto_column(buffer * const b, const int64_t n) {
 
 	b->x_wanted = 0;
 	b->y_wanted = 0;
@@ -759,7 +742,7 @@ void goto_column(buffer * const b, const int n) {
 /* This is like a goto_column(), but you specify a position (i.e.,
 a character offset) instead. */
 
-void goto_pos(buffer * const b, const int pos) {
+void goto_pos(buffer * const b, const int64_t pos) {
 	goto_column(b, calc_width(b->cur_line_desc, pos, b->opt.tab_size, b->encoding));
 }
 
@@ -767,23 +750,20 @@ void goto_pos(buffer * const b, const int pos) {
 
 void move_to_sol(buffer * const b) {
 
-	int t;
-
 	b->x_wanted = 0;
 	b->y_wanted = 0;
 
-	t = b->win_x;
+	const bool update = b->win_x && b == cur_buffer;
 	b->win_x =
 	b->cur_x =
 	b->cur_pos =
 	b->cur_char = 0;
 
-	if (t &&  b == cur_buffer) update_window(b);
+	if (update) update_window(b);
 }
 
 
 void move_to_eol(buffer * const b) {
-	int i, pos, width, total_width;
 	line_desc *ld = b->cur_line_desc;
 
 	assert(ld->ld_node.next != NULL);
@@ -797,7 +777,7 @@ void move_to_eol(buffer * const b) {
 		return;
 	}
 
-	total_width = calc_width(ld, ld->line_len, b->opt.tab_size, b->encoding);
+	const int64_t total_width = calc_width(ld, ld->line_len, b->opt.tab_size, b->encoding);
 
 	if (total_width >= b->win_x && total_width < b->win_x + ne_columns) {
 		/* We move to a visible position. */
@@ -807,12 +787,12 @@ void move_to_eol(buffer * const b) {
 		return;
 	}
 
-	for(i = pos = width = 0; pos < ld->line_len; pos = next_pos(ld->line, pos, b->encoding), i++)  {
+	for(int64_t i = 0, pos = 0, width = 0; pos < ld->line_len; pos = next_pos(ld->line, pos, b->encoding), i++)  {
 		if (ld->line[pos] != '\t') width += get_char_width(&ld->line[pos], b->encoding);
 		else width += b->opt.tab_size - width % b->opt.tab_size;
 
 		if (total_width - width < ne_columns - b->opt.tab_size) {
-			int t = b->win_x;
+			int64_t t = b->win_x;
 			b->win_x = width - width % b->opt.tab_size;
 			b->cur_x = total_width - b->win_x;
 			b->cur_pos = ld->line_len;
@@ -822,7 +802,7 @@ void move_to_eol(buffer * const b) {
 		}
 	}
 
-	assert(FALSE);
+	assert(false);
 }
 
 
@@ -847,7 +827,7 @@ void reset_position_to_sof(buffer * const b) {
 
 
 void move_to_sof(buffer * const b) {
-	int moving = b->win_x || b->win_y;
+	const bool moving = b->win_x || b->win_y;
 
 	if (moving) update_syntax_states(b, -1, b->cur_line_desc, NULL);
 	else update_syntax_states(b, b->cur_y, b->cur_line_desc, NULL);
@@ -859,15 +839,14 @@ void move_to_sof(buffer * const b) {
 
 
 void move_to_bof(buffer * const b) {
-	int i;
-	int old_win_x = b->win_x, old_win_y = b->win_y;
+
 	line_desc *ld = (line_desc *)b->line_desc_list.tail_pred;
+	for(int i = 0; i < ne_lines - 2 && ld->ld_node.prev->prev; i++) ld = (line_desc *)ld->ld_node.prev;
 
 	b->x_wanted = 0;
 	b->y_wanted = 0;
 
-	for(i = 0; i < ne_lines - 2 && ld->ld_node.prev->prev; i++) ld = (line_desc *)ld->ld_node.prev;
-
+	const int64_t old_win_x = b->win_x, old_win_y = b->win_y;
 	b->cur_line = b->num_lines - 1;
 	b->win_x = 0;
 	b->win_y = ld->ld_node.prev->prev ? b->num_lines - (ne_lines - 1) : b->num_lines - 1;
@@ -924,30 +903,26 @@ void toggle_sol_eol(buffer * const b) {
    of dir. */
 
 int search_word(buffer * const b, const int dir) {
-
-	line_desc *ld;
-	int c, y, pos = b->cur_pos, word_started = FALSE, space_skipped = FALSE;
-
 	assert(dir == -1 || dir == 1);
 
-	ld = b->cur_line_desc;
+	line_desc *ld = b->cur_line_desc;
+
+	int64_t pos = b->cur_pos;
+	bool word_started = false, space_skipped = false;
 
 	if (pos >= ld->line_len) pos = ld->line_len;
-	else {
-		c = get_char(&ld->line[pos], b->encoding);
-		if (!ne_isword(c, b->encoding)) space_skipped = TRUE;
-	}
+	else if (!ne_isword(get_char(&ld->line[pos], b->encoding), b->encoding)) space_skipped = true;
 
 	if (dir < 0 || pos < ld->line_len)
 		pos = (dir > 0 ? next_pos : prev_pos)(ld->line, pos, b->encoding);
 
-	y = b->cur_line;
+	int64_t y = b->cur_line;
 
 	while(y < b->num_lines && y >= 0) {
 		while(pos < ld->line_len && pos >= 0) {
-			c = get_char(&ld->line[pos], b->encoding);
-			if (!ne_isword(c, b->encoding)) space_skipped = TRUE;
-			else word_started = TRUE;
+			const int c = get_char(&ld->line[pos], b->encoding);
+			if (!ne_isword(c, b->encoding)) space_skipped = true;
+			else word_started = true;
 
 			if (dir > 0) {
 				if (space_skipped && ne_isword(c, b->encoding)) {
@@ -973,7 +948,7 @@ int search_word(buffer * const b, const int dir) {
 			pos = (dir > 0 ? next_pos : prev_pos)(ld->line, pos, b->encoding);
 		}
 
-		space_skipped = TRUE;
+		space_skipped = true;
 
 		if (dir > 0) {
 			ld = (line_desc *)ld->ld_node.next;
@@ -997,15 +972,11 @@ int search_word(buffer * const b, const int dir) {
 void move_to_eow(buffer * const b) {
 
 	line_desc *ld = b->cur_line_desc;
-	int pos = b->cur_pos, c;
+	int64_t pos = b->cur_pos;
+	if (pos >= ld->line_len || !ne_isword(get_char(&ld->line[pos], b->encoding), b->encoding)) return;
 
-	if (pos >= ld->line_len || !ne_isword(c = get_char(&ld->line[pos], b->encoding), b->encoding)) return;
-
-	while(pos < ld->line_len) {
-		c = get_char(&ld->line[pos], b->encoding);
-		if (!ne_isword(c, b->encoding)) break;
-		pos += b->encoding == ENC_UTF8 ? utf8len(ld->line[pos]) : 1;
-	}
+	for(pos = b->cur_pos; pos < ld->line_len; pos += b->encoding == ENC_UTF8 ? utf8len(ld->line[pos]) : 1) 
+		if (!ne_isword(get_char(&ld->line[pos], b->encoding), b->encoding)) break;
 
 	goto_pos(b, pos);
 }

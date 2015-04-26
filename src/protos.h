@@ -20,43 +20,43 @@
 
 
 /* actions.c */
-int do_action(buffer *b, action a, int c, unsigned char *p);
+int do_action(buffer *b, action a, int64_t c, char *p);
 
 /* autocomp.c */
-unsigned char *autocomplete(unsigned char *p, char *req_msg, const int ext, int * const error);
+char *autocomplete(char *p, char *req_msg, const int ext, int * const error);
 
 /* buffer.c */
 encoding_type detect_buffer_encoding(const buffer *b);
-char_pool *alloc_char_pool(int size);
+char_pool *alloc_char_pool(int64_t size);
 void free_char_pool(char_pool *cp);
-char_pool *get_char_pool(buffer *b, unsigned char *p);
-line_desc_pool *alloc_line_desc_pool(int pool_size);
+char_pool *get_char_pool(buffer *b, char * const p);
+line_desc_pool *alloc_line_desc_pool(int64_t pool_size);
 void free_line_desc_pool(line_desc_pool *ldp);
 buffer *alloc_buffer(const buffer *cur_b);
 void free_buffer_contents(buffer *b);
 void clear_buffer(buffer *b);
 void free_buffer(buffer *b);
-int calc_lost_chars(const buffer *b);
+int64_t calc_lost_chars(const buffer *b);
 buffer *get_nth_buffer(int n);
 buffer *get_buffer_named(const char *p);
 int modified_buffers(void);
 int save_all_modified_buffers(void);
 line_desc *alloc_line_desc(buffer *b);
 void free_line_desc(buffer *b, line_desc *ld);
-unsigned char *alloc_chars(buffer *b, int len);
-int alloc_chars_around(buffer *b, line_desc *ld, int n, int check_first_before);
-void free_chars(buffer *b, unsigned char *p, int len);
-int insert_one_line(buffer *b, line_desc *ld, int line, int pos);
-int delete_one_line(buffer *b, line_desc *ld, int line);
+char *alloc_chars(buffer *b, int64_t len);
+int64_t alloc_chars_around(buffer *b, line_desc *ld, int64_t n, bool check_first_before);
+void free_chars(buffer *b, char *p, int64_t len);
+int insert_one_line(buffer *b, line_desc *ld, int64_t line, int64_t pos);
+int delete_one_line(buffer *b, line_desc *ld, int64_t line);
 int undelete_line(buffer *b);
-void delete_to_eol(buffer *b, line_desc *ld, int line, int pos);
-int insert_stream(buffer *b, line_desc *ld, int line, int pos, const unsigned char *stream, int stream_len);
-int insert_one_char(buffer *b, line_desc *ld, int line, int pos, int c);
-int insert_spaces(buffer *b, line_desc *ld, int line, int pos, int n);
-int delete_stream(buffer *b, line_desc *ld, int line, int pos, int len);
-int delete_one_char(buffer *b, line_desc *ld, int line, int pos);
+void delete_to_eol(buffer *b, line_desc *ld, int64_t line, int64_t pos);
+int insert_stream(buffer *b, line_desc *ld, int64_t line, int64_t pos, const char *stream, int64_t stream_len);
+int insert_one_char(buffer *b, line_desc *ld, int64_t line, int64_t pos, int c);
+int insert_spaces(buffer *b, line_desc *ld, int64_t line, int64_t pos, int64_t n);
+int delete_stream(buffer *b, line_desc *ld, int64_t line, int64_t pos, int64_t len);
+int delete_one_char(buffer *b, line_desc *ld, int64_t line, int64_t pos);
 void change_filename(buffer *b, char *name);
-void ensure_attr_buf(buffer * const b, const int capacity);
+void ensure_attr_buf(buffer * const b, const int64_t capacity);
 int load_file_in_buffer(buffer *b, const char *name);
 int load_fh_in_buffer(buffer *b, int fh);
 int save_buffer_to_file(buffer *b, const char *name);
@@ -64,33 +64,33 @@ void auto_save(buffer *b);
 void reset_syntax_states(buffer *b);
 
 /* clips.c */
-clip_desc *alloc_clip_desc(int n, int size);
-clip_desc *realloc_clip_desc(clip_desc *cd, int n, int size);
+clip_desc *alloc_clip_desc(int n, int64_t size);
+clip_desc *realloc_clip_desc(clip_desc *cd, int n, int64_t size);
 void free_clip_desc(clip_desc *cd);
 int is_encoding_neutral(clip_desc *cd);
 clip_desc *get_nth_clip(int n);
-int copy_to_clip(buffer *b, int n, int cut);
+int copy_to_clip(buffer *b, int n, bool cut);
 int erase_block(buffer *b);
 int paste_to_buffer(buffer *b, int n);
-int copy_vert_to_clip(buffer *b, int n, int cut);
+int copy_vert_to_clip(buffer *b, int n, bool cut);
 int erase_vert_block(buffer *b);
 int paste_vert_to_buffer(buffer *b, int n);
-int load_clip(int n, const char *name, int preserve_cr, int binary);
-int save_clip(int n, const char *name, int CRLF, int binary);
+int load_clip(int n, const char *name, bool preserve_cr, bool binary);
+int save_clip(int n, const char *name, bool CRLF, bool binary);
 
 /* command.c */
 void build_hash_table(void);
 void build_command_name_table(void);
-action parse_command_line(const unsigned char *command_line, int *num_arg, unsigned char **string_arg, int exec_only_options);
-int execute_command_line(buffer *b, const unsigned char *command_line);
+int parse_command_line(const char *command_line, int64_t *num_arg, char **string_arg, int exec_only_options);
+int execute_command_line(buffer *b, const char *command_line);
 macro_desc *alloc_macro_desc(void);
 void free_macro_desc(macro_desc *md);
-void record_action(char_stream *cs, action a, int c, unsigned char *p, int verbose);
+void record_action(char_stream *cs, action a, int64_t c, const char *p, bool verbose);
 int play_macro(buffer *b, char_stream *cs);
 macro_desc *load_macro(const char *name);
 int execute_macro(buffer *b, const char *name);
 void help(char *p);
-int cmdcmp(const unsigned char *c, const unsigned char *m);
+int cmdcmp(const char *c, const char *m);
 void unload_macros(void);
 
 void optimize_macro(char_stream *cs, int verbose);
@@ -99,31 +99,31 @@ void optimize_macro(char_stream *cs, int verbose);
 void update_syntax_states(buffer *b, int row, line_desc *ld, line_desc *end_ld);
 int highlight_cmp(HIGHLIGHT_STATE *x, HIGHLIGHT_STATE *y);
 void delay_update();
-void output_line_desc(int row, int col, line_desc *ld, int start, int len, int tab_size, int cleared_at_end, int utf8, const int * const attr, const int * const diff, const int diff_size);
-line_desc *update_partial_line(buffer *b, int n, int start_x, int cleared_at_end, const int differential);
-void update_line(buffer *b, int n, const int cleared_at_end, const int differential);
-void update_window_lines(buffer *b, int start_line, int end_line, int doit);
+void output_line_desc(int row, int col, line_desc *ld, int64_t start, int64_t len, int tab_size, bool cleared_at_end, bool utf8, const uint32_t * const attr, const uint32_t * const diff, const int64_t diff_size);
+line_desc *update_partial_line(buffer *b, int n, int64_t start_x, bool cleared_at_end, const bool differential);
+void update_line(buffer *b, int n, const bool cleared_at_end, const bool differential);
+void update_window_lines(buffer *b, int start_line, int end_line, bool doit);
 void update_syntax_and_lines(buffer *b, line_desc *start_ld, line_desc *end_ld);
 void update_window(buffer *b);
-void update_deleted_char(buffer *b, int c, int a, const line_desc *ld, int pos, int attr_pos, int line, int x);
-void update_inserted_char(buffer *b, int c, const line_desc *ld, int pos, int attr_pos, int line, int x);
-void update_overwritten_char(buffer *b, int old_char, int new_char, const line_desc *ld, int pos, int attr_pos, int line, int x);
+void update_deleted_char(buffer *b, int c, int a, const line_desc *ld, int64_t pos, int64_t attr_pos, int line, int x);
+void update_inserted_char(buffer *b, int c, const line_desc *ld, int64_t pos, int64_t attr_pos, int line, int x);
+void update_overwritten_char(buffer *b, int old_char, int new_char, const line_desc *ld, int64_t pos, int64_t attr_pos, int line, int x);
 void reset_window(void);
 void refresh_window(buffer *b);
 void scroll_window(buffer *b, int line, int n);
 HIGHLIGHT_STATE freeze_attributes(buffer *b, line_desc *ld);
-void automatch_bracket(buffer * const b, const int show);
+void automatch_bracket(buffer * const b, const bool show);
 
 /* edit.c */
 int to_upper(buffer *b);
 int to_lower(buffer *b);
 int capitalize(buffer *b);
 int match_bracket(buffer *b);
-int find_matching_bracket(buffer *b, const int min_line, const int max_line, int *match_line, int *match_pos, int *c, line_desc ** ld);
+int find_matching_bracket(buffer *b, const int64_t min_line, const int64_t max_line, int64_t *match_line, int64_t *match_pos, int *c, line_desc ** ld);
 int word_wrap(buffer *b);
 int paragraph(buffer *b);
 int center(buffer *b);
-int auto_indent_line(buffer * const b, const int line, line_desc * const ld, const int up_to_col);
+int auto_indent_line(buffer * const b, const int64_t line, line_desc * const ld, const int64_t up_to_col);
 int backtab(buffer *b);
 int shift(buffer *b, char *p, char *msg, int msg_size);
 
@@ -168,7 +168,7 @@ void get_key_bindings(const char *);
 /* names.c */
 
 /* navigation.c */
-int  adjust_view(buffer *b, const unsigned char *p);
+int  adjust_view(buffer *b, const char *p);
 int  char_left(buffer *b);
 int  char_right(buffer *b);
 int  line_down(buffer *b);
@@ -179,9 +179,9 @@ int  next_page(buffer *b);
 int  page_down(buffer *b);
 int  page_up(buffer *b);
 int  prev_page(buffer *b);
-void goto_column(buffer *b, int n);
-void goto_line(buffer *b, int n);
-void goto_pos(buffer *b, int pos);
+void goto_column(buffer *b, int64_t n);
+void goto_line(buffer *b, int64_t n);
+void goto_pos(buffer *b, int64_t pos);
 void keep_cursor_on_screen(buffer *b);
 void move_to_bof(buffer *b);
 void move_to_eol(buffer *b);
@@ -199,8 +199,8 @@ void move_inc_up(buffer *b);
 /* ne.c */
 buffer *new_buffer(void);
 int delete_buffer(void);
-void about(int show);
-void automatch_bracket(buffer *b, int show);
+void about(bool show);
+void automatch_bracket(buffer *b, bool show);
 int main(int argc, char **argv);
 
 /* prefs.c */
@@ -217,15 +217,15 @@ int   push_prefs(buffer *b);
 
 /* input.c */
 void  close_history(void);
-int   request_response(const buffer *b, const char *prompt, int default_value);
+bool  request_response(const buffer *b, const char *prompt, int default_value);
 char  request_char(const buffer *b, const char *prompt, const char default_value);
-int   request_number(const char *prompt, int default_value);
-char *request_string(const char *prompt, const char *default_string, int accept_null_string, int completion_allowed, int prefer_utf8);
-char *request(const char *prompt, const char *default_string, int alpha_allowed, int completion_allowed, int prefer_utf8);
+int64_t request_number(const char *prompt, int64_t default_value);
+char *request_string(const char *prompt, const char *default_string, bool accept_null_string, int completion_allowed, bool prefer_utf8);
+char *request(const char *prompt, const char *default_string, bool alpha_allowed, int completion_allowed, bool prefer_utf8);
 
 /* request.c */
 int   request_strings(req_list * const rl, int default_entry);
-char *request_syntax(const char *syntax, int use_prefix);
+char *request_syntax();
 char *request_files(const char *filename, int use_prefix);
 char *request_file(const buffer *b, const char *prompt, const char *default_name);
 int   request_document(void);
@@ -238,9 +238,9 @@ void  req_list_finalize(req_list * const rl);
 
 
 /* search.c */
-int  find(buffer *b, const unsigned char *pattern, const int skip_first);
+int  find(buffer *b, const char *pattern, const bool skip_first);
 int  replace(buffer *b, int n, const char *string);
-int  find_regexp(buffer *b, const unsigned char *regex, const int skip_first);
+int  find_regexp(buffer *b, const char *regex, const bool skip_first);
 int  replace_regexp(buffer *b, const char *string);
 
 /* signals.c */
@@ -253,30 +253,31 @@ void handle_int(int sig);
 void handle_winch(int sig);
 
 /* streams.c */
-char_stream *alloc_char_stream(int size);
+char_stream *alloc_char_stream(int64_t size);
 void free_char_stream(char_stream *cs);
-char_stream *realloc_char_stream(char_stream *cs, int size);
-int add_to_stream(char_stream *cs, const unsigned char *s, int len);
+char_stream *realloc_char_stream(char_stream *cs, int64_t size);
+int add_to_stream(char_stream *cs, const char *s, int64_t len);
 char_stream *reset_stream(char_stream *cs);
 void set_stream_encoding(char_stream *cs, encoding_type source);
-char_stream *load_stream(char_stream *cs, const char *name, int preserve_cr, int binary);
-char_stream *load_stream_from_fh(char_stream *cs, int fh, int preserve_cr, int binary);
-int save_stream(const char_stream *cs, const char *name, int CRLF, int binary);
-int save_stream_to_fh(const char_stream *cs, int fh, int CRLF, int binary);
+char_stream *load_stream(char_stream *cs, const char *name, bool preserve_cr, bool binary);
+char_stream *load_stream_from_fh(char_stream *cs, int fh, bool preserve_cr, bool binary);
+int save_stream(const char_stream *cs, const char *name, bool CRLF, bool binary);
+int save_stream_to_fh(const char_stream *cs, int fh, bool CRLF, bool binary);
 
-int delete_from_stream(char_stream *cs, int p, int len);
-int insert_in_stream(char_stream *cs, const char *s, int p, int len);
+int delete_from_stream(char_stream *cs, int64_t p, int64_t len);
+int insert_in_stream(char_stream *cs, const char *s, int64_t p, int64_t len);
 
 /* support.c */
-int same_str(const char *p, const char *q);
+bool same_str(const char *p, const char *q);
 char *ne_getcwd(const int bufsize);
 const char *get_global_dir(void);
 const char *tilde_expand(const char *filename);
 const char *file_part(const char *pathname);
 unsigned long file_mod_time(const char *filename);
-int buffer_file_modified(const buffer *b, const char *name);
+int64_t read_safely(const int fh, void * const buf, const int64_t len);
+bool buffer_file_modified(const buffer *b, const char *name);
 char *str_dup(const char *s);
-int strnlen_ne(const char *s, int n);
+int64_t strnlen_ne(const char *s, int64_t n);
 int strcmpp(const void *a, const void *b);
 int strdictcmpp(const void *a, const void *b);
 int strdictcmp(const char *a, const char *b);
@@ -284,30 +285,30 @@ int filenamecmpp(const void *a, const void *b);
 int filenamecmp(const char *a, const char *b);
 void set_interactive_mode(void);
 void unset_interactive_mode(void);
-int calc_width(const line_desc *ld, int n, int tab_size, encoding_type encoding);
-int calc_char_len(const line_desc *ld, encoding_type encoding);
-int calc_pos(const line_desc *ld, int n, int tab_size, encoding_type encoding);
-int get_string_width(const unsigned char * const s, const int len, const encoding_type encoding);
+int64_t calc_width(const line_desc *ld, int64_t n, int tab_size, encoding_type encoding);
+int64_t calc_char_len(const line_desc *ld, encoding_type encoding);
+int64_t calc_pos(const line_desc *ld, int64_t n, int tab_size, encoding_type encoding);
+int get_string_width(const char * const s, const int len, const encoding_type encoding);
 int max_prefix(const char *s, const char *t);
-int is_prefix(const char *p, const char *s);
-int is_migrated(const char *name);
-int is_directory(const char *name);
-int is_ascii(const unsigned char *s, int len);
-int isparaspot(int c);
-int isasciispace(int c);
-int isasciipunct(int c);
-int isasciialpha(int c);
+bool is_prefix(const char *p, const char *s);
+bool is_migrated(const char *name);
+bool is_directory(const char *name);
+bool is_ascii(const char *s, int len);
+bool isparaspot(int c);
+bool isasciispace(int c);
+bool isasciipunct(int c);
+bool isasciialpha(int c);
 int asciitoupper(int c);
 int asciitolower(int c);
-encoding_type detect_encoding(const unsigned char *s, int len);
-int next_pos(const unsigned char *s, int pos, encoding_type encoding);
-int prev_pos(const unsigned char *s, int pos, encoding_type encoding);
-int get_char(const unsigned char *s, encoding_type encoding);
-int get_char_width(const unsigned char * const s, const encoding_type encoding);
-int ne_ispunct(const int c, const int encoding);
-int ne_isspace(const int c, const int encoding);
-int ne_isword(const int c, const int encoding);
-int context_prefix(const buffer *b, unsigned char **p, int *prefix_pos, encoding_type encoding);
+encoding_type detect_encoding(const char *s, int64_t len);
+int64_t next_pos(const char *s, int64_t pos, encoding_type encoding);
+int64_t prev_pos(const char *s, int64_t pos, encoding_type encoding);
+int get_char(const char *s, encoding_type encoding);
+int get_char_width(const char * const s, const encoding_type encoding);
+bool ne_ispunct(const int c, const int encoding);
+bool ne_isspace(const int c, const int encoding);
+bool ne_isword(const int c, const int encoding);
+int context_prefix(const buffer *b, char **p, int64_t *prefix_pos);
 line_desc *nth_line_desc(const buffer *b, const int n);
 
 /* term.c */
@@ -327,11 +328,11 @@ void clear_to_eol(void);
 void clear_to_end(void);
 void clear_entire_screen(void);
 void set_attr(const unsigned int);
-void output_chars(const unsigned char *string, const unsigned int *attr, int raw_len, int utf8);
+void output_chars(const char *string, const unsigned int *attr, int raw_len, int utf8);
 void output_string(const char *s, int utf8);
 void output_spaces(int n, const unsigned int *attr);
 void output_char(int c, unsigned int attr, int utf8);
-void insert_chars(const unsigned char *start, const unsigned int *attr, int raw_len, int utf8);
+void insert_chars(const char *start, const unsigned int *attr, int raw_len, int utf8);
 void insert_char(int c, const unsigned int attr, int utf8);
 void delete_chars(int n);
 int ins_del_lines(int vpos, int n);
@@ -341,9 +342,9 @@ void term_init(void);
 /* undo.c */
 void start_undo_chain(buffer *b);
 void end_undo_chain(buffer *b);
-int add_undo_step(buffer *b, int line, int pos, int len);
-void fix_last_undo_step(buffer *b, int delta);
-int add_to_undo_stream(undo_buffer *ub, const char *p, int len);
+int add_undo_step(buffer *b, int64_t line, int64_t pos, int64_t len);
+void fix_last_undo_step(buffer *b, int64_t delta);
+int add_to_undo_stream(undo_buffer *ub, const char *p, int64_t len);
 void reset_undo_buffer(undo_buffer *ub);
 int undo(buffer *b);
 int redo(buffer *b);

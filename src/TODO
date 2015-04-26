@@ -1,7 +1,3 @@
-- Open files > 2G.
-
-- Increase coverage.
-
 0) Garbage collection. Under some extreme circumstances
    in which the number of lost characters is
    intolerably high, ne should allocate a new block of
@@ -16,3 +12,15 @@
    in which the length is not known. I think the best
    thing to do would be to allocate exponentially
    larger pools starting with the default size.
+
+3) Moving to C99:
+
+   - bool type for all bools (and false/true instead of FALSE/TRUE).
+   - loop variables declared inside loops to reduce lexical scoping.
+   - More generally, reduce lexical scoping: no variables at the
+     start of a function, locally declared const's for temporary values, etc.
+   - all variables containing attributes uint32_t.
+   - all variables containing lines, columns, positions uint64_t.
+   - checking that we never mix 32 and 64 bit integers in the 
+     wrong way (e.g., 32-bit counter and 64-bit upper bound in 
+     loops, or loss of precision).

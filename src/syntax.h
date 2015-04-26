@@ -100,8 +100,8 @@ struct high_syntax *load_syntax PARAMS((unsigned char *name));
 
 /* Parse a lines.  Returns new state. */
 
-extern int *attr_buf;
-extern int attr_len;
+extern uint32_t *attr_buf;
+extern int64_t attr_len;
 HIGHLIGHT_STATE parse PARAMS((struct high_syntax *syntax, line_desc *ld, HIGHLIGHT_STATE h_state, int utf8));
 
 #define clear_state(s) (((s)->saved_s[0] = 0), ((s)->state = 0), ((s)->stack = 0))

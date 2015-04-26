@@ -27,7 +27,7 @@
 /* These variables remember if we are already in a signal handling
 code. In this case, the arrival of another signal must kill us. */
 
-static int fatal_code_in_progress, fatal_error_code;
+static bool fatal_code_in_progress, fatal_error_code;
 
 
 
@@ -44,7 +44,7 @@ static void fatal_code(const int sig) {
 
 	if (fatal_code_in_progress) kill(getpid (), fatal_error_code);
 
-	fatal_code_in_progress = TRUE;
+	fatal_code_in_progress = true;
 
 	/* Let us clean up the terminal configuration. */
 
@@ -93,7 +93,7 @@ void set_fatal_code(void) {
 	signal(SIGFPE, fatal_code);
 	signal(SIGSEGV, fatal_code);
 	signal(SIGTERM, fatal_code);
-	signal(SIGHUP, fatal_code);
+	signal(SIGHUP, SIG_IGN);//fatal_code);
 	signal(SIGQUIT, fatal_code);
 	signal(SIGPIPE, fatal_code);
 	signal(SIGUSR1, fatal_code);
@@ -131,12 +131,12 @@ void release_signals(void) {
 
 
 
-/* Handles SIGQUIT. It just sets the stop global variable to TRUE, so that the
+/* Handles SIGQUIT. It just sets the stop global variable to true, so that the
    interested functions can check it, and restores itself as signal handler. */
 
 void set_stop (const int sig) {
 	signal(sig, SIG_IGN);
-	stop = TRUE;
+	stop = true;
 	signal(sig, set_stop);
 }
 
@@ -156,5 +156,5 @@ void handle_winch (const int sig) {
 }
 #endif
 
-unsigned int window_changed_size;
-unsigned int stop;
+bool window_changed_size;
+bool stop;

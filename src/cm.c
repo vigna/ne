@@ -216,7 +216,7 @@ done:
 
 void cmgoto (int row, int col) {
 	int	  homecost, crcost, llcost, relcost, directcost;
-	int	  use;
+	int	  use = USEREL;
 	char	*p, *dcm;
 	
 	/* First the degenerate case */

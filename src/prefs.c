@@ -44,18 +44,16 @@ bigger just causes a reallocation. */
    that are not buffer specific. Likewise, if we're saving
    auto prefs, we don't want to include global prefs. */
 
-static int saving_global;
+static bool saving_global;
 
 /* Returns a pointer to the extension of a filename, or NULL if there is no
    extension. Note that filename has to be non NULL. */
 
 const char *extension(const char * const filename) {
 
-	int i;
-
 	assert(filename != NULL);
 
-	for(i = strlen(filename); i-- != 0;)
+	for(int i = strlen(filename); i-- != 0;)
 		if (filename[i] == '.') return &filename[i + 1];
 
 	return NULL;
@@ -72,8 +70,6 @@ const char *extension(const char * const filename) {
 char *exists_prefs_dir(void) {
 
 	static char *prefs_dir;
-	char *home_dir;
-	struct stat s;
 
 	/* If we have been already called, we already computed the name. */
 
@@ -82,12 +78,14 @@ char *exists_prefs_dir(void) {
 	/* In the UN*X case, we first get the home directory. Then
 	we allocate space for the directory name. */
 
+	char * home_dir;
 	if (!(home_dir = getenv("HOME"))) home_dir = ".";
 
 	if (prefs_dir = malloc(strlen(home_dir) + strlen(PREFS_DIR) + 3)) {
 
 		strcat(strcat(strcpy(prefs_dir, home_dir), "/"), PREFS_DIR);
 
+		struct stat s;
 		if (stat(prefs_dir, &s)) {
 			if (mkdir(prefs_dir, 0700)) {
 				free(prefs_dir);
@@ -111,8 +109,6 @@ char *exists_prefs_dir(void) {
 
 char *exists_gprefs_dir(void) {
 	static char *gprefs_dir = NULL;
-	struct stat s;
-	const char *global_dir;
 
 	/* If we have been already called, we already computed the name. We
 		should free up the name and re-compute it (because the global dir may
@@ -123,8 +119,10 @@ char *exists_gprefs_dir(void) {
 		gprefs_dir = NULL;
 	}
 
+	const char *global_dir;
 	if ((global_dir = get_global_dir()) && (gprefs_dir = malloc(strlen(global_dir) + 3 ))) {
 		strcpy(gprefs_dir, global_dir);
+		struct stat s;
 		if (stat(gprefs_dir, &s)) {
 			free(gprefs_dir);
 			return gprefs_dir = NULL;
@@ -143,18 +141,15 @@ char *exists_gprefs_dir(void) {
    name are NULL, ERROR is returned.  */
 
 int save_prefs(buffer * const b, const char * const name) {
-
-	int error;
-	char_stream *cs;
-
 	if (!b || !name) return ERROR;
 
 	assert_buffer(b);
 
-	if (cs = alloc_char_stream(PREF_FILE_SIZE_GUESS)) {
+	char_stream *cs = alloc_char_stream(PREF_FILE_SIZE_GUESS);
+	if (cs) {
 		/* We create a macro by recording an action for each kind of flag. */
 
-		if (!saving_global && b->syn) record_action(cs, SYNTAX_A, -1, b->syn->name, verbose_macros);
+		if (!saving_global && b->syn) record_action(cs, SYNTAX_A, -1, (const char *)b->syn->name, verbose_macros);
 
 		record_action(cs, TABSIZE_A,          b->opt.tab_size,       NULL, verbose_macros);
 		record_action(cs, CLIPNUMBER_A,       b->opt.cur_clip,       NULL, verbose_macros);
@@ -190,13 +185,11 @@ int save_prefs(buffer * const b, const char * const name) {
 			if (fast_gui)        record_action(cs, FASTGUI_A,       fast_gui,       NULL, verbose_macros);
 			if (!status_bar)     record_action(cs, STATUSBAR_A,     status_bar,     NULL, verbose_macros);
 			if (!verbose_macros) record_action(cs, VERBOSEMACROS_A, verbose_macros, NULL, verbose_macros);
-			saving_global = 0;
+			saving_global = false;
 		}
 
-		error = save_stream(cs, name, b->is_CRLF, FALSE);
-
+		const int error = save_stream(cs, name, b->is_CRLF, false);
 		free_char_stream(cs);
-
 		return error;
 	}
 
@@ -209,17 +202,15 @@ int save_prefs(buffer * const b, const char * const name) {
    exec_only_options flag set. If b or name are NULL, ERROR is returned. */
 
 int load_prefs(buffer * const b, const char * const name) {
-
-	int error = OK;
-	char_stream *cs;
-
 	if (!b || !name) return ERROR;
 
 	assert_buffer(b);
 
 	b->exec_only_options = 1;
 
-	if (cs = load_stream(NULL, name, FALSE, FALSE)) {
+	int error = OK;
+	char_stream * const cs = load_stream(NULL, name, false, false);
+	if (cs) {
 		error = play_macro(b, cs);
 		free_char_stream(cs);
 	}
@@ -234,11 +225,11 @@ int load_prefs(buffer * const b, const char * const name) {
    syntax if the new one cannot be loaded. */
 
 int load_syntax_by_name(buffer * const b, const char * const name) {
-	struct high_syntax *syn;
 	assert_buffer(b);
 	assert(name != NULL);
-	syn = load_syntax((char *)name);
-	if (!syn) syn = load_syntax((char *)ext2syntax(name));
+
+	struct high_syntax *syn = load_syntax((unsigned char *)name);
+	if (!syn) syn = load_syntax((unsigned char *)ext2syntax(name));
 	if (syn) {
 		b->syn = syn;
 		reset_syntax_states(b);
@@ -256,10 +247,6 @@ int load_syntax_by_name(buffer * const b, const char * const name) {
    returned.  */
 
 static int do_auto_prefs(buffer *b, const char * ext, int (prefs_func)(buffer *, const char *)) {
-
-	int error = OK;
-	char *auto_name, *prefs_dir;
-
 	if (!b) return ERROR;
 
 	assert_buffer(b);
@@ -270,6 +257,8 @@ static int do_auto_prefs(buffer *b, const char * ext, int (prefs_func)(buffer *,
 	That way the user can override whatever he wants, but anything he
 	doesn't override still gets passed through. */
 
+	int error = OK;
+	char *auto_name, *prefs_dir;
 	if (*prefs_func == load_prefs && (prefs_dir = exists_gprefs_dir())) {
 		if (auto_name = malloc(strlen(ext) + strlen(prefs_dir) + strlen(PREF_FILE_SUFFIX) + 2)) {
 			strcat(strcat(strcpy(auto_name, prefs_dir), ext), PREF_FILE_SUFFIX);
@@ -310,7 +299,7 @@ int save_auto_prefs(buffer * const b, const char *name) {
 	/* In practice, the only time we call save_auto_prefs with a name is
 		when we save the default prefs. If that changes, so too must this
 		method of setting this static flag used by save_prefs. */
-	saving_global = name ? 1 : 0;
+	saving_global = name ? true : false;
 	return do_auto_prefs(b, name, save_prefs);
 }
 

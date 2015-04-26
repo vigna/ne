@@ -34,11 +34,11 @@
    first character to use for input is returned. Moreover, the status bar is
    reset, so that it will be updated. */
 
-static unsigned int print_prompt(const unsigned char * const prompt) {
-	static unsigned char *prior_prompt;
+static unsigned int print_prompt(const char * const prompt) {
+	static const char *prior_prompt;
 	assert(prompt != NULL || prior_prompt);
 
-	if (prompt) prior_prompt = (unsigned char *)prompt;
+	if (prompt) prior_prompt = prompt;
 
 	move_cursor(ne_lines - 1, 0);
 
@@ -46,12 +46,12 @@ static unsigned int print_prompt(const unsigned char * const prompt) {
 
 	standout_on();
 
-	output_string(prior_prompt, FALSE);
-	output_string(":", FALSE);
+	output_string(prior_prompt, false);
+	output_string(":", false);
 
 	standout_off();
 
-	output_string(" ", FALSE);
+	output_string(" ", false);
 
 	reset_status_bar();
 
@@ -61,17 +61,13 @@ static unsigned int print_prompt(const unsigned char * const prompt) {
 
 
 /* Prompts the user for a yes/no answer. The prompt is assumed not to be UTF-8
-   encoded. default_value has to be TRUE or FALSE. TRUE is returned if 'y' was
-   typed, FALSE in any other case. Escaping is not allowed. RETURN returns the
+   encoded. default_value has to be true or false. true is returned if 'y' was
+   typed, false in any other case. Escaping is not allowed. RETURN returns the
    default value. */
 
 
-int request_response(const buffer * const b, const char * const prompt, const int default_value) {
-
-	const char response = request_char(b, prompt, default_value ? 'y' : 'n');
-
-	if (response == 'Y') return TRUE;
-	return FALSE;
+bool request_response(const buffer * const b, const char * const prompt, const int default_value) {
+	return request_char(b, prompt, default_value ? 'y' : 'n') == 'Y' ? true : false;
 }
 
 
@@ -86,17 +82,15 @@ int request_response(const buffer * const b, const char * const prompt, const in
 
 
 char request_char(const buffer * const b, const char * const prompt, const char default_value) {
-
-	int c;
-	input_class ic;
-
 	set_attr(0);
 	print_prompt(prompt);
 
-	if (default_value) output_char(default_value, 0, FALSE);
+	if (default_value) output_char(default_value, 0, false);
 	move_cursor(b->cur_y, b->cur_x);
 
-	while(TRUE) {
+	while(true) {
+		int c;
+		input_class ic;
 		do c = get_key_code(); while(c > 0xFF || (ic = CHAR_CLASS(c)) == IGNORE || ic == INVALID);
 
 		switch(ic) {
@@ -121,17 +115,17 @@ char request_char(const buffer * const b, const char * const prompt, const char 
    entered, negative on escaping or on entering the empty string. */
 
 
-int request_number(const char * const prompt, const int default_value) {
+int64_t request_number(const char * const prompt, const int64_t default_value) {
+	static char t[MAX_INT_LEN];
 
-	static char t[MAX_INT_LEN], *result, *endptr;
-	int n;
+	if (default_value >= 0) sprintf(t, "%" PRId64, default_value);
 
-	if (default_value >= 0) sprintf(t, "%d", default_value);
-
-	if (!(result = request(prompt, default_value >= 0 ? t : NULL, FALSE, 0, io_utf8))) return ABORT;
+	char * const result = request(prompt, default_value >= 0 ? t : NULL, false, 0, io_utf8);
+	if (!result) return ABORT;
 	if (!*result) return ERROR;
 
-	n = strtol(result, &endptr, 0);
+	char *endptr;
+	const int64_t n = strtoll(result, &endptr, 0);
 
 	return *endptr || n < 0 ? ERROR : n;
 }
@@ -141,13 +135,13 @@ int request_number(const char * const prompt, const int default_value) {
 /* Requests a string. The prompt is assumed not to be UTF-8 encoded. The
    returned string is never longer than MAX_INPUT_LINE_LEN, and has been
    malloc()ed, so you can use it and then free() it. NULL is returned on
-   escaping, or if entering an empty string (unless accept_null_string is TRUE,
+   escaping, or if entering an empty string (unless accept_null_string is true,
    in which case the empty string is duplicated and
    returned). completion_allowed and prefer_utf8 work as in request(). */
 
-char *request_string(const char * const prompt, const char * const default_string, const int accept_null_string, const int completion_allowed, const int prefer_utf8) {
+char *request_string(const char * const prompt, const char * const default_string, const bool accept_null_string, const int completion_allowed, const bool prefer_utf8) {
 
-	const char * const result = request(prompt, default_string, TRUE, completion_allowed, prefer_utf8);
+	const char * const result = request(prompt, default_string, true, completion_allowed, prefer_utf8);
 
 	if (result && (*result || accept_null_string)) return str_dup(result);
 
@@ -205,7 +199,7 @@ void close_history(void) {
 	}
 }
 
-static void add_to_history(const unsigned char * const str) {
+static void add_to_history(const char * const str) {
 	if (!history_buff || !str || !*str) return;
 
 	move_to_bof(history_buff);
@@ -244,7 +238,7 @@ static void add_to_history(const unsigned char * const str) {
    always, we would really need nested functions, but, alas, C can't cope with
    them. */
 
-static unsigned char input_buffer[MAX_INPUT_LINE_LEN + 1];
+static char input_buffer[MAX_INPUT_LINE_LEN + 1];
 
 /* The current encoding of the command line. Contrarily to buffers, the command line may (and will) move
    back to ASCII if all non-US-ASCII characters are deleted .*/
@@ -267,9 +261,8 @@ static int input_buffer_is_ascii() {
 /* The following functions perform basic editing actions on the input line. */
 
 static void input_refresh(void) {
-	int i, j;
 	move_cursor(ne_lines - 1, start_x);
-	for(i = start_x, j = offset; j < len; i += get_char_width(&input_buffer[j], encoding), j = next_pos(input_buffer, j, encoding)) {
+	for(int i = start_x, j = offset; j < len; i += get_char_width(&input_buffer[j], encoding), j = next_pos(input_buffer, j, encoding)) {
 		if (i + get_char_width(&input_buffer[j], encoding) >= ne_columns) break;
 		output_char(get_char(&input_buffer[j], encoding), 0, encoding);
 	}
@@ -278,8 +271,9 @@ static void input_refresh(void) {
 }
 
 static void input_autocomplete(void) {
-	int ac_err, ac_len, dx=0, cw, prefix_pos = pos;
-	unsigned char *p;
+	int dx=0, prefix_pos = pos;
+	char *p;
+
 	/* find a usable prefix */
 	if (prefix_pos && prefix_pos <= len) {
 		prefix_pos = prev_pos(input_buffer, prefix_pos, encoding);
@@ -301,7 +295,9 @@ static void input_autocomplete(void) {
 	}
 	else p = malloc(1); /* no prefix left of the cursor; we'll give an empty one. */
 	p[pos - prefix_pos] = 0;
-	if (p = autocomplete(p, NULL, TRUE, &ac_err)) {
+
+	int ac_err;
+	if (p = autocomplete(p, NULL, true, &ac_err)) {
 		encoding_type ac_encoding = detect_encoding(p, strlen(p));
 		if (ac_encoding != ENC_ASCII && encoding != ENC_ASCII && ac_encoding != encoding) {
 			free(p);
@@ -314,13 +310,13 @@ static void input_autocomplete(void) {
 				len -= pos - prefix_pos;
 				pos = prefix_pos;
 			}
-			ac_len = strlen(p);
+			int ac_len = strlen(p);
 			if (ac_len + len >= MAX_INPUT_LINE_LEN) ac_len = MAX_INPUT_LINE_LEN - len;
 			memmove(&input_buffer[pos + ac_len], &input_buffer[pos], len - pos + 1);
 			memmove(&input_buffer[pos], p, ac_len);
 			len += ac_len;
 			while (ac_len > 0) {
-				cw = get_char_width(&input_buffer[pos],encoding);
+				const int cw = get_char_width(&input_buffer[pos],encoding);
 				pos = next_pos(input_buffer, pos, encoding);
 				ac_len -= cw;
 				dx++;
@@ -432,7 +428,6 @@ static void input_move_to_sol(void) {
 
 static void input_move_to_eol(void) {
 	const int width_to_end = get_string_width(input_buffer + pos, len - pos, encoding);
-	int width, prev, i;
 
 	if (x + width_to_end < ne_columns) {
 		x += width_to_end;
@@ -441,12 +436,11 @@ static void input_move_to_eol(void) {
 	}
 
 	x = start_x;
-	i = ne_columns - 1 - start_x;
 	pos = offset = len;
-
+	int i = ne_columns - 1 - start_x;
 	for(;;) {
-		prev = prev_pos(input_buffer, offset, encoding);
-		width = get_char_width(&input_buffer[prev], encoding);
+		const int prev = prev_pos(input_buffer, offset, encoding);
+		const int width = get_char_width(&input_buffer[prev], encoding);
 		if (i - width < 0) break; 
 		offset = prev;
 		i -= width;
@@ -457,13 +451,13 @@ static void input_move_to_eol(void) {
 
 
 static void input_next_word(void) {
-	int space_skipped = FALSE;
+	bool space_skipped = false;
 
 	while(pos < len) {
 		const int c = get_char(&input_buffer[pos], encoding);
-		if (!ne_isword(c, encoding)) space_skipped = TRUE;
+		if (!ne_isword(c, encoding)) space_skipped = true;
 		else if (space_skipped) break;
-		input_move_right(FALSE);
+		input_move_right(false);
 	}
 	if (x == ne_columns - 1) {
 		offset = pos;
@@ -474,14 +468,14 @@ static void input_next_word(void) {
 
 
 static void input_prev_word(void) {
-	int word_skipped = FALSE, c;
+	bool word_skipped = false;
 
 	while(pos > 0) {
-		input_move_left(FALSE);
-		c = get_char(&input_buffer[pos], encoding);
-		if (ne_isword(c, encoding)) word_skipped = TRUE;
+		input_move_left(false);
+		const int c = get_char(&input_buffer[pos], encoding);
+		if (ne_isword(c, encoding)) word_skipped = true;
 		else if (word_skipped) {
-			input_move_right(FALSE);
+			input_move_right(false);
 			break;
 		}
 	}
@@ -491,7 +485,6 @@ static void input_prev_word(void) {
 
 static void input_paste(void) {
 	const clip_desc * const cd = get_nth_clip(cur_buffer->opt.cur_clip);
-	int paste_len;
 
 	if (cd) {
 		if (cd->cs->encoding != ENC_ASCII && encoding != ENC_ASCII && cd->cs->encoding != encoding) {
@@ -499,7 +492,7 @@ static void input_paste(void) {
 			return;
 		}
 
-		paste_len = strnlen_ne(cd->cs->stream, cd->cs->len);
+		int paste_len = strnlen_ne(cd->cs->stream, cd->cs->len);
 		if (len + paste_len > MAX_INPUT_LINE_LEN) paste_len = MAX_INPUT_LINE_LEN - len;
 		memmove(&input_buffer[pos + paste_len], &input_buffer[pos], len - pos + 1);
 		strncpy(&input_buffer[pos], cd->cs->stream, paste_len);
@@ -509,12 +502,7 @@ static void input_paste(void) {
 	}
 }
 
-char *request(const char *prompt, const char * const default_string, const int alpha_allowed, const int completion_allowed, const int prefer_utf8) {
-
-	action a;
-	input_class ic;
-	int c, c_len, c_width, first_char_typed = TRUE, last_char_completion = FALSE, selection = FALSE, quoted;
-	unsigned char *completion, *prefix, *p;
+char *request(const char *prompt, const char * const default_string, const bool alpha_allowed, const int completion_allowed, const bool prefer_utf8) {
 
 	set_attr(0);
 
@@ -531,18 +519,22 @@ char *request(const char *prompt, const char * const default_string, const int a
 		input_refresh();
 	}
 
-	while(TRUE) {
+	bool first_char_typed = true, last_char_completion = false, selection = false;
+
+	while(true) {
 
 		assert(input_buffer[len] == 0);
 
 		move_cursor(ne_lines - 1, x);
 
+		int c;
+		input_class ic;
 		do c = get_key_code(); while((ic = CHAR_CLASS(c)) == IGNORE);
 
 		/* ISO 10646 characters *above 256* can be added only to UTF-8 lines, or ASCII lines (making them, of course, UTF-8). */
 		if (ic == ALPHA && c > 0xFF && encoding != ENC_ASCII && encoding != ENC_UTF8) ic = INVALID;
 
-		if (ic != TAB) last_char_completion = FALSE;
+		if (ic != TAB) last_char_completion = false;
 		if (ic == TAB && !completion_allowed) ic = ALPHA;
 
 		switch(ic) {
@@ -559,8 +551,8 @@ char *request(const char *prompt, const char * const default_string, const int a
 			}
 
 			if (encoding == ENC_ASCII && c > 0x7F) encoding = prefer_utf8 || c > 0xFF ? ENC_UTF8 : ENC_8_BIT;
-			c_len = encoding == ENC_UTF8 ? utf8seqlen(c) : 1;
-			c_width = output_width(c);
+			int c_len = encoding == ENC_UTF8 ? utf8seqlen(c) : 1;
+			int c_width = output_width(c);
 			assert(c_len > 0);
 
 			if (len <= MAX_INPUT_LINE_LEN - c_len && (alpha_allowed || (c < 0x100 && isxdigit(c)) || c=='X' || c=='x')) {
@@ -580,22 +572,22 @@ char *request(const char *prompt, const char * const default_string, const int a
 					else input_refresh();
 				}
 
-				input_move_right(TRUE);
+				input_move_right(true);
 			}
 			break;
 
 		case RETURN:
-			selection = TRUE;
+			selection = true;
 			break;
-
 
 		case TAB:
 			if (completion_allowed == COMPLETE_FILE || completion_allowed == COMPLETE_SYNTAX) {
-				quoted = FALSE;
+				bool quoted = false;
+				char *prefix, *completion, *p;
 				if (len && input_buffer[len - 1] == '"') {
 					input_buffer[len - 1] = 0;
 					if (prefix = strrchr(input_buffer, '"')) {
-						quoted = TRUE;
+						quoted = true;
 						prefix++;
 					}
 					else input_buffer[len - 1] = '"';
@@ -609,12 +601,12 @@ char *request(const char *prompt, const char * const default_string, const int a
 
 				if (last_char_completion || completion_allowed == COMPLETE_SYNTAX) {
 					if (completion_allowed == COMPLETE_FILE )
-						completion = p = request_files(prefix, TRUE);
+						completion = p = request_files(prefix, true);
 					else
-						completion = p = request_syntax(prefix, TRUE);
+						completion = p = request_syntax(prefix, true);
 					reset_window();
 					if (completion) {
-						if (*completion) selection = TRUE;
+						if (*completion) selection = true;
 						else completion++;
 					}
 				}
@@ -622,8 +614,8 @@ char *request(const char *prompt, const char * const default_string, const int a
 					if (completion_allowed == COMPLETE_FILE )
 						completion = p = complete_filename(prefix);
 					else
-						completion = p = request_syntax(prefix, TRUE);
-					last_char_completion = TRUE;
+						completion = p = request_syntax(prefix, true);
+					last_char_completion = true;
 					if (!completion) alert();
 				}
 
@@ -637,7 +629,7 @@ char *request(const char *prompt, const char * const default_string, const int a
 						x = start_x;
 						if (encoding == ENC_ASCII) encoding = completion_encoding;
 						input_move_to_eol();
-						if (quoted) input_move_left(FALSE);
+						if (quoted) input_move_left(false);
 						input_refresh();
 					}
 					else alert();
@@ -650,7 +642,8 @@ char *request(const char *prompt, const char * const default_string, const int a
 
 		case COMMAND:
 			if (c < 0) c = -c - 1;
-			if ((a = parse_command_line(key_binding[c], NULL, NULL, FALSE))>=0) {
+			const int a = parse_command_line(key_binding[c], NULL, NULL, false);
+			if (a >= 0) {
 				switch(a) {
 
 				case LINEUP_A:
@@ -676,7 +669,7 @@ char *request(const char *prompt, const char * const default_string, const int a
 						/* In some cases, the default displayed on the command line will be the same as the 
 							first history item. In that case we skip it. */
 
-						if (first_char_typed == TRUE 
+						if (first_char_typed == true 
 							 && a == LINEUP_A 
 							 && history_buff->cur_line_desc->line 
 							 && !strncmp(history_buff->cur_line_desc->line, input_buffer, history_buff->cur_line_desc->line_len))
@@ -703,21 +696,21 @@ char *request(const char *prompt, const char * const default_string, const int a
 					break;
 
 				case MOVELEFT_A:
-					input_move_left(TRUE);
+					input_move_left(true);
 					break;
 
 				case MOVERIGHT_A:
-					input_move_right(TRUE);
+					input_move_right(true);
 					break;
 
 				case BACKSPACE_A:
 					if (pos == 0) break;
-					input_move_left(TRUE);
+					input_move_left(true);
 
 				case DELETECHAR_A:
 					if (len > 0 && pos < len) {
-						c_len = encoding == ENC_UTF8 ? utf8len(input_buffer[pos]) : 1;
-						c_width = get_char_width(&input_buffer[pos], encoding);
+						int c_len = encoding == ENC_UTF8 ? utf8len(input_buffer[pos]) : 1;
+						int c_width = get_char_width(&input_buffer[pos], encoding);
 						memmove(&input_buffer[pos], &input_buffer[pos + c_len], len - pos - c_len + 1);
 						len -= c_len;
 						if (input_buffer_is_ascii()) encoding = ENC_ASCII;
@@ -828,6 +821,6 @@ char *request(const char *prompt, const char * const default_string, const int a
 			return input_buffer;
 		}
 
-		first_char_typed = FALSE;
+		first_char_typed = false;
 	}
 }

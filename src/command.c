@@ -204,12 +204,11 @@ static const command commands[ACTION_COUNT] = {
 /* Checks whether the command line m starts with the command c. Return 0 on
    success, non-zero on failure. */
 
-int cmdcmp(const unsigned char *c, const unsigned char *m) {
-
+int cmdcmp(const char *c, const char *m) {
 	assert(c != NULL);
 	assert(m != NULL);
 
-	while (*c && ascii_up_case[*c] == ascii_up_case[*m]) {
+	while (*c && ascii_up_case[*(unsigned char *)c] == ascii_up_case[*(unsigned char *)m]) {
 		c++;
 		m++;
 	}
@@ -236,18 +235,16 @@ static macro_desc *macro_hash_table[MACRO_HASH_TABLE_SIZE];
    but uses MACRO_HASH_TABLE_SIZE for its modulo. */
 
 
-static int hash_cmd(const unsigned char * const s, int len) {
+static int hash_cmd(const char * const s, int len) {
 	int h = -1;
-
-	while(len-- != 0) h = (h * 31 + ascii_up_case[s[len]]) % HASH_TABLE_SIZE;
+	while(len-- != 0) h = (h * 31 + (unsigned char)ascii_up_case[(unsigned char)s[len]]) % HASH_TABLE_SIZE;
 	return (h + HASH_TABLE_SIZE) % HASH_TABLE_SIZE;
 }
 
 
-static int hash_macro(const unsigned char * const s, int len) {
+static int hash_macro(const char * const s, int len) {
 	int h = -1;
-
-	while(len-- != 0) h = (h * 31 + ascii_up_case[s[len]]) % MACRO_HASH_TABLE_SIZE;
+	while(len-- != 0) h = (h * 31 + ascii_up_case[(unsigned char)s[len]]) % MACRO_HASH_TABLE_SIZE;
 	return (h + MACRO_HASH_TABLE_SIZE) % MACRO_HASH_TABLE_SIZE;
 }
 
@@ -265,25 +262,16 @@ static int hash_macro(const unsigned char * const s, int len) {
    non-space character is a non alphabetic character). Note that the various
    syntax flags are used here. */
 
-action parse_command_line(const unsigned char * command_line, int * const num_arg, unsigned char ** const string_arg, const int exec_only_options) {
-
-	int h;
-	action a;
-	const unsigned char *p = command_line;
-
+int parse_command_line(const char * command_line, int64_t * const num_arg, char ** const string_arg, const int exec_only_options) {
+	if (!command_line || !*command_line) return NOP_A;
 	if (num_arg) *num_arg = -1;
 	if (string_arg) *string_arg = NULL;
 
-	if (!command_line) return NOP_A;
-
-	if (!*p) return NOP_A;
-
-	while(isasciispace(*p)) p++;
-
-	command_line = p;
+	while(isasciispace(*command_line)) command_line++;
+	const char *p = command_line;
 
 	if (!isalpha(*p)) { /* Comment, treated as NOP. */
-		int len = strlen(p);
+		const int len = strlen(p);
 		if (!(*string_arg = malloc(len + 1))) return -OUT_OF_MEMORY;
 		memcpy(*string_arg, p, len);
 		(*string_arg)[len] = 0;
@@ -292,8 +280,8 @@ action parse_command_line(const unsigned char * command_line, int * const num_ar
 
 	while(*p && !isasciispace(*p)) p++;
 
-	h = hash_cmd(command_line, p - command_line);
-
+	const int h = hash_cmd(command_line, p - command_line);
+	action a;
 	if ((a = hash_table[h]) && !cmdcmp(commands[--a].name, command_line)
 		|| (a = short_hash_table[h]) && !cmdcmp(commands[--a].short_name, command_line)) {
 
@@ -319,7 +307,7 @@ action parse_command_line(const unsigned char * command_line, int * const num_ar
 						}
 						else if (num_arg) {
 							char *q;
-							*num_arg = strtol(p, &q, 0);
+							*num_arg = strtoll(p, &q, 0);
 							if (*q && !isasciispace(*q)) return -NOT_A_NUMBER;
 						}
 					}
@@ -343,16 +331,14 @@ action parse_command_line(const unsigned char * command_line, int * const num_ar
    the search for a standard command fails, we try to execute a macro in ~/.ne
    with the same name. */
 
-int execute_command_line(buffer *b, const unsigned char *command_line) {
-
-	int n, a, len = strlen(command_line);
-	encoding_type encoding = detect_encoding(command_line, len);
-	unsigned char *p;
-
+int execute_command_line(buffer *b, const char *command_line) {
+	encoding_type encoding = detect_encoding(command_line, strlen(command_line));
 	if (b->encoding != ENC_ASCII && encoding != ENC_ASCII && b->encoding != encoding) return INCOMPATIBLE_COMMAND_ENCODING;
 
+	int64_t n;
+	int a;
+	char *p;
 	if ((a = parse_command_line(command_line, &n, &p, b->exec_only_options)) >= 0) return do_action(b, a, n, p);
-
 	a = -a;
 
 	if ((a == NO_SUCH_COMMAND) && (a = execute_macro(b, command_line)) == CANT_OPEN_MACRO) a = NO_SUCH_COMMAND;
@@ -391,11 +377,10 @@ void free_macro_desc(macro_desc *md) {
    numerical or string argument are expanded and copied, too. If the command
    should not be recorded (for instance, ESCAPE_A) we return. */
 
-void record_action(char_stream *cs, action a, int c, unsigned char *p, int verbose) {
+void record_action(char_stream *cs, action a, int64_t c, const char *p, bool verbose) {
+	if (commands[a].flags & DO_NOT_RECORD) return;
 
 	char t[MAX_INT_LEN + 2];
-
-	if (commands[a].flags & DO_NOT_RECORD) return;
 
 	/* NOP_A is special; it may actually be a comment.
 		Blank lines and real NOPs are recorded as blank lines. */
@@ -408,9 +393,8 @@ void record_action(char_stream *cs, action a, int c, unsigned char *p, int verbo
 	if (verbose) add_to_stream(cs, commands[a].name, strlen(commands[a].name));
 	else add_to_stream(cs, commands[a].short_name, strlen(commands[a].short_name));
 
-
 	if (c >= 0) {
-		sprintf(t, " %d", c);
+		sprintf(t, " %" PRId64, c);
 		add_to_stream(cs, t, strlen(t));
 	}
 	else if (p) {
@@ -429,23 +413,18 @@ void record_action(char_stream *cs, action a, int c, unsigned char *p, int verbo
    is a valid "InsertChar ##" command. If it is, then insertchar_val() returns
    the character code, otherwise it returns 0. */
 
-static int insertchar_val(const unsigned char *p) {
-	int h;
-	const unsigned char *cmd;
-	action a;
-
+static int insertchar_val(const char *p) {
 	if ( !p || !*p) return 0;
-
 	while(isasciispace(*p)) p++;
-
-	cmd = p;
+	const char * const cmd = p;
 
 	if (!isalpha(*p)) return 0;
 
 	while(*p && !isasciispace(*p)) p++;
 
-	h = hash_cmd(cmd, p - cmd);
+	int h = hash_cmd(cmd, p - cmd);
 
+	action a;
 	if (((a = hash_table[h]) && !cmdcmp(commands[--a].name, cmd)
 		|| (a = short_hash_table[h]) && !cmdcmp(commands[--a].short_name, cmd))	&& a == INSERTCHAR_A) {
 
@@ -458,24 +437,25 @@ static int insertchar_val(const unsigned char *p) {
 
 /* Optimizing macros is not safe if there are any subsequent undo commands
    calls to macros (which may themselves contain undo commands). This function
-   looks through a stream for undo or non-built in commands, and returns 0
-   if any are found; returns 1 otherwise. */
+   looks through a stream for undo or non-built in commands, and returns false
+   if any are found; returns true otherwise. */
 
-int vet_optimize_macro_stream(char_stream *cs, int pos) {
-	int n, a;
-	unsigned char *p;
+bool vet_optimize_macro_stream(char_stream * const cs, int64_t pos) {
+	int64_t n;
+	int a;
+	char *p;
 
 	while (pos < cs->len ) {
 		if ((a = parse_command_line(&cs->stream[pos], &n, &p, 0)) >= 0) {
 			if (p) free(p);
-			if (a == UNDO_A) return 0; /* optimization is not safe */
+			if (a == UNDO_A) return false; /* optimization is not safe */
 		} else {
 			a = -a;
-			if (a == NO_SUCH_COMMAND) return 0; /* possibly a macro invocation */
+			if (a == NO_SUCH_COMMAND) return false; /* possibly a macro invocation */
 		}
 		pos += strlen(&cs->stream[pos]) + 1;
 	}
-	return 1;
+	return true;
 }
 
 /* Looks through the macro stream for consecutive runs of InsertChar commands
@@ -485,30 +465,23 @@ int vet_optimize_macro_stream(char_stream *cs, int pos) {
    leave it as an InsertChar command to maximize portability of the macros. */
 
 void optimize_macro(char_stream *cs, int verbose) {
-	char *cmd;
-	int pos;
-	int chr;
-	int building = 0;
-	int safe_to_optimize = 0;
-
 	if (!cs || !cs->len) return;
 
-	for (pos = 0; pos < cs->len; pos += strlen(&cs->stream[pos]) + 1) {
-		cmd = &cs->stream[pos];
-		chr = insertchar_val(cmd);
+	bool building = false, safe_to_optimize = false;
+
+	for (int64_t pos = 0; pos < cs->len; pos += strlen(&cs->stream[pos]) + 1) {
+		char * const cmd = &cs->stream[pos];
+		const int chr = insertchar_val(cmd);
 		if (chr < 0x80 && isprint(chr) && (safe_to_optimize = vet_optimize_macro_stream(cs,pos))) {
-			char two[2] = " ";
-			two[0] = chr;
 			delete_from_stream(cs, pos, strlen(cmd) + 1);
+			const char two[2] = { chr };
 			if (building) {
 				building++;
 				insert_in_stream(cs, two, building, 1);
 			}
 			else {
-				const char *insert;
-				int len;
-				insert = verbose ? INSERTSTRING_NAME : INSERTSTRING_ABBREV;
-				len  = strlen(insert);
+				const char * const insert = verbose ? INSERTSTRING_NAME : INSERTSTRING_ABBREV;
+				const int64_t len  = strlen(insert);
 				insert_in_stream(cs, "\"",   pos, 2);   /* Closing quote */
 				insert_in_stream(cs, two,    pos, 1);   /* The character itself */
 				insert_in_stream(cs, " \"",  pos, 2);   /* space and openning quote */
@@ -516,9 +489,7 @@ void optimize_macro(char_stream *cs, int verbose) {
 				building = pos + len + 2;               /* This is where the char is now */
 			}
 		}
-		else {
-			building = 0;
-		}
+		else building = false;
 	}
 }
 
@@ -531,23 +502,22 @@ void optimize_macro(char_stream *cs, int verbose) {
    which we are executing. */
 
 int play_macro(buffer *b, char_stream *cs) {
-
-	int error = OK, len;
-	unsigned char *p, *stream;
-
 	if (!cs) return ERROR;
 
 	/* If len is 0 or 1, the character stream does not contain anything. */
+	const int len = cs->len;
+	if (len < 2) return OK;
 
-	if ((len = cs->len) < 2) return OK;
-
-	if (!(p = stream = malloc(len))) return OUT_OF_MEMORY;
+	char * const stream = malloc(len);
+	if (!stream) return OUT_OF_MEMORY;
+	char * p = stream;
 
 	memcpy(stream, cs->stream, len);
 
-	stop = FALSE;
+	stop = false;
 
 	b->executing_macro = 1;
+	int error = OK;
 	while(!stop && p - stream < len) {	
 #ifdef NE_TEST
 		fprintf(stderr, "%s\n", p); /* During tests, we output to stderr the current command. */
@@ -583,26 +553,23 @@ int play_macro(buffer *b, char_stream *cs) {
 
 macro_desc *load_macro(const char *name) {
 
-	int h;
-	char *macro_dir, *prefs_dir;
-	char_stream *cs;
-	macro_desc *md, **m;
-
 	assert(name != NULL);
 
-	if (!(md = alloc_macro_desc())) return NULL;
+	macro_desc * const md = alloc_macro_desc();
+	if (!md) return NULL;
 
-	cs = load_stream(md->cs, name, FALSE, FALSE);
+	char_stream * cs = load_stream(md->cs, name, false, false);
 
+	char *macro_dir, *prefs_dir;
 	if (!cs && (prefs_dir = exists_prefs_dir()) && (macro_dir = malloc(strlen(prefs_dir) + 2 + strlen(name)))) {
 		strcat(strcpy(macro_dir, prefs_dir), name);
-		cs = load_stream(md->cs, macro_dir, FALSE, FALSE);
+		cs = load_stream(md->cs, macro_dir, false, false);
 		free(macro_dir);
 	}
 
 	if (!cs && (prefs_dir = exists_gprefs_dir()) && (macro_dir = malloc(strlen(prefs_dir) + 2 + strlen(name) + 7))) {
 		strcat(strcat(strcpy(macro_dir, prefs_dir), "macros/"), name);
-		cs = load_stream(md->cs, macro_dir, FALSE, FALSE);
+		cs = load_stream(md->cs, macro_dir, false, false);
 		free(macro_dir);
 	}
 
@@ -613,9 +580,9 @@ macro_desc *load_macro(const char *name) {
 		md->cs = cs;
 		md->name = str_dup(file_part(name));
 
-		h = hash_macro(md->name, strlen(md->name));
+		const int h = hash_macro(md->name, strlen(md->name));
 
-		m = &macro_hash_table[h];
+		macro_desc **m = &macro_hash_table[h];
 
 		while(*m) m = &((*m)->next);
 
@@ -634,25 +601,18 @@ macro_desc *load_macro(const char *name) {
 macro list, it is loaded. A standard error code is returned. */
 
 int execute_macro(buffer *b, const char *name) {
-
 	static int call_depth = 0;
-	const char *p;
-	macro_desc *md;
-	int h;
 
 	if (++call_depth > 32) {
 		--call_depth;
 		return MAX_MACRO_DEPTH_EXCEEDED;
 	}
 
-	p = file_part(name);
+	const char * const p = file_part(name);
+	int h = hash_macro(p, strlen(p));
 
-	h = hash_macro(p, strlen(p));
-
-	md = macro_hash_table[h];
-
-	while(md && cmdcmp(md->name, p)) md = md->next;
-
+	macro_desc *md;
+	for(md = macro_hash_table[h]; md && cmdcmp(md->name, p); md = md->next );
 	if (!md) md = load_macro(name);
 
 	assert_macro_desc(md);
@@ -679,17 +639,11 @@ int execute_macro(buffer *b, const char *name) {
 /* Clears up the macro table. */
 
 void unload_macros(void) {
-
-	int i;
-	macro_desc *m, *n;
-
-	for(i = 0; i < MACRO_HASH_TABLE_SIZE; i++) {
-
-		m = macro_hash_table[i];
+	for(int i = 0; i < MACRO_HASH_TABLE_SIZE; i++) {
+		macro_desc *m = macro_hash_table[i];
 		macro_hash_table[i] = NULL;
-
 		while(m) {
-			n = m->next;
+			macro_desc * const n = m->next;
 			free_macro_desc(m);
 			m = n;
 		}
@@ -699,10 +653,9 @@ void unload_macros(void) {
 /* Find any key strokes that currently map to commands[i].name or commands[i].short_name.
    Returns either NULL or a char string that must be freed by the caller. */
 char *find_key_strokes(int c) {
-	int i;
 	char *str=NULL, *p;
 
-	for (i=0; i<NUM_KEYS; i++) {
+	for(int i = 0; i < NUM_KEYS; i++) {
 		if (key_binding[i]) {
 			if (((!strncasecmp(commands[c].short_name,key_binding[i],strlen(commands[c].short_name))) &&
 				  ((!key_binding[i][strlen(commands[c].short_name)]		) || 
@@ -737,17 +690,13 @@ char *find_key_strokes(int c) {
    requester. The help finishes when the user escapes. */
 
 void help(char *p) {
-
-	action a;
-	char *key_strokes;
-	char **tmphelp;
 	int j, i = 0;
 	req_list rl;
 
 	rl.cmpfnc = NULL;
-	rl.allow_dupes = FALSE;
-	rl.allow_reorder = FALSE;
-	rl.ignore_tab = TRUE;
+	rl.allow_dupes = false;
+	rl.allow_reorder = false;
+	rl.ignore_tab = true;
 	rl.suffix = 0;
 
 	rl.cur_chars = 0;
@@ -764,10 +713,11 @@ void help(char *p) {
 		if (p || (i = request_strings(&rl, i)) >= 0) {
 			D(fprintf(stderr,"Help check #2: p=%p, i=%d\n",p,i);)
 			if (p) {
-				for(i = 0; i < strlen(p); i++) if (isasciispace((unsigned char)p[i])) break;
+				for(int i = 0; i < strlen(p); i++) if (isasciispace((unsigned char)p[i])) break;
 
 				i = hash_cmd(p, i);
 
+				action a;
 				if ((a = hash_table[i]) && !cmdcmp(commands[--a].name, p)
 				|| (a = short_hash_table[i]) && !cmdcmp(commands[--a].short_name, p)) i = a;
 				else i = -1;
@@ -775,8 +725,8 @@ void help(char *p) {
 				p = NULL;
 			}
 			else {
-				D(fprintf(stderr,"Gonna parse_command_line(\"%s\",NULL,NULL,FALSE);\n",command_names[i]);)
-				i = parse_command_line(command_names[i], NULL, NULL, FALSE);
+				D(fprintf(stderr,"Gonna parse_command_line(\"%s\",NULL,NULL,false);\n",command_names[i]);)
+				i = parse_command_line(command_names[i], NULL, NULL, false);
 				D(fprintf(stderr,"...and got i=%d\n",i);)
 			}
 
@@ -788,6 +738,7 @@ void help(char *p) {
 			assert(i >= 0 && i < ACTION_COUNT);
 
 			print_message("Help: press Enter, or F1 or Escape or Escape-Escape");
+			char *key_strokes, **tmphelp;
 			if ((key_strokes = find_key_strokes(i)) && (tmphelp = calloc(commands[i].help_len+1, sizeof(char *)))) {
 				tmphelp[0] = (char *)commands[i].help[0];
 				tmphelp[1] = (char *)commands[i].help[1];

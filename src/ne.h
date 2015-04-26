@@ -23,6 +23,9 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <string.h>
+#include <stdint.h>
+#include <inttypes.h>
+#include <stdbool.h>
 
 #define PARAMS(protos) protos
 #include "syn_types.h"
@@ -197,9 +200,9 @@ typedef struct {
    correspondingly. */
 
 typedef struct {
-	int size, len;
+	int64_t size, len;
+	char *stream;
 	encoding_type encoding;
-	unsigned char *stream;
 } char_stream;
 
 
@@ -223,8 +226,8 @@ typedef struct {
 
 typedef struct {
 	node ld_node;
-	unsigned char *line;
-	int line_len;
+	char *line;
+	int64_t line_len;
 	HIGHLIGHT_STATE highlight_state; /* Initial highlight state for this line */
 } line_desc;
 
@@ -233,8 +236,8 @@ typedef struct {
 
 typedef struct {
 	node ld_node;
-	unsigned char *line;
-	int line_len;
+	char *line;
+	int64_t line_len;
 } no_syntax_line_desc;
 
 #ifndef NDEBUG
@@ -257,8 +260,8 @@ typedef struct {
 typedef struct {
 	node ldp_node;
 	list free_list;
-	int size;
-	int allocated_items;
+	int64_t size;
+	int64_t allocated_items;
 	line_desc *pool;
 } line_desc_pool;
 
@@ -284,8 +287,9 @@ typedef struct {
 
 typedef struct {
 	node cp_node;
-	int  size, first_used, last_used;
-	unsigned char *pool;
+	int64_t size;
+	int64_t first_used, last_used;
+	char *pool;
 } char_pool;
 
 #ifndef NDEBUG
@@ -349,9 +353,9 @@ typedef struct {
    that they should be performed indivisibly). */
 
 typedef struct {
-	int line;
-	int pos;
-	int len;
+	int64_t line;
+	int64_t pos;
+	int64_t len;
 } undo_step;
 
 
@@ -371,13 +375,13 @@ typedef struct {
 	undo_step *steps;
 	char *streams;
 	char_stream redo;
-	int steps_size;
-	int streams_size;
-	int cur_step;
-	int cur_stream;
-	int last_step;
-	int last_stream;
-	int last_save_step;
+	int64_t steps_size;
+	int64_t streams_size;
+	int64_t cur_step;
+	int64_t cur_stream;
+	int64_t last_step;
+	int64_t last_stream;
+	int64_t last_save_step;
 } undo_buffer;
 
 #ifndef NDEBUG
@@ -456,42 +460,42 @@ typedef struct {
 	char *replace_string;
 	char *command_line;
 	unsigned long mtime;      /* mod time of on-disk file when it was last loaded/saved, or 0 */
-	int win_x, win_y;         /* line and pos of upper left-most visible character. */
+	int64_t win_x, win_y;     /* line and pos of upper left-most visible character. */
 	int cur_x, cur_y;         /* position of cursor within the window */
-	int wanted_x;             /* desired x position modulo short lines, tabs, etc. Valid only if x_wanted is TRUE. */
-	int wanted_y;             /* desired y position modulo top or bottom of buffer. Valid if y_wanted is TRUE. */
-	int wanted_cur_y;         /* desired cur_y, valid if y_wanted is TRUE */
-	int cur_line;             /* the current line */
-	int cur_pos;              /* position of cursor within the document buffer (counts bytes) */
-	int cur_char;             /* position of cursor within the attribute buffer (counts characters) */
-	int num_lines;
-	int block_start_line, block_start_pos;
+	int64_t wanted_x;         /* desired x position modulo short lines, tabs, etc. Valid only if x_wanted is true. */
+	int64_t wanted_y;         /* desired y position modulo top or bottom of buffer. Valid if y_wanted is true. */
+	int64_t wanted_cur_y;     /* desired cur_y, valid if y_wanted is true */
+	int64_t cur_line;         /* the current line */
+	int64_t cur_pos;          /* position of cursor within the document buffer (counts bytes) */
+	int64_t cur_char;         /* position of cursor within the attribute buffer (counts characters) */
+	int64_t num_lines;
+	int64_t block_start_line, block_start_pos;
 	struct {
 		int shown;
 		int x;                 /* Visual (on-screen) coordinates of the highlighted bracket, if shown is true. */
 		int y;
 	} automatch;
-	int allocated_chars;
-	int free_chars;
+	int64_t allocated_chars;
+	int64_t free_chars;
 	encoding_type encoding;
 	undo_buffer undo;
 	struct {
-		int pos;
-		int line;
+		int64_t pos;
+		int64_t line;
 		int cur_y;
 	} bookmark[NUM_BOOKMARKS];
 	int bookmark_mask;          /* bit N is set if bookmark[N] is set */
 	int cur_bookmark;           /* For Goto(Next|Prev)Bookmark. */
 	
 	struct high_syntax *syn;    /* Syntax loaded for this buffer. */
-	int *attr_buf;              /* If attr_len >= 0, a pointer to the list of *current* attributes of the *current* line. */ 
-	int attr_size;              /* attr_buf size. */
-	int attr_len;               /* attr_buf valid number of characters, or -1 to denote that attr_buf is not valid. */
+	uint32_t *attr_buf;              /* If attr_len >= 0, a pointer to the list of *current* attributes of the *current* line. */ 
+	int64_t attr_size;              /* attr_buf size. */
+	int64_t attr_len;               /* attr_buf valid number of characters, or -1 to denote that attr_buf is not valid. */
 	HIGHLIGHT_STATE next_state; /* If attr_len >= 0, the state after the *current* line. */
 
-	unsigned int
+	int link_undos;             /* Link the undo steps. Multilevel. */
 
-		link_undos,              /* Link the undo steps. Multilevel. */
+	unsigned int
 		is_modified:1,           /* Buffer has been modified since last save */
 		recording:1,             /* We are recording a macro */
 		marking:1,               /* We are marking a block */
@@ -563,49 +567,49 @@ extern int turbo;
 /* If true, the current line has changed and care must be taken
    to update the initial state of the following lines. */
 
-extern int need_attr_update;
+extern bool need_attr_update;
 
 
 /* If true, we want the hardwired ANSI terminal, not a real one. */
 
-extern int ansi;
+extern bool ansi;
 
 
 /* If true, we want requests by column, otherwise by row. */
 
-extern int req_order;
+extern bool req_order;
 
 
 /* The status bar is displayed */
 
-extern int status_bar;
+extern bool status_bar;
 
 
 /* If true, we want abbreviated screen updates. */
 
-extern int fast_gui;
+extern bool fast_gui;
 
 
 /* Recorded macros use long command names */
 
-extern int verbose_macros;
+extern bool verbose_macros;
 
 
 /* If true, we want syntax highlighting. */
 
-extern int do_syntax;
+extern bool do_syntax;
 
 
-/* This flag can be set anywhere to FALSE, and will become TRUE if the user
+/* This flag can be set anywhere to false, and will become true if the user
    hits the interrupt key (usually CTRL-'\'). It is handled through SIGQUIT and
    SIGINT. */
 
-extern unsigned int stop;
+extern bool stop;
 
 
 /* This is set by the signal handler whenever a SIGWINCH happens. */
 
-extern unsigned int window_changed_size;
+extern bool window_changed_size;
 
 
 /* This vector associates to an extended key code (as returned by
@@ -621,7 +625,7 @@ extern const char *key_stroke[];
 /* A boolean recording whether the last replace was for an empty string 
   (of course, this can happen only with regular expressions). */
 
-extern int last_replace_empty_match;
+extern bool last_replace_empty_match;
 
 
 /* This number defines the macro hash table size. This table can have
@@ -631,8 +635,8 @@ extern int last_replace_empty_match;
 
 
 /* Upcasing vectors for the regex library. */
-extern unsigned char localised_up_case[];
-extern const unsigned char ascii_up_case[];
+extern char localised_up_case[];
+extern const char ascii_up_case[];
 
 #include "keycodes.h"
 #include "names.h"

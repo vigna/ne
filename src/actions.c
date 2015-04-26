@@ -76,18 +76,19 @@ is what most commands require. */
    find them?). */
 
 
-int do_action(buffer *b, action a, int c, unsigned char *p) {
+int do_action(buffer *b, action a, int64_t c, char *p) {
 	static char msg[MAX_MESSAGE_SIZE];
 	line_desc *next_ld;
 	HIGHLIGHT_STATE next_line_state;
-	int i, error = OK, recording, col;
+	int error = OK, recording;
+	int64_t col;
 	char *q;
 
 	assert_buffer(b);
 	assert_buffer_content(b);
 	assert(b->encoding != ENC_UTF8 || b->cur_pos >= b->cur_line_desc->line_len || utf8len(b->cur_line_desc->line[b->cur_pos]) > 0);
 
-	stop = FALSE;
+	stop = false;
 
 	if (b->recording) record_action(b->cur_macro, a, c, p, verbose_macros);
 
@@ -115,48 +116,48 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 
 	case PUSHPREFS_A:
 		NORMALIZE(c);
-		for (i = 0; i < c && !(error = push_prefs(b)) && !stop; i++);
+		for (int64_t i = 0; i < c && !(error = push_prefs(b)) && !stop; i++);
 		return stop ? STOPPED : error ;
 
 	case POPPREFS_A:
 		NORMALIZE(c);
-		for (i = 0; i < c && !(error = pop_prefs(b)) && !stop; i++);
+		for (int64_t i = 0; i < c && !(error = pop_prefs(b)) && !stop; i++);
 		return stop ? STOPPED : error ;
 
 	case QUIT_A:
-		if (modified_buffers() && !request_response(b, info_msg[SOME_DOCUMENTS_ARE_NOT_SAVED], FALSE)) return ERROR;
+		if (modified_buffers() && !request_response(b, info_msg[SOME_DOCUMENTS_ARE_NOT_SAVED], false)) return ERROR;
 		close_history();
 		unset_interactive_mode();
 		exit(0);
 
 	case LINEUP_A:
 		NORMALIZE(c);
-		for(i = 0; i < c && !(error = line_up(b)) && !stop; i++);
+		for(int64_t i = 0; i < c && !(error = line_up(b)) && !stop; i++);
 		return stop ? STOPPED : error;
 
 	case LINEDOWN_A:
 		NORMALIZE(c);
-		for(i = 0; i < c && !(error = line_down(b)) && !stop; i++);
+		for(int64_t i = 0; i < c && !(error = line_down(b)) && !stop; i++);
 		return stop ? STOPPED : error;
 
 	case PREVPAGE_A:
 		NORMALIZE(c);
-		for(i = 0; i < c && !(error = prev_page(b)) && !stop; i++);
+		for(int64_t i = 0; i < c && !(error = prev_page(b)) && !stop; i++);
 		return stop ? STOPPED : error;
 
 	case NEXTPAGE_A:
 		NORMALIZE(c);
-		for(i = 0; i < c && !(error = next_page(b)) && !stop; i++);
+		for(int64_t i = 0; i < c && !(error = next_page(b)) && !stop; i++);
 		return stop ? STOPPED : error;
 
 	case MOVELEFT_A:
 		NORMALIZE(c);
-		for(i = 0; i < c && !(error = char_left(b)) && !stop; i++);
+		for(int64_t i = 0; i < c && !(error = char_left(b)) && !stop; i++);
 		return stop ? STOPPED : error;
 
 	case MOVERIGHT_A:
 		NORMALIZE(c);
-		for(i = 0; i < c && !(error = char_right(b)) && !stop; i++);
+		for(int64_t i = 0; i < c && !(error = char_right(b)) && !stop; i++);
 		return stop ? STOPPED : error;
 
 	case MOVESOL_A:
@@ -179,12 +180,12 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 
 	case PAGEUP_A:
 		NORMALIZE(c);
-		for(i = 0; i < c && !(error = page_up(b)) && !stop; i++);
+		for(int64_t i = 0; i < c && !(error = page_up(b)) && !stop; i++);
 		return stop ? STOPPED : error;
 
 	case PAGEDOWN_A:
 		NORMALIZE(c);
-		for(i = 0; i < c && !(error = page_down(b)) && !stop; i++);
+		for(int64_t i = 0; i < c && !(error = page_down(b)) && !stop; i++);
 		return stop ? STOPPED : error;
 
 	case MOVETOS_A:
@@ -211,12 +212,12 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 
 	case NEXTWORD_A:
 		NORMALIZE(c);
-		for(i = 0; i < c && !(error = search_word(b, 1)) && !stop; i++);
+		for(int64_t i = 0; i < c && !(error = search_word(b, 1)) && !stop; i++);
 		return stop ? STOPPED : error;
 
 	case PREVWORD_A:
 		NORMALIZE(c);
-		for(i = 0; i < c && !(error = search_word(b, -1)) && !stop; i++);
+		for(int64_t i = 0; i < c && !(error = search_word(b, -1)) && !stop; i++);
 		return stop ? STOPPED : error;
 
 	case DELETENEXTWORD_A:
@@ -226,7 +227,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		NORMALIZE(c);
 		delay_update();
 		start_undo_chain(b);
-		for(i = 0; i < c && !error && !stop; i++) {
+		for(int64_t i = 0; i < c && !error && !stop; i++) {
 			int marking_t = b->marking;
 			int mark_is_vertical_t = b->mark_is_vertical;
 			b->bookmark[WORDWRAP_BOOKMARK].pos = b->block_start_pos;
@@ -239,7 +240,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			b->block_start_pos = b->cur_pos;
 
 			if(!(error = do_action(b, a == DELETENEXTWORD_A ? NEXTWORD_A : PREVWORD_A, 1, NULL))) {
-				if (!(error = erase_block(b))) update_window_lines(b, b->cur_y, ne_lines - 2, FALSE);
+				if (!(error = erase_block(b))) update_window_lines(b, b->cur_y, ne_lines - 2, false);
 			}
 			b->bookmark_mask &= ~(1 << WORDWRAP_BOOKMARK);
 			b->block_start_pos = b->bookmark[WORDWRAP_BOOKMARK].pos;
@@ -274,17 +275,18 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 	case SETBOOKMARK_A:
 	case GOTOBOOKMARK_A:
 		{
-			int relative = FALSE;
+			int relative = false;
 			/* *p can be  "", "-", "0".."9", "+1","-1", for which, respectively, */
 			/*  c becomes  0, AB,  0 .. 9,  next,prev. Anything else is out of range. */
 			if (p) {
 				if ((p[0]=='+' || p[0]=='-') && p[1]=='1') {
 					if (b->cur_bookmark<0 || b->cur_bookmark>MAX_USER_BOOKMARK) b->cur_bookmark = 0;
-					for (i=0; i<=MAX_USER_BOOKMARK; i++) {
+					int i;
+					for(i = 0; i<=MAX_USER_BOOKMARK; i++) {
 						b->cur_bookmark = (b->cur_bookmark+MAX_USER_BOOKMARK+1+(p[0]=='+'?1:-1))%(MAX_USER_BOOKMARK+1);
 						if ((a==SETBOOKMARK_A?~b->bookmark_mask:b->bookmark_mask) & (1<<b->cur_bookmark)) {
 							c = b->cur_bookmark;
-							relative = TRUE;
+							relative = true;
 							break;
 						}
 					}
@@ -319,37 +321,37 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 				b->bookmark[c].cur_y = b->cur_y;
 				b->bookmark_mask |= (1 << c);
 				b->cur_bookmark = c;
-				snprintf(msg, MAX_MESSAGE_SIZE, "Bookmark %c set", c<=MAX_USER_BOOKMARK?'0'+c : '-');
+				snprintf(msg, MAX_MESSAGE_SIZE, "Bookmark %c set", c<=MAX_USER_BOOKMARK?'0'+(int)c : '-');
 				print_message(msg);
 				break;
 			case UNSETBOOKMARK_A:
 				if (! (b->bookmark_mask & (1 << c)))
 					return BOOKMARK_NOT_SET;
 				b->bookmark_mask &= ~(1 << c);
-				snprintf(msg, MAX_MESSAGE_SIZE, "Bookmark %c unset", c<=MAX_USER_BOOKMARK?'0'+c : '-');
+				snprintf(msg, MAX_MESSAGE_SIZE, "Bookmark %c unset", c<=MAX_USER_BOOKMARK?'0'+(int)c : '-');
 				print_message(msg);
 				break;
 			case GOTOBOOKMARK_A:
 				if (! (b->bookmark_mask & (1 << c))) return BOOKMARK_NOT_SET;
 				else {
-					const int prev_line = b->cur_line;
-					const int prev_pos = b->cur_pos;
+					const int64_t prev_line = b->cur_line;
+					const int64_t prev_pos = b->cur_pos;
 					const int cur_y = b->cur_y;
 					b->cur_bookmark = c;
-					int  avshift;
+					int avshift;
 					delay_update();
 					goto_line(b, b->bookmark[c].line);
 					goto_pos(b, b->bookmark[c].pos);
 					if (avshift = b->cur_y - b->bookmark[c].cur_y) {
 						snprintf(msg, MAX_MESSAGE_SIZE, "%c%d", avshift > 0 ? 'T' :'B', avshift > 0 ? avshift : -avshift);
-						adjust_view(b,msg);
+						adjust_view(b, msg);
 					}
 					b->bookmark[AUTO_BOOKMARK].line = prev_line;
 					b->bookmark[AUTO_BOOKMARK].pos = prev_pos;
 					b->bookmark[AUTO_BOOKMARK].cur_y = cur_y;
 					b->bookmark_mask |= 1<<AUTO_BOOKMARK;
 					if (relative) {
-						snprintf(msg, MAX_MESSAGE_SIZE, "At Bookmark %c", c<=MAX_USER_BOOKMARK?'0'+c : '-');
+						snprintf(msg, MAX_MESSAGE_SIZE, "At Bookmark %c", c<=MAX_USER_BOOKMARK?'0'+(int)c : '-');
 						print_message(msg);
 					}
 				}
@@ -373,7 +375,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		recording= b->recording;
 		b->recording = 0;
 		error = ERROR;
-		if (p || (p = request_string("String", NULL, FALSE, COMPLETE_NONE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
+		if (p || (p = request_string("String", NULL, false, COMPLETE_NONE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
 			encoding_type encoding = detect_encoding(p, strlen(p));
 			error = OK;
 			start_undo_chain(b);
@@ -383,7 +385,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 
 			if (b->encoding == ENC_ASCII || encoding == ENC_ASCII || (b->encoding == encoding)) {
 				if (b->encoding == ENC_ASCII) b->encoding = encoding;
-				for(i = 0; p[i] && error == OK; i = next_pos(p, i, encoding)) error = do_action(b, INSERTCHAR_A, get_char(&p[i], encoding), NULL);
+				for(int64_t pos = 0; p[pos] && error == OK; pos = next_pos(p, pos, encoding)) error = do_action(b, INSERTCHAR_A, get_char(&p[pos], encoding), NULL);
 			}
 			else error = INVALID_STRING;
 			end_undo_chain(b);
@@ -432,7 +434,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 
 	case INSERTCHAR_A: {
 		static int last_inserted_char = ' ';
-		int deleted_char, old_char, error = ERROR;
+		int deleted_char, old_char;
 
 		if (b->opt.read_only) return FILE_IS_READ_ONLY;
 
@@ -458,12 +460,12 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		if (b->cur_pos > b->cur_line_desc->line_len) {
 			/* We insert spaces to reach the insertion position. */
 			insert_spaces(b, b->cur_line_desc, b->cur_line, b->cur_line_desc->line_len, b->cur_pos - b->cur_line_desc->line_len);
-			if (b->syn) update_line(b, b->cur_y, TRUE, TRUE);
+			if (b->syn) update_line(b, b->cur_y, true, true);
 		}
 
 		insert_one_char(b, b->cur_line_desc, b->cur_line, b->cur_pos, c);
 
-		need_attr_update = TRUE;
+		need_attr_update = true;
 
 		/* At this point the line has been modified: note that if we are in overwrite mode and write a character
 			at or beyond the length of the current line, we are actually doing an insertion. */
@@ -477,7 +479,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			word wrap happens with b->opt.right_margin = 0. */
 
 		if (b->opt.word_wrap) word_wrap(b);
-		if (b->syn) update_line(b, b->cur_y, TRUE, FALSE);
+		if (b->syn) update_line(b, b->cur_y, true, false);
 		end_undo_chain(b); 
 		assert_buffer_content(b);
 		return OK;
@@ -489,7 +491,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		if (b->opt.read_only) return FILE_IS_READ_ONLY;
 		NORMALIZE(c);
 		start_undo_chain(b);
-		for(i = 0; i < c && !stop; i++) {
+		for(int64_t i = 0; i < c && !stop; i++) {
 			if (a == BACKSPACE_A) {
 				if (b->cur_pos == 0) {
 					if (b->cur_line == 0) {
@@ -536,7 +538,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 					}
 					delete_stream(b, b->cur_line_desc, b->cur_line, b->cur_pos, col);
 					insert_one_char(b, b->cur_line_desc, b->cur_line, b->cur_pos, '\t');
-					if (b->syn) update_partial_line(b, b->cur_y, b->cur_x, TRUE, TRUE);
+					if (b->syn) update_partial_line(b, b->cur_y, b->cur_x, true, true);
 				}
 			}
 
@@ -565,7 +567,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 				delete_one_char(b, b->cur_line_desc, b->cur_line, b->cur_pos);
 
 				update_deleted_char(b, old_char, old_attr, b->cur_line_desc, b->cur_pos, b->cur_char, b->cur_y, b->cur_x);
-				if (b->syn) update_line(b, b->cur_y, TRUE, TRUE);
+				if (b->syn) update_line(b, b->cur_y, true, true);
 			}
 			else {
 				/* Here we handle the case in which two lines are joined. Note that if the first line is empty,
@@ -577,16 +579,16 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 
 				if (b->syn) {
 					b->next_state = parse(b->syn, b->cur_line_desc, b->cur_line_desc->highlight_state, b->encoding == ENC_UTF8); 
-					update_line(b, b->cur_y, FALSE, TRUE);
+					update_line(b, b->cur_y, false, true);
 				}
-				else update_partial_line(b, b->cur_y, b->cur_x, TRUE, FALSE);
+				else update_partial_line(b, b->cur_y, b->cur_x, true, false);
 
 				if (b->cur_y < ne_lines - 2) scroll_window(b, b->cur_y + 1, -1);
 			}
 		}
-		need_attr_update = TRUE;
+		need_attr_update = true;
 		if (b->opt.word_wrap) word_wrap(b);
-		if (b->syn) update_line(b, b->cur_y, TRUE, FALSE);
+		if (b->syn) update_line(b, b->cur_y, true, false);
 		assert_buffer_content(b);
 		end_undo_chain(b);
 		return stop ? STOPPED : 0;
@@ -595,13 +597,13 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		if (b->opt.read_only) return FILE_IS_READ_ONLY;
 		NORMALIZE(c);
 
-		for(i = 0; i < c && !stop; i++) {
+		for(int64_t i = 0; i < c && !stop; i++) {
 			if (b->syn && b->attr_len < 0) freeze_attributes(b, b->cur_line_desc);
 
 			if (insert_one_line(b, b->cur_line_desc, b->cur_line, b->cur_pos > b->cur_line_desc->line_len ? b->cur_line_desc->line_len : b->cur_pos) == OK) {		
 
 				if (b->win_x) {
-					int a = -1;
+					int64_t a = -1;
 					/* If b->win_x is nonzero, the move_to_sol() call will
 					refresh the entire video, so we shouldn't do anything. However, we 
 					must poke into the next line initial state the correct state. */
@@ -618,11 +620,11 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 					if (a != -1) goto_pos(b, a);
 				}
 				else {
-					int a = -1;
-					if (b->syn) update_line(b, b->cur_y, FALSE, TRUE);
-					else update_partial_line(b, b->cur_y, b->cur_x, FALSE, FALSE);
+					int64_t a = -1;
+					if (b->syn) update_line(b, b->cur_y, false, true);
+					else update_partial_line(b, b->cur_y, b->cur_x, false, false);
 					/* We need to avoid updates until we fix the next line. */
-					need_attr_update = FALSE;
+					need_attr_update = false;
 					/* We poke into the next line initial state the correct state. */
 					if (b->syn) ((line_desc *)b->cur_line_desc->ld_node.next)->highlight_state = b->next_state;
 
@@ -633,10 +635,10 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 					line_down(b);
 					if (a != -1) goto_pos(b, a);
 
-					if (b->cur_line == b->num_lines - 1) update_line(b, b->cur_y, FALSE, FALSE);
+					if (b->cur_line == b->num_lines - 1) update_line(b, b->cur_y, false, false);
 					else scroll_window(b, b->cur_y, 1);
 
-					need_attr_update = TRUE;
+					need_attr_update = true;
 				}
 			}
 		}
@@ -650,14 +652,14 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 
 		col = b->win_x + b->cur_x;
 		start_undo_chain(b);
-		for(i = 0; i < c && !stop; i++) {
+		for(int64_t i = 0; i < c && !stop; i++) {
 			if (error = delete_one_line(b, b->cur_line_desc, b->cur_line)) break;
 			scroll_window(b, b->cur_y, -1);
 		}
 		end_undo_chain(b);
 		if (b->syn) {
-			update_line(b, b->cur_y, FALSE, FALSE);
-			need_attr_update = TRUE;
+			update_line(b, b->cur_y, false, false);
+			need_attr_update = true;
 		}
 		resync_pos(b);
 		goto_column(b, col);
@@ -673,7 +675,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		next_ld = (line_desc *)b->cur_line_desc->ld_node.next;
 
 		start_undo_chain(b);
-		for(i = 0; i < c && !stop; i++) {
+		for(int64_t i = 0; i < c && !stop; i++) {
 			/* This is a bit tricky. First of all, if we are undeleting for
 				the first time and the local attribute buffer is not valid
 				we fill it. */
@@ -685,10 +687,10 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 						We perform a differential update so that if we undelete in the middle of
 						a line we avoid to rewrite the part up to b->cur_pos. */
 					b->attr_len = b->cur_pos;
-					update_line(b, b->cur_y, FALSE, TRUE);
+					update_line(b, b->cur_y, false, true);
 					next_line_state = b->next_state;
 				}
-				else update_partial_line(b, b->cur_y, b->cur_x, FALSE, FALSE);
+				else update_partial_line(b, b->cur_y, b->cur_x, false, false);
 			}
 			if (b->syn) {
 				assert(b->cur_line_desc->ld_node.next->next != NULL);
@@ -700,7 +702,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		}
 		if (b->syn) {
 			/* Finally, we force the update of the initial states of all following lines up to next_ld. */
-			need_attr_update = TRUE;
+			need_attr_update = true;
 			update_syntax_states(b, b->cur_y, b->cur_line_desc, next_ld);
 		}
 		end_undo_chain(b);
@@ -711,9 +713,9 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		if (b->opt.read_only) return FILE_IS_READ_ONLY;
 		if (b->syn && b->attr_len < 0) freeze_attributes(b, b->cur_line_desc);
 		delete_to_eol(b, b->cur_line_desc, b->cur_line, b->cur_pos);
-		if (b->syn) update_line(b, b->cur_y, FALSE, TRUE);
-		else update_partial_line(b, b->cur_y, b->cur_x, FALSE, FALSE);
-		need_attr_update = TRUE;
+		if (b->syn) update_line(b, b->cur_y, false, true);
+		else update_partial_line(b, b->cur_y, b->cur_x, false, false);
+		need_attr_update = true;
 
 		return OK;
 
@@ -724,7 +726,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		if (p || (q = p = request_file(b, "Filename", b->filename))) {
 			print_info(SAVING);
 
-			if (buffer_file_modified(b,p) && !request_response(b, info_msg[FILE_HAS_BEEN_MODIFIED], FALSE)) return DOCUMENT_NOT_SAVED;
+			if (buffer_file_modified(b,p) && !request_response(b, info_msg[FILE_HAS_BEEN_MODIFIED], false)) return DOCUMENT_NOT_SAVED;
 			error = save_buffer_to_file(b, p);
 
 			if (!print_error(error)) {
@@ -748,15 +750,14 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 	case KEYCODE_A:
 		print_message(info_msg[PRESS_A_KEY]);
 		c = get_key_code();
-		i = CHAR_CLASS(c);
 		col = (c < 0) ? -c-1 : c;
-		snprintf(msg, MAX_MESSAGE_SIZE, "Key Code: 0x%02x,  Input Class: %s,  Assigned Command: %s", col, input_class_names[i],
+		snprintf(msg, MAX_MESSAGE_SIZE, "Key Code: 0x%02x,  Input Class: %s,  Assigned Command: %s", (int)col, input_class_names[CHAR_CLASS(c)],
 					(key_binding[col] && key_binding[col][0]) ? key_binding[col] : "(none)" );
 		print_message(msg);
 		return OK;
 
 	case CLEAR_A:
-		if ((b->is_modified) && !request_response(b, info_msg[THIS_DOCUMENT_NOT_SAVED], FALSE)) return ERROR;
+		if ((b->is_modified) && !request_response(b, info_msg[THIS_DOCUMENT_NOT_SAVED], false)) return ERROR;
 		clear_buffer(b);
 		reset_window();
 		return OK;
@@ -766,7 +767,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		reset_window();
 
 	case OPEN_A:
-		if ((b->is_modified) && !request_response(b, info_msg[THIS_DOCUMENT_NOT_SAVED], FALSE)) {
+		if ((b->is_modified) && !request_response(b, info_msg[THIS_DOCUMENT_NOT_SAVED], false)) {
 			if (a == OPENNEW_A) do_action(b, CLOSEDOC_A, 1, NULL);
 			return ERROR;
 		}
@@ -777,7 +778,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			buffer *dup = get_buffer_named(p);
 
 			/* 'c' -- flag meaning "Don't prompt if we've ever responded 'yes'." */
-			if (!dup || dup == b || (dprompt && !c) || (dprompt = request_response(b, info_msg[SAME_NAME], FALSE))) {
+			if (!dup || dup == b || (dprompt && !c) || (dprompt = request_response(b, info_msg[SAME_NAME], false))) {
 				b->syn = NULL; /* So that autoprefs will load the right syntax. */
 				if (b->opt.auto_prefs && extension(p)) load_auto_prefs(b, extension(p));
 				error = load_file_in_buffer(b, p);
@@ -810,7 +811,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 
 	case FIND_A:
 	case FINDREGEXP_A:
-		if (p || (p = request_string(a == FIND_A ? "Find" : "Find RegExp", b->find_string, FALSE, COMPLETE_NONE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
+		if (p || (p = request_string(a == FIND_A ? "Find" : "Find RegExp", b->find_string, false, COMPLETE_NONE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
 
 			const encoding_type encoding = detect_encoding(p, strlen(p));
 
@@ -822,7 +823,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			free(b->find_string);
 			b->find_string = p;
 			b->find_string_changed = 1;
-			print_error(error = (a == FIND_A ? find : find_regexp)(b, NULL, FALSE));
+			print_error(error = (a == FIND_A ? find : find_regexp)(b, NULL, false));
 		}
 
 		b->last_was_replace = 0;
@@ -838,7 +839,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			return FILE_IS_READ_ONLY;
 		}
 
-		if ((q = b->find_string) || (q = request_string(b->last_was_regexp ? "Find RegExp" : "Find", NULL, FALSE, COMPLETE_NONE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
+		if ((q = b->find_string) || (q = request_string(b->last_was_regexp ? "Find RegExp" : "Find", NULL, false, COMPLETE_NONE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
 
 			const encoding_type search_encoding = detect_encoding(q, strlen(q));
 
@@ -854,9 +855,10 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 				b->find_string_changed = 1;
 			}
 
-			if (p || (p = request_string(b->last_was_regexp ? "Replace RegExp" : "Replace", b->replace_string, TRUE, COMPLETE_NONE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
+			if (p || (p = request_string(b->last_was_regexp ? "Replace RegExp" : "Replace", b->replace_string, true, COMPLETE_NONE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
 				const encoding_type replace_encoding = detect_encoding(p, strlen(p));
-				int first_search = TRUE, num_replace = 0;
+				int first_search = true;
+				int64_t num_replace = 0;
 
 				if (replace_encoding != ENC_ASCII && b->encoding != ENC_ASCII && replace_encoding != b->encoding ||
 					search_encoding != ENC_ASCII && replace_encoding != ENC_ASCII && search_encoding != replace_encoding) {
@@ -890,9 +892,9 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 						else error = replace(b, strlen(b->find_string), p);
 
 						if (!error) {
-							update_line(b, b->cur_y, FALSE, FALSE);
+							update_line(b, b->cur_y, false, false);
 							if (b->syn) {
-								need_attr_update = TRUE;
+								need_attr_update = true;
 								update_syntax_states(b, b->cur_y, b->cur_line_desc, NULL);
 							}
 
@@ -916,13 +918,13 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 
 					if (a == REPLACEONCE_A || c == 'L') break;
 
-					first_search = FALSE;
+					first_search = false;
 				}
 
 				if (a == REPLACEALL_A || c == 'A') end_undo_chain(b);
 
 				if (num_replace) {
-					snprintf(msg, MAX_MESSAGE_SIZE, "%d replacement%s made.", num_replace, num_replace > 1 ? "s" : "");
+					snprintf(msg, MAX_MESSAGE_SIZE, "%" PRId64 " replacement%s made.", num_replace, num_replace > 1 ? "s" : "");
 					print_message(msg);
 				}
 				if (stop) return STOPPED;
@@ -954,16 +956,16 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 
 			NORMALIZE(c);
 
-			for(i = 0; i < c; i++) {
+			for(int64_t i = 0; i < c; i++) {
 				if (!print_error((b->last_was_regexp ? find_regexp : find)(b, NULL, !b->last_was_replace))) {
 					if (b->last_was_replace) {
 						if (b->last_was_regexp) error = replace_regexp(b, b->replace_string);
 						else error = replace(b, strlen(b->find_string), b->replace_string);
 
 						if (! error) {
-							update_line(b, b->cur_y, FALSE, FALSE);
+							update_line(b, b->cur_y, false, false);
 							if (b->syn) {
-								need_attr_update = TRUE;
+								need_attr_update = true;
 								update_syntax_states(b, b->cur_y, b->cur_line_desc, NULL);
 							}
 
@@ -1014,10 +1016,10 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 	case TABSIZE_A:
 		if (c < 0 && (c = request_number("TAB Size", b->opt.tab_size))<=0) return NUMERIC_ERROR(c);
 		if (c < ne_columns / 2) {
-			i = b->cur_pos;
+			const int64_t pos = b->cur_pos;
 			move_to_sol(b);
 			b->opt.tab_size = c;
-			goto_pos(b,i);
+			goto_pos(b, pos);
 			reset_window();
 			return OK;
 		}
@@ -1118,7 +1120,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			reset_undo_buffer(&b->undo);
 		}
 		b->attr_len = -1;
-		need_attr_update = FALSE;
+		need_attr_update = false;
 		move_to_sol(b);
 		reset_window();
 		return OK;
@@ -1171,7 +1173,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			while(c > b->link_undos) start_undo_chain(b);
 			while(c < b->link_undos) end_undo_chain(b);
 			b->atomic_undo = (c > 0) ? 1 : 0;
-			snprintf(msg, MAX_MESSAGE_SIZE, "AtomicUndo level: %d", c);
+			snprintf(msg, MAX_MESSAGE_SIZE, "AtomicUndo level: %" PRId64, c);
 			print_message(msg);
 			return OK;
 		} else return UNDO_NOT_ENABLED;
@@ -1190,7 +1192,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		if (!b->recording && !b->executing_internal_macro) {
 			if (c < 0 && (c = request_number("Times", 1))<=0) return NUMERIC_ERROR(c);
 			b->executing_internal_macro = 1;
-			for(i = 0; i < c && !(error = play_macro(b, b->cur_macro)); i++);
+			for(int64_t i = 0; i < c && !(error = play_macro(b, b->cur_macro)); i++);
 			b->executing_internal_macro = 0;
 			return print_error(error) ? ERROR : 0;
 		}
@@ -1200,7 +1202,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		if (p || (p = request_file(b, "Macro Name", NULL))) {
 			print_info(SAVING);
 			optimize_macro(b->cur_macro, verbose_macros);
-			if ((error = print_error(save_stream(b->cur_macro, p, b->is_CRLF, FALSE))) == OK) print_info(SAVED);
+			if ((error = print_error(save_stream(b->cur_macro, p, b->is_CRLF, false))) == OK) print_info(SAVED);
 			free(p);
 			return error ? ERROR : 0;
 		}
@@ -1209,7 +1211,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 	case OPENMACRO_A:
 		if (p || (p = request_file(b, "Macro Name", NULL))) {
 			char_stream *cs;
-			cs = load_stream(b->cur_macro, p, FALSE, FALSE);
+			cs = load_stream(b->cur_macro, p, false, false);
 			if (cs) b->cur_macro = cs;
 			free(p);
 			return cs ? 0 : ERROR;
@@ -1234,7 +1236,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		return OK;
 
 	case CLOSEDOC_A: 
-		if ((b->is_modified) && !request_response(b, info_msg[THIS_DOCUMENT_NOT_SAVED], FALSE)) return ERROR;
+		if ((b->is_modified) && !request_response(b, info_msg[THIS_DOCUMENT_NOT_SAVED], false)) return ERROR;
 		if (!delete_buffer()) {
 			close_history();
 			unset_interactive_mode();
@@ -1253,7 +1255,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		else cur_buffer = (buffer *)buffers.head;
 		keep_cursor_on_screen(cur_buffer);
 		reset_window();
-		need_attr_update = FALSE;
+		need_attr_update = false;
 		b->attr_len = -1;
 		return OK;
 
@@ -1262,16 +1264,17 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		else cur_buffer = (buffer *)buffers.tail_pred;
 		keep_cursor_on_screen(cur_buffer);
 		reset_window();
-		need_attr_update = FALSE;
+		need_attr_update = false;
 		b->attr_len = -1;
 		return OK;
 
-	case SELECTDOC_A:
-		if ((i = request_document()) < 0 || !(b = get_nth_buffer(i))) return ERROR;
+	case SELECTDOC_A: ;
+		const int n = request_document();
+		if (n < 0 || !(b = get_nth_buffer(n))) return ERROR;
 		cur_buffer = b;
 		keep_cursor_on_screen(cur_buffer);
 		reset_window();
-		need_attr_update = FALSE;
+		need_attr_update = false;
 		b->attr_len = -1;
 		return OK;
 
@@ -1292,7 +1295,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 	case COPY_A:
 		if (!(error = print_error((b->mark_is_vertical ? copy_vert_to_clip : copy_to_clip)(b, c < 0 ? b->opt.cur_clip : c, a == CUT_A)))) {
 			b->marking = 0;
-			update_window_lines(b, b->cur_y, ne_lines - 2, FALSE);
+			update_window_lines(b, b->cur_y, ne_lines - 2, false);
 		}
 		return error ? ERROR : 0;
 
@@ -1300,14 +1303,14 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		if (b->opt.read_only) return FILE_IS_READ_ONLY;
 		if (!(error = print_error((b->mark_is_vertical ? erase_vert_block : erase_block)(b)))) {
 			b->marking = 0;
-			update_window_lines(b, b->cur_y, ne_lines - 2, FALSE);
+			update_window_lines(b, b->cur_y, ne_lines - 2, false);
 		}
 		return OK;
 
 	case PASTE_A:
 	case PASTEVERT_A:
 		if (b->opt.read_only) return FILE_IS_READ_ONLY;
-		if (!(error = print_error((a == PASTE_A ? paste_to_buffer : paste_vert_to_buffer)(b, c < 0 ? b->opt.cur_clip : c)))) update_window_lines(b, b->cur_y, ne_lines - 2, FALSE);
+		if (!(error = print_error((a == PASTE_A ? paste_to_buffer : paste_vert_to_buffer)(b, c < 0 ? b->opt.cur_clip : c)))) update_window_lines(b, b->cur_y, ne_lines - 2, false);
 		assert_buffer_content(b);
 		return error ? ERROR : 0;
 
@@ -1339,7 +1342,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		return ERROR;
 
 	case EXEC_A:
-		if (p || (p = request_string("Command", b->command_line, FALSE, COMPLETE_FILE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
+		if (p || (p = request_string("Command", b->command_line, false, COMPLETE_FILE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
 			free(b->command_line);
 			b->command_line = p;
 			return print_error(execute_command_line(b, p)) ? ERROR : 0;
@@ -1347,7 +1350,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		return ERROR;
 
 	case SYSTEM_A:
-		if (p || (p = request_string("Shell command", NULL, FALSE, COMPLETE_FILE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
+		if (p || (p = request_string("Shell command", NULL, false, COMPLETE_FILE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
 
 			unset_interactive_mode();
 			if (system(p)) error = EXTERNAL_COMMAND_ERROR;
@@ -1367,7 +1370,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 
 		if (!b->marking) b->mark_is_vertical = 0;
 
-		if (p || (p = request_string("Filter", NULL, FALSE, COMPLETE_FILE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
+		if (p || (p = request_string("Filter", NULL, false, COMPLETE_FILE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
 			int fin = -1, fout = -1;
 
 			char tmpnam1[strlen(P_tmpdir)+strlen(NE_TMP)+2], tmpnam2[strlen(P_tmpdir)+strlen(NE_TMP)+2], *command;
@@ -1380,7 +1383,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 
 				realloc_clip_desc(get_nth_clip(INT_MAX), INT_MAX, 0);
 
-				if (!b->marking || !(error = (b->mark_is_vertical ? copy_vert_to_clip : copy_to_clip)(b, INT_MAX, FALSE))) {
+				if (!b->marking || !(error = (b->mark_is_vertical ? copy_vert_to_clip : copy_to_clip)(b, INT_MAX, false))) {
 
 					if (!(error = save_clip(INT_MAX, tmpnam1, b->is_CRLF, b->opt.binary))) {
 						if (command = malloc(strlen(p) + strlen(tmpnam1) + strlen(tmpnam2) + 16)) {
@@ -1429,7 +1432,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		if (b->opt.read_only) return FILE_IS_READ_ONLY;
 		NORMALIZE(c);
 		start_undo_chain(b);
-		for(i = 0; i < c && !(error = to_upper(b)) && !stop; i++);
+		for(int64_t i = 0; i < c && !(error = to_upper(b)) && !stop; i++);
 		end_undo_chain(b);
 		if (stop) error = STOPPED;
 		return print_error(error) ? ERROR : 0;
@@ -1438,7 +1441,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		if (b->opt.read_only) return FILE_IS_READ_ONLY;
 		NORMALIZE(c);
 		start_undo_chain(b);
-		for(i = 0; i < c && !(error = to_lower(b)) && !stop; i++);
+		for(int64_t i = 0; i < c && !(error = to_lower(b)) && !stop; i++);
 		end_undo_chain(b);
 		if (stop) error = STOPPED;
 		return print_error(error) ? ERROR : 0;
@@ -1447,7 +1450,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		if (b->opt.read_only) return FILE_IS_READ_ONLY;
 		NORMALIZE(c);
 		start_undo_chain(b);
-		for(i = 0; i < c && !(error = capitalize(b)) && !stop; i++);
+		for(int64_t i = 0; i < c && !(error = capitalize(b)) && !stop; i++);
 		end_undo_chain(b);
 		if (stop) error = STOPPED;
 		return print_error(error) ? ERROR : 0;
@@ -1457,10 +1460,10 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		if (b->opt.read_only) return FILE_IS_READ_ONLY;
 		NORMALIZE(c);
 		start_undo_chain(b);
-		for(i = 0; i < c && !(error = center(b)) && !stop; i++) {
-			need_attr_update = TRUE;
+		for(int64_t i = 0; i < c && !(error = center(b)) && !stop; i++) {
+			need_attr_update = true;
 			b->attr_len = -1;
-			update_line(b, b->cur_y, FALSE, FALSE);
+			update_line(b, b->cur_y, false, false);
 			move_to_sol(b);
 			if (line_down(b) != OK) break;
 		}
@@ -1472,7 +1475,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 	case PARAGRAPH_A:
 		if (b->opt.read_only) return FILE_IS_READ_ONLY;
 		NORMALIZE(c);
-		for(i = 0; i < c && !(error = paragraph(b)) && !stop; i++);
+		for(int64_t i = 0; i < c && !(error = paragraph(b)) && !stop; i++);
 		if (stop) error = STOPPED;
 		return print_error(error) ? ERROR : 0;
 
@@ -1510,7 +1513,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 
 	case SYNTAX_A:
 		if (!do_syntax) return SYNTAX_NOT_ENABLED;
-		if (p || (p = request_string("Syntax",  b->syn ? b->syn->name : NULL, TRUE, COMPLETE_SYNTAX, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
+		if (p || (p = request_string("Syntax",  b->syn ? (const char *)b->syn->name : NULL, true, COMPLETE_SYNTAX, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
 			if (!strcmp(p, "*")) b->syn = NULL;
 			else error = print_error(load_syntax_by_name(b, p));
 			reset_window();
@@ -1536,7 +1539,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			print_message("AtomicUndo level: 0");
 		}
 
-		for(i = 0; i < c && !(error = undo(b)) && !stop; i++);
+		for(int64_t i = 0; i < c && !(error = undo(b)) && !stop; i++);
 		if (stop) error = STOPPED;
 		b->is_modified = b->undo.cur_step != b->undo.last_save_step;
 		update_window(b);
@@ -1549,7 +1552,7 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 		NORMALIZE(c);
 		delay_update();
 
-		for(i = 0; i < c && !(error = redo(b)) && !stop; i++);
+		for(int64_t i = 0; i < c && !(error = redo(b)) && !stop; i++);
 
 		if (stop) error = STOPPED;
 		b->is_modified = b->undo.cur_step != b->undo.last_save_step;
@@ -1577,24 +1580,25 @@ int do_action(buffer *b, action a, int c, unsigned char *p) {
 			INSERTSTRING_A to handle character encoding issues. */
 		recording = b->recording;
 
-		i = b->cur_pos;
+		int64_t pos = b->cur_pos;
 
 		if ( !p ) { /* no prefix given; find one left of the cursor. */
-			if ( context_prefix(b, &p, &i, b->encoding) ) return OUT_OF_MEMORY;
+			if ( context_prefix(b, &p, &pos) ) return OUT_OF_MEMORY;
 		}
 
 		snprintf(msg, MAX_MESSAGE_SIZE, "AutoComplete: prefix \"%s\"", p);
 
-		if (p = autocomplete(p, msg, TRUE, &col)) {
+		int e;
+		if (p = autocomplete(p, msg, true, &e)) {
 			b->recording = 0;
 			start_undo_chain(b);
-			if (i >= b->cur_pos || (error = do_action(b, DELETEPREVWORD_A, 1, NULL)) == OK) error = do_action(b, INSERTSTRING_A, 0, p);
+			if (pos >= b->cur_pos || (error = do_action(b, DELETEPREVWORD_A, 1, NULL)) == OK) error = do_action(b, INSERTSTRING_A, 0, p);
 			end_undo_chain(b);
 			b->recording = recording;
-			print_message(info_msg[col]);
+			print_message(info_msg[e]);
 		}
 		else if (stop) error = STOPPED;
-		else if (col == AUTOCOMPLETE_NO_MATCH) print_message(info_msg[AUTOCOMPLETE_NO_MATCH]);
+		else if (e == AUTOCOMPLETE_NO_MATCH) print_message(info_msg[AUTOCOMPLETE_NO_MATCH]);
 
 		return print_error(error) ? ERROR : 0;
 

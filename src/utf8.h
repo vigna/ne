@@ -18,11 +18,12 @@
    You should have received a copy of the GNU General Public License
    along with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
+#include <stdint.h>
 
-int utf8char(const unsigned char *s);
-int utf8strlen(const unsigned char *s, int len);
+int utf8char(const char *s);
+int64_t utf8strlen(const char *s, int64_t len);
 int utf8seqlen(int c);
-int utf8str(int c, unsigned char *  s);
+int utf8str(int c, char * s);
 int utf8tolower(int c);
 int utf8toupper(int c);
 

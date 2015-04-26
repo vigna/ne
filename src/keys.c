@@ -41,7 +41,7 @@ order is *inverted* w.r.t. strcmp(). */
 
 
 typedef struct {
-	unsigned char *string;
+	char *string;
 	int code;
 } term_key;
 
@@ -61,11 +61,8 @@ position pos return -pos-1 (i.e., always a negative number), otherwise return
 the correct place for insertion of s */
 
 int binsearch(const char * const s) {
-	int l,r,m = 0;
-
 	if (num_keys) {
-		l = 0;
-		r = num_keys - 1;
+		int l = 0, m = 0, r = num_keys - 1;
 
 		while(l <= r) {
 			m = (l + r) / 2;
@@ -74,31 +71,26 @@ int binsearch(const char * const s) {
 			else if (strcmp(key[m].string, s) < 0) r = m - 1;
 		}
 
+		return l;
 	}
 	else return 0;
-
-	return l;
 }
 
 
 
 #ifdef DEBUGPRINTF
-void dump_keys(void)
-  {
-	 int i;
-	 for (i = 0; i < num_keys; i++)
-		{
-		  unsigned char *p = key[i].string;
-		  fprintf(stderr,"%3d: \"",i);
-		  while (*p)
-			 {
-				if (isprint(*p)) fprintf(stderr,"%c",*p);
-				else fprintf(stderr,"\\x%02x", *p );
-				p++;
-			 }
-		  fprintf (stderr,"\"\t-> %d\n", key[i].code );
+void dump_keys(void) {
+	 for (int i = 0; i < num_keys; i++) {
+		unsigned char *p = key[i].string;
+		fprintf(stderr,"%3d: \"",i);
+		while (*p) {
+			if (isprint(*p)) fprintf(stderr,"%c",*p);
+			else fprintf(stderr,"\\x%02x", *p );
+			p++;
 		}
-  }
+		fprintf (stderr,"\"\t-> %d\n", key[i].code );
+	}
+}
 
 #endif
 
@@ -108,10 +100,9 @@ void dump_keys(void)
 */
 
 static void key_set(const char * const cap_string, const int code) {
-
 	if (!cap_string) return;
 
-	key[num_keys].string = (unsigned char *)cap_string;
+	key[num_keys].string = (char *)cap_string;
 	key[num_keys].code = code;
 	num_keys++;
 
@@ -134,7 +125,7 @@ static void key_set(const char * const cap_string, const int code) {
 	   < 0 if string was already defined.   
 */
 int key_may_set(const char * const cap_string, int code) {
-	int pos=0;
+	int pos = 0;
 
 	if (num_keys >= MAX_TERM_KEY - 1) return 0;
 	if (!cap_string || (pos = binsearch(cap_string)) < 0) {
@@ -144,7 +135,7 @@ int key_may_set(const char * const cap_string, int code) {
 	}
    if (code < 0) code = -code - 1;
 	memmove(key + pos + 1, key + pos, (num_keys - pos) * sizeof *key);
-	key[pos].string = (unsigned char *)cap_string;
+	key[pos].string = (char *)cap_string;
 	key[pos].code = code;
 	num_keys++;
 	assert(num_keys < MAX_TERM_KEY);
@@ -163,8 +154,6 @@ almost always greater than or equal to ' '). */
 extern const char meta_prefixed[128][3];
 
 void read_key_capabilities(void) {
-	int i;
-
 	if (!ansi) {
 		/* Cursor movement keys */
 
@@ -387,7 +376,7 @@ void read_key_capabilities(void) {
 	/* If at this point any sequence of the form ESC+ASCII character is free, we bind
 		it to the simulated META key. */
 
-	for(i = 1; i < 128; i++) key_may_set(meta_prefixed[i], NE_KEY_META(i));
+	for(int i = 1; i < 128; i++) key_may_set(meta_prefixed[i], NE_KEY_META(i));
 
 #ifdef DEBUGPRINTF
 	dump_keys();
@@ -440,13 +429,13 @@ static void set_termios_timeout(const int timeout) {
 
 
 int get_key_code(void) {
-
 	static int cur_len = 0;
-	static unsigned char kbd_buffer[KBD_BUF_SIZE];
+	static char kbd_buffer[KBD_BUF_SIZE];
 
-	int c, e, last_match = 0, cur_key = 0, partial_match = FALSE, partial_is_utf8 = FALSE;
+	int c, e, last_match = 0, cur_key = 0;
+	bool partial_match = false, partial_is_utf8 = false;
 
-	while(TRUE) {
+	while(true) {
 
 		if (cur_len) {
 
@@ -455,7 +444,7 @@ int get_key_code(void) {
 
 			while(last_match < cur_len) {
 				if (last_match == 0 && io_utf8 && (unsigned char)kbd_buffer[0] >= 0x80) {
-					partial_is_utf8 = TRUE;
+					partial_is_utf8 = true;
 					last_match++;
 				}
 				else if (partial_is_utf8) { 	/* Our partial match is an UTF-8 sequence. */
@@ -469,7 +458,7 @@ int get_key_code(void) {
 					else {
 						/* A UTF-8 error. We discard the first character and try again. */
 						if (--cur_len) memmove(kbd_buffer, kbd_buffer + 1, cur_len);
-						partial_is_utf8 = FALSE;
+						partial_is_utf8 = false;
 						last_match = 0;
 					}
 				}
@@ -522,7 +511,7 @@ int get_key_code(void) {
 				what we got. Note that this won't work properly if the terminal has
 				a key capability which is a prefix of another key capability. */
 
-			partial_match = TRUE;
+			partial_match = true;
 		}
 
 		fflush(stdout);
@@ -540,7 +529,7 @@ int get_key_code(void) {
 
 		if (c == EOF && (!partial_match || e) && e != EINTR) kill(getpid(), SIGTERM);
 
-		partial_match = FALSE;
+		partial_match = false;
 
 		if (c != EOF) {
 			if (cur_len < KBD_BUF_SIZE) kbd_buffer[cur_len++] = c;

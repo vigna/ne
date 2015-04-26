@@ -675,7 +675,6 @@ re_string_reconstruct (re_string_t *pstr, int idx, int eflags)
       else
 	{
 	  /* No, skip all characters until IDX.  */
-	  int prev_valid_len = pstr->valid_len;
 
 #ifdef RE_ENABLE_I18N
 	  if (BE (pstr->offsets_needed, 0))
@@ -1396,7 +1395,6 @@ static int
 internal_function
 re_dfa_add_node (re_dfa_t *dfa, re_token_t token)
 {
-  int type = token.type;
   if (BE (dfa->nodes_len >= dfa->nodes_alloc, 0))
     {
       size_t new_nodes_alloc = dfa->nodes_alloc * 2;

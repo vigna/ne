@@ -21,6 +21,8 @@
 
 /** #define's from Joe's sources for colors and attributes. Please keep in sync. */
 
+#include <stdbool.h>
+
 #define INVERSE		 256
 #define UNDERLINE	 512
 #define BOLD		1024
@@ -79,21 +81,21 @@
 #define FG_BLACK	(FG_NOT_DEFAULT|(0<<FG_SHIFT))
 
 
-extern int line_ins_del_ok;			/* Terminal can insert and delete lines */
+extern bool line_ins_del_ok;			/* Terminal can insert and delete lines */
 
-extern int char_ins_del_ok;			/* Terminal can insert and delete chars */
+extern bool char_ins_del_ok;			/* Terminal can insert and delete chars */
 
-extern int scroll_region_ok;			/* Terminal supports setting the scroll window */
+extern bool scroll_region_ok;			/* Terminal supports setting the scroll window */
 
-extern int standout_ok;					/* Terminal supports standout without magic cookies */
+extern bool standout_ok;					/* Terminal supports standout without magic cookies */
 
-extern int cursor_on_off_ok;			/* Terminal can make the cursor visible or invisible */
+extern bool cursor_on_off_ok;			/* Terminal can make the cursor visible or invisible */
 
-extern int ansi_color_ok;				/* Terminal supports ANSI color */
+extern bool ansi_color_ok;				/* Terminal supports ANSI color */
 
-extern int color_ok;						/* Terminal supports color */
+extern bool color_ok;						/* Terminal supports color */
 
-extern int ne_generic_type;
+extern bool ne_generic_type;
 
 extern int ne_lines;
 extern int ne_columns;
@@ -137,7 +139,7 @@ extern char *ne_enter_blink_mode;
 extern char *ne_enter_underline_mode;
 extern char *ne_exit_standout_mode;
 extern int ne_magic_cookie_glitch;
-extern int ne_move_standout_mode;
+extern bool ne_move_standout_mode;
 
 extern char *ne_change_scroll_region;
 
@@ -153,7 +155,7 @@ extern char *ne_parm_ich;
 extern char *ne_delete_character;
 extern char *ne_parm_dch;
 
-extern int ne_move_insert_mode;
+extern bool ne_move_insert_mode;
 
 extern char *ne_cursor_invisible;
 extern char *ne_cursor_normal;
@@ -172,10 +174,10 @@ extern char *ne_exit_alt_charset_mode;
 
 extern char *ne_repeat_char;
 
-extern int ne_tilde_glitch;
-extern int ne_memory_below;
+extern bool ne_tilde_glitch;
+extern bool ne_memory_below;
 
-extern int ne_has_meta_key;
+extern bool ne_has_meta_key;
 extern char *ne_meta_on;
 extern char *ne_meta_off;
 
@@ -185,6 +187,6 @@ extern char *ne_keypad_local;
 extern char *ne_keypad_xmit;
 
 extern char *ne_clr_eol;
-extern int ne_transparent_underline;
+extern bool ne_transparent_underline;
 
-extern int io_utf8;
+extern bool io_utf8;

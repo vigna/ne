@@ -25,8 +25,8 @@
 
 /* Computes the character length of an UTF-8 encoded sequence of bytes. */
 
-int utf8strlen(const unsigned char * const s, const int len) {
-	int i = 0, l = 0;
+int64_t utf8strlen(const char * const s, const int64_t len) {
+	int64_t i = 0, l = 0;
 	while(i < len) {
 		assert(utf8len(s[i]) >= 0);
 		i += utf8len(s[i]);
@@ -49,7 +49,8 @@ int utf8seqlen(const int c) {
 
 /* Return the Unicode characters represented by the given string, or -1 if an error occurs. */
 
-int utf8char(const unsigned char * const s) {
+int utf8char(const char * const ss) {
+	const unsigned char * const s = (const unsigned char *)ss;
 	if (s[0] < 0x80) return s[0];
 	if (s[0] < 0xC0) return -1;
 	if (s[0] < 0xE0) return (s[0] & 0x1F) << 6 | s[1] & 0x3F;
@@ -62,7 +63,9 @@ int utf8char(const unsigned char * const s) {
 /* Writes the UTF-8 encoding (at most 6 bytes) of the given character to the
    given string. Returns the length of the string written. */
 
-int utf8str(const int c, unsigned char * const s) {
+int utf8str(const int c, char * const ss) {
+	unsigned char * const s = (unsigned char *)ss;
+
 	if (c < 0x80) {
 		s[0] = c;
 		return 1;

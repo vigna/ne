@@ -40,18 +40,19 @@
 
 /* If true, the current line has changed and care must be taken to update the initial state of the following lines. */
 
-int need_attr_update;
+bool need_attr_update;
 
 /* If window_needs_refresh, the window has to be refreshed from scratch,
    starting from first_line and ending on last_line. Update calls keeps track
    of the number of lines updated. If this number becomes greater than turbo,
    and the turbo flag is set, we enter turbo mode. */
 
-static int window_needs_refresh, first_line, last_line, updated_lines;
+static bool window_needs_refresh;
+static int first_line, last_line, updated_lines;
 
 /* A fixed reference for a pointer to the value -1. */
 
-static const int no_attr = -1;
+static const uint32_t no_attr = -1;
 
 /* Prevents any other update from being actually done by setting updated_lines
    to a value greater than TURBO. It is most useful when the we know that a
@@ -62,7 +63,7 @@ void delay_update() {
 	/* During tests, we never delay updates. */
 #ifndef NE_TEST
 	updated_lines = TURBO + 1;
-	window_needs_refresh = TRUE;
+	window_needs_refresh = true;
 #endif
 }
 
@@ -70,7 +71,7 @@ void delay_update() {
 /* Compares two highlight states for equality. */
 
 int highlight_cmp(HIGHLIGHT_STATE *x, HIGHLIGHT_STATE *y) {
-	return x->state == y->state && x->stack == y->stack && ! strcmp(x->saved_s, y->saved_s);
+	return x->state == y->state && x->stack == y->stack && ! strcmp((const char *)x->saved_s, (const char *)y->saved_s);
 }
 
 
@@ -93,8 +94,8 @@ could be invalidated. */
 void update_syntax_states(buffer *b, int row, line_desc *ld, line_desc *end_ld) {
 
 	if (b->syn && need_attr_update) {
- 		int got_end_ld = end_ld == NULL;
-		int invalidate_attr_buf = FALSE;
+ 		bool got_end_ld = end_ld == NULL;
+		bool invalidate_attr_buf = false;
 		HIGHLIGHT_STATE next_line_state = b->attr_len < 0 ? parse(b->syn, ld, ld->highlight_state, b->encoding == ENC_UTF8) : b->next_state;
 
 		assert(b->attr_len < 0 || b->attr_len == calc_char_len(ld, b->encoding));
@@ -107,19 +108,19 @@ void update_syntax_states(buffer *b, int row, line_desc *ld, line_desc *end_ld) 
 			ld = (line_desc *) ld->ld_node.next;
 
 			if ((highlight_cmp(&ld->highlight_state, &next_line_state) && got_end_ld) || !ld->ld_node.next) break;
-			if (ld == end_ld) got_end_ld = TRUE;
+			if (ld == end_ld) got_end_ld = true;
 
 			if (row >= 0) {
 				row++;
 				if (row < ne_lines - 1) {
-					if (++updated_lines > TURBO) window_needs_refresh = TRUE;
+					if (++updated_lines > TURBO) window_needs_refresh = true;
 					if (window_needs_refresh) {
 						if (row < first_line) first_line = row;
 						if (row > last_line) last_line = row;
 					}
 					else {
 						freeze_attributes(b, ld);
-						invalidate_attr_buf = TRUE;
+						invalidate_attr_buf = true;
 					}
 				}
 			}
@@ -128,11 +129,11 @@ void update_syntax_states(buffer *b, int row, line_desc *ld, line_desc *end_ld) 
 			next_line_state = parse(b->syn, ld, ld->highlight_state, b->encoding == ENC_UTF8);
 
 			if (row >= 0 && row < ne_lines - 1 && ! window_needs_refresh)
-				output_line_desc(row, 0, ld, b->win_x, ne_columns, b->opt.tab_size, TRUE, b->encoding == ENC_UTF8, attr_buf, b->attr_buf, b->attr_len);
+				output_line_desc(row, 0, ld, b->win_x, ne_columns, b->opt.tab_size, true, b->encoding == ENC_UTF8, attr_buf, b->attr_buf, b->attr_len);
 		}
 
 		if (invalidate_attr_buf) b->attr_len = -1;
-		need_attr_update = FALSE;
+		need_attr_update = false;
 	}
 }
 
@@ -145,7 +146,7 @@ void update_syntax_states(buffer *b, int row, line_desc *ld, line_desc *end_ld) 
    the column position. from_col and num_cols are not constrained by the
    length of the string (the string is really considered as terminating
    with an infinite sequence of spaces). cleared_at_end has the same
-   meaning as in update_line() and update_partial_line(). If utf8 is TRUE,
+   meaning as in update_line() and update_partial_line(). If utf8 is true,
    then the line content is considered to be UTF-8 encoded.
 
    If attr is not NULL, it contains a the list of attributes for the line
@@ -154,11 +155,7 @@ void update_syntax_states(buffer *b, int row, line_desc *ld, line_desc *end_ld) 
    specified in diff. If diff_size is shorter than the current line, all
    characters without differential information will be updated. */
 
-void output_line_desc(const int row, const int col, line_desc *ld, const int from_col, const int num_cols, const int tab_size, const int cleared_at_end, const int utf8, const int * const attr, const int * const diff, const int diff_size) {
-
-	int curr_col, output_col, pos, attr_pos, c, c_len;
-	const unsigned char *s = ld->line;
-
+void output_line_desc(const int row, const int col, line_desc *ld, const int64_t from_col, const int64_t num_cols, const int tab_size, const bool cleared_at_end, const bool utf8, const uint32_t * const attr, const uint32_t * const diff, const int64_t diff_size) {
 	assert(ld != NULL);
 	assert(row < ne_lines - 1 && col < ne_columns);
 
@@ -168,11 +165,13 @@ void output_line_desc(const int row, const int col, line_desc *ld, const int fro
 		ld->line + pos. The actual output screen column at any time is
 		col + curr_col - from_col. */
 
-	curr_col = pos = attr_pos = 0;
+	const char *s = ld->line;
+	int64_t curr_col = 0, pos = 0, attr_pos = 0;
+
 	while(curr_col - from_col < num_cols && pos < ld->line_len) {
-		output_col = col + curr_col - from_col;
-		c = utf8 ? get_char(s, ENC_UTF8) : *s;
-		c_len = utf8 ? utf8seqlen(c) : 1;
+		const int64_t output_col = col + curr_col - from_col;
+		const int c = utf8 ? get_char(s, ENC_UTF8) : *s;
+		const int c_len = utf8 ? utf8seqlen(c) : 1;
 
 		assert(c_len >= 1);
 
@@ -183,7 +182,7 @@ void output_line_desc(const int row, const int col, line_desc *ld, const int fro
 			for(i = 0; i < tab_width; i++)
 				if (curr_col + i >= from_col && curr_col + i < from_col + num_cols) {
 					move_cursor(row, output_col + i);
-					output_char(' ', attr ? attr[attr_pos] : 0, FALSE);
+					output_char(' ', attr ? attr[attr_pos] : 0, false);
 				}
 
 			curr_col += tab_width;
@@ -233,7 +232,7 @@ void output_line_desc(const int row, const int col, line_desc *ld, const int fro
 /* Updates part of a line given its number and a starting column. It can handle
    lines with no associated line descriptor (such as lines after the end of the
    buffer). It checks for updated_lines bypassing TURBO. if cleared_at_end is
-   TRUE, this function assumes that it doesn't have to clean up the rest of the
+   true, this function assumes that it doesn't have to clean up the rest of the
    line if the string is not long enough to fill the line. 
 
    If differential is nonzero, the line is update differentially w.r.t.
@@ -246,22 +245,20 @@ void output_line_desc(const int row, const int col, line_desc *ld, const int fro
    Returns the line descriptor corresponding to row, or NULL if the
    row is beyond the end of text. */
 
-line_desc *update_partial_line(buffer * const b, const int row, const int from_col, const int cleared_at_end, const int differential) {
-
-	int i;
-	line_desc *ld = b->top_line_desc;
-
+line_desc *update_partial_line(buffer * const b, const int row, const int64_t from_col, const bool cleared_at_end, const bool differential) {
 	assert(row < ne_lines - 1); 
-	assert_line_desc(ld, b->encoding);
 
-	if (++updated_lines > TURBO) window_needs_refresh = TRUE;
+	if (++updated_lines > TURBO) window_needs_refresh = true;
 
 	if (window_needs_refresh) {
 		if (row < first_line) first_line = row;
 		if (row > last_line) last_line = row;
 	}
 
-	for(i = 0; i < row && ld->ld_node.next; i++) ld = (line_desc *)ld->ld_node.next;
+	line_desc *ld = b->top_line_desc;
+	assert_line_desc(ld, b->encoding);
+
+	for(int i = 0; i < row && ld->ld_node.next; i++) ld = (line_desc *)ld->ld_node.next;
 
 	if (! ld->ld_node.next) {
 		move_cursor(row, from_col);
@@ -283,7 +280,7 @@ line_desc *update_partial_line(buffer * const b, const int row, const int from_c
 /* Similar to the previous call, but updates the whole line. If the updated line is the current line,
    we update the local attribute buffer. */
 
-void update_line(buffer * const b, const int n, const int cleared_at_end, const int differential) {
+void update_line(buffer * const b, const int n, const bool cleared_at_end, const bool differential) {
 	line_desc * const ld = update_partial_line(b, n, 0, cleared_at_end, differential);
 	if (b->syn && ld == b->cur_line_desc) {
 		/* If we updated the entire current line, we update the local attribute buffer. */
@@ -300,28 +297,26 @@ void update_line(buffer * const b, const int n, const int cleared_at_end, const 
    number of lines that have been updated bypasses TURBO, the update is not
    done. Rather, first_line, last_line and window_needs_refresh record that
    some refresh is needed, and from where it should be done. Setting doit to
-   TRUE forces a real update. Generally, doit should be FALSE. */
+   true forces a real update. Generally, doit should be false. */
 
-void update_window_lines(buffer * const b, const int start_line, const int end_line, const int doit) {
-
-	int i;
-	line_desc *ld = b->top_line_desc;
-
-	assert_line_desc(ld, b->encoding);
-
-	if ((updated_lines += (end_line - start_line + 1)) > TURBO && !doit) window_needs_refresh = TRUE;
+void update_window_lines(buffer * const b, const int start_line, const int end_line, const bool doit) {
+	if ((updated_lines += (end_line - start_line + 1)) > TURBO && !doit) window_needs_refresh = true;
 
 	if (start_line < first_line) first_line = start_line;
 	if (last_line < end_line) last_line = end_line;
 
 	if (window_needs_refresh && ! doit) return;
 
+	line_desc *ld = b->top_line_desc;
+	assert_line_desc(ld, b->encoding);
+
+	int i;
 	for(i = 0; i <= last_line && i + b->win_y < b->num_lines; i++) {
 		assert(ld->ld_node.next != NULL);
 
 		if (i >= first_line) {
 			if (b->syn) parse(b->syn, ld, ld->highlight_state, b->encoding == ENC_UTF8);
-			output_line_desc(i, 0, ld, b->win_x, ne_columns, b->opt.tab_size, FALSE, b->encoding == ENC_UTF8, b->syn ? attr_buf : NULL, NULL, 0);
+			output_line_desc(i, 0, ld, b->win_x, ne_columns, b->opt.tab_size, false, b->encoding == ENC_UTF8, b->syn ? attr_buf : NULL, NULL, 0);
 		}
 		ld = (line_desc *)ld->ld_node.next;
 	}
@@ -331,7 +326,7 @@ void update_window_lines(buffer * const b, const int start_line, const int end_l
 		clear_to_eol();
 	}
 
-	window_needs_refresh = FALSE;
+	window_needs_refresh = false;
 	first_line = ne_lines;
 	last_line = -1;
 }
@@ -341,7 +336,7 @@ void update_window_lines(buffer * const b, const int start_line, const int end_l
    an update. */
 
 void update_window(buffer * const b) {
-	update_window_lines(b, 0, ne_lines - 2, FALSE);
+	update_window_lines(b, 0, ne_lines - 2, false);
 }
 
 /* Updates the current line, the following syntax states if necessary,
@@ -354,7 +349,7 @@ void update_syntax_and_lines(buffer *b, line_desc *start_ld, line_desc *end_ld) 
 
 	if (b->syn) {
 		b->attr_len = -1;
-		need_attr_update = TRUE;
+		need_attr_update = true;
 		update_syntax_states(b, -1, start_ld, end_ld);
 	}
 }
@@ -375,17 +370,14 @@ void update_syntax_and_lines(buffer *b, line_desc *start_ld, line_desc *end_ld) 
    optimized (such as writing a space at the end of a line). TURBO is
    taken into consideration. */
 
-void update_deleted_char(buffer * const b, const int c, const int a, const line_desc * const ld, int pos, int attr_pos, const int line, const int x) {
-
-	int i, j, c_width, tab_width, tab_found = FALSE, curr_attr_pos;
-
+void update_deleted_char(buffer * const b, const int c, const int a, const line_desc * const ld, int64_t pos, int64_t attr_pos, const int line, const int x) {
 	if (b->syn) {
 		assert(b->attr_len >= 0);
 		assert(b->attr_len - 1 == calc_char_len(ld, b->encoding));
 		memmove(b->attr_buf + attr_pos, b->attr_buf + attr_pos + 1, (--b->attr_len - attr_pos) * sizeof *b->attr_buf);
 	}
 
-	if (++updated_lines > TURBO) window_needs_refresh = TRUE;
+	if (++updated_lines > TURBO) window_needs_refresh = true;
 
 	if (window_needs_refresh) {
 		if (line < first_line) first_line = line;
@@ -397,13 +389,12 @@ void update_deleted_char(buffer * const b, const int c, const int a, const line_
 
 	move_cursor(line, x);
 
-	if (c == '\t') c_width = b->opt.tab_size - x % b->opt.tab_size;
-	else c_width = output_width(c);
+	const int c_width = c == '\t' ? b->opt.tab_size - x % b->opt.tab_size : output_width(c);
 
 	if (!char_ins_del_ok) {
 		/* Argh! We can't insert or delete! Just update the rest of the line. */
-		if (b->syn) update_line(b, line, FALSE, FALSE);
-		else update_partial_line(b, line, x, FALSE, FALSE);
+		if (b->syn) update_line(b, line, false, false);
+		else update_partial_line(b, line, x, false, false);
 		return;
 	}
 
@@ -412,12 +403,13 @@ void update_deleted_char(buffer * const b, const int c, const int a, const line_
 	been already deleted, pos is the position of the character *after* the one
 	just deleted. */
 
-	for(i = x + c_width, j = pos, curr_attr_pos = attr_pos; i < ne_columns && j < ld->line_len; i += get_char_width(&ld->line[j], b->encoding), j = next_pos(ld->line, j, b->encoding), curr_attr_pos++) {
+	bool tab_found = false;
+	for(int64_t i = x + c_width, j = pos, curr_attr_pos = attr_pos; i < ne_columns && j < ld->line_len; i += get_char_width(&ld->line[j], b->encoding), j = next_pos(ld->line, j, b->encoding), curr_attr_pos++) {
 
 		if (ld->line[j] == '\t') {
 
 			/* This is the previous width of the TAB we found. */
-			tab_width = b->opt.tab_size - i % b->opt.tab_size;
+			const int tab_width = b->opt.tab_size - i % b->opt.tab_size;
 
 			if (c_width + tab_width > b->opt.tab_size) {
 				/* In this case we cannot enlarge the TAB we found so to compensate
@@ -429,7 +421,7 @@ void update_deleted_char(buffer * const b, const int c, const int a, const line_
 				move_cursor(line, i - c_width);
 				delete_chars(b->opt.tab_size - c_width);
 
-				update_partial_line(b, line, ne_columns - b->opt.tab_size, TRUE, FALSE);
+				update_partial_line(b, line, ne_columns - b->opt.tab_size, true, false);
 			}
 			else {
 				/* In this case, instead, we just shift the piece of text between
@@ -438,7 +430,7 @@ void update_deleted_char(buffer * const b, const int c, const int a, const line_
 				output_chars(&ld->line[pos], b->syn ? &b->attr_buf[attr_pos] : NULL, j - pos, b->encoding == ENC_UTF8);
 				output_spaces(c_width, b->syn ? &b->attr_buf[curr_attr_pos] : NULL);
 			}
-			tab_found = TRUE;
+			tab_found = true;
 			break;
 		}
 	}
@@ -446,7 +438,7 @@ void update_deleted_char(buffer * const b, const int c, const int a, const line_
 	/* No TAB was found. We just delete the character and fill the end of the line. */
 	if (!tab_found) {
 		delete_chars(c_width);
-		update_partial_line(b, line, ne_columns - c_width, TRUE, FALSE);
+		update_partial_line(b, line, ne_columns - c_width, true, false);
 	}
 }
 
@@ -454,12 +446,10 @@ void update_deleted_char(buffer * const b, const int c, const int a, const line_
 
 /* See comments for update_deleted_char(). */
 
-void update_inserted_char(buffer * const b, const int c, const line_desc * const ld, const int pos, const int attr_pos, const int line, const int x) {
-
-	int i, j, c_width, c_len;
-	const int * const attr = b->syn ? &attr_buf[attr_pos] : NULL;
-
+void update_inserted_char(buffer * const b, const int c, const line_desc * const ld, const int64_t pos, const int64_t attr_pos, const int line, const int x) {
 	assert(pos < ld->line_len);
+
+	const uint32_t * const attr = b->syn ? &attr_buf[attr_pos] : NULL;
 
 	if (b->syn) {
 		assert(b->attr_len >= 0);
@@ -471,7 +461,7 @@ void update_inserted_char(buffer * const b, const int c, const line_desc * const
 		b->attr_buf[attr_pos] = *attr;
 	}
 
-	if (++updated_lines > TURBO) window_needs_refresh = TRUE;
+	if (++updated_lines > TURBO) window_needs_refresh = true;
 
 	if (window_needs_refresh) {
 		if (line < first_line) first_line = line;
@@ -481,9 +471,8 @@ void update_inserted_char(buffer * const b, const int c, const line_desc * const
 
 	move_cursor(line, x);
 
-	c_len = b->encoding == ENC_UTF8 ? utf8seqlen(c) : 1;
-	if (c == '\t') c_width = b->opt.tab_size - x % b->opt.tab_size;
-	else c_width = output_width(c);
+	const int c_len = b->encoding == ENC_UTF8 ? utf8seqlen(c) : 1;
+	const int c_width = c == '\t' ? b->opt.tab_size - x % b->opt.tab_size : output_width(c);
 
 	if (pos + c_len == ld->line_len) {
 		/* We are the last character on the line. We simply output ourselves. */
@@ -493,14 +482,14 @@ void update_inserted_char(buffer * const b, const int c, const line_desc * const
 	}
 
 	if (!char_ins_del_ok) {
-		update_partial_line(b, line, x, FALSE, FALSE);
+		update_partial_line(b, line, x, false, false);
 		return;
 	}
 
 	/* We search for the first TAB on the line. If there is none, we have just
 		to insert our characters. */
 
-	for(i = x + c_width, j = pos + c_len; i < ne_columns && j < ld->line_len; i += get_char_width(&ld->line[j], b->encoding), j = next_pos(ld->line, j, b->encoding)) {
+	for(int64_t i = x + c_width, j = pos + c_len; i < ne_columns && j < ld->line_len; i += get_char_width(&ld->line[j], b->encoding), j = next_pos(ld->line, j, b->encoding)) {
 		if (ld->line[j] == '\t') {
 
 			const int tab_width = b->opt.tab_size - (i - c_width) % b->opt.tab_size;
@@ -511,16 +500,16 @@ void update_inserted_char(buffer * const b, const int c, const line_desc * const
 				output_chars(&ld->line[pos + c_len], attr, j - (pos + c_len), b->encoding == ENC_UTF8);
 			}
 			else {
-				if (c == '\t') insert_chars(NULL, attr, c_width, FALSE);
+				if (c == '\t') insert_chars(NULL, attr, c_width, false);
 				else insert_char(c, attr ? *attr : -1, b->encoding == ENC_UTF8);
 				move_cursor(line, i);
-				insert_chars(NULL, attr, b->opt.tab_size - c_width, FALSE);
+				insert_chars(NULL, attr, b->opt.tab_size - c_width, false);
 			}
 			return;
 		}
 	}
 
-	if (c == '\t') insert_chars(NULL, attr, c_width, FALSE);
+	if (c == '\t') insert_chars(NULL, attr, c_width, false);
 	else insert_char(c, attr ? *attr : -1, b->encoding == ENC_UTF8);
 
 
@@ -528,13 +517,11 @@ void update_inserted_char(buffer * const b, const int c, const line_desc * const
 
 /* See comments for update_deleted_char(). */
 
-void update_overwritten_char(buffer * const b, const int old_char, const int new_char, const line_desc * const ld, int pos, const int attr_pos, const int line, const int x) {
-
-	int i, j, new_width, old_width, curr_attr_pos;
-	const int * const attr = b->syn ? &attr_buf[attr_pos] : &no_attr;
-
+void update_overwritten_char(buffer * const b, const int old_char, const int new_char, const line_desc * const ld, int64_t pos, const int64_t attr_pos, const int line, const int x) {
 	assert(ld != NULL);
 	assert(pos < ld->line_len);
+
+	const uint32_t * const attr = b->syn ? &attr_buf[attr_pos] : &no_attr;
 
 	if (b->syn) {
 		/* fprintf(stderr, "-b->attr_len: %d calc_char_len: %d pos: %d ld->line_len %d attr_pos: %d\n", b->attr_len,calc_char_len(ld, b->encoding), pos, ld->line_len, attr_pos);*/
@@ -544,7 +531,7 @@ void update_overwritten_char(buffer * const b, const int old_char, const int new
 		b->attr_buf[attr_pos] = *attr;
 	}
 
-	if (++updated_lines > TURBO) window_needs_refresh = TRUE;
+	if (++updated_lines > TURBO) window_needs_refresh = true;
 
 	if (window_needs_refresh) {
 		if (line < first_line) first_line = line;
@@ -552,11 +539,8 @@ void update_overwritten_char(buffer * const b, const int old_char, const int new
 		return;
 	}
 
-	if (old_char == '\t') old_width = b->opt.tab_size - x % b->opt.tab_size;
-	else old_width = output_width(old_char);
-
-	if (new_char == '\t') new_width = b->opt.tab_size - x % b->opt.tab_size;
-	else new_width = output_width(new_char);
+	const int old_width = old_char == '\t' ? b->opt.tab_size - x % b->opt.tab_size : output_width(old_char);
+	const int new_width = new_char == '\t' ? b->opt.tab_size - x % b->opt.tab_size : output_width(new_char);
 
 	move_cursor(line, x);
 
@@ -570,7 +554,7 @@ void update_overwritten_char(buffer * const b, const int old_char, const int new
 	}
 
 	if (!char_ins_del_ok) {
-		update_partial_line(b, line, x, FALSE, FALSE);
+		update_partial_line(b, line, x, false, false);
 		return;
 	}
 
@@ -583,7 +567,7 @@ void update_overwritten_char(buffer * const b, const int old_char, const int new
 			characters on the screen. */
 		pos = next_pos(ld->line, pos, b->encoding);
 
-		for(i = x + old_width, j = pos, curr_attr_pos = attr_pos; i < ne_columns && j < ld->line_len; i += get_char_width(&ld->line[j], b->encoding), j = next_pos(ld->line, j, b->encoding), curr_attr_pos++) {
+		for(int64_t i = x + old_width, j = pos, curr_attr_pos = attr_pos; i < ne_columns && j < ld->line_len; i += get_char_width(&ld->line[j], b->encoding), j = next_pos(ld->line, j, b->encoding), curr_attr_pos++) {
 
 			if (ld->line[j] == '\t') {
 				const int tab_width = b->opt.tab_size - i % b->opt.tab_size;
@@ -611,7 +595,7 @@ void update_overwritten_char(buffer * const b, const int old_char, const int new
 						delete_chars(b->opt.tab_size - width_delta);
 					}
 
-					update_partial_line(b, line, ne_columns - b->opt.tab_size, TRUE, FALSE);
+					update_partial_line(b, line, ne_columns - b->opt.tab_size, true, false);
 				}
 				return;
 			}
@@ -620,7 +604,7 @@ void update_overwritten_char(buffer * const b, const int old_char, const int new
 		delete_chars(width_delta);
 		if (new_char == '\t') output_spaces(new_width, attr);
 		else output_char(new_char, *attr, b->encoding == ENC_UTF8);
-		update_partial_line(b, line, ne_columns - width_delta, TRUE, FALSE);
+		update_partial_line(b, line, ne_columns - width_delta, true, false);
 	}
 	else {
 		/* The character has been enlarged by width_delta. */
@@ -630,7 +614,7 @@ void update_overwritten_char(buffer * const b, const int old_char, const int new
 			just to insert width_delta characters. */
 		pos = next_pos(ld->line, pos, b->encoding);
 
-		for(i = x + old_width, j = pos; i < ne_columns && j < ld->line_len; i += get_char_width(&ld->line[j], b->encoding), j = next_pos(ld->line, j, b->encoding)) {
+		for(int64_t i = x + old_width, j = pos; i < ne_columns && j < ld->line_len; i += get_char_width(&ld->line[j], b->encoding), j = next_pos(ld->line, j, b->encoding)) {
 
 			if (ld->line[j] == '\t') {
 				const int tab_width = b->opt.tab_size - i % b->opt.tab_size;
@@ -647,17 +631,17 @@ void update_overwritten_char(buffer * const b, const int old_char, const int new
 					output_chars(&ld->line[pos], attr, j - pos, b->encoding == ENC_UTF8);
 				}
 				else {
-					insert_chars(NULL, attr, width_delta, FALSE);
+					insert_chars(NULL, attr, width_delta, false);
 					if (new_char == '\t') output_spaces(new_width, attr);
 					else output_char(new_char, *attr, b->encoding == ENC_UTF8);
 					move_cursor(line, i + width_delta);
-					insert_chars(NULL, attr, b->opt.tab_size - (i + width_delta) % b->opt.tab_size - tab_width, FALSE);
+					insert_chars(NULL, attr, b->opt.tab_size - (i + width_delta) % b->opt.tab_size - tab_width, false);
 				}
 				return;
 			}
 		}
 
-		insert_chars(NULL, attr, width_delta, FALSE);
+		insert_chars(NULL, attr, width_delta, false);
 		if (new_char == '\t') output_spaces(new_width, attr);
 		else output_char(new_char, *attr, b->encoding == ENC_UTF8);
 	}
@@ -672,7 +656,7 @@ void update_overwritten_char(buffer * const b, const int old_char, const int new
 
 
 void reset_window(void) {
-	window_needs_refresh = TRUE;
+	window_needs_refresh = true;
 	first_line = 0;
 	last_line = ne_lines - 2;
 	reset_status_bar();
@@ -684,7 +668,7 @@ void reset_window(void) {
    interact, so that he is presented with a correctly updated display. */
 
 void refresh_window(buffer * const b) {
-	if (window_needs_refresh) update_window_lines(b, first_line, last_line, TRUE);
+	if (window_needs_refresh) update_window_lines(b, first_line, last_line, true);
 	updated_lines = 0;
 }
 
@@ -700,7 +684,7 @@ void scroll_window(buffer * const b, const int line, const int n) {
 
 	if (line_ins_del_ok) {
 		if (updated_lines++ > TURBO || window_needs_refresh) {
-			window_needs_refresh = TRUE;
+			window_needs_refresh = true;
 			if (first_line > line) first_line = line;
 			last_line = ne_lines - 2;
 			return;
@@ -710,12 +694,12 @@ void scroll_window(buffer * const b, const int line, const int n) {
 		/* Argh! We can't insert or delete lines. The only chance is
 		rewriting the last lines of the screen. */
 
-		update_window_lines(b, line, ne_lines - 2, FALSE);
+		update_window_lines(b, line, ne_lines - 2, false);
 		return;
 	}
 
-	if (n > 0) update_line(b, line, ins_del_lines(line, 1), FALSE);
-	else update_line(b, ne_lines - 2, ins_del_lines(line, -1), FALSE);
+	if (n > 0) update_line(b, line, ins_del_lines(line, 1), false);
+	else update_line(b, ne_lines - 2, ins_del_lines(line, -1), false);
 }
 
 
@@ -735,16 +719,19 @@ HIGHLIGHT_STATE freeze_attributes(buffer *b, line_desc *ld) {
 /* (Un)highlights (depending on the value of show) the bracket matching
 the one under the cursor (if any). */
 
-void automatch_bracket(buffer * const b, const int show) {
-	static int c, orig_attr;
-	int match_pos, tmp_attr;
-	line_desc *matching_ld;
+void automatch_bracket(buffer * const b, const bool show) {
+	static int c;
+	static uint32_t orig_attr;
+
 	if (show) {
+		int64_t match_pos, match_line;
+		uint32_t tmp_attr;
+		line_desc *matching_ld;
 		if (find_matching_bracket(b, b->win_y, b->win_y + ne_lines - 2 >= b->num_lines - 1 ? b->num_lines - 1 : b->win_y + ne_lines - 2,
-								  &b->automatch.y, &match_pos, &c, &matching_ld) == OK) {
+								  &match_line, &match_pos, &c, &matching_ld) == OK) {
 			/* We limited find_matching_bracket()'s search to the visible lines, but not the
 			visible portions of those lines. Now ensure the matching pos is within the visible window. */
-			b->automatch.y -= b->win_y;
+			b->automatch.y = match_line - b->win_y;
 			b->automatch.x = calc_width(matching_ld, match_pos, b->opt.tab_size, b->encoding) - b->win_x;
 			if (b->automatch.x >= 0 && b->automatch.x < ne_columns ) {
 				move_cursor(b->automatch.y, b->automatch.x);

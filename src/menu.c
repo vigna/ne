@@ -338,7 +338,7 @@ int dump_config(void) {
 
 static void draw_cur_item(const int n) {
 	move_cursor(menus[n].cur_item + 1, menus[n].xpos - (fast_gui || !standout_ok));
-	if (!fast_gui && standout_ok) output_chars(menus[n].items[menus[n].cur_item].text, NULL, menus[n].width - (cursor_on_off_ok ? 0 : 1), TRUE);
+	if (!fast_gui && standout_ok) output_chars(menus[n].items[menus[n].cur_item].text, NULL, menus[n].width - (cursor_on_off_ok ? 0 : 1), true);
 }
 
 
@@ -347,7 +347,7 @@ static void undraw_cur_item(const int n) {
 		set_attr(0);
 		standout_on();
 		move_cursor(menus[n].cur_item + 1, menus[n].xpos);
-		output_chars(menus[n].items[menus[n].cur_item].text, NULL, menus[n].width - (cursor_on_off_ok ? 0 : 1), TRUE);
+		output_chars(menus[n].items[menus[n].cur_item].text, NULL, menus[n].width - (cursor_on_off_ok ? 0 : 1), true);
 		standout_off();
 	}
 }
@@ -356,35 +356,34 @@ static void undraw_cur_item(const int n) {
 /* Draws a given menu. It also draws the current menu item. */
 
 static void draw_menu(const int n) {
-	int i;
-
 	assert(menus[n].xpos > 0);
 
 	if (menus[n].cur_item + 1 + (standout_ok == 0) >= ne_lines - 1) menus[n].cur_item = 0;
 
 	move_cursor(0, menus[n].xpos);
 	set_attr(0);
-	output_string(menus[n].text, TRUE);
+	output_string(menus[n].text, true);
 
+	int i;
 	for(i = 0; i < menus[n].item_num; i++) {
 		if (i + 1 + (standout_ok == 0) >= ne_lines - 1) break;
 
 		move_cursor(i + 1, menus[n].xpos - 1);
 
-		if (!standout_ok) output_string("|", FALSE);
+		if (!standout_ok) output_string("|", false);
 
 		standout_on();
-		output_string(" ", FALSE);
-		output_string(menus[n].items[i].text, TRUE);
-		output_string(" ", FALSE);
+		output_string(" ", false);
+		output_string(menus[n].items[i].text, true);
+		output_string(" ", false);
 		standout_off();
 
-		if (!standout_ok) output_string("|", FALSE);
+		if (!standout_ok) output_string("|", false);
 	}
 
 	if (!standout_ok) {
 		move_cursor(i + 1, menus[n].xpos - 1);
-		for(i = 0; i < menus[n].width + (standout_ok ? MENU_EXTRA : MENU_NOSTANDOUT_EXTRA); i++) output_string("-", FALSE);
+		for(int i = 0; i < menus[n].width + (standout_ok ? MENU_EXTRA : MENU_NOSTANDOUT_EXTRA); i++) output_string("-", false);
 	}
 
 	draw_cur_item(n);
@@ -395,21 +394,19 @@ static void draw_menu(const int n) {
 screen via output_line_desc(). */
 
 static void undraw_menu(const int n) {
-	int i;
-	line_desc *ld = cur_buffer->top_line_desc;
-
 	set_attr(0);
 	standout_on();
 	move_cursor(0, menus[n].xpos);
-	output_string(menus[n].text, TRUE);
+	output_string(menus[n].text, true);
 	standout_off();
 
-	for(i = 1; i <= menus[n].item_num + (standout_ok == 0); i++) {
+	line_desc *ld = cur_buffer->top_line_desc;
+	for(int i = 1; i <= menus[n].item_num + (standout_ok == 0); i++) {
 		if (i >= ne_lines - 1) break;
 		if (ld->ld_node.next->next) {
 			ld = (line_desc *)ld->ld_node.next;
 			if (cur_buffer->syn) parse(cur_buffer->syn, ld, ld->highlight_state, cur_buffer->encoding == ENC_UTF8);
-			output_line_desc(i, menus[n].xpos - 1, ld, cur_buffer->win_x + menus[n].xpos - 1, menus[n].width + (standout_ok ? MENU_EXTRA : MENU_NOSTANDOUT_EXTRA), cur_buffer->opt.tab_size, FALSE, cur_buffer->encoding == ENC_UTF8, cur_buffer->syn ? attr_buf : NULL, NULL, 0);
+			output_line_desc(i, menus[n].xpos - 1, ld, cur_buffer->win_x + menus[n].xpos - 1, menus[n].width + (standout_ok ? MENU_EXTRA : MENU_NOSTANDOUT_EXTRA), cur_buffer->opt.tab_size, false, cur_buffer->encoding == ENC_UTF8, cur_buffer->syn ? attr_buf : NULL, NULL, 0);
 		}
 		else {
 			move_cursor(i, menus[n].xpos - 1);
@@ -455,10 +452,7 @@ static void draw_prev_menu(void) {
 }
 
 int search_menu_title(int n, const int c) {
-
-	int i;
-
-	for(i = 0; i < menu_num - 1; i++) {
+	for(int i = 0; i < menu_num - 1; i++) {
 		if (menus[++n % menu_num].xpos >= ne_columns) continue;
 		if (menus[n % menu_num].text[0] == c) return n % menu_num;
 	}
@@ -467,12 +461,9 @@ int search_menu_title(int n, const int c) {
 }
 
 int search_menu_item(int n, int c) {
-
-	int i,j;
-
 	c = toupper(c);
 
-	for(i = 0, j = menus[n].cur_item; i < menus[n].item_num - 1; i++) {
+	for(int i = 0, j = menus[n].cur_item; i < menus[n].item_num - 1; i++) {
 		if (++j % menus[n].item_num + 1 + (standout_ok == 0) >= ne_lines - 1) continue;
 		if (menus[n].items[j % menus[n].item_num].text[0] == c) return j % menus[n].item_num;
 	}
@@ -500,20 +491,17 @@ static void item_search(const int c) {
 
 
 static void draw_first_menu(void) {
-
-	int i = 0, n = 0;
-
 	move_cursor(0,0);
 
 	set_attr(0);
 	standout_on();
 	if (!fast_gui && standout_ok) cursor_off();
 
-	while(i < ne_columns) {
-		output_string(" ", FALSE);
+	for(int i = 0, n = 0; i < ne_columns; ) {
+		output_string(" ", false);
 		i++;
 		if (n < menu_num) {
-			output_string(menus[n].text, TRUE);
+			output_string(menus[n].text, true);
 			i += strlen(menus[n].text);
 			n++;
 		}
@@ -527,7 +515,7 @@ static void draw_first_menu(void) {
 
 static void undraw_last_menu(void) {
 	undraw_menu(current_menu);
-	update_line(cur_buffer, 0, FALSE, FALSE);
+	update_line(cur_buffer, 0, false, false);
 	cursor_on();
 }
 
@@ -544,15 +532,15 @@ static void do_menu_action(void) {
    bar doesn't exists any longer, so we have to rebuild it entirely. */
 
 static int showing_msg;
-static int bar_gone = TRUE;
+static bool bar_gone = true;
 
 
 
 /* Resets the status bar. It does not perform the refresh, just sets bar_gone
-   to TRUE. */
+   to true. */
 
 void reset_status_bar(void) {
-	bar_gone = TRUE;
+	bar_gone = true;
 }
 
 
@@ -568,8 +556,8 @@ of several characters). */
 char *gen_flag_string(const buffer * const b) {
 
 	static char string[MAX_FLAG_STRING_SIZE];
-	int i = 0, j;
-	int ch = b->cur_pos < b->cur_line_desc->line_len ? (b->encoding == ENC_UTF8 ? utf8char(&b->cur_line_desc->line[b->cur_pos]) : b->cur_line_desc->line[b->cur_pos]) : -1;
+	const int ch = b->cur_pos < b->cur_line_desc->line_len ? (b->encoding == ENC_UTF8 ? utf8char(&b->cur_line_desc->line[b->cur_pos]) : b->cur_line_desc->line[b->cur_pos]) : -1;
+	int i = 0;
 
 	string[i++] = ' ';
 
@@ -602,17 +590,17 @@ char *gen_flag_string(const buffer * const b) {
 			string[i++] = "0123456789abcdef"[(ch >> 20) & 0x0f];
 			string[i++] = "0123456789abcdef"[(ch >> 16) & 0x0f];
 		}
-		else for(j = 0; j < 4; j++) string[i++] = ' ';
+		else for(int j = 0; j < 4; j++) string[i++] = ' ';
 		if (ch > 0xFF) {
 			string[i++] = "0123456789abcdef"[(ch >> 12) & 0x0f];
 			string[i++] = "0123456789abcdef"[(ch >> 8) & 0x0f];
 		}
-		else for(j = 0; j < 2; j++) string[i++] = ' ';
+		else for(int j = 0; j < 2; j++) string[i++] = ' ';
 		if (ch > -1) {
 			string[i++] = "0123456789abcdef"[(ch >> 4) & 0x0f];
 			string[i++] = "0123456789abcdef"[ch & 0x0f];
 		}
-		else for(j = 0; j < 2; j++) string[i++] = ' ';
+		else for(int j = 0; j < 2; j++) string[i++] = ' ';
 	}
 
 	string[i] = 0;
@@ -624,40 +612,39 @@ char *gen_flag_string(const buffer * const b) {
 
 
 
-/* Draws the status bar. If showing_msg is TRUE, it is set to FALSE, bar_gone
-   is set to TRUE and the update is deferred to the next call. If the bar is
+/* Draws the status bar. If showing_msg is true, it is set to false, bar_gone
+   is set to true and the update is deferred to the next call. If the bar is
    not completely gone, we try to just update the line and column numbers, and
    the flags. The function keeps track internally of their last values, so that
    unnecessary printing is avoided. */
 
 
 void draw_status_bar(void) {
-
 	static char bar_buffer[MAX_BAR_BUFFER_SIZE];
 	static char flag_string[MAX_FLAG_STRING_SIZE];
-	static int x = -1, y = -1, percent = -1;
-
-	char *p;
-	int len;
+	static int64_t x = -1, y = -1;
+	static int percent = -1;
 
 	if (showing_msg) {
-		showing_msg = FALSE;
-		bar_gone = TRUE;
+		showing_msg = false;
+		bar_gone = true;
 		return;
 	}
 
 	set_attr(0);
+	int len;
 
 	if (!bar_gone && status_bar) {
 		const int new_percent = (int)floor(((cur_buffer->cur_line + 1) * 100.0) / cur_buffer->num_lines);
 		/* This is the space occupied up to "L:", included. */
 		const int offset = fast_gui || !standout_ok ? 5: 3;
-		const int update_x = x != cur_buffer->win_x + cur_buffer->cur_x;
-		const int update_y = y != cur_buffer->cur_line;
-		const int update_percent = percent != new_percent;
-		const int update_flags = strcmp(flag_string, p = gen_flag_string(cur_buffer));
-		const int update_filename = strlen(flag_string) != strlen(p);
-		const int update = update_x || update_y || update_percent || update_flags;
+		const bool update_x = x != cur_buffer->win_x + cur_buffer->cur_x;
+		const bool update_y = y != cur_buffer->cur_line;
+		const bool update_percent = percent != new_percent;
+		char *p;
+		const bool update_flags = strcmp(flag_string, p = gen_flag_string(cur_buffer));
+		const bool update_filename = strlen(flag_string) != strlen(p);
+		const bool update = update_x || update_y || update_percent || update_flags;
 
 		if (!update) return;
 
@@ -669,26 +656,26 @@ void draw_status_bar(void) {
 
 		if (update_y) {
 			move_cursor(ne_lines - 1, offset);
-			len = sprintf(bar_buffer, "%9d", y + 1);
-			output_chars(bar_buffer, NULL, len, TRUE);
+			len = sprintf(bar_buffer, "%11" PRId64, y + 1);
+			output_chars(bar_buffer, NULL, len, true);
 		}
 
 		if (update_x) {
-			move_cursor(ne_lines - 1, offset + 12);
-			len = sprintf(bar_buffer, "%9d", x + 1);
-			output_chars(bar_buffer, NULL, len, TRUE);
+			move_cursor(ne_lines - 1, offset + 14);
+			len = sprintf(bar_buffer, "%11" PRId64, x + 1);
+			output_chars(bar_buffer, NULL, len, true);
 		}
 
 		if (update_percent) {
-			move_cursor(ne_lines - 1, offset + 22);
+			move_cursor(ne_lines - 1, offset + 25);
 			len = sprintf(bar_buffer, "%3d", percent);
-			output_chars(bar_buffer, NULL, len, TRUE);
+			output_chars(bar_buffer, NULL, len, true);
 		}
 
 		if (update_flags) {
 			strcpy(flag_string, p);
-			move_cursor(ne_lines - 1, offset + 27);
-			output_string(flag_string, TRUE);
+			move_cursor(ne_lines - 1, offset + 30);
+			output_string(flag_string, true);
 		}
 
 		if (!fast_gui && standout_ok) standout_off();
@@ -707,10 +694,10 @@ void draw_status_bar(void) {
 		x = cur_buffer->win_x + cur_buffer->cur_x;
 		y = cur_buffer->cur_line;
 
-		len = sprintf(bar_buffer, fast_gui || !standout_ok ? ">> L:%9d C:%9d %3d%% %s " : " L:%9d C:%9d %3d%% %s ", y + 1, x + 1, percent, flag_string);
+		len = sprintf(bar_buffer, fast_gui || !standout_ok ? ">> L:%11" PRId64 " C:%11" PRId64 "%3d%% %s " : " L:%11" PRId64 " C:%11" PRId64 "%3d%% %s ", y + 1, x + 1, percent, flag_string);
 
 		move_cursor(ne_lines - 1, 0);
-		output_chars(bar_buffer, NULL, len, TRUE);
+		output_chars(bar_buffer, NULL, len, true);
 
 		if (len < ne_columns - 1) {
 			if (cur_buffer->filename) {
@@ -727,7 +714,7 @@ void draw_status_bar(void) {
 
 				output_string(cur_buffer->filename + pos, encoding == ENC_UTF8);
 			}
-			else output_string(UNNAMED_NAME, FALSE);
+			else output_string(UNNAMED_NAME, false);
 		}
 
 		if (!fast_gui && standout_ok) {
@@ -741,7 +728,7 @@ void draw_status_bar(void) {
 		clear_to_eol();
 	}
 
-	bar_gone = FALSE;
+	bar_gone = false;
 }
 
 
@@ -752,7 +739,6 @@ void draw_status_bar(void) {
    isn't NULL. */
 
 void print_message(const char * const message) {
-
 	static char msg_cache[MAX_MESSAGE_LENGTH];
 
 	if (message) {
@@ -767,18 +753,18 @@ void print_message(const char * const message) {
 
 		if (fast_gui || !standout_ok || !status_bar) {
 			clear_to_eol();
-			output_string(msg_cache, TRUE);
+			output_string(msg_cache, true);
 		}
 		else {
 			standout_on();
-			output_string(msg_cache, TRUE);
+			output_string(msg_cache, true);
 			output_spaces(ne_columns - strlen(msg_cache), NULL);
 			standout_off();
 		}
 
 		fflush(stdout);
 
-		showing_msg = TRUE;
+		showing_msg = true;
 	}
 }
 
@@ -831,15 +817,11 @@ void alert(void) {
    shortcuts while using menus. */
 
 void handle_menus(void) {
-
-	input_class ic;
-	action a;
-	int c, n;
-	unsigned char  *p;
-
 	draw_first_menu();
 
-	while(TRUE) {
+	while(true) {
+		int c;
+		input_class ic;
 		do c = get_key_code(); while((ic = CHAR_CLASS(c)) == IGNORE);
 
 		switch(ic) {
@@ -862,7 +844,10 @@ void handle_menus(void) {
 
 		case COMMAND:
 			if (c < 0) c = -c - 1;
-			if ((a = parse_command_line(key_binding[c], &n, &p, FALSE))>=0) {
+			int64_t n;
+			char *p;
+			const int a = parse_command_line(key_binding[c], &n, &p, false);
+			if (a >= 0) {
 				switch(a) {
 				case MOVELEFT_A:
 					draw_prev_menu();
@@ -908,35 +893,30 @@ void handle_menus(void) {
 }
 
 static void error_in_menu_configuration(const int line, const char * const s) {
-
 	fprintf(stderr, "Error in menu configuration file at line %d: %s\n", line, s);
 	exit(0);
 }
 
 
 static void get_menu_conf(const char * menu_conf_name, char * (exists_prefs_func)()) {
-
-	char  *prefs_dir, *menu_conf;
-	char_stream *cs;
-	unsigned char  *p;
-	int pass, cur_menu, cur_item, num_items_in_menu, line;
-	menu *new_menus;
-	menu_item *new_items;
-
 	if (!menu_conf_name) menu_conf_name = MENU_CONF_NAME;
 
-	if (prefs_dir = exists_prefs_func()) {
-		if (menu_conf = malloc(strlen(prefs_dir) + strlen(menu_conf_name) + 1)) {
+	menu *new_menus = NULL;
+	menu_item *new_items = NULL;
+
+	char * const prefs_dir = exists_prefs_func();
+	if (prefs_dir) {
+		char * const menu_conf = malloc(strlen(prefs_dir) + strlen(menu_conf_name) + 1);
+		if (menu_conf) {
 			strcat(strcpy(menu_conf, prefs_dir), menu_conf_name);
+			char_stream *cs;
+			if ((cs = load_stream(NULL, menu_conf_name, false, false)) || (cs = load_stream(NULL, menu_conf, false, false))) {
 
-			if ((cs = load_stream(NULL, menu_conf_name, FALSE, FALSE)) || (cs = load_stream(NULL, menu_conf, FALSE, FALSE))) {
-
-				for(pass = 0; pass < 2; pass++) {
-
-					p = cs->stream;
-					line = 1;
-					cur_menu = -1;
-					cur_item = num_items_in_menu = 0;
+				for(int pass = 0; pass < 2; pass++) {
+					char *p = cs->stream;
+					int line = 1;
+					int cur_menu = -1;
+					int cur_item = 0, num_items_in_menu = 0;
 
 					while(p - cs->stream < cs->len) {
 						if (*p) {
@@ -1031,32 +1011,28 @@ void get_menu_configuration(const char * menu_conf_name) {
 
 
 static void error_in_key_bindings(const int line, const char * const s) {
-
 	fprintf(stderr, "Error in key bindings file at line %d: %s\n", line, s);
 	exit(0);
 }
 
 static void get_key_bind(const char * key_bindings_name, char * (exists_prefs_func)()) {
-	char *prefs_dir, *key_bindings;
-	char_stream *cs;
-	unsigned char *p;
-	int c, line;
-
 	if (!key_bindings_name) key_bindings_name = KEY_BINDINGS_NAME;
 
-	if (prefs_dir = exists_prefs_func()) {
-		if (key_bindings = malloc(strlen(prefs_dir) + strlen(key_bindings_name) + 1)) {
+	char * const prefs_dir = exists_prefs_func();
+	if (prefs_dir) {
+		char * const key_bindings = malloc(strlen(prefs_dir) + strlen(key_bindings_name) + 1);
+		if (key_bindings) {
 			strcat(strcpy(key_bindings, prefs_dir), key_bindings_name);
-
-			if (cs = load_stream(NULL, key_bindings, FALSE, FALSE)) {
-
-				p = cs->stream;
-				line = 1;
+			char_stream * const cs = load_stream(NULL, key_bindings, false, false);
+			if (cs) {
+				char * p = cs->stream;
+				int line = 1;
 
 				while(p - cs->stream < cs->len) {
 					if (*p && !cmdcmp(KEY_KEYWORD, p)) {
 						while(*p && !isasciispace(*p)) p++;
 
+						int c;
 						if (sscanf(p, "%x %*s", &c) == 1) {
 							if (c >= 0 && c < NUM_KEYS) {
 								if (c != 27 && c != 13) {
@@ -1077,8 +1053,9 @@ static void get_key_bind(const char * key_bindings_name, char * (exists_prefs_fu
 						while(*p && !isasciispace(*p)) p++;	 /* skip past SEQ */
 						while(isasciispace(*p)) p++;			  /* skip to quoted sequence, like  "\x1b[A" */
 						buf = p;	/* Risky: we're replacing the double-quoted string with its parsed equivalent in situ. */
-						if (parse_string(&p, buf, strlen(p)) > 0) {  /* parse_string() expects double-quoted string. */
+						if (parse_string((unsigned char **)&p, (unsigned char *)buf, strlen(p)) > 0) {  /* parse_string() expects double-quoted string. */
 							while(*p && isasciispace(*p)) p++;  /* skip to key code */
+							int c;
 							if (*p && sscanf(p, "%x %*s", &c) == 1) {	 /* convert key code */
 								if (c >= 0 && c < NUM_KEYS) {
 									if (c != 27 && c != 13) {

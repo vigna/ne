@@ -34,17 +34,14 @@
 
 /* Allocates a clip descriptor. */
 
-clip_desc *alloc_clip_desc(int n, int size) {
-
-	clip_desc *cd;
-
+clip_desc *alloc_clip_desc(int n, int64_t size) {
 	assert(n >= 0);
 	assert(size >= 0);
 
-	if (cd = calloc(1, sizeof(clip_desc))) {
+	clip_desc * const cd = calloc(1, sizeof(clip_desc));
+	if (cd) {
 		cd->n = n;
 		if (cd->cs = alloc_char_stream(size)) return cd;
-
 		free(cd);
 	}
 	return NULL;
@@ -55,10 +52,7 @@ clip_desc *alloc_clip_desc(int n, int size) {
 /* Reallocates a clip descriptor of the given size. If cd is NULL, this is
    equivalent to calling alloc_clip_desc. */
 
-clip_desc *realloc_clip_desc(clip_desc *cd, int n, int size) {
-
-	char_stream *cs;
-
+clip_desc *realloc_clip_desc(clip_desc *cd, int n, int64_t size) {
 	assert(n >= 0);
 	assert(size >= 0);
 
@@ -68,7 +62,8 @@ clip_desc *realloc_clip_desc(clip_desc *cd, int n, int size) {
 
 	if (cd->n != n) return NULL;
 
-	if (cs = realloc_char_stream(cd->cs, size)) {
+	char_stream * const cs = realloc_char_stream(cd->cs, size);
+	if (cs) {
 		cd->cs = cs;
 		return cd;
 	}
@@ -94,14 +89,9 @@ void free_clip_desc(clip_desc *cd) {
    NULL on failure. */
 
 clip_desc *get_nth_clip(int n) {
-	clip_desc *cd = (clip_desc *)clips.head;
-
-	while (cd->cd_node.next) {
-
+	for(clip_desc *cd = (clip_desc *)clips.head; cd->cd_node.next; cd = (clip_desc *)cd->cd_node.next) {
 		assert_clip_desc(cd);
-
 		if (cd->n == n) return cd;
-		cd = (clip_desc *)cd->cd_node.next;
 	}
 
 	return NULL;
@@ -115,13 +105,7 @@ clip_desc *get_nth_clip(int n) {
    order to determine the exact length of the text, the second time in order to
    actually copy it. */
 
-int copy_to_clip(buffer *b, int n, int cut) {
-
-	int i, chaining, bsp, pass, start_pos, end_pos, len, clip_len, y = b->cur_line;
-	unsigned char *p = NULL;
-	clip_desc *cd, *new_cd;
-	line_desc *ld = b->cur_line_desc;
-
+int copy_to_clip(buffer *b, int n, bool cut) {
 	if (!b->marking) return MARK_BLOCK_FIRST;
 
 	if (b->block_start_line >= b->num_lines) return MARK_OUT_OF_BUFFER;
@@ -129,13 +113,16 @@ int copy_to_clip(buffer *b, int n, int cut) {
 	/* If the mark and the cursor are on the same line and on the same position
 	(or both beyond the line length), we can't copy anything. */
 
-	cd = get_nth_clip(n);
+	line_desc *ld = b->cur_line_desc;
+	clip_desc *cd = get_nth_clip(n);
+	int64_t y = b->cur_line;
 
 	if (y == b->block_start_line &&
 		(b->cur_pos == b->block_start_pos ||
 		 b->cur_pos >= ld->line_len && b->block_start_pos >= ld->line_len)) {
 
-		if (!(new_cd = realloc_clip_desc(cd, n, 0))) return OUT_OF_MEMORY;
+		clip_desc * const new_cd = realloc_clip_desc(cd, n, 0);
+		if (!new_cd) return OUT_OF_MEMORY;
 		if (!cd) add_head(&clips, &new_cd->cd_node);
 		return OK;
 	}
@@ -144,31 +131,34 @@ int copy_to_clip(buffer *b, int n, int cut) {
 	/* We have two different loops for direct or inverse copying. Making this
 		conditional code would be cumbersome, awkward, and definitely inefficient. */
 
+	bool chaining;
+	char *p = NULL;
 	if (y > b->block_start_line || y == b->block_start_line && b->cur_pos > b->block_start_pos) {
 		/* mark before/above cursor */
-		for(chaining = pass = clip_len = 0; pass < 2; pass++) {
+		int64_t clip_len = 0;
+		chaining = false;
+		for(int pass = 0; pass < 2; pass++) {
 
 			ld = b->cur_line_desc;
 
-			for(i = y; i >= b->block_start_line; i--) {
-				start_pos = 0;
+			for(int64_t i = y; i >= b->block_start_line; i--) {
+				int64_t start_pos = 0;
 
 				if (i == b->block_start_line) {
 					if (!pass && cut && ld->line_len < b->block_start_pos) {
 						if (!chaining) {
-							chaining = 1;
+							chaining = true;
 							start_undo_chain(b);
 						}
-						bsp = b->block_start_pos; /* because the mark will move when we insert_spaces()! */
+						const int64_t bsp = b->block_start_pos; /* because the mark will move when we insert_spaces()! */
 						insert_spaces(b, ld, i, ld->line_len, b->block_start_pos - ld->line_len);
 						b->block_start_pos = bsp;
 					}
 					start_pos = min(ld->line_len,b->block_start_pos);
 				}
 
-				if (i == y) end_pos = min(ld->line_len,b->cur_pos);
-				else end_pos = ld->line_len;
-				len = end_pos - start_pos;
+				const int64_t end_pos = i == y ? min(ld->line_len,b->cur_pos) : ld->line_len;
+				const int64_t len = end_pos - start_pos;
 
 				if (pass) {
 					assert(!(len != 0 && ld->line == NULL));
@@ -198,7 +188,8 @@ int copy_to_clip(buffer *b, int n, int cut) {
 				return OK;
 			}
 
-			if (!(new_cd = realloc_clip_desc(cd, n, clip_len))) {
+			clip_desc * const new_cd = realloc_clip_desc(cd, n, clip_len);
+			if (!new_cd) {
 				if (chaining) end_undo_chain(b);
 				return OUT_OF_MEMORY;
 			}
@@ -209,18 +200,20 @@ int copy_to_clip(buffer *b, int n, int cut) {
 	}
 	else {
 		/* mark after cursor */
-		for(chaining = pass = clip_len = 0; pass < 2; pass++) {
+		int64_t clip_len = 0;
+		chaining = false;
+		for(int pass = 0; pass < 2; pass++) {
 
 			ld = b->cur_line_desc;
 
-			for(i = y; i <= b->block_start_line; i++) {
+			for(int64_t i = y; i <= b->block_start_line; i++) {
 
-				start_pos = 0;
+				int64_t start_pos = 0;
 
 				if (i == y) {
 					if (!pass && cut && b->cur_pos > ld->line_len) {
 						if (!chaining) {
-							chaining = 1;
+							chaining = true;
 							start_undo_chain(b);
 						}
 						insert_spaces(b, ld, i, ld->line_len, b->cur_pos - ld->line_len);
@@ -228,9 +221,8 @@ int copy_to_clip(buffer *b, int n, int cut) {
 					start_pos = b->cur_pos > ld->line_len ? ld->line_len : b->cur_pos;
 				}
 
-				if (i == b->block_start_line) end_pos = min(b->block_start_pos, ld->line_len);
-				else end_pos = ld->line_len;
-				len = end_pos - start_pos;
+				const int64_t end_pos = i == b->block_start_line ? min(b->block_start_pos, ld->line_len) : ld->line_len;
+				const int64_t len = end_pos - start_pos;
 
 				if (pass) {
 					assert(!(len != 0 && ld->line == NULL));
@@ -254,7 +246,8 @@ int copy_to_clip(buffer *b, int n, int cut) {
 				return OK;
 			}
 
-			if (!(new_cd = realloc_clip_desc(cd, n, clip_len))) {
+			clip_desc * const new_cd = realloc_clip_desc(cd, n, clip_len);
+			if (!new_cd) {
 				if (chaining) end_undo_chain(b);
 				return OUT_OF_MEMORY;
 			}
@@ -272,36 +265,35 @@ int copy_to_clip(buffer *b, int n, int cut) {
 /* Simply erases a block, without putting it in a clip. Calls update_syntax_and_lines(). */
 
 int erase_block(buffer *b) {
-
-	int i, bsp, start_pos, end_pos, len, erase_len = 0, chaining = 0, y = b->cur_line;
-	line_desc *ld = b->cur_line_desc;
-
 	if (!b->marking) return MARK_BLOCK_FIRST;
 	if (b->block_start_line >= b->num_lines) return MARK_OUT_OF_BUFFER;
+
+	int64_t y = b->cur_line, erase_len = 0;
+	line_desc *ld = b->cur_line_desc;
 
 	if (y == b->block_start_line &&
 		(b->cur_pos == b->block_start_pos ||
 		 b->cur_pos >= ld->line_len && b->block_start_pos >= ld->line_len))
 		return OK;
 
+	int chaining = false;
 	if (y > b->block_start_line || y == b->block_start_line && b->cur_pos > b->block_start_pos) {
-		for(i = y; i >= b->block_start_line; i--) {
-			start_pos = 0;
+		for(int64_t i = y; i >= b->block_start_line; i--) {
+			int64_t start_pos = 0;
 			if (i == b->block_start_line) {
 				if (ld->line_len < b->block_start_pos) {
 					if (!chaining) {
-						chaining = 1;
+						chaining = true;
 						start_undo_chain(b);
 					}
-					bsp = b->block_start_pos; /* because the mark will move when we insert_spaces()! */
+					const int64_t bsp = b->block_start_pos; /* because the mark will move when we insert_spaces()! */
 					insert_spaces(b, ld, i, ld->line_len, b->block_start_pos - ld->line_len);
 					b->block_start_pos = bsp;
 				}
 				start_pos = min(ld->line_len,b->block_start_pos);
 			}
-			if (i == y) end_pos = min(ld->line_len,b->cur_pos);
-			else end_pos = ld->line_len;
-			len = end_pos - start_pos;
+			const int64_t end_pos = i == y ? min(ld->line_len,b->cur_pos) : ld->line_len;
+			const int64_t len = end_pos - start_pos;
 
 			erase_len += len + 1;
 			ld = (line_desc *)ld->ld_node.prev;
@@ -310,21 +302,20 @@ int erase_block(buffer *b) {
 		goto_column(b, calc_width(b->cur_line_desc, b->block_start_pos, b->opt.tab_size, b->encoding));
 	}
 	else {
-		for(i = y; i <= b->block_start_line; i++) {
-			start_pos = 0;
+		for(int64_t i = y; i <= b->block_start_line; i++) {
+			int64_t start_pos = 0;
 			if (i == y) {
 				if (b->cur_pos > ld->line_len) {
 					if (!chaining) {
-						chaining = 1;
+						chaining = true;
 						start_undo_chain(b);
 					}
 					insert_spaces(b, ld, i, ld->line_len, b->cur_pos - ld->line_len);
 				}
 				start_pos = b->cur_pos > ld->line_len ? ld->line_len : b->cur_pos;
 			}
-			if (i == b->block_start_line) end_pos = min(b->block_start_pos, ld->line_len);
-			else end_pos = ld->line_len;
-			len = end_pos - start_pos;
+			const int64_t end_pos = i == b->block_start_line ? min(b->block_start_pos, ld->line_len) : ld->line_len;
+			const int64_t len = end_pos - start_pos;
 
 			erase_len += len + 1;
 			ld = (line_desc *)ld->ld_node.next;
@@ -345,9 +336,8 @@ int erase_block(buffer *b) {
 
 int paste_to_buffer(buffer *b, int n) {
 
-	clip_desc *cd;
-
-	if (!(cd = get_nth_clip(n))) return CLIP_DOESNT_EXIST;
+	clip_desc * const cd = get_nth_clip(n);
+	if (!cd) return CLIP_DOESNT_EXIST;
 
 	if (!cd->cs->len) return OK;
 	if (cd->cs->encoding == ENC_ASCII || b->encoding == ENC_ASCII || cd->cs->encoding == b->encoding) {
@@ -376,49 +366,47 @@ int paste_to_buffer(buffer *b, int n) {
    cut we use start_undo_chain() in order to make the various deletions a
    single undo operation. */
 
-int copy_vert_to_clip(buffer *b, int n, int cut) {
-
-	int i, pass, start_pos, len, clip_len, y = b->cur_line, start_x, end_x;
-	char *p = NULL;
-	clip_desc *cd, *new_cd;
-	line_desc *ld = b->cur_line_desc;
-
+int copy_vert_to_clip(buffer *b, int n, bool cut) {
 	if (!b->marking) return MARK_BLOCK_FIRST;
 	if (b->block_start_line >= b->num_lines) return MARK_OUT_OF_BUFFER;
 
-	cd = get_nth_clip(n);
+	int64_t y = b->cur_line;
+	line_desc *ld = b->cur_line_desc;
+	clip_desc *cd = get_nth_clip(n);
 
 	if (b->cur_pos == b->block_start_pos ||
 		 y == b->block_start_line && b->cur_pos >= ld->line_len && 
 		 b->block_start_pos >= ld->line_len) {
 
-		if (!(new_cd = realloc_clip_desc(cd, n, 0))) return OUT_OF_MEMORY;
+		clip_desc * const new_cd = realloc_clip_desc(cd, n, 0);
+		if (!new_cd) return OUT_OF_MEMORY;
 		set_stream_encoding(new_cd->cs, ENC_ASCII);
 		if (!cd) add_head(&clips, &new_cd->cd_node);
 		return OK;
 	}
 
-	start_x = calc_width(nth_line_desc(b, b->block_start_line), b->block_start_pos, b->opt.tab_size, b->encoding);
-	end_x = b->win_x + b->cur_x;
+	int64_t start_x = calc_width(nth_line_desc(b, b->block_start_line), b->block_start_pos, b->opt.tab_size, b->encoding);
+	int64_t end_x = b->win_x + b->cur_x;
 
 	if (end_x < start_x) {
-		i = start_x;
+		const uint64_t t = start_x;
 		start_x = end_x;
-		end_x = i;
+		end_x = t;
 	}
 
 	if (cut) start_undo_chain(b);
 
+	char *p = NULL;
 	if (y > b->block_start_line) {
-
-		for(pass = clip_len = 0; pass < 2; pass++) {
+		int64_t clip_len = 0;
+		for(int pass = 0; pass < 2; pass++) {
 
 			ld = b->cur_line_desc;
 
-			for(i = y; i >= b->block_start_line; i--) {
+			for(int64_t i = y; i >= b->block_start_line; i--) {
 
-				start_pos = calc_pos(ld, start_x, b->opt.tab_size, b->encoding);
-				len = calc_pos(ld, end_x, b->opt.tab_size, b->encoding) - start_pos;
+				const int64_t start_pos = calc_pos(ld, start_x, b->opt.tab_size, b->encoding);
+				const int64_t len = calc_pos(ld, end_x, b->opt.tab_size, b->encoding) - start_pos;
 
 				if (pass) {
 					*--p = 0;
@@ -444,22 +432,23 @@ int copy_vert_to_clip(buffer *b, int n, int cut) {
 				return OK;
 			}
 
-			if (!(new_cd = realloc_clip_desc(cd, n, clip_len))) return OUT_OF_MEMORY;
+			clip_desc * const new_cd = realloc_clip_desc(cd, n, clip_len);
+			if (!new_cd) return OUT_OF_MEMORY;
 			if (!cd) add_head(&clips, &new_cd->cd_node);
 			cd = new_cd;
 			p = cd->cs->stream + clip_len;
 		}
 	}
 	else {
-
-		for(pass = clip_len = 0; pass < 2; pass++) {
+		int64_t clip_len = 0;
+		for(int pass = 0; pass < 2; pass++) {
 
 			ld = b->cur_line_desc;
 
-			for(i = y; i <= b->block_start_line; i++) {
+			for(int64_t i = y; i <= b->block_start_line; i++) {
 
-				start_pos = calc_pos(ld, start_x, b->opt.tab_size, b->encoding);
-				len = calc_pos(ld, end_x, b->opt.tab_size, b->encoding) - start_pos;
+				const int64_t start_pos = calc_pos(ld, start_x, b->opt.tab_size, b->encoding);
+				const int64_t len = calc_pos(ld, end_x, b->opt.tab_size, b->encoding) - start_pos;
 
 				if (pass) {
 					if (len) memcpy(p, ld->line + start_pos, len);
@@ -485,7 +474,8 @@ int copy_vert_to_clip(buffer *b, int n, int cut) {
 				return OK;
 			}
 
-			if (!(new_cd = realloc_clip_desc(cd, n, clip_len))) return OUT_OF_MEMORY;
+			clip_desc * const new_cd = realloc_clip_desc(cd, n, clip_len);
+			if (!new_cd) return OUT_OF_MEMORY;
 			if (!cd) add_head(&clips, &new_cd->cd_node);
 			cd = new_cd;
 			p = cd->cs->stream;
@@ -500,42 +490,42 @@ int copy_vert_to_clip(buffer *b, int n, int cut) {
 
 int erase_vert_block(buffer *b) {
 
-	int i, start_pos, len, y = b->cur_line, start_x, end_x;
-	line_desc *ld = b->cur_line_desc;
-	line_desc *bsld;
 
 	if (!b->marking) return MARK_BLOCK_FIRST;
 	if (b->block_start_line >= b->num_lines) return MARK_OUT_OF_BUFFER;
+
+	int64_t y = b->cur_line;
+	line_desc *ld = b->cur_line_desc;
 
 	if (b->cur_pos == b->block_start_pos ||
 		y == b->block_start_line && b->cur_pos >= ld->line_len && 
 		b->block_start_pos >= ld->line_len) 
 		return OK;
 
-	start_x = calc_width(nth_line_desc(b, b->block_start_line), b->block_start_pos, b->opt.tab_size, b->encoding);
-	end_x = b->win_x + b->cur_x;
+	int64_t start_x = calc_width(nth_line_desc(b, b->block_start_line), b->block_start_pos, b->opt.tab_size, b->encoding);
+	int64_t end_x = b->win_x + b->cur_x;
 
 	if (end_x < start_x) {
-		i = start_x;
+		const uint64_t t = start_x;
 		start_x = end_x;
-		end_x = i;
+		end_x = t;
 	}
 
 	start_undo_chain(b);
 
 	if (y > b->block_start_line) {
-		for(i = y; i >= b->block_start_line; i--) {
-			start_pos = calc_pos(ld, start_x, b->opt.tab_size, b->encoding);
-			len = calc_pos(ld, end_x, b->opt.tab_size, b->encoding) - start_pos;
+		for(int64_t i = y; i >= b->block_start_line; i--) {
+			const int64_t start_pos = calc_pos(ld, start_x, b->opt.tab_size, b->encoding);
+			const int64_t len = calc_pos(ld, end_x, b->opt.tab_size, b->encoding) - start_pos;
 			delete_stream(b, ld, i, start_pos, len);
 			ld = (line_desc *)ld->ld_node.prev;
 		}
 		update_syntax_and_lines(b, (line_desc *)ld->ld_node.next, b->cur_line_desc);
 	}
 	else {
-		for(i = y; i <= b->block_start_line; i++) {
-			start_pos = calc_pos(ld, start_x, b->opt.tab_size, b->encoding);
-			len = calc_pos(ld, end_x, b->opt.tab_size, b->encoding)-start_pos;
+		for(int64_t i = y; i <= b->block_start_line; i++) {
+			const int64_t start_pos = calc_pos(ld, start_x, b->opt.tab_size, b->encoding);
+			const int64_t len = calc_pos(ld, end_x, b->opt.tab_size, b->encoding)-start_pos;
 			delete_stream(b, ld, i, start_pos, len);
 			ld = (line_desc *)ld->ld_node.next;
 		}
@@ -558,23 +548,19 @@ int erase_vert_block(buffer *b) {
 
 int paste_vert_to_buffer(buffer *b, int n) {
 
-	int len, stream_len, i, x, line;
-	unsigned char *p;
-	clip_desc *cd;
 	line_desc * ld = b->cur_line_desc;
-	unsigned char *stream;
-
-	if (!(cd = get_nth_clip(n))) return CLIP_DOESNT_EXIST;
-
+	clip_desc * const cd = get_nth_clip(n);
+	if (!cd) return CLIP_DOESNT_EXIST;
 	if (!cd->cs->len) return OK;
 
 	if (cd->cs->encoding != ENC_ASCII && b->encoding != ENC_ASCII && cd->cs->encoding != b->encoding) return INCOMPATIBLE_CLIP_ENCODING;
 	if (b->encoding == ENC_ASCII) b->encoding = cd->cs->encoding;
 
-	p = stream = cd->cs->stream;
-	stream_len = cd->cs->len;
-	line = b->cur_line;
-	x = b->cur_x + b->win_x;
+	char * const stream = cd->cs->stream;
+	char *p = stream;
+	const int64_t stream_len = cd->cs->len;
+	const uint64_t x = b->cur_x + b->win_x;
+	int64_t line = b->cur_line;
 
 	start_undo_chain(b);
 
@@ -584,18 +570,20 @@ int paste_vert_to_buffer(buffer *b, int n) {
 			ld = (line_desc *)ld->ld_node.prev;
 		}
 
-		if (len = strnlen_ne(p, stream_len - (p - stream))) {
-			for(n = i=0; i < ld->line_len && n < x; i = next_pos(ld->line, i, b->encoding)) {
-				if (ld->line[i] == '\t') n += b->opt.tab_size - n % b->opt.tab_size;
-				else n += get_char_width(&ld->line[i], b->encoding);
+		const int64_t len = strnlen_ne(p, stream_len - (p - stream));
+		if (len) {
+			uint64_t pos;
+			for(uint64_t n = pos = 0; pos < ld->line_len && n < x; pos = next_pos(ld->line, pos, b->encoding)) {
+				if (ld->line[pos] == '\t') n += b->opt.tab_size - n % b->opt.tab_size;
+				else n += get_char_width(&ld->line[pos], b->encoding);
 			}
 
-			if (i == ld->line_len && n < x) {
+			if (pos == ld->line_len && n < x) {
 				/* We miss x - n characters after the end of the line. */
 				insert_spaces(b, ld, line, ld->line_len, x - n);
 				insert_stream(b, ld, line, ld->line_len, p, len);
 			}
-			else insert_stream(b, ld, line, i, p, len);
+			else insert_stream(b, ld, line, pos, p, len);
 		}
 
 		p += len + 1;
@@ -610,19 +598,16 @@ int paste_vert_to_buffer(buffer *b, int n) {
 
 
 /* Loads a clip. It is just a load_stream, plus an insertion in the clip
-   list. If preserve_cr is TRUE, CRs are preserved. */
+   list. If preserve_cr is true, CRs are preserved. */
 
-int load_clip(int n, const char *name, const int preserve_cr, const int binary) {
-	int error;
-
+int load_clip(int n, const char *name, const bool preserve_cr, const bool binary) {
 	clip_desc *cd = get_nth_clip(n);
-
 	if (!cd) {
 		if (!(cd = alloc_clip_desc(n, 0))) return OUT_OF_MEMORY;
 		add_head(&clips, &cd->cd_node);
 	}
 
-	error = load_stream(cd->cs, name, preserve_cr, binary) ? OK : CANT_OPEN_FILE;
+	const int error = load_stream(cd->cs, name, preserve_cr, binary) ? OK : CANT_OPEN_FILE;
 
 	if (error == OK) set_stream_encoding(cd->cs, ENC_ASCII);
 
@@ -633,10 +618,8 @@ int load_clip(int n, const char *name, const int preserve_cr, const int binary) 
 /* Saves a clip to a file. If CRLF is true, the clip is saved with CR/LF pairs
    as line terminators. */
 
-int save_clip(int n, const char *name, const int CRLF, const int binary) {
-
-	clip_desc *cd = get_nth_clip(n);
-
+int save_clip(int n, const char *name, const bool CRLF, const bool binary) {
+	clip_desc * const cd = get_nth_clip(n);
 	if (!cd) return CLIP_DOESNT_EXIST;
 	return save_stream(cd->cs, name, CRLF, binary);
 }

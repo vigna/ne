@@ -66,39 +66,39 @@ char *ne_getcwd(const int bufsize) {
 /* The Convex system uses CDVM, and can call cvxstat to see if a file is
    migrated. */
 #include <sys/dmon.h>
-int is_migrated(const char * const name) {
+bool is_migrated(const char * const name) {
 	struct cvxstat st;
 	if (cvxstat(name, &st, sizeof(struct cvxstat)) == 0)
-		if (st.st_dmonflags & IMIGRATED) return 1;
+		if (st.st_dmonflags & IMIGRATED) return true;
 
-	return 0;
+	return false;
 }
 #elif defined ZERO_STAT_MIG_TEST
 /* Some systems which support hierarchical storage will report a non-zero file
    size but zero blocks used.  (Since the file is on tape rather than disc, it's
    using no disc blocks.)  If this describes the behaviour of your system,
    define ZERO_STAT_MIG_TEST when building ne. */
-int is_migrated(const char * const name) {
+bool is_migrated(const char * const name) {
 	struct stat statbuf;
 
 	if ((stat(tilde_expand(name), &statbuf) == 0) &&
 		  (statbuf.st_size > 0) &&
 		  (statbuf.st_blocks == 0))
-		return 1;
-	else return 0;
+		return true;
+	else return false;
   }
 #else
 
 /* Most systems have no hierarchical storage facility and need never concern
    themselves with this problem. For these systems, is_migrated() will always be
    false. */
-int is_migrated(const char * const name) {
-	return 0;
+bool is_migrated(const char * const name) {
+	return false;
 }
 #endif  
 
 
-int is_directory(const char * const name) {
+bool is_directory(const char * const name) {
 	struct stat statbuf;
 
 	return stat(tilde_expand(name), &statbuf) == 0 && S_ISDIR(statbuf.st_mode);
@@ -111,11 +111,33 @@ int is_directory(const char * const name) {
    for buffers which have not been saved. */
 
 unsigned long file_mod_time(const char *filename) {
-
 	static struct stat statbuf;
-	if ( stat(filename, &statbuf) )
-		return 0;
+	if ( stat(filename, &statbuf) ) return false;
 	return statbuf.st_mtime;
+}
+
+/* Reads data from a file descriptors much as read() does, but never reads
+   more than 1GiB in a single read(), ignores interruptions (EINTR) and
+   tries again in case of EAGAIN errors. */
+
+int64_t read_safely(const int fh, void * const buf, const int64_t len) {
+	for(int64_t done = 0; done < len; ) {
+		// We read one GiB at a time, lest some OS complains.
+		const int to_do = min(len - done, 1 << 30);
+		const int64_t t = read(fh, buf + done, to_do);
+		if (t < 0) {
+			if (errno == EINTR) continue;
+			if (errno == EAGAIN) { // We try again, but wait for a second.
+				sleep(1);
+				continue;
+			}
+			return t;
+		}
+		if (t == 0) return done;
+		done += t;
+	}
+	
+	return len;
 }
 
 /* Check a named file's mtime relative to a buffer's stored mtime.
@@ -128,21 +150,19 @@ unsigned long file_mod_time(const char *filename) {
      no usable name.
    Uses filename from the buffer unless passed a name. */
 
-int buffer_file_modified(const buffer *b, const char *name) {
-
-	unsigned long fmtime;
+bool buffer_file_modified(const buffer *b, const char *name) {
 
 	assert_buffer(b);
 
 	if (name == NULL) name = b->filename;
 
-	if (!name) return 0;
+	if (!name) return false;
 
 	name = tilde_expand(name);
 
-	fmtime = file_mod_time(name);
-	if (fmtime && b->mtime && fmtime != b->mtime) return 1;
-	return 0;
+	unsigned long fmtime = file_mod_time(name);
+	if (fmtime && b->mtime && fmtime != b->mtime) return true;
+	return false;
 }
 
 
@@ -155,12 +175,11 @@ const char *tilde_expand(const char * filename) {
 
 	static char *expanded_filename;
 
-	char *home_dir, *p;
-	struct passwd *passwd = NULL;
-
 	if (!filename) return NULL;
 
 	if (filename[0] != '~') return filename;
+
+	char *home_dir;
 
 	if (filename[1] == '/') {
 		home_dir = getenv("HOME");
@@ -168,13 +187,14 @@ const char *tilde_expand(const char * filename) {
 		filename++;
 	}
 	else {
-
 		const char *s;
 		char *t;
 
 		s = filename + 1;
 
 		while(*s && *s != '/') s++;
+
+		struct passwd *passwd = NULL;
 
 		if (t = malloc(s - filename)) {
 
@@ -192,7 +212,8 @@ const char *tilde_expand(const char * filename) {
 		home_dir = passwd->pw_dir;
 	}
 
-	if (p = realloc(expanded_filename, strlen(filename) + strlen(home_dir) + 1)) {
+	char * const p = realloc(expanded_filename, strlen(filename) + strlen(home_dir) + 1);
+	if (p) {
 		strcat(strcpy(expanded_filename = p, home_dir), filename);
 		return expanded_filename;
 	}
@@ -206,9 +227,8 @@ const char *tilde_expand(const char * filename) {
    points inside the string passed). */
 
 const char *file_part(const char * const pathname) {
-	const char *p;
 	if (!pathname) return NULL;
-	p = pathname + strlen(pathname);
+	const char * p = pathname + strlen(pathname);
 	while(p > pathname && *(p - 1) != '/') p--;
 	return p;
 }
@@ -217,21 +237,18 @@ const char *file_part(const char * const pathname) {
 /* Duplicates a string. */
 
 char *str_dup(const char * const s) {
-
-	char *dup;
-
 	if (!s) return NULL;
 
-	dup = malloc(strlen(s) + 1);
-
-	if (dup) strcpy(dup, s);
+	const int64_t len = strlen(s);
+	char * const dup = malloc(len + 1);
+	memcpy(dup, s, len + 1);
 	return dup;
 }
 
 /* Tries to compute the length as a string of the given pointer,
    but stops after n characters (returning n). */
 
-int strnlen_ne(const char *s, int n) {
+int64_t strnlen_ne(const char *s, int64_t n) {
 	const char * const p = s;
 	while(n-- != 0) if (!*(s++)) return s - p - 1;
 	return s - p;
@@ -239,9 +256,9 @@ int strnlen_ne(const char *s, int n) {
 
 /* Compares strings for equality, but accepts NULLs. */
 
-int same_str(const char *p, const char *q) {
-	if (p == q) return TRUE;
-	if (p == NULL || q == NULL) return FALSE;
+bool same_str(const char *p, const char *q) {
+	if (p == q) return true;
+	if (p == NULL || q == NULL) return false;
 	return strcmp(p, q) == 0;
 }
 
@@ -249,20 +266,16 @@ int same_str(const char *p, const char *q) {
 
 int max_prefix(const char * const s, const char * const t) {
 	int i;
-
 	for(i = 0; s[i] && t[i] && s[i] == t[i]; i++);
-
 	return i;
 }
 
 
-/* Returns TRUE is the first string is a prefix of the second one. */
+/* Returns true is the first string is a prefix of the second one. */
 
-int is_prefix(const char * const p, const char * const s) {
+bool is_prefix(const char * const p, const char * const s) {
 	int i;
-
 	for(i = 0; p[i] && s[i] && p[i] == s[i]; i++);
-
 	return !p[i];
 }
 
@@ -274,7 +287,6 @@ int is_prefix(const char * const p, const char * const s) {
 /* A string pointer comparison function for qsort(). */
 
 int strcmpp(const void *a, const void *b) {
-
 	return strcmp(*(const char **)a, *(const char **)b);
 }
 
@@ -285,9 +297,8 @@ int strdictcmpp(const void *a, const void *b)	{
 }
 
 int strdictcmp(const char *a, const char *b)	{
-	int ci;
-
-	if ( ci = strcasecmp(a, b) ) return ci;
+	const int ci = strcasecmp(a, b);
+	if (ci) return ci;
 	return strcmp(a, b);
 }
 
@@ -424,11 +435,10 @@ void unset_interactive_mode(void) {
    position. The position can be greater than the line length, the usual
    convention of infinite expansion via spaces being in place. */
 
-int calc_width(const line_desc * const ld, const int n, const int tab_size, const encoding_type encoding) {
+int64_t calc_width(const line_desc * const ld, const int64_t n, const int tab_size, const encoding_type encoding) {
 
-	int pos, len;
-
-	for(pos = len = 0; pos < n; pos = pos < ld->line_len ? next_pos(ld->line, pos, encoding) : pos + 1) {
+	int64_t len = 0;
+	for(int64_t pos = 0; pos < n; pos = pos < ld->line_len ? next_pos(ld->line, pos, encoding) : pos + 1) {
 		if (pos >= ld->line_len) len++;
 		else if (ld->line[pos] != '\t') len += get_char_width(&ld->line[pos], encoding);
 		else len += tab_size - len % tab_size;
@@ -439,9 +449,9 @@ int calc_width(const line_desc * const ld, const int n, const int tab_size, cons
 
 /* Computes character length of a line descriptor. */
 
-int calc_char_len(const line_desc * const ld, const encoding_type encoding) {
-	int pos, len;
-	for(pos = len = 0; pos < ld->line_len; pos = next_pos(ld->line, pos, encoding), len++);
+int64_t calc_char_len(const line_desc * const ld, const encoding_type encoding) {
+	int64_t len = 0;
+	for(int64_t pos = 0; pos < ld->line_len; pos = next_pos(ld->line, pos, encoding), len++);
 	return len;
 }
 
@@ -451,11 +461,10 @@ int calc_char_len(const line_desc * const ld, const encoding_type encoding) {
    property. If the width of the line is smaller than the given column, the
    line length is returned. */
 
-int calc_pos(const line_desc * const ld, const int col, const int tab_size, const encoding_type encoding) {
-
-	int pos, width, c_width;
-
-	for(pos = width = 0; pos < ld->line_len && width + (c_width = get_char_width(&ld->line[pos], encoding)) <= col; pos = next_pos(ld->line, pos, encoding)) {
+int64_t calc_pos(const line_desc * const ld, const int64_t col, const int tab_size, const encoding_type encoding) {
+	int c_width;
+	int64_t pos = 0;
+	for(int64_t width = 0; pos < ld->line_len && width + (c_width = get_char_width(&ld->line[pos], encoding)) <= col; pos = next_pos(ld->line, pos, encoding)) {
 		if (ld->line[pos] != '\t') width += c_width;
 		else width += tab_size - width % tab_size;
 	}
@@ -465,32 +474,33 @@ int calc_pos(const line_desc * const ld, const int col, const int tab_size, cons
 
 /* Returns true if the specified character is invariant on the left edge of re-wrapped paragraphs */
 
-int isparaspot(const int c) {
+bool isparaspot(const int c) {
 	char *spots = "%/*#>\t ";
 	char *p = spots;
 	while (*p) {
-		if (*p++ == c) return TRUE;
+		if (*p++ == c) return true;
 	}
-	return FALSE;
+	return false;
 }
 
 /* Returns true if the specified character is an US-ASCII whitespace character. */
 
-int isasciispace(const int c) {
+bool isasciispace(const int c) {
 	return c < 0x80 && isspace(c);
 }
 
 /* Returns true if the specified character is an US-ASCII alphabetic character. */
 
-int isasciialpha(const int c) {
+bool isasciialpha(const int c) {
 	return c < 0x80 && isalpha(c);
 }
 
 /* Returns true if the specified block of text is US-ASCII. */
 
-int is_ascii(const unsigned char * const s, int len) {
-	while(len-- != 0) if (s[len] >= 0x80) return FALSE;
-	return TRUE;
+bool is_ascii(const char * const ss, int len) {
+	const unsigned char * const s = (const unsigned char *)ss;
+	while(len-- != 0) if (s[len] >= 0x80) return false;
+	return true;
 }
 
 
@@ -508,26 +518,27 @@ int asciitolower(const int c) {
 
 /* Detects (heuristically) the encoding of a piece of text. */
 
-encoding_type detect_encoding(const unsigned char *s, const int len) {
-	int i, is_ascii = TRUE;
-	const unsigned char * const t = s + len;
-
+encoding_type detect_encoding(const char *ss, const int64_t len) {
 	if (len == 0) return ENC_ASCII;
+
+	const unsigned char *s = (const unsigned char *)ss;
+	bool is_ascii = true;
+	const unsigned char * const t = s + len;
 
 	do {
 		if (*s >= 0x80) { /* On US-ASCII text, we never enter here. */
-			is_ascii = FALSE; /* Once we get here, we are either 8-bit or UTF-8. */
-			i = utf8len(*s);
-			if (i == -1) return ENC_8_BIT;
-			else if (i > 1) {
-				if (s + i > t) return ENC_8_BIT;
+			is_ascii = false; /* Once we get here, we are either 8-bit or UTF-8. */
+			int l = utf8len(*s);
+			if (l == -1) return ENC_8_BIT;
+			else if (l > 1) {
+				if (s + l > t) return ENC_8_BIT;
 				else {
 					/* We check for redundant representations. */
-					if (i == 2) {
+					if (l == 2) {
 						if (!(*s & 0x1E)) return ENC_8_BIT;
 					}
-					else if (!(*s & (1 << 7 - i) - 1) && !(*(s + 1) & ((1 << i - 2) - 1) << 8 - i)) return ENC_8_BIT;
-					while(--i != 0) if ((*(++s) & 0xC0) != 0x80) return ENC_8_BIT;
+					else if (!(*s & (1 << 7 - l) - 1) && !(*(s + 1) & ((1 << l - 2) - 1) << 8 - l)) return ENC_8_BIT;
+					while(--l != 0) if ((*(++s) & 0xC0) != 0x80) return ENC_8_BIT;
 				}
 			}
 		}
@@ -540,7 +551,7 @@ encoding_type detect_encoding(const unsigned char *s, const int len) {
    s is NULL, just returns pos + 1. If encoding is UTF8 it uses utf8len() to
    move forward. */
 
-int next_pos(const unsigned char * const s, const int pos, const encoding_type encoding) {
+int64_t next_pos(const char * const s, const int64_t pos, const encoding_type encoding) {
 	assert(encoding != ENC_UTF8 || s == NULL || utf8len(s[pos]) > 0);
 	if (s == NULL) return pos + 1;
 	if (encoding == ENC_UTF8) return pos + utf8len(s[pos]);
@@ -551,7 +562,7 @@ int next_pos(const unsigned char * const s, const int pos, const encoding_type e
    If s is NULL, just returns pos + 1. If encoding is UTF-8 uses utf8len() to
    move backward. If pos is 0, this function returns -1. */
 
-int prev_pos(const unsigned char * const s, int pos, const encoding_type encoding) {
+int64_t prev_pos(const char * const s, int64_t pos, const encoding_type encoding) {
 	assert(pos >= 0);
 	if (pos == 0) return -1;
 	if (s == NULL) return pos - 1;
@@ -566,7 +577,7 @@ int prev_pos(const unsigned char * const s, int pos, const encoding_type encodin
 /* Returns the ISO 10646 character represented by the sequence of bytes
    starting at s, using the provided encoding. */
 
-int get_char(const unsigned char * const s, const encoding_type encoding) {
+int get_char(const char * const s, const encoding_type encoding) {
 	if (encoding == ENC_UTF8) return utf8char(s);
 	else return *s;
 }
@@ -574,7 +585,7 @@ int get_char(const unsigned char * const s, const encoding_type encoding) {
 /* Returns the width of the ISO 10646 character represented by the sequence of bytes
    starting at s, using the provided encoding. */
 
-int get_char_width(const unsigned char * const s, const encoding_type encoding) {
+int get_char_width(const char * const s, const encoding_type encoding) {
 	assert(s != NULL);
 	return encoding == ENC_UTF8 ? output_width(utf8char(s)) : output_width(*s);
 }
@@ -582,19 +593,19 @@ int get_char_width(const unsigned char * const s, const encoding_type encoding) 
 /* Returns the width of the first len characters of s, using the provided
    encoding. If s is NULL, returns len. */
 
-int get_string_width(const unsigned char * const s, const int len, const encoding_type encoding) {
-	int pos, width = 0;
+int get_string_width(const char * const s, const int len, const encoding_type encoding) {
 	if (s == NULL) return len;
-	for(pos = 0; pos < len; pos = next_pos(s, pos, encoding)) width += get_char_width(s + pos, encoding);
+	int64_t width = 0;
+	for(int64_t pos = 0; pos < len; pos = next_pos(s, pos, encoding)) width += get_char_width(s + pos, encoding);
 	return width;
 }
 
 /* Returns whether the given character is a punctuation character. This function is 
    compiled differently depending on whether wide-character function support is inhibited. */
 
-int ne_ispunct(const int c, const int encoding) {
+bool ne_ispunct(const int c, const int encoding) {
 #ifdef NOWCHAR
-	return encoding != ENC_UTF8 ? ispunct(c) : c < 0x80 ? ispunct(c) : 0;
+	return encoding != ENC_UTF8 ? ispunct(c) : c < 0x80 ? ispunct(c) : false;
 #else
 	return encoding != ENC_UTF8 ? ispunct(c) : iswpunct(c);
 #endif
@@ -603,9 +614,9 @@ int ne_ispunct(const int c, const int encoding) {
 /* Returns whether the given character is whitespace. This function is 
    compiled differently depending on whether wide-character function support is inhibited. */
 
-int ne_isspace(const int c, const int encoding) {
+bool ne_isspace(const int c, const int encoding) {
 #ifdef NOWCHAR
-	return encoding != ENC_UTF8 ? isspace(c) : c < 0x80 ? isspace(c) : 0;
+	return encoding != ENC_UTF8 ? isspace(c) : c < 0x80 ? isspace(c) : false;
 #else
 	return encoding != ENC_UTF8 ? isspace(c) : iswspace(c);
 #endif
@@ -617,7 +628,7 @@ int ne_isspace(const int c, const int encoding) {
    TODO: implement a way for users to specify their own word characters.
    For now, hardcode '_'.  */
 
-int ne_isword(const int c, const int encoding) {
+bool ne_isword(const int c, const int encoding) {
 	return c == '_' || !(ne_isspace(c, encoding) || ne_ispunct(c, encoding));
 }
 
@@ -625,7 +636,7 @@ int ne_isword(const int c, const int encoding) {
    string if none is found. Consumer is responsible for seeing that the string is freed.
    *prefix_pos is the offset from the beginning of the current line where the prefix starts. */
 
-int context_prefix(const buffer *b, unsigned char **p, int *prefix_pos, encoding_type encoding) {
+int context_prefix(const buffer *b, char **p, int64_t *prefix_pos) {
 
 	*prefix_pos = b->cur_pos;
 	if (*prefix_pos && *prefix_pos <= b->cur_line_desc->line_len) {
@@ -646,23 +657,21 @@ int context_prefix(const buffer *b, unsigned char **p, int *prefix_pos, encoding
 
 
 /* Returns the line descriptor for line n of buffer b, or NULL if n is out of range. */
-   line_desc *nth_line_desc(const buffer *b, const int n) {
-   line_desc *ld = b->cur_line_desc;
-   int i = b->cur_line - n;
+line_desc *nth_line_desc(const buffer *b, const int n) {
+	if (n < 0 || n >= b->num_lines) return NULL;
 
-   if (n < 0 || n >= b->num_lines) return NULL;
+	/* Count relative to the current line, because we're usually looking for something close by. */
 
-   /* Count relative to the current line, because we're usually looking for something close by. */
-
-   while( i ) {
-   	if (i > 0) {
-   		ld = (line_desc *)ld->ld_node.prev;
-   		i--;
-   	} else {
-   		ld = (line_desc *)ld->ld_node.next;
-   		i++;
-   	}
-   }
-   return ld;
+	line_desc *ld = b->cur_line_desc;
+	for(int64_t i = b->cur_line - n; i; ) {
+		if (i > 0) {
+			ld = (line_desc *)ld->ld_node.prev;
+			i--;
+		} else {
+			ld = (line_desc *)ld->ld_node.next;
+			i++;
+		}
+	}
+	return ld;
 }
 

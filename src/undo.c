@@ -38,16 +38,14 @@
    pos. */
 
 
-static int cat_undo_step(undo_buffer * const ub, const int line, const int pos, const int len) {
-
-	undo_step *ud;
-
-	if (!ub) return FALSE;
+static int cat_undo_step(undo_buffer * const ub, const int64_t line, const int64_t pos, const int64_t len) {
+	if (!ub) return false;
 
 	assert_undo_buffer(ub);
 
 	if (ub->cur_step >= ub->steps_size) {
-		if (ud = realloc(ub->steps, (ub->steps_size + STD_UNDO_STEP_SIZE) * sizeof(undo_step))) {
+		undo_step * const ud = realloc(ub->steps, (ub->steps_size + STD_UNDO_STEP_SIZE) * sizeof(undo_step));
+		if (ud) {
 			ub->steps_size += STD_UNDO_STEP_SIZE;
 			ub->steps = ud;
 		}
@@ -110,7 +108,7 @@ void end_undo_chain(buffer * const b) {
    deletion. When an insertion is recorded, len characters have to be added to
    the undo stream with add_to_undo_stream(). */
 
-int add_undo_step(buffer * const b, const int line, const int pos, const int len) {
+int add_undo_step(buffer * const b, const int64_t line, const int64_t pos, const int64_t len) {
 	return cat_undo_step(&b->undo, line, b->link_undos ? -pos - 1 : pos, len);
 }
 
@@ -118,14 +116,14 @@ int add_undo_step(buffer * const b, const int line, const int pos, const int len
    function is needed by delete_stream(), as it is not possible to know
    the exact length of a deletion until it is performed. */
 
-void fix_last_undo_step(buffer * const b, const int delta) {
+void fix_last_undo_step(buffer * const b, const int64_t delta) {
 	b->undo.steps[b->undo.cur_step - 1].len += delta;
 }
 
 
 /* Adds to the undo stream a block of len characters pointed to by p. */
 
-int add_to_undo_stream(undo_buffer * const ub, const char * const p, const int len) {
+int add_to_undo_stream(undo_buffer * const ub, const char * const p, const int64_t len) {
 
 	assert(len > 0);
 	assert(ub != NULL);
@@ -197,10 +195,8 @@ int undo(buffer * const b) {
 		b->undo.cur_step--;
 
 		if (b->undo.steps[b->undo.cur_step].len) {
-			line_desc *cur_line_desc;
 			goto_line(b, b->undo.steps[b->undo.cur_step].line);
 			goto_pos(b, b->undo.steps[b->undo.cur_step].pos >= 0 ? b->undo.steps[b->undo.cur_step].pos : -(1 + b->undo.steps[b->undo.cur_step].pos));
-			cur_line_desc = b->cur_line_desc;
 
 			if (b->undo.steps[b->undo.cur_step].len < 0) {
 				delete_stream(b, b->cur_line_desc, b->cur_line, b->cur_pos, -b->undo.steps[b->undo.cur_step].len);
@@ -246,10 +242,8 @@ int redo(buffer * const b) {
 #endif
 	do {
 		if (b->undo.steps[b->undo.cur_step].len) {
-			line_desc *cur_line_desc;
 			goto_line(b, b->undo.steps[b->undo.cur_step].line);
 			goto_pos(b, b->undo.steps[b->undo.cur_step].pos >= 0 ? b->undo.steps[b->undo.cur_step].pos : -(1 + b->undo.steps[b->undo.cur_step].pos));
-			cur_line_desc = b->cur_line_desc;
 
 			if (b->undo.steps[b->undo.cur_step].len < 0) { 
 				line_desc *end_ld = (line_desc *)b->cur_line_desc->ld_node.next;

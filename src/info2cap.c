@@ -137,18 +137,16 @@ be copied in tparam_buffer and silently truncated. It should never happen
 with reasonable values for TPARAM_BUF_LEN, though. */
 
 char *tparm(const char * const cap_string,...) {
-
 	static char tparam_buffer[TPARAM_BUF_LEN];
 
 	va_list ap;
-	char *p;
-	int i, arg[4];
+	int arg[4];
 
 	va_start(ap, cap_string);
-	for(i = 0; i < 4; i++) arg[i] = va_arg(ap, int);
+	for(int i = 0; i < 4; i++) arg[i] = va_arg(ap, int);
 	va_end(ap);
 
-	p = tparam(cap_string, tparam_buffer, TPARAM_BUF_LEN, arg[0], arg[1], arg[2], arg[3]);
+	char * const p = tparam(cap_string, tparam_buffer, TPARAM_BUF_LEN, arg[0], arg[1], arg[2], arg[3]);
 
 	if (p != tparam_buffer) {
 		memcpy(tparam_buffer, p, TPARAM_BUF_LEN - 1);
@@ -162,14 +160,10 @@ char *tparm(const char * const cap_string,...) {
 /* This is a real fake. We already know all the parameters. */
 
 int setupterm(const char * const dummy1, const int dunmmy2, const int * const dummy3) {
-
-	int l,c;
-	char *term_name = getenv("TERM"), *s;
-	struct termios termios;
-
+	char * const term_name = getenv("TERM"), *s;
 	if (!term_name) return ERR;
 
-	c = tgetent(NULL, term_name);
+	int c = tgetent(NULL, term_name);
 
 	if (c != 1) return ERR;
 
@@ -182,6 +176,7 @@ int setupterm(const char * const dummy1, const int dunmmy2, const int * const du
 		exit(1);
 		}*/
 
+	struct termios termios;
 	tcgetattr(0, &termios);
 
 	switch(cfgetospeed(&termios)) {
@@ -252,7 +247,7 @@ int setupterm(const char * const dummy1, const int dunmmy2, const int * const du
 	if ((ne_lines = tgetnum("li")) <= 0) ne_lines = 25;
 	if ((ne_columns = tgetnum("co")) <= 0) ne_columns = 80;
 
-	l = c = 0;
+	int l = c = 0;
 	if (s = getenv("LINES")) l = atoi(s);
 	if (s = getenv("COLUMNS")) c = atoi(s);
 	if (l > 0 && c > 0) {
