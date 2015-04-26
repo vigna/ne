@@ -15,8 +15,10 @@ texinfo.tex macro package, or turned into a hypertext document using GNU's
 makeinfo. The directory contains several pre-compiled printable and
 hypertext versions of the documentation.
 
-If something does not work, please feel free to email us.
+If something does not work, please feel free to email us, or write
+to the mailing list.
 
 
 					seba (vigna@di.unimi.it)
 					Todd (Todd_Lewis@unc.edu)
+					niceeditor@googlegroups.com
