@@ -1256,7 +1256,6 @@ int load_fh_in_buffer(buffer *b, int fh) {
 
 		reset_position_to_sof(b);
 		if (b->opt.do_undo) b->undo.last_save_step = 0;
-		reset_syntax_states(b);
 		release_signals();
 		return OK;
 	}

@@ -911,7 +911,8 @@ highlighting capability. For most editing situations, this would be
 unnecessary, but for extremely large files it may be helpful. Syntax
 highlighting incurs small memory usage and processor overhead penalties
 for each line of text. The @code{--no-syntax} option eliminates that
-overhead.
+overhead. Note that files longer than ten million bytes will have
+syntax highlighting disabled by default. @xref{Syntax Highlighting}.
 
 The @code{--utf8} and @code{--no-utf8} options can be used to
 force or inhibit UTF-8 I/O, overriding the choice imposed by the system
@@ -1315,7 +1316,9 @@ significant. If you invoke @code{ne} with the @code{--no-syntax}
 parameter, @code{ne} will disable the syntax highlighting mechanism
 entirely, freeing up the memory and CPU otherwise consumed. (Note that
 if you are that tight on memory, you may need to disable the undo
-buffer as well. @xref{DoUndo}.)
+buffer as well. @xref{DoUndo}.) @code{ne} will silently disable syntax
+highlighting on files longer than ten million bytes, but you can force
+it using the @code{Syntax} command.
 
 @code{ne} uses code from another editor---the GPL-licensed
 @code{joe}---for its syntax highlighting capabilities. Because of this fact, the

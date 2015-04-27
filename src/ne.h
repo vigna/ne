@@ -94,6 +94,10 @@ extern const char *input_class_names[];
 
 #define EXT_2_SYN          "ext2syn"
 
+/* Files with more than this number of characters will not have syntax highlighting enabled automatically. */
+
+#define MAX_SYNTAX_SIZE		(10000000)
+
 /* This is the name taken by unnamed documents. */
 
 #define UNNAMED_NAME       "<unnamed>"

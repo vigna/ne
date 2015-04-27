@@ -780,14 +780,19 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 			/* 'c' -- flag meaning "Don't prompt if we've ever responded 'yes'." */
 			if (!dup || dup == b || (dprompt && !c) || (dprompt = request_response(b, info_msg[SAME_NAME], false))) {
-				b->syn = NULL; /* So that autoprefs will load the right syntax. */
-				if (b->opt.auto_prefs && extension(p)) load_auto_prefs(b, extension(p));
 				error = load_file_in_buffer(b, p);
 				if (error != FILE_IS_MIGRATED 
 					&& error != FILE_IS_DIRECTORY 
 					&& error != IO_ERROR 
 					&& error != FILE_IS_TOO_LARGE 
-					&& error != OUT_OF_MEMORY) change_filename(b, p);
+					&& error != OUT_OF_MEMORY) {
+					change_filename(b, p);
+					b->syn = NULL; /* So that autoprefs will load the right syntax. */
+					if (b->allocated_chars - b->free_chars <= MAX_SYNTAX_SIZE && b->opt.auto_prefs && extension(p)) {
+						load_auto_prefs(b, extension(p));
+						reset_syntax_states(b);
+					}
+				}
 				print_error(error);
 				reset_window();
 				return OK;

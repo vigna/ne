@@ -8,13 +8,9 @@
    copy and copy contiguously in it, instead of
    allocating line by line.
 
-2) Loading from pipes. We should be able to read files
-   in which the length is not known. I think the best
-   thing to do would be to allocate exponentially
-   larger pools starting with the default size.
+2) Moving to C99:
 
-3) Moving to C99:
-
+   - aggressively const'ing whatever can be const'd.
    - bool type for all bools (and false/true instead of FALSE/TRUE).
    - loop variables declared inside loops to reduce lexical scoping.
    - More generally, reduce lexical scoping: no variables at the
