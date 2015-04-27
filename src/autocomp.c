@@ -22,6 +22,8 @@
 
 #define EXTERNAL_FLAG_CHAR '*'
 
+#define MAX_AUTOCOMPLETE_STRINGS (1000000)
+
 static req_list rl;
 
 static void add_string(const char * const s, const int len, const int ext) {
@@ -49,14 +51,12 @@ static void add_string(const char * const s, const int len, const int ext) {
 }
 
 static void search_buff(const buffer *b, char * p, const int encoding, const int case_search, const int ext) {
-	line_desc *ld = (line_desc *)b->line_desc_list.head, *next;
-	int p_len = strlen(p);
-	int64_t l, r;
-
 	assert(p);
+	const int p_len = strlen(p);
 
-	while (next = (line_desc *)ld->ld_node.next) {
-		l = r = 0;
+	int count = 0;
+	for(line_desc *ld = (line_desc *)b->line_desc_list.head, *next; next = (line_desc *)ld->ld_node.next; ld = next) {
+		int64_t l = 0, r = 0;
 		do {
 			/* find left edge of word */
 			while (l < ld->line_len - p_len && !ne_isword(get_char(&ld->line[l], b->encoding), b->encoding)) l += get_char_width(&ld->line[l], b->encoding);
@@ -65,20 +65,21 @@ static void search_buff(const buffer *b, char * p, const int encoding, const int
 				r = l + get_char_width(&ld->line[l], b->encoding);
 				while (r < ld->line_len && ne_isword(get_char(&ld->line[r], b->encoding), b->encoding)) r += get_char_width(&ld->line[r], b->encoding);
 				if (r - l > p_len && !(case_search ? strncmp : strncasecmp)(p, &ld->line[l], p_len)) {
-					if (b->encoding == encoding || is_ascii(&ld->line[l], r - l)) add_string(&ld->line[l], r - l, ext);
+					if (b->encoding == encoding || is_ascii(&ld->line[l], r - l)) {
+						add_string(&ld->line[l], r - l, ext);
+						count++;
+					}
 				}
 				l = r;
 			}
 			assert(l <= ld->line_len);
-			if (stop) {
-				add_string(NULL,-1,0);
+			if (stop || count >= MAX_AUTOCOMPLETE_STRINGS) {
+				add_string(NULL, -1, 0);
 				return;
 			}
 		} while (l < ld->line_len - p_len);
-
-		ld = next;
 	}
-	add_string(NULL,-1,0);
+	add_string(NULL, -1, 0);
 }
 
 /* Returns a completion for the (non-NULL) prefix p, showing suffixes from
