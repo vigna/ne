@@ -33,9 +33,9 @@ struct high_color {
 /* State */
 
 struct high_state {
-	int no;				/* State number */
-	unsigned char *name;		/* Highlight state name */
+	int32_t no;				/* State number */
 	uint32_t color;			/* Color for this state */
+	unsigned char *name;		/* Highlight state name */
 	struct high_cmd *cmd[256];	/* Character table */
 	struct high_cmd *delim;		/* Matching delimiter */
 };
