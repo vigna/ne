@@ -22,7 +22,7 @@
 
 #define EXTERNAL_FLAG_CHAR '*'
 
-#define MAX_AUTOCOMPLETE_STRINGS (1000000)
+#define MAX_AUTOCOMPLETE_STRINGS (10000000)
 
 static req_list rl;
 
@@ -54,7 +54,7 @@ static void search_buff(const buffer *b, char * p, const int encoding, const int
 	assert(p);
 	const int p_len = strlen(p);
 
-	int count = 0;
+	int count_scanned = 0, count_added = 0;
 	for(line_desc *ld = (line_desc *)b->line_desc_list.head, *next; next = (line_desc *)ld->ld_node.next; ld = next) {
 		int64_t l = 0, r = 0;
 		do {
@@ -67,13 +67,14 @@ static void search_buff(const buffer *b, char * p, const int encoding, const int
 				if (r - l > p_len && !(case_search ? strncmp : strncasecmp)(p, &ld->line[l], p_len)) {
 					if (b->encoding == encoding || is_ascii(&ld->line[l], r - l)) {
 						add_string(&ld->line[l], r - l, ext);
-						count++;
+						count_added++;
 					}
 				}
 				l = r;
+				count_scanned++;
 			}
 			assert(l <= ld->line_len);
-			if (stop || count >= MAX_AUTOCOMPLETE_STRINGS) {
+			if (stop || count_scanned >= MAX_AUTOCOMPLETE_STRINGS * 10 || count_added >= MAX_AUTOCOMPLETE_STRINGS) {
 				add_string(NULL, -1, 0);
 				return;
 			}
