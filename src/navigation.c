@@ -669,10 +669,11 @@ int adjust_view(buffer * const b, const char *p) {
 
 
 void goto_line(buffer * const b, const int64_t n) {
-	line_desc *ld;
 	b->y_wanted = 0;
 
 	if (n >= b->num_lines || n == b->cur_line) return;
+
+	line_desc *ld;
 
 	if (n >= b->win_y && n < b->win_y + ne_lines - 1) {
 		update_syntax_states(b, -1, b->cur_line_desc, NULL);
@@ -695,20 +696,30 @@ void goto_line(buffer * const b, const int64_t n) {
 	if (b->win_y < 0) b->win_y = 0;
 
 	b->cur_y = n - b->win_y;
-	b->cur_line = n;
 
-	if (n < b->num_lines / 2) {
-		ld = (line_desc *)b->line_desc_list.head;
-		for(int64_t i = 0; i < b->win_y; i++) ld = (line_desc *)ld->ld_node.next;
+	const int64_t best_absolute_cost = min(n, b->num_lines - n);
+	const int64_t relative_cost = b->cur_line < n ? n - b->cur_line : b->cur_line - n;
+
+	if (best_absolute_cost < relative_cost) {
+		if (n < b->num_lines / 2) {
+			ld = (line_desc *)b->line_desc_list.head;
+			for(int64_t i = 0; i < n; i++) ld = (line_desc *)ld->ld_node.next;
+		}
+		else {
+			ld = (line_desc *)b->line_desc_list.tail_pred;
+			for(int64_t i = 0; i < b->num_lines - n - 1; i++) ld = (line_desc *)ld->ld_node.prev;
+		}
 	}
 	else {
-		ld = (line_desc *)b->line_desc_list.tail_pred;
-		for(int64_t i = b->num_lines - 1; i > b->win_y; i--) ld = (line_desc *)ld->ld_node.prev;
+		ld = (line_desc *)b->cur_line_desc;
+		if (n < b->cur_line) for(int64_t i = 0; i < b->cur_line - n; i++) ld = (line_desc *)ld->ld_node.prev;
+		for(int64_t i = 0; i < n - b->cur_line; i++) ld = (line_desc *)ld->ld_node.next;
 	}
 
-	b->top_line_desc = ld;
-	for(int i = 0; i < b->cur_y; i++) ld = (line_desc *)ld->ld_node.next;
+	b->cur_line = n;
 	b->cur_line_desc = ld;
+	for(int i = 0; i < b->cur_y; i++) ld = (line_desc *)ld->ld_node.prev;
+	b->top_line_desc = ld;
 
 	if (b == cur_buffer) update_window(b);
 	resync_pos(b);
