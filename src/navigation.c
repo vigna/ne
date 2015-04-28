@@ -713,7 +713,7 @@ void goto_line(buffer * const b, const int64_t n) {
 	else {
 		ld = (line_desc *)b->cur_line_desc;
 		if (n < b->cur_line) for(int64_t i = 0; i < b->cur_line - n; i++) ld = (line_desc *)ld->ld_node.prev;
-		for(int64_t i = 0; i < n - b->cur_line; i++) ld = (line_desc *)ld->ld_node.next;
+		else for(int64_t i = 0; i < n - b->cur_line; i++) ld = (line_desc *)ld->ld_node.next;
 	}
 
 	b->cur_line = n;
