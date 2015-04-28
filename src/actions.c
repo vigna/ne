@@ -788,9 +788,12 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 					&& error != OUT_OF_MEMORY) {
 					change_filename(b, p);
 					b->syn = NULL; /* So that autoprefs will load the right syntax. */
-					if (b->allocated_chars - b->free_chars <= MAX_SYNTAX_SIZE && b->opt.auto_prefs && extension(p)) {
-						load_auto_prefs(b, extension(p));
-						reset_syntax_states(b);
+					if (b->opt.auto_prefs && extension(p)) {
+						if (b->allocated_chars - b->free_chars <= MAX_SYNTAX_SIZE) {
+							load_auto_prefs(b, extension(p));
+							reset_syntax_states(b);
+						}
+						else if (error == OK) error = FILE_TOO_LARGE_SYNTAX_HIGHLIGHTING_DISABLED;
 					}
 				}
 				print_error(error);

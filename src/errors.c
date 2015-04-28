@@ -90,6 +90,7 @@ char *error_msg[ERROR_COUNT] = {
 	/* 62 */ "Invalid Shift specified (use [<|>][#][s|t]; default is \">1t\").",
 	/* 63 */ "Insufficient white space for requested left shift.",
 	/* 64 */ "Document not saved.",
+	/* 65*/	"File is too large--syntax highlighting disabled (use SYNTAX to reactivate)."
 
 };
 
@@ -111,5 +112,5 @@ char *info_msg[INFO_COUNT] = {
 	"Partially completed.",
 	"Cancelled.",
 	"SELECT: cursor, enter. FILTER: chars, backspace. REORDER: F2/F3. ABORT: Esc",
-	"File has been modified since buffer was loaded or saved; are you sure?",
+	"File has been modified since buffer was loaded or saved; are you sure?"
 };

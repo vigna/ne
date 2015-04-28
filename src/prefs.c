@@ -304,10 +304,8 @@ int save_auto_prefs(buffer * const b, const char *name) {
 }
 
 
-/**************************************
-  This bit has to do with pushing and poping preferences
-  on the prefs stack.
-****************************************/
+/* This bit has to do with pushing and popping preferences
+   on the prefs stack. */
 
 #define MAX_PREF_STACK_SIZE  32
 
