@@ -22,9 +22,12 @@
 
 #define EXTERNAL_FLAG_CHAR '*'
 
-#define MAX_AUTOCOMPLETE_STRINGS (10000000)
+#define MAX_AUTOCOMPLETE_SCAN (1000000)
 
 static req_list rl;
+
+/* Keeps track of how many strings we have scanned. At MAX_AUTOCOMPLETE_SCAN we return. */
+static int count_scanned;
 
 static void add_string(const char * const s, const int len, const int ext) {
 	static char *buf = NULL;
@@ -54,7 +57,6 @@ static void search_buff(const buffer *b, char * p, const int encoding, const int
 	assert(p);
 	const int p_len = strlen(p);
 
-	int count_scanned = 0, count_added = 0;
 	for(line_desc *ld = (line_desc *)b->line_desc_list.head, *next; next = (line_desc *)ld->ld_node.next; ld = next) {
 		int64_t l = 0, r = 0;
 		do {
@@ -65,16 +67,13 @@ static void search_buff(const buffer *b, char * p, const int encoding, const int
 				r = l + get_char_width(&ld->line[l], b->encoding);
 				while (r < ld->line_len && ne_isword(get_char(&ld->line[r], b->encoding), b->encoding)) r += get_char_width(&ld->line[r], b->encoding);
 				if (r - l > p_len && !(case_search ? strncmp : strncasecmp)(p, &ld->line[l], p_len)) {
-					if (b->encoding == encoding || is_ascii(&ld->line[l], r - l)) {
-						add_string(&ld->line[l], r - l, ext);
-						count_added++;
-					}
+					if (b->encoding == encoding || is_ascii(&ld->line[l], r - l)) add_string(&ld->line[l], r - l, ext);
 				}
 				l = r;
 				count_scanned++;
 			}
 			assert(l <= ld->line_len);
-			if (stop || count_scanned >= MAX_AUTOCOMPLETE_STRINGS * 10 || count_added >= MAX_AUTOCOMPLETE_STRINGS) {
+			if (stop || count_scanned >= MAX_AUTOCOMPLETE_SCAN) {
 				add_string(NULL, -1, 0);
 				return;
 			}
@@ -98,6 +97,7 @@ char *autocomplete(char *p, char *req_msg, const int ext, int * const error) {
 	assert(p);
 
 	req_list_init(&rl, (cur_buffer->opt.case_search ? strcmp : strdictcmp), false, false, EXTERNAL_FLAG_CHAR);
+	count_scanned = 0;
 
 	search_buff(cur_buffer, p, cur_buffer->encoding, cur_buffer->opt.case_search, false);
 	if (stop) {
