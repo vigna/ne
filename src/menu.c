@@ -667,14 +667,14 @@ void draw_status_bar(void) {
 		}
 
 		if (update_percent) {
-			move_cursor(ne_lines - 1, offset + 25);
+			move_cursor(ne_lines - 1, offset + 26);
 			len = sprintf(bar_buffer, "%3d", percent);
 			output_chars(bar_buffer, NULL, len, true);
 		}
 
 		if (update_flags) {
 			strcpy(flag_string, p);
-			move_cursor(ne_lines - 1, offset + 30);
+			move_cursor(ne_lines - 1, offset + 31);
 			output_string(flag_string, true);
 		}
 
@@ -694,7 +694,7 @@ void draw_status_bar(void) {
 		x = cur_buffer->win_x + cur_buffer->cur_x;
 		y = cur_buffer->cur_line;
 
-		len = sprintf(bar_buffer, fast_gui || !standout_ok ? ">> L:%11" PRId64 " C:%11" PRId64 "%3d%% %s " : " L:%11" PRId64 " C:%11" PRId64 "%3d%% %s ", y + 1, x + 1, percent, flag_string);
+		len = sprintf(bar_buffer, fast_gui || !standout_ok ? ">> L:%11" PRId64 " C:%11" PRId64 " %3d%% %s " : " L:%11" PRId64 " C:%11" PRId64 " %3d%% %s ", y + 1, x + 1, percent, flag_string);
 
 		move_cursor(ne_lines - 1, 0);
 		output_chars(bar_buffer, NULL, len, true);
