@@ -212,7 +212,7 @@ int word_wrap(buffer * const b) {
 
 	if (b->cur_pos > b->cur_line_desc->line_len) return ERROR;
 
-	bool non_blank_added = true;
+	bool non_blank_added = false;
 	int avshift;
 	char * line = b->cur_line_desc->line;
 	int64_t pos, original_line;

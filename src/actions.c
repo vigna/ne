@@ -383,7 +383,6 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 			/* We cannot rely on encoding promotion done by INSERTCHAR_A, because it could work
 				just for part of the string if UTF-8 auto-detection is not enabled. */
-
 			if (b->encoding == ENC_ASCII || encoding == ENC_ASCII || (b->encoding == encoding)) {
 				if (b->encoding == ENC_ASCII) b->encoding = encoding;
 				for(int64_t pos = 0; p[pos] && error == OK; pos = next_pos(p, pos, encoding)) error = do_action(b, INSERTCHAR_A, get_char(&p[pos], encoding), NULL);
