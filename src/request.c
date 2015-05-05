@@ -306,10 +306,10 @@ static void fuzz_back() {
 		fuzz_len = max(0,fuzz_len-1);
 		int i;
 		for (int j = n1 = i = 0; j < rl0->cur_entries; j++) {
-			const char * const p1 = rl0->entries[j];
+			char * const p1 = rl0->entries[j];
 			if ( ! strncasecmp(p0, p1, fuzz_len) ) {
 				if (p1 == p0) n1 = i;
-				rl.entries[i++] = (char *)p1;
+				rl.entries[i++] = p1;
 			}
 		}
 		rl.cur_entries = i;
@@ -329,12 +329,12 @@ static void fuzz_forward(const int c) {
 
 	int i = 0, n1 = 0;
 	for (int j = 0; j < rl.cur_entries; j++) {
-		const char * const p1 = rl.entries[j];
+		char * const p1 = rl.entries[j];
 		const int cmp = strncasecmp(p0, p1, fuzz_len);
 		if (! cmp && strlen(p1) > fuzz_len && localised_up_case[(unsigned char)p1[fuzz_len]] == c) {
 			if (p1 == p0)
 				n1 = i;
-			rl.entries[i++] = (char *)p1;
+			rl.entries[i++] = p1;
 		}
 	}
 	if (i) {

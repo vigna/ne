@@ -467,7 +467,8 @@ bool vet_optimize_macro_stream(char_stream * const cs, int64_t pos) {
 void optimize_macro(char_stream *cs, int verbose) {
 	if (!cs || !cs->len) return;
 
-	bool building = false, safe_to_optimize = false;
+	int building = 0;
+	bool safe_to_optimize = false;
 
 	for (int64_t pos = 0; pos < cs->len; pos += strlen(&cs->stream[pos]) + 1) {
 		char * const cmd = &cs->stream[pos];
@@ -489,7 +490,7 @@ void optimize_macro(char_stream *cs, int verbose) {
 				building = pos + len + 2;               /* This is where the char is now */
 			}
 		}
-		else building = false;
+		else building = 0;
 	}
 }
 
@@ -757,8 +758,7 @@ void help(char *p) {
 				rl.entries = (char **)commands[i].help;
 				if ((j = request_strings(&rl, 0)) < 0 ) i = j;
 			}
-			if (key_strokes)
-				free(key_strokes);
+			if (key_strokes) free(key_strokes);
 		}
 	} while(i >= 0);
 	draw_status_bar();
