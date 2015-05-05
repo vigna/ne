@@ -86,7 +86,7 @@ char_pool *alloc_char_pool(int64_t size) {
 	return NULL;
 }
 
-char_pool *alloc_char_pool_from_memory(char *pool, int64_t size) {
+char_pool *alloc_char_pool_from_memory(char * const pool, const int64_t size) {
 	char_pool * const cp = calloc(1, sizeof(char_pool));
 	if (cp) {
 		cp->pool = pool;
@@ -715,7 +715,7 @@ int insert_stream(buffer * const b, line_desc * ld, int64_t line, int64_t pos, c
 
 	const char *s = stream;
 	while(s - stream < stream_len) {
-		int64_t len = strnlen_ne(s, stream_len - (s - stream));
+		int64_t const len = strnlen_ne(s, stream_len - (s - stream));
 		if (len) {
 
 			/* First case; there is no character allocated on this line. We
@@ -741,7 +741,7 @@ int insert_stream(buffer * const b, line_desc * ld, int64_t line, int64_t pos, c
 			else {
 				const int64_t result = alloc_chars_around(b, ld, len, pos < ld->line_len / 2);
 				if (result < 0) {
-					char *p = alloc_chars(b, ld->line_len + len);
+					char * const p = alloc_chars(b, ld->line_len + len);
 					if (p) {
 						memcpy(p, ld->line, pos);
 						memcpy(&p[pos], s, len);
@@ -1208,7 +1208,7 @@ int load_fh_in_buffer(buffer *b, int fh) {
 			rem(&ld->ld_node);
 			add_tail(&b->line_desc_list, &ld->ld_node);
 
-			/* ultima riga */
+			/* last line */
 			if (i == num_lines - 1) {
 				if (p - cp->pool < len) {
 					assert(*p && *p != terminators[0] && *p != terminators[1]);
@@ -1282,6 +1282,7 @@ void reset_syntax_states(buffer *b) {
 /* Ensures that the attribute buffer of this buffer is large enough. */
 
 void ensure_attr_buf(buffer * const b, const int64_t capacity) {
+	if (capacity == 0) return;
 	/* attr_buf already exists? */
 	if (!b->attr_buf) {
 		b->attr_size = capacity;

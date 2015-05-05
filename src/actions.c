@@ -865,7 +865,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 			if (p || (p = request_string(b->last_was_regexp ? "Replace RegExp" : "Replace", b->replace_string, true, COMPLETE_NONE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
 				const encoding_type replace_encoding = detect_encoding(p, strlen(p));
-				int first_search = true;
+				bool first_search = true;
 				int64_t num_replace = 0;
 
 				if (replace_encoding != ENC_ASCII && b->encoding != ENC_ASCII && replace_encoding != b->encoding ||

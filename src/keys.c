@@ -41,7 +41,7 @@ order is *inverted* w.r.t. strcmp(). */
 
 
 typedef struct {
-	char *string;
+	const char *string;
 	int code;
 } term_key;
 
@@ -52,7 +52,7 @@ static int num_keys = 0;
 /* Function to pass to qsort for sorting the key capabilities array. */
 
 static int keycmp(const void *t1, const void *t2) {
-	return -strcmp((char *)((term_key *)t1)->string, (char *)((term_key *)t2)->string);
+	return -strcmp(((term_key *)t1)->string, ((term_key *)t2)->string);
 }
 
 
@@ -81,7 +81,7 @@ int binsearch(const char * const s) {
 #ifdef DEBUGPRINTF
 void dump_keys(void) {
 	 for (int i = 0; i < num_keys; i++) {
-		unsigned char *p = key[i].string;
+		char *p = key[i].string;
 		fprintf(stderr,"%3d: \"",i);
 		while (*p) {
 			if (isprint(*p)) fprintf(stderr,"%c",*p);
@@ -102,7 +102,7 @@ void dump_keys(void) {
 static void key_set(const char * const cap_string, const int code) {
 	if (!cap_string) return;
 
-	key[num_keys].string = (char *)cap_string;
+	key[num_keys].string = cap_string;
 	key[num_keys].code = code;
 	num_keys++;
 
@@ -135,7 +135,7 @@ int key_may_set(const char * const cap_string, int code) {
 	}
    if (code < 0) code = -code - 1;
 	memmove(key + pos + 1, key + pos, (num_keys - pos) * sizeof *key);
-	key[pos].string = (char *)cap_string;
+	key[pos].string = cap_string;
 	key[pos].code = code;
 	num_keys++;
 	assert(num_keys < MAX_TERM_KEY);

@@ -43,7 +43,7 @@ static int to_something(buffer *b, int (to_first)(int), int (to_rest)(int)) {
 
 	bool changed = false;
 	int64_t new_len = 0;
-	pos = b-> cur_pos;
+	pos = b->cur_pos;
 	/* Then, we compute the word position extremes, length of the result (which
 		may change because of casing). */
 	while (pos < b->cur_line_desc->line_len && ne_isword(c = get_char(&b->cur_line_desc->line[pos], b->encoding), b->encoding)) {
