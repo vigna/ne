@@ -691,75 +691,67 @@ char *find_key_strokes(int c) {
    requester. The help finishes when the user escapes. */
 
 void help(char *p) {
-	int j, i = 0;
-	req_list rl;
-
-	rl.cmpfnc = NULL;
-	rl.allow_dupes = false;
-	rl.allow_reorder = false;
-	rl.ignore_tab = true;
-	rl.suffix = 0;
-
-	rl.cur_chars = 0;
-	rl.alloc_chars = 0;
-	rl.chars = NULL;
+	req_list rl = { .ignore_tab=true };
 
 	D(fprintf(stderr,"Help Called with parm %p.\n",p);)
+	int r = 0;
 	do {
 		print_message("Help: select Command and press Enter, or F1 or Escape or Escape-Escape");
 		rl.cur_entries = ACTION_COUNT;
 		rl.alloc_entries = 0;
 		rl.max_entry_len = MAX_COMMAND_WIDTH;
 		rl.entries = (char **)command_names;
-		if (p || (i = request_strings(&rl, i)) >= 0) {
-			D(fprintf(stderr,"Help check #2: p=%p, i=%d\n",p,i);)
+		if (p || (r = request_strings(&rl, r)) >= 0) {
+			D(fprintf(stderr,"Help check #2: p=%p, r=%d\n",p,r);)
 			if (p) {
 				for(int i = 0; i < strlen(p); i++) if (isasciispace((unsigned char)p[i])) break;
 
-				i = hash_cmd(p, i);
+				r = hash_cmd(p, r);
 
 				action a;
-				if ((a = hash_table[i]) && !cmdcmp(commands[--a].name, p)
-				|| (a = short_hash_table[i]) && !cmdcmp(commands[--a].short_name, p)) i = a;
-				else i = -1;
+				if ((a = hash_table[r]) && !cmdcmp(commands[--a].name, p)
+				|| (a = short_hash_table[r]) && !cmdcmp(commands[--a].short_name, p)) r = a;
+				else r = -1;
 
 				p = NULL;
 			}
 			else {
-				D(fprintf(stderr,"Gonna parse_command_line(\"%s\",NULL,NULL,false);\n",command_names[i]);)
-				i = parse_command_line(command_names[i], NULL, NULL, false);
-				D(fprintf(stderr,"...and got i=%d\n",i);)
+				D(fprintf(stderr,"Gonna parse_command_line(\"%s\",NULL,NULL,false);\n",command_names[r]);)
+				r = parse_command_line(command_names[r], NULL, NULL, false);
+				D(fprintf(stderr,"...and got r=%d\n",r);)
 			}
 
-			if (i < 0) {
-				i = 0;
+			if (r < 0) {
+				r = 0;
 				continue;
 			}
 
-			assert(i >= 0 && i < ACTION_COUNT);
+			assert(r >= 0 && r < ACTION_COUNT);
 
 			print_message("Help: press Enter, or F1 or Escape or Escape-Escape");
 			char *key_strokes, **tmphelp;
-			if ((key_strokes = find_key_strokes(i)) && (tmphelp = calloc(commands[i].help_len+1, sizeof(char *)))) {
-				tmphelp[0] = (char *)commands[i].help[0];
-				tmphelp[1] = (char *)commands[i].help[1];
+			if ((key_strokes = find_key_strokes(r)) && (tmphelp = calloc(commands[r].help_len+1, sizeof(char *)))) {
+				tmphelp[0] = (char *)commands[r].help[0];
+				tmphelp[1] = (char *)commands[r].help[1];
 				tmphelp[2] = key_strokes;
-				memcpy(&tmphelp[3], &commands[i].help[2], sizeof(char *) * (commands[i].help_len-2)); 
-				rl.cur_entries = commands[i].help_len+1;
+				memcpy(&tmphelp[3], &commands[r].help[2], sizeof(char *) * (commands[r].help_len-2)); 
+				rl.cur_entries = commands[r].help_len+1;
 				rl.alloc_entries = 0;
 				rl.max_entry_len = ne_columns;
 				rl.entries = tmphelp;
-				if ((j = request_strings(&rl, 0)) < 0 ) i = j;
+				const int s = request_strings(&rl, 0);
+				if (s < 0) r = s;
 				free(tmphelp);
 			} else {
-				rl.cur_entries = commands[i].help_len;
+				rl.cur_entries = commands[r].help_len;
 				rl.alloc_entries = 0;
 				rl.max_entry_len = ne_columns;
-				rl.entries = (char **)commands[i].help;
-				if ((j = request_strings(&rl, 0)) < 0 ) i = j;
+				rl.entries = (char **)commands[r].help;
+				const int s = request_strings(&rl, 0);
+				if (s < 0) r = s;
 			}
 			if (key_strokes) free(key_strokes);
 		}
-	} while(i >= 0);
+	} while(r >= 0);
 	draw_status_bar();
 }
