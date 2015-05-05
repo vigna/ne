@@ -415,7 +415,6 @@ int find_regexp(buffer * const b, const char *regex, const bool skip_first) {
 			int64_t pos;
 			if (start_pos <= ld->line_len &&
 				 (pos = re_search(&re_pb, ld->line ? ld->line : "", ld->line_len, start_pos, ld->line_len - start_pos, &re_reg)) >= 0) {
-				fprintf(stderr, "Going to %" PRId64 ", %" PRId64 "\n", y, pos);
 				goto_line(b, y);
 				goto_pos(b, pos);
 				return OK;

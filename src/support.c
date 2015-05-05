@@ -437,14 +437,33 @@ void unset_interactive_mode(void) {
 
 int64_t calc_width(const line_desc * const ld, const int64_t n, const int tab_size, const encoding_type encoding) {
 
-	int64_t len = 0;
+	int64_t width = 0;
 	for(int64_t pos = 0; pos < n; pos = pos < ld->line_len ? next_pos(ld->line, pos, encoding) : pos + 1) {
-		if (pos >= ld->line_len) len++;
-		else if (ld->line[pos] != '\t') len += get_char_width(&ld->line[pos], encoding);
-		else len += tab_size - len % tab_size;
+		if (pos >= ld->line_len) width++;
+		else if (ld->line[pos] != '\t') width += get_char_width(&ld->line[pos], encoding);
+		else width += tab_size - width % tab_size;
 	}
 
-	return len;
+	return width;
+}
+
+/* Computes the TAB-expanded width of a line descriptor up to a certain
+   position. The position can be greater than the line length, the usual
+   convention of infinite expansion via spaces being in place. An initial
+   hint can be provided in the form of a known position and a corresponding
+   known width. */
+
+int64_t calc_width_hint(const line_desc * const ld, const int64_t n, const int tab_size, const encoding_type encoding, const int64_t cur_pos, const int64_t cur_width) {
+	if (cur_pos < n) {
+		int64_t width = cur_width;
+		for(int64_t pos = cur_pos; pos < n; pos = pos < ld->line_len ? next_pos(ld->line, pos, encoding) : pos + 1) {
+			if (pos >= ld->line_len) width++;
+			else if (ld->line[pos] != '\t') width += get_char_width(&ld->line[pos], encoding);
+			else width += tab_size - width % tab_size;
+		}
+		return width;
+	}
+	else return calc_width(ld, n, tab_size, encoding);
 }
 
 /* Computes character length of a line descriptor. */
@@ -559,8 +578,8 @@ int64_t next_pos(const char * const s, const int64_t pos, const encoding_type en
 }
 
 /* Returns the position of the character before the one pointed by pos in s.
-   If s is NULL, just returns pos + 1. If encoding is UTF-8 uses utf8len() to
-   move backward. If pos is 0, this function returns -1. */
+   If s is NULL, just returns pos + 1. If encoding is UTF-8 moves back until
+   the upper two bits are 10. If pos is 0, this function returns -1. */
 
 int64_t prev_pos(const char * const s, int64_t pos, const encoding_type encoding) {
 	assert(pos >= 0);

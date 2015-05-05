@@ -288,6 +288,7 @@ int filenamecmp(const char *a, const char *b);
 void set_interactive_mode(void);
 void unset_interactive_mode(void);
 int64_t calc_width(const line_desc *ld, int64_t n, int tab_size, encoding_type encoding);
+int64_t calc_width_hint(const line_desc * const ld, const int64_t n, const int tab_size, const encoding_type encoding, const int64_t cur_pos, const int64_t cur_width);
 int64_t calc_char_len(const line_desc *ld, encoding_type encoding);
 int64_t calc_pos(const line_desc *ld, int64_t n, int tab_size, encoding_type encoding);
 int get_string_width(const char * const s, const int len, const encoding_type encoding);
