@@ -103,6 +103,7 @@ int find(buffer * const b, const char *pattern, const bool skip_first) {
 	const bool sense_case = (b->opt.case_search != 0);
 	line_desc *ld = b->cur_line_desc;
 	int64_t y = b->cur_line;
+	stop = false;
 
 	if (! b->opt.search_back) {
 
@@ -114,7 +115,7 @@ int find(buffer * const b, const char *pattern, const bool skip_first) {
 		char * p = ld->line + b->cur_pos + m - 1 + (skip_first ? 1 : 0);
 		const unsigned char first_char = CONV((unsigned char)pattern[m - 1]);
 
-		while(y < b->num_lines) {
+		while(y < b->num_lines && !stop) {
 
 			assert(ld->ld_node.next != NULL);
 
@@ -154,7 +155,7 @@ int find(buffer * const b, const char *pattern, const bool skip_first) {
 		char * p = ld->line + (b->cur_pos > ld->line_len - m ? ld->line_len - m : b->cur_pos + (skip_first ? -1 : 0));
 		const unsigned char first_char = CONV((unsigned char)pattern[0]);
 
-		while(y >= 0) {
+		while(y >= 0 && !stop) {
 
 			assert(ld->ld_node.prev != NULL);
 
@@ -186,7 +187,7 @@ int find(buffer * const b, const char *pattern, const bool skip_first) {
 		}
 	}
 
-	return NOT_FOUND;
+	return stop ? STOPPED : NOT_FOUND;
 }
 
 
@@ -402,18 +403,19 @@ int find_regexp(buffer * const b, const char *regex, const bool skip_first) {
 
 	line_desc *ld = b->cur_line_desc;
 	int64_t y = b->cur_line;
+	stop = false;
 
 	if (! b->opt.search_back) {
 
 		int64_t start_pos = b->cur_pos + (skip_first ? 1 : 0);
 
-		while(y < b->num_lines) {
-
+		while(y < b->num_lines && !stop) {
 			assert(ld->ld_node.next != NULL);
 
 			int64_t pos;
 			if (start_pos <= ld->line_len &&
-				 (pos = re_search(&re_pb, ld->line ? ld->line : (char *)"", ld->line_len, start_pos, ld->line_len - start_pos, &re_reg))>=0) {
+				 (pos = re_search(&re_pb, ld->line ? ld->line : "", ld->line_len, start_pos, ld->line_len - start_pos, &re_reg)) >= 0) {
+				fprintf(stderr, "Going to %" PRId64 ", %" PRId64 "\n", y, pos);
 				goto_line(b, y);
 				goto_pos(b, pos);
 				return OK;
@@ -428,7 +430,7 @@ int find_regexp(buffer * const b, const char *regex, const bool skip_first) {
 
 		int64_t start_pos = b->cur_pos + (skip_first ? -1 : 0);
 
-		while(y >= 0) {
+		while(y >= 0 && !stop) {
 
 			assert(ld->ld_node.prev != NULL);
 
@@ -446,7 +448,7 @@ int find_regexp(buffer * const b, const char *regex, const bool skip_first) {
 		}
 	}
 
-	return NOT_FOUND;
+	return stop ? STOPPED : NOT_FOUND;
 }
 
 
