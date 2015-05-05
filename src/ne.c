@@ -341,24 +341,23 @@ int main(int argc, char **argv) {
 		file loading can be interrupted (wildcarding can sometimes produce
 		unwanted results). */
 
-		bool first_file = true;
-		int first_line = 0, first_col = 0;
-		bool binary = false, skip_plus = false;
+		uint64_t first_line = 0, first_col = 0;
+		bool first_file = true, binary = false, skip_plus = false;
 		stop = false;
 
 		for(int i = 1; i < argc && !stop; i++) {
 			if (argv[i] && !skiplist[i]) {
 				if (argv[i][0] == '+' && !skip_plus) {	/* looking for "+", or "+N" or "+N,M"  */
-					int tmp_l = INT_MAX, tmp_c = 0;
+					uint64_t tmp_l = INT64_MAX, tmp_c = 0;
 					char *d;
 					errno = 0;
 					if (argv[i][1]) {
 						if (isdigit(argv[i][1])) {
-							tmp_l = strtol(argv[i]+1, &d, 10);
+							tmp_l = strtoll(argv[i]+1, &d, 10);
 							if (!errno) {
 								if (*d) {							/* separator between N and M */
 									if (isdigit(d[1])) {
-										tmp_c = strtol(d+1, &d, 10);
+										tmp_c = strtoll(d+1, &d, 10);
 										if (*d) errno = ERANGE;
 									}
 									else errno = ERANGE;

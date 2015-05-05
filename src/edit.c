@@ -646,9 +646,9 @@ int shift(buffer * const b, char *p, char *msg, int msg_size) {
 	const int64_t init_line = b->cur_line, init_pos = b->cur_pos, init_y = b->cur_y;
 
 	line_desc *ld = NULL, *start_line_desc = NULL;
-	long int shift_size = 1, shift_mag = b->opt.tab_size;
+	int64_t shift_size = 1;
 	char dir = '>';
-	int rc = 0;
+	int shift_mag = b->opt.tab_size, rc = 0;
 
 	/* Parse parm p; looks like [<|>] ### [s|t], but we allow them
 	   in any order, once, with optional white space. */
@@ -659,7 +659,7 @@ int shift(buffer * const b, char *p, char *msg, int msg_size) {
 			else if (!dir_b && (dir_b = (*p == '<' || *p == '>'))) dir = *p++;
 			else if (!size_b && (size_b = isdigit(*p))) {
 				errno = 0;
-				shift_size = strtol(p, &p, 10);
+				shift_size = strtoll(p, &p, 10);
 				if (errno) return INVALID_SHIFT_SPECIFIED;
 			} else if (!st_b && (st_b = (*p == 's' || *p == 'S'))) {
 				shift_mag = 1;
