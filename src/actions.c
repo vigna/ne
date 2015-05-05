@@ -478,11 +478,11 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		/* Note the use of ne_columns-1. This avoids a double horizontal scrolling each time a
 			word wrap happens with b->opt.right_margin = 0. */
 
-		if (b->opt.word_wrap) word_wrap(b);
+		if (b->opt.word_wrap) error = word_wrap(b);
 		if (b->syn) update_line(b, b->cur_y, true, false);
 		end_undo_chain(b); 
 		assert_buffer_content(b);
-		return OK;
+		return error;
 	}
 
 
@@ -587,11 +587,11 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			}
 		}
 		need_attr_update = true;
-		if (b->opt.word_wrap) word_wrap(b);
+		if (b->opt.word_wrap) error = word_wrap(b);
 		if (b->syn) update_line(b, b->cur_y, true, false);
 		assert_buffer_content(b);
 		end_undo_chain(b);
-		return stop ? STOPPED : 0;
+		return error ? error : stop ? STOPPED : 0;
 
 	case INSERTLINE_A:
 		if (b->opt.read_only) return FILE_IS_READ_ONLY;

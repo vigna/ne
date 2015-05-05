@@ -211,7 +211,7 @@ int find_matching_bracket(buffer *b, const int64_t min_line, int64_t max_line, i
 int word_wrap(buffer * const b) {
 	static char avcmd[16];
 
-	if (b->cur_pos > b->cur_line_desc->line_len) return ERROR;
+	if (b->cur_pos > b->cur_line_desc->line_len) return OK;
 
 	bool non_blank_added = false;
 	int avshift;
@@ -249,7 +249,7 @@ int word_wrap(buffer * const b) {
 		delete_one_char(b, b->cur_line_desc, b->cur_line, b->cur_pos);
 		end_undo_chain(b);
 	}
-	return b->cur_line_desc->line_len;
+	return stop ? STOPPED : OK;
 }
 
 /* These functions reformat a paragraph while preserving appropriate
