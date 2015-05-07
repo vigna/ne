@@ -697,24 +697,7 @@ void goto_line(buffer * const b, const int64_t n) {
 
 	b->cur_y = n - b->win_y;
 
-	const int64_t best_absolute_cost = min(n, b->num_lines - n);
-	const int64_t relative_cost = b->cur_line < n ? n - b->cur_line : b->cur_line - n;
-
-	if (best_absolute_cost < relative_cost) {
-		if (n < b->num_lines / 2) {
-			ld = (line_desc *)b->line_desc_list.head;
-			for(int64_t i = 0; i < n; i++) ld = (line_desc *)ld->ld_node.next;
-		}
-		else {
-			ld = (line_desc *)b->line_desc_list.tail_pred;
-			for(int64_t i = 0; i < b->num_lines - n - 1; i++) ld = (line_desc *)ld->ld_node.prev;
-		}
-	}
-	else {
-		ld = (line_desc *)b->cur_line_desc;
-		if (n < b->cur_line) for(int64_t i = 0; i < b->cur_line - n; i++) ld = (line_desc *)ld->ld_node.prev;
-		else for(int64_t i = 0; i < n - b->cur_line; i++) ld = (line_desc *)ld->ld_node.next;
-	}
+	ld = nth_line_desc(b, n);
 
 	b->cur_line = n;
 	b->cur_line_desc = ld;
