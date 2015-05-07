@@ -19,7 +19,7 @@ version.texinfo:
 	( cd .. ; make version )
 
 ne.txt: ne.texinfo version.texinfo
-	makeinfo --plaintext --no-headers ne.texinfo -o ne.txt
+	(makeinfo --plaintext --no-headers ne.texinfo -o ne.txt || makeinfo --no-headers ne.texinfo -o ne.txt)
 	sed -i -e "s/\`/'/g" ne.txt
 	sed -i -e "s/''''/'\`''/g" ne.txt
 	sed -i -e "s/'ne'/ne/g" ne.txt
