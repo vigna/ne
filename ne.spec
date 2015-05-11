@@ -58,7 +58,7 @@ mv doc/html .
 %doc ./doc/ne.pdf
 %doc ./doc/ne.txt
 %doc ./doc/default.*
-%doc ./README
+%doc ./README.md
 %doc ./NEWS
 %doc ./CHANGES
 %doc ./COPYING
