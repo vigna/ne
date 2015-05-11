@@ -275,7 +275,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 	case SETBOOKMARK_A:
 	case GOTOBOOKMARK_A:
 		{
-			int relative = false;
+			bool relative = false;
 			/* *p can be  "", "-", "0".."9", "+1","-1", for which, respectively, */
 			/*  c becomes  0, AB,  0 .. 9,  next,prev. Anything else is out of range. */
 			if (p) {
@@ -563,7 +563,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			if (b->cur_pos < b->cur_line_desc->line_len) {
 				/* Deletion inside a line. */
 				const int old_char = b->encoding == ENC_UTF8 ? utf8char(&b->cur_line_desc->line[b->cur_pos]) : b->cur_line_desc->line[b->cur_pos];
-				const int old_attr = b->syn ? b->attr_buf[b->cur_pos] : 0;
+				const uint32_t old_attr = b->syn ? b->attr_buf[b->cur_pos] : 0;
 				delete_one_char(b, b->cur_line_desc, b->cur_line, b->cur_pos);
 
 				update_deleted_char(b, old_char, old_attr, b->cur_line_desc, b->cur_pos, b->cur_char, b->cur_y, b->cur_x);
@@ -730,7 +730,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			error = save_buffer_to_file(b, p);
 
 			if (!print_error(error)) {
-				const int load_syntax = b->filename == NULL || ! same_str(extension(p), extension(b->filename));
+				const bool load_syntax = b->filename == NULL || ! same_str(extension(p), extension(b->filename));
 				change_filename(b, p);
 				if (load_syntax && extension(p)) {
 					load_syntax_by_name(b, extension(p));
@@ -773,7 +773,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		}
 
 		if (p || (p = request_file(b, "Filename", b->filename))) {
-			static int dprompt = 0; /* Set to true if we ever respond 'yes' to the prompt. */
+			static bool dprompt = 0; /* Set to true if we ever respond 'yes' to the prompt. */
 
 			buffer *dup = get_buffer_named(p);
 

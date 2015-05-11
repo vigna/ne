@@ -47,7 +47,7 @@ typedef struct {
 
 
 static term_key key[MAX_TERM_KEY];
-static int num_keys = 0;
+static int num_keys;
 
 /* Function to pass to qsort for sorting the key capabilities array. */
 

@@ -66,7 +66,7 @@ static unsigned int print_prompt(const char * const prompt) {
    default value. */
 
 
-bool request_response(const buffer * const b, const char * const prompt, const int default_value) {
+bool request_response(const buffer * const b, const char * const prompt, const bool default_value) {
 	return request_char(b, prompt, default_value ? 'y' : 'n') == 'Y' ? true : false;
 }
 
@@ -137,11 +137,11 @@ int64_t request_number(const char * const prompt, const int64_t default_value) {
    malloc()ed, so you can use it and then free() it. NULL is returned on
    escaping, or if entering an empty string (unless accept_null_string is true,
    in which case the empty string is duplicated and
-   returned). completion_allowed and prefer_utf8 work as in request(). */
+   returned). completion_type and prefer_utf8 work as in request(). */
 
-char *request_string(const char * const prompt, const char * const default_string, const bool accept_null_string, const int completion_allowed, const bool prefer_utf8) {
+char *request_string(const char * const prompt, const char * const default_string, const bool accept_null_string, const int completion_type, const bool prefer_utf8) {
 
-	const char * const result = request(prompt, default_string, true, completion_allowed, prefer_utf8);
+	const char * const result = request(prompt, default_string, true, completion_type, prefer_utf8);
 
 	if (result && (*result || accept_null_string)) return str_dup(result);
 
@@ -225,7 +225,7 @@ static void add_to_history(const char * const str) {
    Note that presently this function always returns a pointer to a static
    buffer, but this could change in the future.
 
-   completion_allowed has several possible values:
+   completion_type has several possible values:
     0 COMPLETE_NONE	means no completion,
     1 COMPLETE_FILE	complete as a filename,
     2					  complete as a command followed by a filename, (not implemented?)
@@ -271,7 +271,7 @@ static void input_refresh(void) {
 }
 
 static void input_autocomplete(void) {
-	int dx=0, prefix_pos = pos;
+	int dx = 0, prefix_pos = pos;
 	char *p;
 
 	/* find a usable prefix */
@@ -342,7 +342,7 @@ static void input_autocomplete(void) {
 }
 
 
-static void input_move_left(const int do_refresh) {
+static void input_move_left(const bool do_refresh) {
 	if (pos > 0) {
 
 		const int x_delta = get_char_width(&input_buffer[pos = prev_pos(input_buffer, pos, encoding)], encoding);
@@ -370,7 +370,7 @@ static void input_move_left(const int do_refresh) {
 }
 
 
-static void input_move_right(const int do_refresh) {
+static void input_move_right(const bool do_refresh) {
 	const int prev_pos = pos;
 
 	if (pos < len) {
@@ -502,7 +502,7 @@ static void input_paste(void) {
 	}
 }
 
-char *request(const char *prompt, const char * const default_string, const bool alpha_allowed, const int completion_allowed, const bool prefer_utf8) {
+char *request(const char *prompt, const char * const default_string, const bool alpha_allowed, const int completion_type, const bool prefer_utf8) {
 
 	set_attr(0);
 
@@ -535,7 +535,7 @@ char *request(const char *prompt, const char * const default_string, const bool 
 		if (ic == ALPHA && c > 0xFF && encoding != ENC_ASCII && encoding != ENC_UTF8) ic = INVALID;
 
 		if (ic != TAB) last_char_completion = false;
-		if (ic == TAB && !completion_allowed) ic = ALPHA;
+		if (ic == TAB && !completion_type) ic = ALPHA;
 
 		switch(ic) {
 
@@ -581,7 +581,7 @@ char *request(const char *prompt, const char * const default_string, const bool 
 			break;
 
 		case TAB:
-			if (completion_allowed == COMPLETE_FILE || completion_allowed == COMPLETE_SYNTAX) {
+			if (completion_type == COMPLETE_FILE || completion_type == COMPLETE_SYNTAX) {
 				bool quoted = false;
 				char *prefix, *completion, *p;
 				if (len && input_buffer[len - 1] == '"') {
@@ -599,8 +599,8 @@ char *request(const char *prompt, const char * const default_string, const bool 
 					else prefix = input_buffer;
 				}
 
-				if (last_char_completion || completion_allowed == COMPLETE_SYNTAX) {
-					if (completion_allowed == COMPLETE_FILE )
+				if (last_char_completion || completion_type == COMPLETE_SYNTAX) {
+					if (completion_type == COMPLETE_FILE )
 						completion = p = request_files(prefix, true);
 					else
 						completion = p = request_syntax(prefix, true);
@@ -611,7 +611,7 @@ char *request(const char *prompt, const char * const default_string, const bool 
 					}
 				}
 				else {
-					if (completion_allowed == COMPLETE_FILE )
+					if (completion_type == COMPLETE_FILE )
 						completion = p = complete_filename(prefix);
 					else
 						completion = p = request_syntax(prefix, true);

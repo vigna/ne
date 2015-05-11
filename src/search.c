@@ -298,7 +298,8 @@ int find_regexp(buffer * const b, const char *regex, const bool skip_first) {
 		if (b->encoding == ENC_UTF8) {
 			const char *s;
 			char *q;
-			int virtual_group = 0, real_group = 0, escape = false, dots = 0, comps = 0, nonwords = 0;
+			bool escape = false;
+			int virtual_group = 0, real_group = 0, dots = 0, comps = 0, nonwords = 0;
 
 			s = regex;
 

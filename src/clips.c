@@ -276,7 +276,7 @@ int erase_block(buffer *b) {
 		 b->cur_pos >= ld->line_len && b->block_start_pos >= ld->line_len))
 		return OK;
 
-	int chaining = false;
+	bool chaining = false;
 	if (y > b->block_start_line || y == b->block_start_line && b->cur_pos > b->block_start_pos) {
 		for(int64_t i = y; i >= b->block_start_line; i--) {
 			int64_t start_pos = 0;

@@ -464,7 +464,7 @@ bool vet_optimize_macro_stream(char_stream * const cs, int64_t pos) {
    character inserted by InsertChar is not an ASCII character, then we should
    leave it as an InsertChar command to maximize portability of the macros. */
 
-void optimize_macro(char_stream *cs, int verbose) {
+void optimize_macro(char_stream *cs, bool verbose) {
 	if (!cs || !cs->len) return;
 
 	int building = 0;
@@ -506,7 +506,7 @@ int play_macro(buffer *b, char_stream *cs) {
 	if (!cs) return ERROR;
 
 	/* If len is 0 or 1, the character stream does not contain anything. */
-	const int len = cs->len;
+	const int64_t len = cs->len;
 	if (len < 2) return OK;
 
 	char * const stream = malloc(len);

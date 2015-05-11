@@ -302,7 +302,7 @@ static menu def_menus[DEF_MENU_NUM] = {
 /* current_menu remembers the last menu activated. menu_num is the number of
 menus. */
 
-static int current_menu = 0, menu_num = DEF_MENU_NUM;
+static int current_menu, menu_num = DEF_MENU_NUM;
 
 
 /* menus points to an array of menu_num menu structures. */
@@ -383,7 +383,7 @@ static void draw_menu(const int n) {
 
 	if (!standout_ok) {
 		move_cursor(i + 1, menus[n].xpos - 1);
-		for(int i = 0; i < menus[n].width + (standout_ok ? MENU_EXTRA : MENU_NOSTANDOUT_EXTRA); i++) output_string("-", false);
+		for(i = 0; i < menus[n].width + (standout_ok ? MENU_EXTRA : MENU_NOSTANDOUT_EXTRA); i++) output_string("-", false);
 	}
 
 	draw_cur_item(n);
@@ -531,7 +531,7 @@ static void do_menu_action(void) {
    should be cancelled only on the next refresh. Bar gone says that the status
    bar doesn't exists any longer, so we have to rebuild it entirely. */
 
-static int showing_msg;
+static bool showing_msg;
 static bool bar_gone = true;
 
 

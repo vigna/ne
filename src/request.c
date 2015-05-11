@@ -570,8 +570,7 @@ char *complete_filename(const char *start_prefix) {
 	}
 
 	start_prefix = file_part(start_prefix);
-	int is_dir;
-	bool unique = true;
+	bool is_dir, unique = true;
 	char *cur_prefix = NULL;
 	DIR * const d = opendir(CURDIR);
 

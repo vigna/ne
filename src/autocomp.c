@@ -31,7 +31,7 @@ static int count_scanned;
 
 static void add_string(const char * const s, const int len, const int ext) {
 	static char *buf = NULL;
-	static int buflen = 0;
+	static uint64_t buflen = 0;
 	char *buf_new;
 	int cplen = len;
 
@@ -53,7 +53,7 @@ static void add_string(const char * const s, const int len, const int ext) {
 	req_list_add(&rl, buf, ext);
 }
 
-static void search_buff(const buffer *b, char * p, const int encoding, const int case_search, const int ext) {
+static void search_buff(const buffer *b, char * p, const int encoding, const bool case_search, const int ext) {
 	assert(p);
 	const int p_len = strlen(p);
 

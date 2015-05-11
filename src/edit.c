@@ -442,7 +442,7 @@ int paragraph(buffer * const b) {
 		while (!stop && !done && calc_width(ld, ld->line_len, b->opt.tab_size, b->encoding) > right_margin) {
 			int64_t spaces;
 			int64_t split_pos;
-			int did_split;
+			bool did_split;
 
 			/** 4.1  Find the split point **/
 
@@ -453,7 +453,8 @@ int paragraph(buffer * const b) {
 			while(pos < ld->line_len && isparaspot(ld->line[pos]))
 			  pos = next_pos(ld->line, pos, b->encoding);
 
-			did_split = split_pos = spaces = 0;
+			did_split = false;
+			split_pos = spaces = 0;
 
 			while (pos < ld->line_len &&
 					(calc_width(ld, pos, b->opt.tab_size, b->encoding) < right_margin ||
@@ -474,7 +475,7 @@ int paragraph(buffer * const b) {
 				if (spaces) delete_stream(b, ld, line, split_pos, spaces);
 				/** 4.3  Split the line at the split point.  (We are done with this line) **/
 				insert_one_line(b, ld, line, split_pos);
-				did_split = 1;
+				did_split = true;
 			}
 
 			/** 4.4  Make the (new?) next line the current line **/
@@ -484,7 +485,7 @@ int paragraph(buffer * const b) {
 
 				/** 4.5  Insert the pa_space[] stream we saved in step 1. Note that  **/
 				/** we only want to do this if this line is the result of a split,	**/
-				/** which is true if did_split != 0.                                 **/
+				/** which is true if did_split is true.                              **/
 
 				if (did_split) {
 					if (pa_space && pa_space_len && pa_space_pos)

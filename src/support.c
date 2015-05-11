@@ -612,7 +612,7 @@ int get_char_width(const char * const s, const encoding_type encoding) {
 /* Returns the width of the first len characters of s, using the provided
    encoding. If s is NULL, returns len. */
 
-int get_string_width(const char * const s, const int len, const encoding_type encoding) {
+int get_string_width(const char * const s, const int64_t len, const encoding_type encoding) {
 	if (s == NULL) return len;
 	int64_t width = 0;
 	for(int64_t pos = 0; pos < len; pos = next_pos(s, pos, encoding)) width += get_char_width(s + pos, encoding);

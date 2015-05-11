@@ -95,7 +95,7 @@ void help(char *p);
 int cmdcmp(const char *c, const char *m);
 void unload_macros(void);
 
-void optimize_macro(char_stream *cs, int verbose);
+void optimize_macro(char_stream *cs, bool verbose);
 
 /* display.c */
 void update_syntax_states(buffer *b, int row, line_desc *ld, line_desc *end_ld);
@@ -219,11 +219,11 @@ int   push_prefs(buffer *b);
 
 /* input.c */
 void  close_history(void);
-bool  request_response(const buffer *b, const char *prompt, int default_value);
+bool  request_response(const buffer *b, const char *prompt, bool default_value);
 char  request_char(const buffer *b, const char *prompt, const char default_value);
 int64_t request_number(const char *prompt, int64_t default_value);
-char *request_string(const char *prompt, const char *default_string, bool accept_null_string, int completion_allowed, bool prefer_utf8);
-char *request(const char *prompt, const char *default_string, bool alpha_allowed, int completion_allowed, bool prefer_utf8);
+char *request_string(const char *prompt, const char *default_string, bool accept_null_string, int completion_type, bool prefer_utf8);
+char *request(const char *prompt, const char *default_string, bool alpha_allowed, int completion_type, bool prefer_utf8);
 
 /* request.c */
 int   request_strings(req_list * const rl, int default_entry);
@@ -291,7 +291,7 @@ int64_t calc_width(const line_desc *ld, int64_t n, int tab_size, encoding_type e
 int64_t calc_width_hint(const line_desc * const ld, const int64_t n, const int tab_size, const encoding_type encoding, const int64_t cur_pos, const int64_t cur_width);
 int64_t calc_char_len(const line_desc *ld, encoding_type encoding);
 int64_t calc_pos(const line_desc *ld, int64_t n, int tab_size, encoding_type encoding);
-int get_string_width(const char * const s, const int len, const encoding_type encoding);
+int get_string_width(const char * const s, const int64_t len, const encoding_type encoding);
 int max_prefix(const char *s, const char *t);
 bool is_prefix(const char *p, const char *s);
 bool is_migrated(const char *name);
