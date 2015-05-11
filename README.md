@@ -19,6 +19,6 @@ If something does not work, please feel free to email us, or write
 to the mailing list.
 
 
-					seba (vigna@di.unimi.it)
-					Todd (Todd_Lewis@unc.edu)
-					niceeditor@googlegroups.com
+* seba (<mailto:sebastiano.vigna@unimi.it>)
+* Todd (<mailto:Todd_Lewis@unc.edu>)
+* <mailto:niceeditor@googlegroups.com>
