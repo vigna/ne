@@ -227,8 +227,8 @@ char_stream *load_stream_from_fh(char_stream *cs, const int fh, const bool prese
 		return cs;
 	}
 
-	int j;
-	for(int i = j = 0; i < len; i++, j++) {
+	int64_t j;
+	for(int64_t i = j = 0; i < len; i++, j++) {
 		if (i < len - 1 && !preserve_cr && cs->stream[i] == '\r' && cs->stream[i + 1] == '\n') i++;
 		cs->stream[j] = cs->stream[i];
 
