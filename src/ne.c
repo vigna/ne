@@ -73,7 +73,7 @@ char ARG_HELP[] = ABOUT_MSG "\n"
 						"--ansi        use built-in ANSI control sequences.\n"
 						"--no-ansi     do not use built-in ANSI control sequences.\n"
 						"--no-config   do not read configuration files.\n"
-						"--prefs EXT   use automatic preferences for the provided extension of the default ones.\n"
+						"--prefs EXT   set autoprefs for the provided extension before loading the first file.\n"
 						"--no-syntax   disable syntax-highlighting support.\n"
 						"--keys FILE   use this file for keyboard configuration.\n"
 						"--menus FILE  use this file for menu configuration.\n"
@@ -119,13 +119,8 @@ buffer *new_buffer(void) {
 
 	if (b) {
 		clear_buffer(b);
-		if (cur_buffer)
-			add(&b->b_node, &cur_buffer->b_node);
-		else
-			add_head(&buffers, &b->b_node);
-
-
-
+		if (cur_buffer) add(&b->b_node, &cur_buffer->b_node);
+		else add_head(&buffers, &b->b_node);
 		cur_buffer = b;
 	}
 

@@ -889,10 +889,13 @@ mistakes in it.
 
 The @code{--prefs @var{extension}} option makes @code{ne} load a specified
 set of automatic preferences, that is, those associated with the provided
-extension, instead of the default ones. It can be useful, for instance,
-when piping a file into @code{ne} or when reading from named pipes, as
-in those cases there is no file extension from which @code{ne} can guess
-the correct preferences.
+extension, instead of the default ones, before loading the first file.
+It can be useful, for instance, when piping a file into @code{ne} or when
+reading from named pipes, as in those cases there is no file extension
+from which @code{ne} can guess the correct preferences. Note that preferences
+are cloned from the current document when a new document is created, so if
+you open a number of files without extension this option will propagate
+to all of them.
 
 The @code{--macro @var{filename}} option specifies the name of a
 macro that will be started just after all documents have been loaded. A
