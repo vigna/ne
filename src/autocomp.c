@@ -41,7 +41,7 @@ static void add_string(const char * const s, const int len, const int ext) {
 		buflen = 0;
 		return;
 	}
-	if (len > buflen) {
+	if (len >= buflen) {
 		if (buf_new = realloc(buf, len * 2 + 1)) {
 			buflen = len * 2 + 1;
 			buf = buf_new;
