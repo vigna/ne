@@ -25,7 +25,7 @@
 
 /* ne's temporary file name template for the THROUGH command. */
 
-#define NE_TMP "netmp.XXXXXX"
+#define NE_TMP "ne-tmp.XXXXXX"
 
 /* Turns an unspecified integer argument (-1) to 1. This
 is what most commands require. */

@@ -73,6 +73,7 @@ char ARG_HELP[] = ABOUT_MSG "\n"
 						"--ansi        use built-in ANSI control sequences.\n"
 						"--no-ansi     do not use built-in ANSI control sequences.\n"
 						"--no-config   do not read configuration files.\n"
+						"--prefs EXT   set autoprefs for the provided extension before loading the first file.\n"
 						"--no-syntax   disable syntax-highlighting support.\n"
 						"--keys FILE   use this file for keyboard configuration.\n"
 						"--menus FILE  use this file for menu configuration.\n"
@@ -118,13 +119,8 @@ buffer *new_buffer(void) {
 
 	if (b) {
 		clear_buffer(b);
-		if (cur_buffer)
-			add(&b->b_node, &cur_buffer->b_node);
-		else
-			add_head(&buffers, &b->b_node);
-
-
-
+		if (cur_buffer) add(&b->b_node, &cur_buffer->b_node);
+		else add_head(&buffers, &b->b_node);
 		cur_buffer = b;
 	}
 
@@ -151,7 +147,7 @@ int delete_buffer(void) {
 	return false;
 }
 
-void about(bool show) {
+void about(const bool show) {
 
 	if (show) {
 		clear_entire_screen();
@@ -207,7 +203,7 @@ int main(int argc, char **argv) {
 	}
 
 	bool no_config = false, displaying_info = false;
-	char *macro_name = NULL, *key_bindings_name = NULL, *menu_conf_name = NULL;
+	char *macro_name = NULL, *key_bindings_name = NULL, *menu_conf_name = NULL, *startup_prefs_name = DEF_PREFS_NAME;
 
 	char * const skiplist = calloc(argc, 1);
 	if (!skiplist) exit(1);  /* We need this many flags. */
@@ -236,6 +232,12 @@ int main(int argc, char **argv) {
 			else if (!strcmp(&argv[i][2], "no-syntax")) {
 				do_syntax = false;
 				skiplist[i] = 1; /* argv[i] = NULL; */
+			}
+			else if (!strcmp(&argv[i][2], "prefs")) {
+				if (i < argc-1) {
+					startup_prefs_name = argv[i+1];
+					skiplist[i] = skiplist[i+1] = 1; /* argv[i] = argv[i+1] = NULL; */
+				}
 			}
 			else if (!strcmp(&argv[i][2], "ansi")) {
 				ansi = true;
@@ -321,19 +323,31 @@ int main(int argc, char **argv) {
 		RE_NO_BK_VBAR			| RE_NO_EMPTY_RANGES
 	);
 
+	bool first_file = true;
+
+	load_auto_prefs(cur_buffer, startup_prefs_name);
+
+	if (!isatty(fileno(stdin))) {
+		first_file = false;
+		const int error = load_fh_in_buffer(cur_buffer, fileno(stdin));
+		print_error(error);
+
+		if (!(stdin = freopen("/dev/tty", "r", stdin))) {
+			fprintf(stderr, "Cannot reopen input tty\n");
+			abort();
+		}
+	}
+
 	/* The terminal is prepared for interactive I/O. */
 
 	set_interactive_mode();
 
 	clear_entire_screen();
 
-
 	/* This function sets fatal_code() as signal interrupt handler
 	for all the dangerous signals (SIGILL, SIGSEGV etc.). */
 
 	set_fatal_code();
-
-	load_auto_prefs(cur_buffer, DEF_PREFS_NAME);
 
 	if (argc > 1) {
 
@@ -342,7 +356,7 @@ int main(int argc, char **argv) {
 		unwanted results). */
 
 		uint64_t first_line = 0, first_col = 0;
-		bool first_file = true, binary = false, skip_plus = false;
+		bool binary = false, skip_plus = false;
 		stop = false;
 
 		for(int i = 1; i < argc && !stop; i++) {
@@ -383,7 +397,7 @@ int main(int argc, char **argv) {
 					if (!first_file) do_action(cur_buffer, NEWDOC_A, -1, NULL);
 					else first_file = false;
 					cur_buffer->opt.binary = binary;
-					if (i<argc) do_action(cur_buffer, OPEN_A, 0, str_dup(argv[i]));
+					if (i < argc) do_action(cur_buffer, OPEN_A, 0, str_dup(argv[i]));
 					if (first_line) do_action(cur_buffer, GOTOLINE_A, first_line, NULL);
 					if (first_col)  do_action(cur_buffer, GOTOCOLUMN_A, first_col, NULL);
 					first_line =
@@ -409,12 +423,10 @@ int main(int argc, char **argv) {
 	refresh_window(cur_buffer);
 
 	if (macro_name) do_action(cur_buffer, MACRO_A, -1, str_dup(macro_name));
-	else if (argc == 1) {
-
+	else if (first_file) {
 		/* If there is no file to load, and no macro to execute, we display
 		the "NO WARRANTY" message. */
-
-		about(1);
+		about(true);
 		displaying_info = true;
 	}
 
@@ -443,7 +455,7 @@ int main(int argc, char **argv) {
 		const input_class ic = CHAR_CLASS(c);
 
 		if (displaying_info) {
-			about(0);
+			about(false);
 			displaying_info = false;
 		}
 		else if (cur_buffer->automatch.shown) automatch_bracket(cur_buffer, false);
