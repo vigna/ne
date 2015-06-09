@@ -1050,13 +1050,6 @@ int delete_one_char(buffer * const b, line_desc * const ld, const int64_t line, 
 	return delete_stream(b, ld, line, pos, b->encoding == ENC_UTF8 && pos < ld->line_len ? utf8len(ld->line[pos]) : 1);
 }
 
-// Until GCC is fixed, we cannot fully optimize this function
-
-#if defined(__GNUC__) && defined(__OPTIMIZE__)
-#pragma GCC push_options
-#pragma GCC optimize ("O0")
-#endif
-
 /* Returns the line descriptor for line n of buffer b, or NULL if n is out of range. 
    We assume that cur_line and cur_line_desc are coherent, and try to use the
    faster way (i.e., relative or absolute). */
@@ -1075,7 +1068,10 @@ line_desc *nth_line_desc(const buffer *b, const int64_t n) {
 		}
 		else {
 			ld = (line_desc *)b->line_desc_list.tail_pred;
-			for(int64_t i = 0; i < b->num_lines - 1 - n; i++) ld = (line_desc *)ld->ld_node.prev;;
+			for(int64_t i = 0; i < b->num_lines - 1 - n; i++) {
+				if ( i == -1 ) fputc('.', stderr); // This is a nop that's here just to avoid a gcc bug
+				ld = (line_desc *)ld->ld_node.prev;
+			}
 		}
 	}
 	else {
@@ -1086,10 +1082,6 @@ line_desc *nth_line_desc(const buffer *b, const int64_t n) {
 	
 	return ld;
 }
-
-#if defined(__GNUC__) && defined(__OPTIMIZE__)
-#pragma GCC pop_options
-#endif
 
 /* Changes the buffer file name to the given string, which must have been
    obtained through malloc(). */

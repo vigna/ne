@@ -50,10 +50,6 @@ bool need_attr_update;
 static bool window_needs_refresh;
 static int first_line, last_line, updated_lines;
 
-/* A fixed reference for a pointer to the value -1. */
-
-static const uint32_t no_attr = -1;
-
 /* Prevents any other update from being actually done by setting updated_lines
    to a value greater than TURBO. It is most useful when the we know that a
    great deal of update is going to happen, most of which is useless (for
@@ -521,7 +517,7 @@ void update_overwritten_char(buffer * const b, const int old_char, const int new
 	assert(ld != NULL);
 	assert(pos < ld->line_len);
 
-	const uint32_t * const attr = b->syn ? &attr_buf[attr_pos] : &no_attr;
+	const uint32_t * const attr = b->syn ? &attr_buf[attr_pos] : NULL;
 
 	if (b->syn) {
 		/* fprintf(stderr, "-b->attr_len: %d calc_char_len: %d pos: %d ld->line_len %d attr_pos: %d\n", b->attr_len,calc_char_len(ld, b->encoding), pos, ld->line_len, attr_pos);*/
@@ -548,7 +544,7 @@ void update_overwritten_char(buffer * const b, const int old_char, const int new
 		/* The character did not change its width (the easy case). */
 		if (old_char != new_char) {
 			if (new_char == '\t') output_spaces(old_width, attr);
-			else output_char(new_char, *attr, b->encoding == ENC_UTF8);
+			else output_char(new_char, attr ? *attr : -1, b->encoding == ENC_UTF8);
 		}
 		return;
 	}
@@ -581,13 +577,13 @@ void update_overwritten_char(buffer * const b, const int old_char, const int new
 
 				if (width_delta + tab_width <= b->opt.tab_size) {
 					if (new_char == '\t') output_spaces(new_width, attr);
-					else output_char(new_char, *attr, b->encoding == ENC_UTF8);
+					else output_char(new_char, attr ? *attr : -1, b->encoding == ENC_UTF8);
 					output_chars(&ld->line[pos], attr, j - pos, b->encoding == ENC_UTF8);
 					output_spaces(width_delta, b->syn ? &b->attr_buf[curr_attr_pos] : NULL);
 				}
 				else {
 					if (new_char == '\t') output_spaces(new_width, attr);
-					else output_char(new_char, *attr, b->encoding == ENC_UTF8);
+					else output_char(new_char, attr ? *attr : -1, b->encoding == ENC_UTF8);
 					delete_chars(width_delta);
 
 					if (width_delta != b->opt.tab_size) {
@@ -603,7 +599,7 @@ void update_overwritten_char(buffer * const b, const int old_char, const int new
 
 		delete_chars(width_delta);
 		if (new_char == '\t') output_spaces(new_width, attr);
-		else output_char(new_char, *attr, b->encoding == ENC_UTF8);
+		else output_char(new_char, attr ? *attr : -1, b->encoding == ENC_UTF8);
 		update_partial_line(b, line, ne_columns - width_delta, true, false);
 	}
 	else {
@@ -627,13 +623,13 @@ void update_overwritten_char(buffer * const b, const int old_char, const int new
 
 				if (width_delta < tab_width) {
 					if (new_char == '\t') output_spaces(new_width, attr);
-					else output_char(new_char, *attr, b->encoding == ENC_UTF8);
+					else output_char(new_char, attr ? *attr : -1, b->encoding == ENC_UTF8);
 					output_chars(&ld->line[pos], attr, j - pos, b->encoding == ENC_UTF8);
 				}
 				else {
 					insert_chars(NULL, attr, width_delta, false);
 					if (new_char == '\t') output_spaces(new_width, attr);
-					else output_char(new_char, *attr, b->encoding == ENC_UTF8);
+					else output_char(new_char, attr ? *attr : -1, b->encoding == ENC_UTF8);
 					move_cursor(line, i + width_delta);
 					insert_chars(NULL, attr, b->opt.tab_size - (i + width_delta) % b->opt.tab_size - tab_width, false);
 				}
@@ -643,7 +639,7 @@ void update_overwritten_char(buffer * const b, const int old_char, const int new
 
 		insert_chars(NULL, attr, width_delta, false);
 		if (new_char == '\t') output_spaces(new_width, attr);
-		else output_char(new_char, *attr, b->encoding == ENC_UTF8);
+		else output_char(new_char, attr ? *attr : -1, b->encoding == ENC_UTF8);
 	}
 }
 
