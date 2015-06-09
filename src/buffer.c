@@ -243,6 +243,7 @@ void free_buffer_contents(buffer * const b) {
 	b->is_CRLF = false;
 	b->encoding = ENC_ASCII;
 	b->bookmark_mask = 0;
+	b->mtime = 0;
 
 	free_char_stream(b->last_deleted);
 	b->last_deleted = NULL;
