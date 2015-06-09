@@ -203,12 +203,53 @@ int find_matching_bracket(buffer *b, const int64_t min_line, int64_t max_line, i
 
 
 
+/* Breaks a line at the first possible position before the current cursor
+   position (i.e., at a tab or at a space). The space is deleted, and a
+   new line is inserted. The cursor is repositioned coherently. The number
+   of characters existing on the new line is returned, or ERROR if no word
+   wrap was possible. */
+
+int word_wrap(buffer * const b) {
+	const int64_t len = b->cur_line_desc->line_len;
+	char * const line = b->cur_line_desc->line;
+	int64_t cur_pos, pos, first_pos;
+
+	if (!(cur_pos = pos = b->cur_pos)) return ERROR;
+
+	/* Find the first possible position we could break a line on. */
+	first_pos = 0;
+
+	/* Skip leading white space */
+	while (first_pos < len && ne_isspace(get_char(&line[first_pos], b->encoding), b->encoding)) first_pos = next_pos(line, first_pos, b->encoding);
+
+	/* Skip non_space after leading white space */
+	while (first_pos < len && !ne_isspace(get_char(&line[first_pos], b->encoding), b->encoding)) first_pos = next_pos(line, first_pos, b->encoding);
+
+	/* Now we know that the line shouldn't be broken before &line[first_pos]. */
+
+	/* Start from the other end now and find a candidate space to break the line on.*/
+	while((pos = prev_pos(line, pos, b->encoding)) && !ne_isspace(get_char(&line[pos], b->encoding), b->encoding));
+
+	if (! pos || pos < first_pos) return ERROR;
+
+	start_undo_chain(b);
+
+	delete_one_char(b, b->cur_line_desc, b->cur_line, pos);
+	insert_one_line(b, b->cur_line_desc, b->cur_line, pos);
+
+	end_undo_chain(b);
+
+	return b->cur_pos - pos - 1;
+}
+
+
+
 /* This experimental alternative to word wrapping sets a bookmark, calls
    paragraph(), then returns to the bookmark (which may have moved due to
    insertions/deletions).  The number of characters existing on the new line is
    returned, or ERROR if no word wrap was possible. */
 
-int word_wrap(buffer * const b) {
+int word_wrap2(buffer * const b) {
 	static char avcmd[16];
 
 	if (b->cur_pos > b->cur_line_desc->line_len) return OK;
