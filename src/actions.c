@@ -478,11 +478,40 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		/* Note the use of ne_columns-1. This avoids a double horizontal scrolling each time a
 			word wrap happens with b->opt.right_margin = 0. */
 
-		if (b->opt.word_wrap) error = word_wrap(b);
-		if (b->syn) update_line(b, b->cur_y, true, false);
-		end_undo_chain(b); 
-		assert_buffer_content(b);
-		return error;
+		error = b->opt.word_wrap && b->win_x + b->cur_x >= (b->opt.right_margin ? b->opt.right_margin : ne_columns - 1) ? word_wrap(b) : ERROR;
+
+		if (error == ERROR) {
+			assert_buffer_content(b);
+			/* No word wrap. */
+			if (b->syn) update_line(b, b->cur_y, true, false);
+			assert_buffer_content(b);
+		}
+		else {
+			/* Fixes in case of word wrapping. */
+			const bool wont_scroll = b->win_x == 0;
+			int64_t a = 0;
+			if (b->syn) update_line(b, b->cur_y, false, true);
+			else update_partial_line(b, b->cur_y, calc_width(b->cur_line_desc, b->cur_line_desc->line_len, b->opt.tab_size, b->encoding) - b->win_x, false, false);
+
+			need_attr_update = false;
+			/* Poke the correct state into the next line. */
+			if (b->syn) ((line_desc *)b->cur_line_desc->ld_node.next)->highlight_state = b->next_state;
+
+			if (b->opt.auto_indent) a = auto_indent_line(b, b->cur_line + 1, (line_desc *)b->cur_line_desc->ld_node.next, INT_MAX);
+			move_to_sol(b);
+			line_down(b);
+			goto_pos(b, error + a);
+
+			if (wont_scroll) {
+				if (b->cur_line == b->num_lines - 1) update_line(b, b->cur_y, false, false);
+				else scroll_window(b, b->cur_y, 1);
+			}
+
+			need_attr_update = true;
+			assert_buffer_content(b);
+		}
+
+		return OK;
 	}
 
 
@@ -587,9 +616,6 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			}
 		}
 		need_attr_update = true;
-		if (b->opt.word_wrap) error = word_wrap(b);
-		if (b->syn) update_line(b, b->cur_y, true, false);
-		assert_buffer_content(b);
 		end_undo_chain(b);
 		return error ? error : stop ? STOPPED : 0;
 
