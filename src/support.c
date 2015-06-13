@@ -154,6 +154,10 @@ bool buffer_file_modified(const buffer *b, const char *name) {
 
 	assert_buffer(b);
 
+#ifdef NE_TEST
+	return false; /* During tests, assume all buffers' files are safe to replace. */
+#endif
+
 	if (name == NULL) name = b->filename;
 
 	if (!name) return false;
