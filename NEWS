@@ -12,6 +12,10 @@
   * It is now possible to interrupt searches (it used to be possible just
     to interrupt global replace actions).
 
+  * Word wrap has been reverted to pre-2.5: it preserves just whitespace,
+    and it doesn't reparagraph at each line split or join. Paragraph keeps
+    the usual smart features preserving comments, etc.
+
 2.6  2015-04-17
 
   * Requesters (filenames, help, autocompletions, etc.) do progressive

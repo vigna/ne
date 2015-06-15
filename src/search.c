@@ -48,12 +48,12 @@ sense_case. It is used in find(). Note that the argument *MUST* be unsigned. */
 lower case characters to upper case characters. It's normally adjusted
 on startup according to the current locale. */
 
-char localised_up_case[256];
+unsigned char localised_up_case[256];
 
 /* This vector is a translation table for the regex library which maps
 ASCII lower case characters to upper case characters. */
 
-const char ascii_up_case[256] = {
+const unsigned char ascii_up_case[256] = {
 	0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
 	0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F,
 	0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E, 0x2F,
@@ -99,7 +99,7 @@ int find(buffer * const b, const char *pattern, const bool skip_first) {
 
 	if (recompile_string) for(int i = 0; i < sizeof d / sizeof *d; i++) d[i] = m;
 
-	const char * const up_case = b->encoding == ENC_UTF8 ? ascii_up_case : localised_up_case;
+	const unsigned char * const up_case = b->encoding == ENC_UTF8 ? ascii_up_case : localised_up_case;
 	const bool sense_case = (b->opt.case_search != 0);
 	line_desc *ld = b->cur_line_desc;
 	int64_t y = b->cur_line;
@@ -169,7 +169,7 @@ int find(buffer * const b, const char *pattern, const bool skip_first) {
 						int i;
 						for (i = 1; i < m; i++)
 							if (CONV((unsigned char)*(p + i)) != CONV((unsigned char)pattern[i])) {
-								p-=d[c];
+								p -= d[c];
 								break;
 							}
 						if (i == m) {
@@ -256,7 +256,7 @@ static int map_group[RE_NREGS];
 
 int find_regexp(buffer * const b, const char *regex, const bool skip_first) {
 
-	const char * const up_case = b->encoding == ENC_UTF8 ? ascii_up_case : localised_up_case;
+	const unsigned char * const up_case = b->encoding == ENC_UTF8 ? ascii_up_case : localised_up_case;
 	bool recompile_string;
 
 	if (!regex) {
@@ -282,7 +282,7 @@ int find_regexp(buffer * const b, const char *regex, const bool skip_first) {
 		re_pb.translate = 0;
 	}
 	else {
-		if (re_pb.translate != (unsigned char *)up_case) recompile_string = true;
+		if (re_pb.translate != up_case) recompile_string = true;
 		re_pb.translate = (unsigned char *)up_case;
 	}
 

@@ -237,7 +237,7 @@ static macro_desc *macro_hash_table[MACRO_HASH_TABLE_SIZE];
 
 static int hash_cmd(const char * const s, int len) {
 	int h = -1;
-	while(len-- != 0) h = (h * 31 + (unsigned char)ascii_up_case[(unsigned char)s[len]]) % HASH_TABLE_SIZE;
+	while(len-- != 0) h = (h * 31 + ascii_up_case[(unsigned char)s[len]]) % HASH_TABLE_SIZE;
 	return (h + HASH_TABLE_SIZE) % HASH_TABLE_SIZE;
 }
 

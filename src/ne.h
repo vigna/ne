@@ -639,8 +639,8 @@ extern bool last_replace_empty_match;
 
 
 /* Upcasing vectors for the regex library. */
-extern char localised_up_case[];
-extern const char ascii_up_case[];
+extern unsigned char localised_up_case[];
+extern const unsigned char ascii_up_case[];
 
 #include "keycodes.h"
 #include "names.h"

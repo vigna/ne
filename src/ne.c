@@ -193,7 +193,7 @@ int main(int argc, char **argv) {
 		memset(&re_pb, 0, sizeof re_pb);
 		memset(&re_reg, 0, sizeof re_reg);
 
-		re_pb.translate = (unsigned char *)localised_up_case;
+		re_pb.translate = localised_up_case;
 		re_compile_pattern(LOCALE_REGEX, strlen(LOCALE_REGEX), &re_pb);
 		if (re_search(&re_pb, locale, strlen(locale), 0, strlen(locale), &re_reg) >= 0) {
 			if (re_reg.start[1] >= 0) io_utf8 = true;
