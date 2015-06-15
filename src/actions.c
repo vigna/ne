@@ -511,6 +511,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			assert_buffer_content(b);
 		}
 
+		end_undo_chain(b);
 		return OK;
 	}
 
