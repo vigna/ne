@@ -556,7 +556,7 @@ of several characters). */
 char *gen_flag_string(const buffer * const b) {
 
 	static char string[MAX_FLAG_STRING_SIZE];
-	const int ch = b->cur_pos < b->cur_line_desc->line_len ? (b->encoding == ENC_UTF8 ? utf8char(&b->cur_line_desc->line[b->cur_pos]) : b->cur_line_desc->line[b->cur_pos]) : -1;
+	const int ch = b->cur_pos < b->cur_line_desc->line_len ? (b->encoding == ENC_UTF8 ? utf8char(&b->cur_line_desc->line[b->cur_pos]) : (unsigned char)b->cur_line_desc->line[b->cur_pos]) : -1;
 	int i = 0;
 
 	string[i++] = ' ';

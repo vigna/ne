@@ -574,7 +574,8 @@ encoding_type detect_encoding(const char *ss, const int64_t len) {
    s is NULL, just returns pos + 1. If encoding is UTF8 it uses utf8len() to
    move forward. */
 
-int64_t next_pos(const char * const s, const int64_t pos, const encoding_type encoding) {
+int64_t next_pos(const char * const ss, const int64_t pos, const encoding_type encoding) {
+	const unsigned char *s = (const unsigned char *)ss;
 	assert(encoding != ENC_UTF8 || s == NULL || utf8len(s[pos]) > 0);
 	if (s == NULL) return pos + 1;
 	if (encoding == ENC_UTF8) return pos + utf8len(s[pos]);
@@ -602,7 +603,7 @@ int64_t prev_pos(const char * const s, int64_t pos, const encoding_type encoding
 
 int get_char(const char * const s, const encoding_type encoding) {
 	if (encoding == ENC_UTF8) return utf8char(s);
-	else return *s;
+	else return *(unsigned char *)s;
 }
 
 /* Returns the width of the ISO 10646 character represented by the sequence of bytes
@@ -610,7 +611,7 @@ int get_char(const char * const s, const encoding_type encoding) {
 
 int get_char_width(const char * const s, const encoding_type encoding) {
 	assert(s != NULL);
-	return encoding == ENC_UTF8 ? output_width(utf8char(s)) : output_width(*s);
+	return encoding == ENC_UTF8 ? output_width(utf8char(s)) : output_width(*(unsigned char *)s);
 }
 
 /* Returns the width of the first len characters of s, using the provided
