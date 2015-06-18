@@ -1,6 +1,6 @@
 (This file, CHANGES, lists fixes. See NEWS for new features and enhancements.)
 
-3.0 (beta)
+3.0  2015-06-18
 
   * Allow remapping of character SEQuences in .keys files.
 
