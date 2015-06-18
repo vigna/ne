@@ -1,6 +1,6 @@
 (This file, NEWS, lists new features and enhancements. See CHANGES for fixes.)
 
-3.0
+3.0 (beta)
 
   * ne is now fully 64-bit, and needs to be compiled by a C99-compliant
     compiler. Files can be of any size, provided that enough core memory
