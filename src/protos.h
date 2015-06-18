@@ -203,7 +203,6 @@ buffer *new_buffer(void);
 int delete_buffer(void);
 void about(bool show);
 void automatch_bracket(buffer *b, bool show);
-int main(int argc, char **argv);
 
 /* prefs.c */
 const char *extension(const char *filename);
