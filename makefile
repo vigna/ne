@@ -61,12 +61,7 @@ install:
 
 
 package:
-	# To create a Mac package, compile with 
-	#
-	#	export MACOSX_DEPLOYMENT_TARGET=10.3
-	#	make CC=/Developer/usr/bin/gcc OPTS="-mmacosx-version-min=10.3"
-	#
-	# Then do a "make install" as root (delete INSTALL to make it work) and run this target.
+	# To create a Mac package, give a "make install" as root (delete INSTALL to make it work) and run this target.
 	# Finally, create using /Developer/Applications/Utilities/PackageMaker a package whose only content is 
 	# /tmp/package, build it, and use Disk Utility to create a (properly named) small disk image 
 	# containing the package. Finally, use the right button and "Convert" to store the image in compressed form.
