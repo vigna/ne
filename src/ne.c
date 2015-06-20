@@ -332,7 +332,7 @@ int main(int argc, char **argv) {
 		const int error = load_fh_in_buffer(cur_buffer, fileno(stdin));
 		print_error(error);
 
-		if (!(stdin = freopen("/dev/tty", "r", stdin))) {
+		if (!(freopen("/dev/tty", "r", stdin))) {
 			fprintf(stderr, "Cannot reopen input tty\n");
 			abort();
 		}
