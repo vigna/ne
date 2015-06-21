@@ -88,7 +88,7 @@ GCCFLAGS=-std=c99 -Wall -Wno-parentheses
 endif
 
 CFLAGS=$(OPTS) $(GCCFLAGS) \
-	-D_GNU_SOURCE -D__USE_GNU -DSTDC_HEADERS -Dinline=__inline__ \
+	-D_REGEX_LARGE_OFFSETS -D_GNU_SOURCE -DSTDC_HEADERS -Dinline=__inline__ \
 	$(if $(NE_NOWCHAR), -DNOWCHAR,) \
 	$(if $(NE_TEST),    -DNE_TEST -coverage,) \
 	$(if $(NE_DEBUG),   -g,-O3 -DNDEBUG) \
