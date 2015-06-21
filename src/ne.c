@@ -418,6 +418,7 @@ int main(int argc, char **argv) {
 
 	/* We delay updates. In this way the macro activity does not cause display activity. */
 
+	reset_window();
 	delay_update();
 
 	if (macro_name) do_action(cur_buffer, MACRO_A, -1, str_dup(macro_name));
