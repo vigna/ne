@@ -1,5 +1,16 @@
 (This file, CHANGES, lists fixes. See NEWS for new features and enhancements.)
 
+3.0.1
+
+  * Updated version of GNU regex library provides 64-bit regular
+    expressions.
+
+  * We no longer assign stdin, fixing a *BSD compatibility problem (thanks
+    to Brian Callahan for reporting this issue).
+
+  * Fixed missing screen update at startup when no default autoprefs are
+    available.
+
 3.0  2015-06-18
 
   * Allow remapping of character SEQuences in .keys files.

@@ -31,8 +31,8 @@
 #include <locale.h>
 
 /* This is the array containing the "NO WARRANTY" message, which is displayed
-when ne is called without any specific file name or macro to execute. The
-message disappears as soon as any key is typed. */
+   when ne is called without any specific file name or macro to execute. The
+   message disappears as soon as any key is typed. */
 
 char *NO_WARRANTY_msg[] = {	PROGRAM_NAME " " VERSION ".",
 										"Copyright (C) 1993-1998 Sebastiano Vigna",
@@ -86,7 +86,7 @@ char ARG_HELP[] = ABOUT_MSG "\n"
 #define LOCALE_REGEX "\\(UTF-?8\\)\\|\\(ISO-?8859-?\\)\\(1?[0-9]\\)"
 
 /* These lists contains the existing buffers, clips and macros. cur_buffer
-denotes the currently displayed buffer. */
+   denotes the currently displayed buffer. */
 
 list buffers = { (node *)&buffers.tail, NULL, (node *)&buffers.head };
 list clips = { (node *)&clips.tail, NULL, (node *)&clips.head };
@@ -110,9 +110,9 @@ int turbo;
 bool do_syntax = true;
 
 /* These function live here because they access cur_buffer. new_buffer()
-creates a new buffer, adds it to the buffer list, and assign it to
-cur_buffer. delete_buffer() destroys cur_buffer, and makes the previous or
-next buffer the current buffer, if any of the two exists. */
+   creates a new buffer, adds it to the buffer list, and assign it to
+   cur_buffer. delete_buffer() destroys cur_buffer, and makes the previous or
+   next buffer the current buffer, if any of the two exists. */
 
 buffer *new_buffer(void) {
 	buffer *b = alloc_buffer(cur_buffer);
@@ -174,13 +174,12 @@ void about(const bool show) {
 	else {
 		ttysize();
 		keep_cursor_on_screen(cur_buffer);
-		reset_window();
 	}
 }
 
 /* The main() function. It is responsible for argument parsing, calling
-some terminal and signal initialization functions, and entering the
-event loop. */
+   some terminal and signal initialization functions, and entering the
+   event loop. */
 
 int main(int argc, char **argv) {
 
@@ -211,9 +210,9 @@ int main(int argc, char **argv) {
 	for(int i = 1; i < argc; i++) {
 
 		/* Special arguments start with two dashes. If we find one, we
-		cancel its entry in argv[], so that it will be skipped when opening
-		the specified files. The only exception is +N for skipping to the
-		N-th line. */
+		   cancel its entry in argv[], so that it will be skipped when opening
+		   the specified files. The only exception is +N for skipping to the
+		   N-th line. */
 
 		if (argv[i][0] == '-' && argv[i][1] == '-') {
 			if (!argv[i][2]) i++; /* You can use "--" to force the next token to be a filename */
@@ -301,7 +300,7 @@ int main(int argc, char **argv) {
 	add_head(&clips, &cd->cd_node);
 
 	/* General terminfo and cursor motion initalization. From here onwards,
-	we cannot exit() lightly. */
+	   we cannot exit() lightly. */
 
 	term_init();
 
@@ -332,7 +331,7 @@ int main(int argc, char **argv) {
 		const int error = load_fh_in_buffer(cur_buffer, fileno(stdin));
 		print_error(error);
 
-		if (!(stdin = freopen("/dev/tty", "r", stdin))) {
+		if (!(freopen("/dev/tty", "r", stdin))) {
 			fprintf(stderr, "Cannot reopen input tty\n");
 			abort();
 		}
@@ -345,15 +344,15 @@ int main(int argc, char **argv) {
 	clear_entire_screen();
 
 	/* This function sets fatal_code() as signal interrupt handler
-	for all the dangerous signals (SIGILL, SIGSEGV etc.). */
+	   for all the dangerous signals (SIGILL, SIGSEGV etc.). */
 
 	set_fatal_code();
 
 	if (argc > 1) {
 
 		/* The first file opened does not need a NEWDOC_A action. Note that
-		file loading can be interrupted (wildcarding can sometimes produce
-		unwanted results). */
+		   file loading can be interrupted (wildcarding can sometimes produce
+		   unwanted results). */
 
 		uint64_t first_line = 0, first_col = 0;
 		bool binary = false, skip_plus = false;
@@ -411,21 +410,20 @@ int main(int argc, char **argv) {
 		free(skiplist);
 
 		/* This call makes current the first specified file. It is called
-		only if more than one buffer exist. */
+		   only if more than one buffer exist. */
 
 		if (get_nth_buffer(1)) do_action(cur_buffer, NEXTDOC_A, -1, NULL);
 
 	}
 
-	/* Note that we do not need to update the display. clear_entire_screen() is
-	ok if no file was loaded; otherwise, OPEN_A will call update_window(). */
+	/* We delay updates. In this way the macro activity does not cause display activity. */
 
-	refresh_window(cur_buffer);
+	delay_update();
 
 	if (macro_name) do_action(cur_buffer, MACRO_A, -1, str_dup(macro_name));
 	else if (first_file) {
 		/* If there is no file to load, and no macro to execute, we display
-		the "NO WARRANTY" message. */
+		   the "NO WARRANTY" message. */
 		about(true);
 		displaying_info = true;
 	}
@@ -433,7 +431,7 @@ int main(int argc, char **argv) {
 	while(true) {
 
 		/* If we are displaying the "NO WARRANTY" info, we should not refresh the
-		window now */
+		   window now */
 
 		if (!displaying_info) {
 			refresh_window(cur_buffer);
@@ -451,7 +449,7 @@ int main(int argc, char **argv) {
 			cur_buffer->automatch.shown = 0;
 		}
 
-		if ( c == INVALID_CHAR ) continue; /* Window resizing. */
+		if (c == INVALID_CHAR) continue; /* Window resizing. */
 		const input_class ic = CHAR_CLASS(c);
 
 		if (displaying_info) {
