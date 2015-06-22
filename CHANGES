@@ -1,6 +1,6 @@
 (This file, CHANGES, lists fixes. See NEWS for new features and enhancements.)
 
-3.0.1
+3.0.1 2015-06-22
 
   * Updated version of GNU regex library provides 64-bit regular
     expressions.
