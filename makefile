@@ -2,7 +2,7 @@
 
 VERSION=3.0.1
 
-# If you change this prefix, you can call "make install" and ne will be compiled
+# If you change this prefix, you can invoke "make build docs install" and ne will be compiled
 # and installed under the $(PREFIX) hierarchy. You can even use "make install PREFIX=$HOME/<dir>"
 # to install ne locally into the directory <dir>.
 
@@ -13,7 +13,10 @@ PREFIX=/usr/local
 PROGRAM       = ne
 
 build:
-	( cd src; make clean; make NE_GLOBAL_DIR=$(PREFIX)/share/ne )
+	( cd src; make clean; make NE_GLOBAL_DIR=$(PREFIX)/share/ne; strip ne )
+
+docs:
+	( cd doc; make )
 
 version:
 	./version.pl VERSION=$(VERSION)
