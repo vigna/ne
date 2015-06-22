@@ -1,6 +1,6 @@
 # Makefile for ne's distribution archive.
 
-VERSION=3.0
+VERSION=3.0.1
 
 # If you change this prefix, you can call "make install" and ne will be compiled
 # and installed under the $(PREFIX) hierarchy. You can even use "make install PREFIX=$HOME/<dir>"
@@ -36,15 +36,14 @@ source: version
 	-rm -f ne-$(VERSION)
 
 cygwin:
-	( cd src; make clean; make NE_GLOBAL_DIR=/usr/share/ne NE_TERMCAP=1 NE_ANSI=1 )
+	( cd src; make clean; make NE_GLOBAL_DIR=/usr/share/ne NE_TERMCAP=1 NE_ANSI=1 OPTS=-U__STRICT_ANSI__ )
 	make install PREFIX=/usr CMDSUFFIX=.exe
 	tar zcvf ne-cygwin-ansi-$(VERSION)-$(shell uname -m).tar.gz /usr/share/ne /usr/bin/ne.exe /usr/share/doc/ne /usr/share/info/ne.info.gz /usr/share/man/man1/ne.1
-	( cd src; make clean; make NE_GLOBAL_DIR=/usr/share/ne )
+	( cd src; make clean; make NE_GLOBAL_DIR=/usr/share/ne OPTS=-U__STRICT_ANSI__ )
 	make install PREFIX=/usr CMDSUFFIX=.exe
 	tar zcvf ne-cygwin-$(VERSION)-$(shell uname -m).tar.gz /usr/share/ne /usr/bin/ne.exe /usr/share/doc/ne /usr/share/info/ne.info.gz /usr/share/man/man1/ne.1
 
 install:
-	( cd src; make clean; make NE_GLOBAL_DIR=$(PREFIX)/share/ne )
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
 	mkdir -p $(DESTDIR)$(PREFIX)/share/ne/syntax
 	mkdir -p $(DESTDIR)$(PREFIX)/share/ne/macros
@@ -61,7 +60,8 @@ install:
 
 
 package:
-	# To create a Mac package, give a "make install" as root (delete INSTALL to make it work) and run this target.
+	# To create a Mac package, compile the editor, 
+	# give a "make install" as root (delete INSTALL to make it work) and run this target.
 	# Finally, create using /Developer/Applications/Utilities/PackageMaker a package whose only content is 
 	# /tmp/package, build it, and use Disk Utility to create a (properly named) small disk image 
 	# containing the package. Finally, use the right button and "Convert" to store the image in compressed form.
