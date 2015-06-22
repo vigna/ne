@@ -315,7 +315,6 @@ int main(int argc, char **argv) {
 	/* Some initializations of other modules... */
 
 	re_set_syntax(
-		/* RE_CHAR_CLASSES		|  I would *love* character classes, but they do not seem to work... 8^( */
 		RE_CONTEXT_INDEP_ANCHORS |
 		RE_CONTEXT_INDEP_OPS	| RE_HAT_LISTS_NOT_NEWLINE |
 		RE_NEWLINE_ALT			| RE_NO_BK_PARENS				|
