@@ -699,7 +699,7 @@ int shift(buffer * const b, char *p, char *msg, int msg_size) {
 		while (*p) {
 			if (isasciispace(*p)) p++;
 			else if (!dir_b && (dir_b = (*p == '<' || *p == '>'))) dir = *p++;
-			else if (!size_b && (size_b = isdigit(*p))) {
+			else if (!size_b && (size_b = isdigit((unsigned char)*p))) {
 				errno = 0;
 				shift_size = strtoll(p, &p, 10);
 				if (errno) return INVALID_SHIFT_SPECIFIED;

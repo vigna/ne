@@ -365,11 +365,11 @@ int main(int argc, char **argv) {
 					char *d;
 					errno = 0;
 					if (argv[i][1]) {
-						if (isdigit(argv[i][1])) {
+						if (isdigit((unsigned char)argv[i][1])) {
 							tmp_l = strtoll(argv[i]+1, &d, 10);
 							if (!errno) {
 								if (*d) {							/* separator between N and M */
-									if (isdigit(d[1])) {
+									if (isdigit((unsigned char)d[1])) {
 										tmp_c = strtoll(d+1, &d, 10);
 										if (*d) errno = ERANGE;
 									}

@@ -270,7 +270,7 @@ int parse_command_line(const char * command_line, int64_t * const num_arg, char 
 	while(isasciispace(*command_line)) command_line++;
 	const char *p = command_line;
 
-	if (!isalpha(*p)) { /* Comment, treated as NOP. */
+	if (!isalpha((unsigned char)*p)) { /* Comment, treated as NOP. */
 		const int len = strlen(p);
 		if (!(*string_arg = malloc(len + 1))) return -OUT_OF_MEMORY;
 		memcpy(*string_arg, p, len);
@@ -288,7 +288,7 @@ int parse_command_line(const char * command_line, int64_t * const num_arg, char 
 		while(isasciispace(*p)) p++;
 
 		if (!(*p && (commands[a].flags & NO_ARGS))) {
-			if (!*p || (commands[a].flags & ARG_IS_STRING) || isxdigit(*p) || *p == 'x' || *p =='X') {
+			if (!*p || (commands[a].flags & ARG_IS_STRING) || isxdigit((unsigned char)*p) || *p == 'x' || *p =='X') {
 				if ((commands[a].flags & IS_OPTION) || !exec_only_options) {
 					if (*p) {
 						if ((commands[a].flags & ARG_IS_STRING) && string_arg) {
@@ -418,7 +418,7 @@ static int insertchar_val(const char *p) {
 	while(isasciispace(*p)) p++;
 	const char * const cmd = p;
 
-	if (!isalpha(*p)) return 0;
+	if (!isalpha((unsigned char)*p)) return 0;
 
 	while(*p && !isasciispace(*p)) p++;
 
