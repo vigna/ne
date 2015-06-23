@@ -169,6 +169,7 @@ void about(const bool show) {
 				output_string("\" not found!", false);
 			}
 		}
+		reset_window();
 		print_message(ABOUT_MSG);
 	}
 	else {
