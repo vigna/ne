@@ -201,7 +201,7 @@ void move_inc_up(buffer *b);
 /* ne.c */
 buffer *new_buffer(void);
 int delete_buffer(void);
-void about(bool show);
+void about();
 void automatch_bracket(buffer *b, bool show);
 
 /* prefs.c */
