@@ -40,6 +40,7 @@
 static req_list rl, *rl0; /* working and original * req_list */
 
 static int x, y, page, max_names_per_line, max_names_per_col, names_per_page, fuzz_len;
+static bool keep;
 
 /* ne traditionally has displayed request entries by row, i.e.
    	a	b	c
@@ -260,8 +261,8 @@ static void request_move_right(void) {
 
 /* Reorder (i.e. swap) the current entry n with entry n+dir. dir should be
    either 1 or -1. */
-static int request_reorder(const int dir) {
-	if (! rl0->allow_reorder || rl.cur_entries < 2) return 0;
+static bool request_reorder(const int dir) {
+	if (! rl0->allow_reorder || rl.cur_entries < 2) return false;
 
 	const int n0 = PXY2N(page,x,y);
 	const int n1 = (n0 + dir + rl.cur_entries ) % rl.cur_entries; /* Allows wrap around. */
@@ -289,7 +290,7 @@ static int request_reorder(const int dir) {
 
 	page = -1; /* causes normalize() to call print_strings() */
 	normalize(n1);
-	return 1;
+	return true;
 }
 
 /* Back up to the first entry with a common prefix, pulling in matching entries
@@ -356,16 +357,19 @@ static int request_strings_init(req_list *rlp0) {
 	rl.cur_entries = rlp0->cur_entries;
 	rl.max_entry_len = rlp0->max_entry_len;
 	rl.suffix = rlp0->suffix;
+	fprintf(stderr,"cur_entries: %d\n",rlp0->cur_entries);
+	fflush(stderr);
 	if (!(rl.entries = calloc(rlp0->cur_entries, sizeof(char *)))) {
 		return 0;
 	}
 	memcpy(rl.entries, rlp0->entries, rl.cur_entries * sizeof(char *));
 	rl0 = rlp0;
 	fuzz_len = common_prefix_len(&rl);
+	keep = false;
 	return rl.cur_entries;
 }
 
-static int request_strings_cleanup(int reordered) {
+static int request_strings_cleanup(bool reordered) {
 	int n = PXY2N(page,x,y);
 	const char * const p0 = rl.entries[n];
 	for (int i = 0; i<rl0->cur_entries; i++) {
@@ -376,8 +380,7 @@ static int request_strings_cleanup(int reordered) {
 	}
 	if (rl.entries) free(rl.entries);
 	rl.entries = NULL;
-	if (reordered) rl0->reordered = true;
-	else rl0->reordered = false;
+	rl0->reordered = reordered;
 	return n;
 }
 
@@ -392,7 +395,8 @@ int request_strings(req_list *rlp0, int n) {
 
 	assert(rlp0->cur_entries > 0);
 
-	int ne_lines0 = 0, ne_columns0 = 0, reordered = 0;
+	int ne_lines0 = 0, ne_columns0 = 0;
+	bool reordered = false;
 	max_names_per_line = max_names_per_col = x = y = page = fuzz_len = 0;
 	if ( ! request_strings_init(rlp0) ) return ERROR;
 
@@ -525,11 +529,11 @@ int request_strings(req_list *rlp0, int n) {
 						break;
 
 					case NEXTDOC_A:
-						reordered += request_reorder(1);
+						reordered |= request_reorder(1);
 						break;
 
 					case PREVDOC_A:
-						reordered += request_reorder(-1);
+						reordered |= request_reorder(-1);
 						break;
 
 					case CLOSEDOC_A:
