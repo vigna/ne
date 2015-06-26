@@ -109,6 +109,9 @@ buffer *cur_buffer;
 int turbo;
 bool do_syntax = true;
 
+/* Whether we are currently displaying an about message. */
+static bool displaying_info;
+
 /* These function live here because they access cur_buffer. new_buffer()
    creates a new buffer, adds it to the buffer list, and assign it to
    cur_buffer. delete_buffer() destroys cur_buffer, and makes the previous or
@@ -147,35 +150,29 @@ int delete_buffer(void) {
 	return false;
 }
 
-void about(const bool show) {
-
-	if (show) {
-		clear_entire_screen();
-		int i;
-		for(i = 0; NO_WARRANTY_msg[i]; i++) {
-			if (i == ne_lines - 1) break;
-			move_cursor(i, 0);
-			output_string(NO_WARRANTY_msg[i], false);
-		}
-		if (++i < ne_lines - 1) {
-			move_cursor(i, 0);
-			if (exists_gprefs_dir()) {
-				output_string("Global Directory: ", false);
-				output_string(exists_gprefs_dir(), false);
-			}
-			else {
-				output_string("Global directory \"", false);
-				output_string(get_global_dir(), false);
-				output_string("\" not found!", false);
-			}
-		}
-		reset_window();
-		print_message(ABOUT_MSG);
+void about() {
+	clear_entire_screen();
+	displaying_info = true;
+	int i;
+	for(i = 0; NO_WARRANTY_msg[i]; i++) {
+		if (i == ne_lines - 1) break;
+		move_cursor(i, 0);
+		output_string(NO_WARRANTY_msg[i], false);
 	}
-	else {
-		ttysize();
-		keep_cursor_on_screen(cur_buffer);
+	if (++i < ne_lines - 1) {
+		move_cursor(i, 0);
+		if (exists_gprefs_dir()) {
+			output_string("Global Directory: ", false);
+			output_string(exists_gprefs_dir(), false);
+		}
+		else {
+			output_string("Global directory \"", false);
+			output_string(get_global_dir(), false);
+			output_string("\" not found!", false);
+		}
 	}
+	reset_window();
+	print_message(ABOUT_MSG);
 }
 
 /* The main() function. It is responsible for argument parsing, calling
@@ -202,7 +199,7 @@ int main(int argc, char **argv) {
 		free(re_reg.end);
 	}
 
-	bool no_config = false, displaying_info = false;
+	bool no_config = false;
 	char *macro_name = NULL, *key_bindings_name = NULL, *menu_conf_name = NULL, *startup_prefs_name = DEF_PREFS_NAME;
 
 	char * const skiplist = calloc(argc, 1);
@@ -425,8 +422,7 @@ int main(int argc, char **argv) {
 	else if (first_file) {
 		/* If there is no file to load, and no macro to execute, we display
 		   the "NO WARRANTY" message. */
-		about(true);
-		displaying_info = true;
+		about();
 	}
 
 	while(true) {
