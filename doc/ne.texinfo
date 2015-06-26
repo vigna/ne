@@ -1228,9 +1228,17 @@ line. This allows you to choose an existing name with @key{Tab} and
 modify it before hitting @key{Return}.
 
 A special feature is bound to printing characters: the requester
-progressively filters out entries that don't match the characters you
+progressively advances to entries that match the characters you
 type without regard to case. You can use @key{Backspace} to
-progressively return filtered out entries to the list. This lets you
+incrementally undo your character matches. This progressive matching
+works in two modes which you can switch between on the fly with either
+the @key{Insert} or @key{Delete} key. In the default mode, the cursor
+indicating your current selection simply advances to the next matching
+entry (if there is one). In the other mode, all entries which don't
+match the characters you've entered are removed from the list so you
+only see the matching entries. The @key{Backspace} key incrementally
+returns them to your list. You can switch between the two modes as
+often as you wish while searching for your desired entry. This lets you
 quickly navigate large lists to get to the entries you really want.
 
 An example of a requester is the list of commands appearing when you use

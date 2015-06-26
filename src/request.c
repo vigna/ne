@@ -40,7 +40,7 @@
 static req_list rl, *rl0; /* working and original * req_list */
 
 static int x, y, page, max_names_per_line, max_names_per_col, names_per_page, fuzz_len;
-static bool keep;
+static bool prune;
 
 /* ne traditionally has displayed request entries by row, i.e.
    	a	b	c
@@ -293,56 +293,108 @@ static bool request_reorder(const int dir) {
 	return true;
 }
 
-/* Back up to the first entry with a common prefix, pulling in matching entries
-   from the original req_list *rl0 in such a way as to preserve original order. */
+/* Back up one or more chars from fuzz_len, possibly pulling in
+   matching entries from the original req_list *rl0 in such a way as
+   to preserve original order. This can behave quite differently
+   depending on the value of 'prune'. If true, we disregard the
+   current subset of entries and rely only on matching fuzz_len
+   characters. If false, we keep the current subset while still
+   pulling in matches from rl0.  */
 
 static void fuzz_back() {
 	const int orig_entries = rl.cur_entries;
+	const int n0 = PXY2N(page,x,y);
 	const char * const p0 = rl.entries[PXY2N(page,x,y)];
+	int n1 = n0;
 
-	if (fuzz_len == 0 || orig_entries == rl0->cur_entries) return;
-
-	int n1;
-	while (rl.cur_entries == orig_entries) {
-		fuzz_len = max(0,fuzz_len-1);
-		int i;
-		for (int j = n1 = i = 0; j < rl0->cur_entries; j++) {
-			char * const p1 = rl0->entries[j];
-			if ( ! strncasecmp(p0, p1, fuzz_len) ) {
-				if (p1 == p0) n1 = i;
-				rl.entries[i++] = p1;
+	if (fuzz_len == 0) return;
+	if (prune) {
+		if (orig_entries == rl0->cur_entries) return;
+		while (rl.cur_entries == orig_entries) {
+			fuzz_len = max(0,fuzz_len-1);
+			int i;
+			for (int j = n1 = i = 0; j < rl0->cur_entries; j++) {
+				char * const p1 = rl0->entries[j];
+				if ( ! strncasecmp(p0, p1, fuzz_len) ) {
+					if (p1 == p0) n1 = i;
+					rl.entries[i++] = p1;
+				}
 			}
+			rl.cur_entries = i;
 		}
-		rl.cur_entries = i;
+	} else {
+		fuzz_len--;
+
+		int shiftsize = rl.alloc_entries - rl.cur_entries;
+
+		if (shiftsize) {
+			/* shift our current entries to the end of their buffer */
+			memmove(rl.entries + shiftsize, rl.entries, rl.cur_entries * sizeof(char *));
+
+			int rldest, rl0src, rlsrc, n0shifted = n0 + shiftsize;
+
+			for (rldest = rl0src = 0, rlsrc = shiftsize; rl0src < rl0->cur_entries; rl0src++) {
+
+				if (rl0->entries[rl0src] == rl.entries[rlsrc]) {
+					/* This was in our old list, so we keep it */
+					if (n0shifted == rlsrc) n1 = rldest;  /* it was our marked entry */
+					rl.entries[rldest++] = rl.entries[rlsrc++];
+
+				} else if ( ! strncasecmp(p0, rl0->entries[rl0src], fuzz_len) ) {
+					/* Wasn't in our old list due to prior purning, but should be */
+					rl.entries[rldest++] = rl0->entries[rl0src];
+				}
+			}
+			rl.cur_entries = rldest;
+		}
 	}
 	page = -1; /* causes normalize() to call print_strings() */
 	normalize(n1);
 }
 
-/* given a localised_up_case character c, keep only entries that
-   matches our current fuzz_len prefix plus this additional character.
-   Note that relative order of rl.entries[] is preserved. */
+/* given a localised_up_case character c, find the next entry that
+   matches our current fuzz_len chars plus this new character. The
+   behavior is quite different depending on 'prune'. If true, we keep
+   only entries that matches our current fuzz_len prefix plus this
+   additional character. If false, we keep all the current entries,
+   and only (possibly) change the selected one.  Note that relative
+   order of rl.entries[] is preserved. */
 
 static void fuzz_forward(const int c) {
-	const char * const p0 = rl.entries[PXY2N(page,x,y)];
+	const int n0 = PXY2N(page,x,y);
+	const char * const p0 = rl.entries[n0];
 
 	assert(fuzz_len >= 0);
 
-	int i = 0, n1 = 0;
-	for (int j = 0; j < rl.cur_entries; j++) {
-		char * const p1 = rl.entries[j];
-		const int cmp = strncasecmp(p0, p1, fuzz_len);
-		if (! cmp && strlen(p1) > fuzz_len && localised_up_case[(unsigned char)p1[fuzz_len]] == c) {
-			if (p1 == p0)
-				n1 = i;
-			rl.entries[i++] = p1;
+	if (prune) {
+		int i = 0, n1 = 0;
+		for (int j = 0; j < rl.cur_entries; j++) {
+			char * const p1 = rl.entries[j];
+			const int cmp = strncasecmp(p0, p1, fuzz_len);
+			if (! cmp && strlen(p1) > fuzz_len && localised_up_case[(unsigned char)p1[fuzz_len]] == c) {
+				if (p1 == p0)
+					n1 = i;
+				rl.entries[i++] = p1;
+			}
 		}
-	}
-	if (i) {
-		rl.cur_entries = i;
-		fuzz_len = common_prefix_len(&rl);
-		page = -1; /* causes normalize() to call print_strings() */
-		normalize(n1);
+		if (i) {
+			rl.cur_entries = i;
+			fuzz_len = common_prefix_len(&rl);
+			page = -1; /* causes normalize() to call print_strings() */
+			normalize(n1);
+		}
+	} else {
+		/* find the next matching string, possibly wrapping around */
+		for (int n=n0, i=rl.cur_entries; i; i--, n=(n+1)%rl.cur_entries) {
+			char * const p1 = rl.entries[n];
+			const int cmp = strncasecmp(p0, p1, fuzz_len);
+			if (!cmp && strlen(p1) > fuzz_len && localised_up_case[(unsigned char)p1[fuzz_len]] == c) {
+				fuzz_len++;
+				page = -1;
+				normalize(n);
+				break;
+			}
+		}
 	}
 }
 
@@ -357,15 +409,18 @@ static int request_strings_init(req_list *rlp0) {
 	rl.cur_entries = rlp0->cur_entries;
 	rl.max_entry_len = rlp0->max_entry_len;
 	rl.suffix = rlp0->suffix;
-	fprintf(stderr,"cur_entries: %d\n",rlp0->cur_entries);
-	fflush(stderr);
-	if (!(rl.entries = calloc(rlp0->cur_entries, sizeof(char *)))) {
-		return 0;
-	}
+	if (!(rl.entries = calloc(rlp0->cur_entries, sizeof(char *))))	return 0;
+	rl.alloc_entries = rlp0->cur_entries;
 	memcpy(rl.entries, rlp0->entries, rl.cur_entries * sizeof(char *));
 	rl0 = rlp0;
+	rl.allow_dupes = rl0->allow_dupes;
+	rl.allow_reorder = rl0->allow_reorder;
+	rl.ignore_tab = rl0->ignore_tab;
+	rl.reordered = rl0->reordered;
+	rl.cur_chars = rl.alloc_chars = 0;
+	rl.chars = NULL;
 	fuzz_len = common_prefix_len(&rl);
-	keep = false;
+	prune = false;
 	return rl.cur_entries;
 }
 
@@ -534,6 +589,11 @@ int request_strings(req_list *rlp0, int n) {
 
 					case PREVDOC_A:
 						reordered |= request_reorder(-1);
+						break;
+
+					case INSERT_A:
+					case DELETECHAR_A:
+						prune = !prune;
 						break;
 
 					case CLOSEDOC_A:
