@@ -226,7 +226,7 @@ int cmdcmp(const char *c, const char *m) {
 static macro_desc *macro_hash_table[MACRO_HASH_TABLE_SIZE];
 
 
-/* This is the command name hashing function.We consider only the 5 least
+/* This is the command name hashing function. We consider only the 5 least
    significant bits because they are the bits which distinguish characters,
    independently of their case. We are not interested in strings which contain
    non-alphabetical characters, because they will certainly generate an error
@@ -686,7 +686,8 @@ char *find_key_strokes(int c) {
 }
 
 /* This function helps. The help text relative to the command name pointed to
-   by p is displayed (p can also contain arguments). If p is NULL, the
+   by p is displayed (p can also contain arguments). The string *p is not
+   free'd by help(). If p is NULL, the
    alphabetically ordered list of commands is displayed with the string
    requester. The help finishes when the user escapes. */
 
@@ -704,14 +705,16 @@ void help(char *p) {
 		if (p || (r = request_strings(&rl, r)) >= 0) {
 			D(fprintf(stderr,"Help check #2: p=%p, r=%d\n",p,r);)
 			if (p) {
-				for(int i = 0; i < strlen(p); i++) if (isasciispace((unsigned char)p[i])) break;
+				for(r = 0; r < strlen(p); r++) if (isasciispace((unsigned char)p[r])) break;
 
 				r = hash_cmd(p, r);
+				D(fprintf(stderr,"Help check #3: p=%p, *p=%s, r=%d\n",p,p,r);)
 
 				action a;
 				if ((a = hash_table[r]) && !cmdcmp(commands[--a].name, p)
 				|| (a = short_hash_table[r]) && !cmdcmp(commands[--a].short_name, p)) r = a;
 				else r = -1;
+				D(fprintf(stderr,"Help check #4: r=%d\n",r);)
 
 				p = NULL;
 			}

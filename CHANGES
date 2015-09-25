@@ -5,6 +5,8 @@
   * Fixed missing screen update after ABOUT (regression introduced in 3.0.1).
     Thanks to Brian Callahan for reporting this bug.
 
+  * Help command uses its optional parameter again.
+
 3.0.1 2015-06-22
 
   * Updated version of GNU regex library provides 64-bit regular

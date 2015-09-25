@@ -1457,6 +1457,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			ttysize();
 			keep_cursor_on_screen(cur_buffer);
 			reset_window();
+			free(p);
 			return print_error(error) ? ERROR : OK;
 		}
 		return ERROR;
@@ -1599,6 +1600,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 	case HELP_A:
 		help(p);
+		if (p) free(p);
 		reset_window();
 		return OK;
 
