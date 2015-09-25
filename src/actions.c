@@ -1202,14 +1202,21 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 				c = b->link_undos ? b->link_undos - 1 : 0;
 			} else if (p[0]=='+' || p[0]=='1') {  /* Kindly allow undocumented "AtomicUndo 1" also. */
 				c = b->link_undos + 1;
-			} else return INVALID_LEVEL;
+			} else {
+				free(p);
+				return INVALID_LEVEL;
+			}
 			while(c > b->link_undos) start_undo_chain(b);
 			while(c < b->link_undos) end_undo_chain(b);
 			b->atomic_undo = (c > 0) ? 1 : 0;
 			snprintf(msg, MAX_MESSAGE_SIZE, "AtomicUndo level: %" PRId64, c);
 			print_message(msg);
+			if (p) free(p);
 			return OK;
-		} else return UNDO_NOT_ENABLED;
+		} else {
+			if (p) free(p);
+			return UNDO_NOT_ENABLED;
+		}
 
 	case RECORD_A:
 		recording = b->recording;
