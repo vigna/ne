@@ -572,8 +572,8 @@ int paste_vert_to_buffer(buffer *b, int n) {
 
 		const int64_t len = strnlen_ne(p, stream_len - (p - stream));
 		if (len) {
-			uint64_t pos;
-			for(uint64_t n = pos = 0; pos < ld->line_len && n < x; pos = next_pos(ld->line, pos, b->encoding)) {
+			uint64_t pos, n;
+			for(n = pos = 0; pos < ld->line_len && n < x; pos = next_pos(ld->line, pos, b->encoding)) {
 				if (ld->line[pos] == '\t') n += b->opt.tab_size - n % b->opt.tab_size;
 				else n += get_char_width(&ld->line[pos], b->encoding);
 			}
