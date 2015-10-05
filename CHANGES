@@ -7,8 +7,6 @@
 
   * Help command uses its optional parameter again.
 
-  * PasteVirt behaves beyond the right end of lines again.
-
 3.0.1 2015-06-22
 
   * Updated version of GNU regex library provides 64-bit regular
