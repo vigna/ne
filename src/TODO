@@ -20,3 +20,5 @@
    - checking that we never mix 32 and 64 bit integers in the 
      wrong way (e.g., 32-bit counter and 64-bit upper bound in 
      loops, or loss of precision).
+
+3) Check highlight problem with jackknife.rb

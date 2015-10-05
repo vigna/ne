@@ -7,7 +7,7 @@
 
   * Help command uses its optional parameter again.
 
-  * PasteVirt behaves beyond the right end of lines again.
+  * PasteVert behaves beyond the right end of lines again.
 
 3.0.1 2015-06-22
 
