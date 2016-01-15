@@ -312,6 +312,7 @@ bool ne_isspace(const int c, const int encoding);
 bool ne_isword(const int c, const int encoding);
 int context_prefix(const buffer *b, char **p, int64_t *prefix_pos);
 line_desc *nth_line_desc(const buffer *b, const int64_t n);
+const char *cur_bookmarks_string(const buffer *b);
 
 /* undo.c */
 void start_undo_chain(buffer *b);

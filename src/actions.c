@@ -279,6 +279,16 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			/* *p can be  "", "-", "0".."9", "+1","-1", for which, respectively, */
 			/*  c becomes  0, AB,  0 .. 9,  next,prev. Anything else is out of range. */
 			if (p) {
+				if ( p[0] == '?' ) {
+					free(p);
+					snprintf(msg, MAX_MESSAGE_SIZE, "Cur Bookmarks: [%s] %s (0-9, -1, +1, or '-')", cur_bookmarks_string(b), a==SETBOOKMARK_A?"SetBookmark":"GotoBookmark");
+					p = request_string(msg, NULL, true, COMPLETE_NONE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto);
+					if (!p) {
+						return INVALID_BOOKMARK_DESIGNATION;
+					}
+				}
+			}
+			if (p) {
 				if ((p[0]=='+' || p[0]=='-') && p[1]=='1') {
 					if (b->cur_bookmark<0 || b->cur_bookmark>MAX_USER_BOOKMARK) b->cur_bookmark = 0;
 					int i;

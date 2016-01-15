@@ -678,3 +678,27 @@ int context_prefix(const buffer *b, char **p, int64_t *prefix_pos) {
 	(*p)[b->cur_pos - *prefix_pos] = 0;
 	return OK;
 }
+
+/* Given a buffer, return a string like
+   "1,3-5,7,9" indicating which bookmarks are set. */
+const char *cur_bookmarks_string(const buffer *b) {
+	int bits = b->bookmark_mask;
+	static char str[16];
+	char *s = str;
+	int i;
+  
+	memset(str,0,16);
+	for (i=0, bits &= 0b01111111111; i<10 && bits; i++, bits >>= 1) {
+		if ( bits & 1 ) {
+			*(s++) = '0' + i;
+			if ( (bits & 0b111) == 0b111 ) *(s++) = '-';
+			else *(s++) = ',';
+			while ( (bits & 0b111) == 0b111 ) {
+				bits >>= 1;
+				i++;
+			}
+		}
+	}
+	if (s > str) *(--s) = '\0';
+	return str;
+}
