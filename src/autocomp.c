@@ -63,9 +63,16 @@ static void search_buff(const buffer *b, char * p, const int encoding, const boo
 			/* find left edge of word */
 			while (l < ld->line_len - p_len && !ne_isword(get_char(&ld->line[l], b->encoding), b->encoding)) l += get_char_width(&ld->line[l], b->encoding);
 			if (l < ld->line_len - p_len ) {
+				int ch;
 				/* find right edge of word */
 				r = l + get_char_width(&ld->line[l], b->encoding);
-				while (r < ld->line_len && ne_isword(get_char(&ld->line[r], b->encoding), b->encoding)) r += get_char_width(&ld->line[r], b->encoding);
+				/* accept "'" as a word character if it is followed by another word character, so that
+				   words like "don't" are not broken into "don" and "t". */
+				while (r < ld->line_len
+				       && (    ne_isword(ch=get_char(&ld->line[r], b->encoding), b->encoding)
+				            || ( r+1 < ld->line_len && ch == '\'' && ne_isword(get_char(&ld->line[r+1], b->encoding), b->encoding))
+				          )
+				      ) r += get_char_width(&ld->line[r], b->encoding);
 				if (r - l > p_len && !(case_search ? strncmp : strncasecmp)(p, &ld->line[l], p_len)) {
 					if (b->encoding == encoding || is_ascii(&ld->line[l], r - l)) add_string(&ld->line[l], r - l, ext);
 				}
