@@ -885,6 +885,17 @@ characters. Like @code{+N,M}, @code{--binary} only affects the next
 document loaded, and it can appear multiple times on the command line.
 See @ref{Binary}.
 
+The @code{--read-only} option causes @code{ne} to load the next named file
+into a read-only document. You can still @ref{Save} a read-only document to a
+file if the file's permissions allow it, but you can't modify a read-only
+document without taking special action such as turning off the read-only flag
+first. The @code{--read-only} option only affects the next document loaded,
+so it can appear multiple times on the command line. A document's
+read-only flag is automatically set when a file is loaded if the
+corresponding file is not writable (as determined by the @code{access()}
+system call) regardless of whether the @code{--read-only} option is used. See
+@ref{ReadOnly}.
+
 The @code{--no-config} option skips the reading of the key
 bindings and menu configuration files (@pxref{Configuration}). This is
 essential if you are experimenting with a new configuration and you make
@@ -940,6 +951,43 @@ usually see the locale list with @code{locale -a}). @xref{UTF-8 Support}.
 If you need to open a file whose name starts with @samp{--}, you can put
 @samp{--} before the filename, which will skip command recognition for
 the next word.
+
+You can use I/O redirection to pipe the output of other commands into your
+first document. For example,
+
+@example
+  ls -l | ne file1.txt --read-only file2.txt
+@end example
+
+will open three documents: an unnamed document containing the output of
+the @code{ls -l} command, the contents of @file{file1.txt}, and the contents
+of @file{file2.txt} with the read-only flag set.
+
+It's possible to apply the @code{--binary}, @code{--read-only}, and
+@code{+N,M} options to the piped unnamed document by referencing it as a
+single @code{-}. Only the first such file name will reference the piped
+document (even if it isn't the first file name on the command line).
+Subsequent dashes will be considered normal file names. If you want the first
+dash to be treated like a normal file instead of a reference to the piped
+document, prefix the dash with @samp{--}. Consider these two command lines:
+
+@example
+  ls -l | ne --read-only +3,8 - file1.txt -
+  ls -l | ne file1.txt -- - --read-only +3,8 -
+  ls -l | ne --binary file1.txt --read-only -- -
+@end example
+
+All three of these commands open @code{ne} with three documents: the output
+of the @code{ls -l} command will be in the first unnamed document, the
+contents of @file{file1.txt} will be in the second document, while the third
+document will contain the contents of the file @file{-} (or an empty document
+with that name if there is no such file). The first and second commands do
+exactly the same thing: the unnamed first document is marked read-only and
+the cursor is positioned on line 3 column 8, while the other two document are
+opened normally. In the case of the third command, @file{file1.txt} is opened
+in binary mode, the document named @file{-} is marked read-only, while the
+first, unnamed, document---which is not referenced on the command line---with
+the output from @code{ls -l} is opened normally.
 
 Finally, @code{ne} has a @dfn{global directory} where the system
 administrator can store macros, default preferences, and syntax

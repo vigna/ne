@@ -63,7 +63,7 @@ char *error_msg[ERROR_COUNT] = {
 	/* 35 */ "Mark is out of document.",
 	/* 36 */ "Can't open macro.",
 	/* 37 */ "Maximum macro depth exceeded.",
-	/* 38 */ "This file is read-only.",
+	/* 38 */ "This document is read-only.",
 	/* 39 */ "Can't open file (file is migrated).",
 	/* 40 */ "Can't open file (file is a directory).",
 	/* 41 */ "Can't open file (file is too large).",

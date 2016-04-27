@@ -68,6 +68,7 @@ char ARG_HELP[] = ABOUT_MSG "\n"
 						"--           *next token is a filename.\n"
 						"+[N[,M]]     *move to last or N-th line, first or M-th column of next named file.\n"
 						"--binary     *load the next file in binary mode.\n"
+						"--read-only  *load the next file in read-only mode.\n"
 						"--utf8        use UTF-8 I/O.\n"
 						"--no-utf8     do not use UTF-8 I/O.\n"
 						"--ansi        use built-in ANSI control sequences.\n"
@@ -323,10 +324,12 @@ int main(int argc, char **argv) {
 
 	load_auto_prefs(cur_buffer, startup_prefs_name);
 
+	buffer *stdin_buffer = NULL;
 	if (!isatty(fileno(stdin))) {
 		first_file = false;
 		const int error = load_fh_in_buffer(cur_buffer, fileno(stdin));
 		print_error(error);
+		stdin_buffer = cur_buffer;
 
 		if (!(freopen("/dev/tty", "r", stdin))) {
 			fprintf(stderr, "Cannot reopen input tty\n");
@@ -352,7 +355,7 @@ int main(int argc, char **argv) {
 		   unwanted results). */
 
 		uint64_t first_line = 0, first_col = 0;
-		bool binary = false, skip_plus = false;
+		bool binary = false, skip_plus = false, read_only = false;
 		stop = false;
 
 		for(int i = 1; i < argc && !stop; i++) {
@@ -388,22 +391,36 @@ int main(int argc, char **argv) {
 				else if (!strcmp(argv[i],"--binary")) {
 					binary = true;
 				}
+				else if (!strcmp(argv[i],"--read-only") || !strcmp(argv[i],"--readonly") || !strcmp(argv[i],"--ro")) {
+					read_only = true;
+				}
 				else {
-					if (!strcmp(argv[i],"--")) i++;
-					if (!first_file) do_action(cur_buffer, NEWDOC_A, -1, NULL);
-					else first_file = false;
-					cur_buffer->opt.binary = binary;
-					if (i < argc) do_action(cur_buffer, OPEN_A, 0, str_dup(argv[i]));
-					if (first_line) do_action(cur_buffer, GOTOLINE_A, first_line, NULL);
-					if (first_col)  do_action(cur_buffer, GOTOCOLUMN_A, first_col, NULL);
+					if (!strcmp(argv[i],"-") && stdin_buffer) {
+						stdin_buffer->opt.binary = binary;
+						if (read_only) stdin_buffer->opt.read_only = read_only;
+						if (first_line) do_action(stdin_buffer, GOTOLINE_A, first_line, NULL);
+						if (first_col)  do_action(stdin_buffer, GOTOCOLUMN_A, first_col, NULL);
+						stdin_buffer = NULL;
+					}
+					else {
+						if (!strcmp(argv[i],"--")) i++;
+						if (!first_file) do_action(cur_buffer, NEWDOC_A, -1, NULL);
+						else first_file = false;
+						cur_buffer->opt.binary = binary;
+						if (i < argc) do_action(cur_buffer, OPEN_A, 0, str_dup(argv[i]));
+						if (first_line) do_action(cur_buffer, GOTOLINE_A, first_line, NULL);
+						if (first_col)  do_action(cur_buffer, GOTOCOLUMN_A, first_col, NULL);
+						if (read_only) cur_buffer->opt.read_only = read_only;
+					}
 					first_line =
 					first_col  = 0;
 					skip_plus  =
-					binary	  = false;
+					binary	  =
+					read_only  = false;
 				}
 			}
 		}
-
+		
 		free(skiplist);
 
 		/* This call makes current the first specified file. It is called

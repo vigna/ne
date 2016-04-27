@@ -446,7 +446,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		static int last_inserted_char = ' ';
 		int deleted_char, old_char;
 
-		if (b->opt.read_only) return FILE_IS_READ_ONLY;
+		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 
 		if (c < 0 && (c = request_number("Char Code", last_inserted_char))<0) return NUMERIC_ERROR(c);
 		if (c == 0) return CANT_INSERT_0;
@@ -528,7 +528,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 	case BACKSPACE_A:
 	case DELETECHAR_A:
-		if (b->opt.read_only) return FILE_IS_READ_ONLY;
+		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 		NORMALIZE(c);
 		start_undo_chain(b);
 		for(int64_t i = 0; i < c && !stop; i++) {
@@ -631,7 +631,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		return error ? error : stop ? STOPPED : 0;
 
 	case INSERTLINE_A:
-		if (b->opt.read_only) return FILE_IS_READ_ONLY;
+		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 		NORMALIZE(c);
 
 		for(int64_t i = 0; i < c && !stop; i++) {
@@ -684,7 +684,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 	case DELETELINE_A:
 
-		if (b->opt.read_only) return FILE_IS_READ_ONLY;
+		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 		NORMALIZE(c);
 
 		col = b->win_x + b->cur_x;
@@ -705,7 +705,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 	case UNDELLINE_A:
 
-		if (b->opt.read_only) return FILE_IS_READ_ONLY;
+		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 
 		NORMALIZE(c);
 
@@ -747,7 +747,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 	case DELETEEOL_A:
 
-		if (b->opt.read_only) return FILE_IS_READ_ONLY;
+		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 		if (b->syn && b->attr_len < 0) freeze_attributes(b, b->cur_line_desc);
 		delete_to_eol(b, b->cur_line_desc, b->cur_line, b->cur_pos);
 		if (b->syn) update_line(b, b->cur_y, false, true);
@@ -879,7 +879,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 		if (b->opt.read_only) {
 			free(p);
-			return FILE_IS_READ_ONLY;
+			return DOCUMENT_IS_READ_ONLY;
 		}
 
 		if ((q = b->find_string) || (q = request_string(b->last_was_regexp ? "Find RegExp" : "Find", NULL, false, COMPLETE_NONE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
@@ -982,7 +982,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		return ERROR;
 
 	case REPEATLAST_A:
-		if (b->opt.read_only && b->last_was_replace) return FILE_IS_READ_ONLY;
+		if (b->opt.read_only && b->last_was_replace) return DOCUMENT_IS_READ_ONLY;
 		if (!b->find_string) return NO_SEARCH_STRING;
 		else if ((b->last_was_replace) && !b->replace_string) return NO_REPLACE_STRING;
 		else {
@@ -1340,7 +1340,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		return OK;
 
 	case CUT_A:
-		if (b->opt.read_only) return FILE_IS_READ_ONLY;
+		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 
 	case COPY_A:
 		if (!(error = print_error((b->mark_is_vertical ? copy_vert_to_clip : copy_to_clip)(b, c < 0 ? b->opt.cur_clip : c, a == CUT_A)))) {
@@ -1350,7 +1350,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		return error ? ERROR : 0;
 
 	case ERASE_A:
-		if (b->opt.read_only) return FILE_IS_READ_ONLY;
+		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 		if (!(error = print_error((b->mark_is_vertical ? erase_vert_block : erase_block)(b)))) {
 			b->marking = 0;
 			update_window_lines(b, b->cur_y, ne_lines - 2, false);
@@ -1359,7 +1359,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 	case PASTE_A:
 	case PASTEVERT_A:
-		if (b->opt.read_only) return FILE_IS_READ_ONLY;
+		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 		if (!(error = print_error((a == PASTE_A ? paste_to_buffer : paste_vert_to_buffer)(b, c < 0 ? b->opt.cur_clip : c)))) update_window_lines(b, b->cur_y, ne_lines - 2, false);
 		assert_buffer_content(b);
 		return error ? ERROR : 0;
@@ -1416,7 +1416,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 	case THROUGH_A:
 
-		if (b->opt.read_only) return FILE_IS_READ_ONLY;
+		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 
 		if (!b->marking) b->mark_is_vertical = 0;
 
@@ -1480,7 +1480,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		return ERROR;
 
 	case TOUPPER_A:
-		if (b->opt.read_only) return FILE_IS_READ_ONLY;
+		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 		NORMALIZE(c);
 		start_undo_chain(b);
 		for(int64_t i = 0; i < c && !(error = to_upper(b)) && !stop; i++);
@@ -1489,7 +1489,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		return print_error(error) ? ERROR : 0;
 
 	case TOLOWER_A:
-		if (b->opt.read_only) return FILE_IS_READ_ONLY;
+		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 		NORMALIZE(c);
 		start_undo_chain(b);
 		for(int64_t i = 0; i < c && !(error = to_lower(b)) && !stop; i++);
@@ -1498,7 +1498,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		return print_error(error) ? ERROR : 0;
 
 	case CAPITALIZE_A:
-		if (b->opt.read_only) return FILE_IS_READ_ONLY;
+		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 		NORMALIZE(c);
 		start_undo_chain(b);
 		for(int64_t i = 0; i < c && !(error = capitalize(b)) && !stop; i++);
@@ -1508,7 +1508,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 
 	case CENTER_A:
-		if (b->opt.read_only) return FILE_IS_READ_ONLY;
+		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 		NORMALIZE(c);
 		start_undo_chain(b);
 		for(int64_t i = 0; i < c && !(error = center(b)) && !stop; i++) {
@@ -1524,14 +1524,14 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		return print_error(error) ? ERROR : 0;
 
 	case PARAGRAPH_A:
-		if (b->opt.read_only) return FILE_IS_READ_ONLY;
+		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 		NORMALIZE(c);
 		for(int64_t i = 0; i < c && !(error = paragraph(b)) && !stop; i++);
 		if (stop) error = STOPPED;
 		return print_error(error) ? ERROR : 0;
 
 	case SHIFT_A:
-		if (b->opt.read_only) return FILE_IS_READ_ONLY;
+		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 		error = shift(b, p, &msg[0], MAX_MESSAGE_SIZE);
 		if (stop) error = STOPPED;
 		if (p) free(p);
@@ -1578,7 +1578,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		return OK;
 
 	case UNDO_A:
-		if (b->opt.read_only) return FILE_IS_READ_ONLY;
+		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 		if (!b->opt.do_undo) return UNDO_NOT_ENABLED;
 
 		NORMALIZE(c);
@@ -1597,7 +1597,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		return print_error(error) ? ERROR : 0;
 
 	case REDO_A:
-		if (b->opt.read_only) return FILE_IS_READ_ONLY;
+		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 		if (!b->opt.do_undo) return UNDO_NOT_ENABLED;
 
 		NORMALIZE(c);

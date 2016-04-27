@@ -9,6 +9,11 @@
   * "SetBookmark ?" and "GotoBookmark ?" now prompt for the bookmark you
     want to set/goto. The prompt also indicates which bookmarks are set.
 
+  * Command line option "--read-only" opens next document in read-only mode.
+
+  * Options "--read-only" and "+N,M" can be applied to piped input:
+      ls -l | ne --read-only +3,5 -
+
 3.0  2015-06-18
 
   * ne is now fully 64-bit, and needs to be compiled by a C99-compliant
