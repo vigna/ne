@@ -496,13 +496,14 @@ int64_t calc_pos(const line_desc * const ld, const int64_t col, const int tab_si
 }
 
 /* Returns true if the specified character is invariant on the left edge of re-wrapped paragraphs */
-
+/* This will require a re-think for leading non-space invariants. For now, always assume false. */
 bool isparaspot(const int c) {
+	/* 
 	char *spots = "%/*#>\t ";
 	char *p = spots;
 	while (*p) {
 		if (*p++ == c) return true;
-	}
+	} */
 	return false;
 }
 
