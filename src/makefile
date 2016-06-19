@@ -183,7 +183,7 @@ signals.o: $(MAINH) keycodes.h names.h errors.h protos.h
 
 streams.o: $(MAINH) keycodes.h names.h errors.h protos.h
 
-support.o: $(MAINH) keycodes.h names.h errors.h protos.h
+support.o: $(MAINH) support.c keycodes.h names.h errors.h protos.h
 	$(CC) $(CFLAGS) -DGLOBALDIR=\"$(NE_GLOBAL_DIR)\" -c support.c
 
 syntax.o: $(MAINH)
