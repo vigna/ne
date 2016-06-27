@@ -1101,7 +1101,7 @@ appears if the binary flag is true. @xref{Binary}.
 
 @item !
 appears in place of @samp{B} when not in binary mode
-and the last line if the buffer is not empty (i.e. the last line of the
+and the last line of the buffer is not empty (i.e. the last line of the
 saved file would not be terminated).
 
 @item M
