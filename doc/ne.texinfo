@@ -1099,6 +1099,11 @@ appears if the deltabs flag is true. @xref{DelTabs}.
 @item B
 appears if the binary flag is true. @xref{Binary}.
 
+@item !
+appears in place of @samp{B} when not in binary mode
+and the last line if the buffer is not empty (i.e. the last line of the
+saved file would not be terminated).
+
 @item M
 appears if you are currently marking a block. @xref{Mark}.
 
@@ -1115,15 +1120,15 @@ appears if the PreserveCR flag is true. @xref{PreserveCR}.
 @item C
 appears if the CRLF flag is true. @xref{CRLF}.
 
-@item *
-appears if the document has been modified since the last save, or if
-the @code{Modified} command was issued to set this flag. @xref{Modified}.
-
 @item @@
 appears if UTF-8 I/O is enabled. @xref{UTF8IO}.
 
 @item A/8/U
 denotes the current buffer encoding---US-ASCII, 8-bit or UTF-8. @xref{UTF8}.
+
+@item *
+appears if the document has been modified since the last save, or if
+the @code{Modified} command was issued to set this flag. @xref{Modified}.
 
 @end table
 
@@ -3688,7 +3693,7 @@ FLAG COMMAND      ABBR  DESCRIPTION
   t/T Tabs          TAB  TAB key inserts TABs instead of spaces
   T   ShiftTabs     ST   Shift may insert TABs (only if 't' is also set)
   d   DelTabs       DT   BS and DEL may remove tabs worth of space
-  B   Binary        B    affects file loading/saving
+  B/! Binary        B    affects file loading/saving
   M   Mark          M    mark set for line-oriented block operations
   V   MarkVert      MV   like mark, but block is rectangle
   R   Record        REC  actions are being recorded in a macro
@@ -3750,7 +3755,10 @@ normal activity, but rather an exceptional one.
 
 If you invoke @code{Binary} with no arguments, it will toggle the flag. If you
 specify 0 or 1, the flag will be set to false or true, respectively. An upper
-case @samp{B} will appear on the status bar if the flag is true.
+case @samp{B} will appear on the status bar if the flag is true. If false,
+a @samp{-} or @samp{!} will indicate whether the last line of the buffer is
+empty, which will determine whether the resulting file will have a normal line
+termination when the buffer is saved.
 
 
 

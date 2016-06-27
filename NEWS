@@ -2,6 +2,10 @@
 
 3.0.2
 
+  * Status flag "!" indicates the last line of buffer is not empty, thus
+    the last line of the resulting file will not be terminated when the
+    buffer is saved.
+
   * Requesters by default no longer remove non-matching entries as you
     enter characters. Use Insert or Delete keys to toggle between the
     new and old behavior.

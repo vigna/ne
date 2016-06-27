@@ -544,7 +544,6 @@ void reset_status_bar(void) {
 }
 
 
-
 /* This support function returns a copy of the status string which is
 never longer than MAX_FLAG_STRING_SIZE characters. The string is kept in
 a static buffer which is overwritten at each call. Note that the string
@@ -573,7 +572,7 @@ char *gen_flag_string(const buffer * const b) {
 	string[i++] = b->opt.read_only      ? 'r' : '-';
 	string[i++] = b->opt.tabs           ? (b->opt.shift_tabs ? 'T' : 't' ) : '-';
 	string[i++] = b->opt.del_tabs       ? 'd' : '-';
-	string[i++] = b->opt.binary         ? 'B' : '-';
+	string[i++] = b->opt.binary         ? 'B' : ((line_desc *)b->line_desc_list.tail_pred)->line_len ? '!' : '-';
 	string[i++] = b->marking            ? (b->mark_is_vertical ? 'V' :'M') : '-';
 	string[i++] = b->recording          ? 'R' : '-';
 	string[i++] = b->opt.preserve_cr    ? 'P' : '-';
