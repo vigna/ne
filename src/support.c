@@ -275,7 +275,7 @@ int max_prefix(const char * const s, const char * const t) {
 }
 
 
-/* Returns true is the first string is a prefix of the second one. */
+/* Returns true if the first string is a prefix of the second one. */
 
 bool is_prefix(const char * const p, const char * const s) {
 	int i;

@@ -443,6 +443,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		return error;
 
 	case INSERTCHAR_A: {
+		bool keep_terminated;
 		static int last_inserted_char = ' ';
 		int deleted_char, old_char;
 
@@ -465,6 +466,8 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		if (b->syn && b->attr_len < 0) freeze_attributes(b, b->cur_line_desc);
 
 		start_undo_chain(b);
+		
+		keep_terminated = is_text_terminated(b);
 
 		if (deleted_char = !b->opt.insert && b->cur_pos < b->cur_line_desc->line_len) delete_one_char(b, b->cur_line_desc, b->cur_line, b->cur_pos);
 		if (b->cur_pos > b->cur_line_desc->line_len) {
@@ -520,6 +523,8 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			need_attr_update = true;
 			assert_buffer_content(b);
 		}
+
+		if (keep_terminated) ensure_text_terminated(b);
 
 		end_undo_chain(b);
 		return OK;

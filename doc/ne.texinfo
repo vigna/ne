@@ -3706,7 +3706,7 @@ A/8/U UTF8          U8   the document encoding (ASCII, 8-bit or UTF-8)
 
 The @code{RequestOrder} and @code{AutoMatchBracket} flags' states are not indicated on the status bar.
 See @ref{RequestOrder} and @ref{AutoMatchBracket} respectively.
-
+@samp{!} indicates saved buffer would have no terminating line ending.
 
 @node AutoPrefs
 @subsection AutoPrefs

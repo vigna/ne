@@ -830,3 +830,22 @@ int shift(buffer * const b, char *p, char *msg, int msg_size) {
 
 	return rc;
 }
+
+/* This pair of functions (a) tells us if a text file is properly terminated and
+   (b) adds a blank line at the end so that it is properly terminated, except
+   not if the buffer's binary flag is set. This is to aid in keeping text files
+   POSIX compatible. You can still delete the trailing blank line(s) if you want
+   that. */
+
+bool is_text_terminated(const buffer * const b) {
+	if (b->opt.binary || ((line_desc *)b->line_desc_list.tail_pred)->line_len)
+		return false;
+	return true;
+}
+
+int ensure_text_terminated(buffer * const b) {
+	if (! is_text_terminated(b)) {
+		return insert_one_line(b, ((line_desc *)b->line_desc_list.tail_pred), b->num_lines-1, ((line_desc *)b->line_desc_list.tail_pred)->line_len);
+	}
+	return OK;
+}

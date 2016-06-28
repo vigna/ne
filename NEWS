@@ -6,9 +6,11 @@
     the last line of the resulting file will not be terminated when the
     buffer is saved.
 
+  * Avoid losing final line termination through inserts or pastes.
+
   * Requesters by default no longer remove non-matching entries as you
-    enter characters. Use Insert or Delete keys to toggle between the
-    new and old behavior.
+    enter characters. Use Insert or Delete keys to toggle between these
+    behaviors.
 
   * "SetBookmark ?" and "GotoBookmark ?" now prompt for the bookmark you
     want to set/goto. The prompt also indicates which bookmarks are set.
