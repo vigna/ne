@@ -1,6 +1,6 @@
 /* Main command processing loop.
 
-   Copyright (C) 1993-1998 Sebastiano Vigna 
+   Copyright (C) 1993-1998 Sebastiano Vigna
    Copyright (C) 1999-2015 Todd M. Lewis and Sebastiano Vigna
 
    This file is part of ne, the nice editor.
@@ -322,7 +322,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 				free(p);
 				if (c < 0 || c > AUTO_BOOKMARK) return INVALID_BOOKMARK_DESIGNATION;
 			}
-			else 
+			else
 				c = 0;
 			switch(a) {
 			case SETBOOKMARK_A:
@@ -392,7 +392,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			start_undo_chain(b);
 
 			/* We cannot rely on encoding promotion done by INSERTCHAR_A, because it could work
-				just for part of the string if UTF-8 auto-detection is not enabled. */
+			   just for part of the string if UTF-8 auto-detection is not enabled. */
 			if (b->encoding == ENC_ASCII || encoding == ENC_ASCII || (b->encoding == encoding)) {
 				if (b->encoding == ENC_ASCII) b->encoding = encoding;
 				for(int64_t pos = 0; p[pos] && error == OK; pos = next_pos(p, pos, encoding)) error = do_action(b, INSERTCHAR_A, get_char(&p[pos], encoding), NULL);
@@ -466,7 +466,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		if (b->syn && b->attr_len < 0) freeze_attributes(b, b->cur_line_desc);
 
 		start_undo_chain(b);
-		
+
 		keep_terminated = is_text_terminated(b);
 
 		if (deleted_char = !b->opt.insert && b->cur_pos < b->cur_line_desc->line_len) delete_one_char(b, b->cur_line_desc, b->cur_line, b->cur_pos);
@@ -481,7 +481,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		need_attr_update = true;
 
 		/* At this point the line has been modified: note that if we are in overwrite mode and write a character
-			at or beyond the length of the current line, we are actually doing an insertion. */
+		   at or beyond the length of the current line, we are actually doing an insertion. */
 
 		if (!deleted_char) update_inserted_char(b, c, b->cur_line_desc, b->cur_pos, b->cur_char, b->cur_y, b->cur_x);
 		else update_overwritten_char(b, old_char, c, b->cur_line_desc, b->cur_pos, b->cur_char, b->cur_y, b->cur_x);
@@ -489,7 +489,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		char_right(b);
 
 		/* Note the use of ne_columns-1. This avoids a double horizontal scrolling each time a
-			word wrap happens with b->opt.right_margin = 0. */
+		   word wrap happens with b->opt.right_margin = 0. */
 
 		error = b->opt.word_wrap && b->win_x + b->cur_x >= (b->opt.right_margin ? b->opt.right_margin : ne_columns - 1) ? word_wrap(b) : ERROR;
 
@@ -544,36 +544,36 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 						end_undo_chain(b);
 						return ERROR;
 					}
-					/* We turn a backspace at the start of a line into a delete 
-						at the end of the previous line. */
+					/* We turn a backspace at the start of a line into a delete
+					   at the end of the previous line. */
 					char_left(b);
 				}
 				else {
 					if (b->opt.del_tabs && (b->win_x + b->cur_x) % b->opt.tab_size == 0
 						&& (b->cur_pos > b->cur_line_desc->line_len || b->cur_line_desc->line[b->cur_pos - 1] == ' ')) {
 						/* We are deleting one or more spaces from a tabbing position. We go left until the
-							previous tabbing, or when spaces end. */
-						do char_left(b); while((b->win_x + b->cur_x) % b->opt.tab_size != 0 
+						   previous tabbing, or when spaces end. */
+						do char_left(b); while((b->win_x + b->cur_x) % b->opt.tab_size != 0
 														&& (b->cur_pos > b->cur_line_desc->line_len || b->cur_line_desc->line[b->cur_pos - 1] == ' '));
 					}
 					else char_left(b);
 					/* If we are not over text, we are in free form mode; the backspace
-						is turned into moving to the left. */
+					   is turned into moving to the left. */
 					if (b->cur_pos >= b->cur_line_desc->line_len) continue;
 				}
 			}
 
 			/* From here, we just implement a delete. */
 
-			if (b->opt.del_tabs && b->cur_pos < b->cur_line_desc->line_len && b->cur_line_desc->line[b->cur_pos] == ' ' && 
+			if (b->opt.del_tabs && b->cur_pos < b->cur_line_desc->line_len && b->cur_line_desc->line[b->cur_pos] == ' ' &&
 				((b->win_x + b->cur_x) % b->opt.tab_size == 0 || b->cur_line_desc->line[b->cur_pos - 1] != ' ')) {
 				col = 0;
-				do col++; while((b->win_x + b->cur_x + col) % b->opt.tab_size != 0 
+				do col++; while((b->win_x + b->cur_x + col) % b->opt.tab_size != 0
 									 && b->cur_pos + col < b->cur_line_desc->line_len
 									 && b->cur_line_desc->line[b->cur_pos + col] == ' ');
 				/* We are positioned at the start of the block of col spaces. If there is at most
-					one character to delete, we can just go on. Otherwise, we replace the block with a 
-					TAB, doing some magick to keep everything in sync. */
+				   one character to delete, we can just go on. Otherwise, we replace the block with a
+				   TAB, doing some magick to keep everything in sync. */
 				if (col > 1 && (b->win_x + b->cur_x + col) % b->opt.tab_size == 0) {
 					if (b->syn) {
 						freeze_attributes(b, b->cur_line_desc);
@@ -590,9 +590,9 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			if (b->cur_pos > b->cur_line_desc->line_len) {
 				col = b->win_x + b->cur_x;
 				/* We are not over text; we must be in FreeForm mode.
-					We're deleting past the end of the line, so if we aren't on the last line
-					we need to pad this line with space up to col, then fall through to the
-					delete_one_char() below. */
+				   We're deleting past the end of the line, so if we aren't on the last line
+				   we need to pad this line with space up to col, then fall through to the
+				   delete_one_char() below. */
 				if (b->cur_line_desc->ld_node.next->next == NULL) continue;
 				if (b->cur_line_desc->line_len == 0) {
 					auto_indent_line(b, b->cur_line, b->cur_line_desc, col);
@@ -616,14 +616,14 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			}
 			else {
 				/* Here we handle the case in which two lines are joined. Note that if the first line is empty,
-					it is just deleted by delete_one_char(), so we must store its initial state and restore
-					it after the deletion. */
+				   it is just deleted by delete_one_char(), so we must store its initial state and restore
+				   it after the deletion. */
 				if (b->syn && b->cur_pos == 0) next_line_state = b->cur_line_desc->highlight_state;
 				delete_one_char(b, b->cur_line_desc, b->cur_line, b->cur_pos);
 				if (b->syn && b->cur_pos == 0) b->cur_line_desc->highlight_state = next_line_state;
 
 				if (b->syn) {
-					b->next_state = parse(b->syn, b->cur_line_desc, b->cur_line_desc->highlight_state, b->encoding == ENC_UTF8); 
+					b->next_state = parse(b->syn, b->cur_line_desc, b->cur_line_desc->highlight_state, b->encoding == ENC_UTF8);
 					update_line(b, b->cur_y, false, true);
 				}
 				else update_partial_line(b, b->cur_y, b->cur_x, true, false);
@@ -638,24 +638,42 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 	case INSERTLINE_A:
 		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 		NORMALIZE(c);
-
+		/* There SHOULD be a start_undo_chain(b) here, but in practice we've become used to using
+		   a single Undo after an InsertLine to remove the autoindent space. Therefore, this sillyness.
+		   If we had a real DeleteSOL command, we wouldn't need the Undo to undo InsertLine in two steps.
+		   There could also be extant macros out there that expect Undo to revert autoindent and
+		   InsertLine in two steps. So, again, this sillyness with excessive start_ and end_undo_chain. */
 		for(int64_t i = 0; i < c && !stop; i++) {
 			if (b->syn && b->attr_len < 0) freeze_attributes(b, b->cur_line_desc);
 
-			if (insert_one_line(b, b->cur_line_desc, b->cur_line, b->cur_pos > b->cur_line_desc->line_len ? b->cur_line_desc->line_len : b->cur_pos) == OK) {		
+			start_undo_chain(b);
+			if (insert_one_line(b, b->cur_line_desc, b->cur_line, b->cur_pos > b->cur_line_desc->line_len ? b->cur_line_desc->line_len : b->cur_pos) == OK) {
+				/* The other side of the coin for the fact that we sometimes append a blank line to preserve terminal line endings.
+				   That is, in special circumstances we have to delete that last blank line to avoid extra blank lines.
+				   If the line we just inserted is the penultimate line (we're still on the 3rd from the last line),
+				   and that penultimate line is blank, and the last line is also blank, get rid of that last blank line. */
+				if (b->cur_line == b->num_lines - 3 && ((line_desc *)b->cur_line_desc->ld_node.next)->line_len == 0 && is_text_terminated(b))
+					delete_one_char(b, (line_desc *)b->cur_line_desc->ld_node.next, b->cur_line+1, 0);
 
+				end_undo_chain(b);
 				if (b->win_x) {
 					int64_t a = -1;
 					/* If b->win_x is nonzero, the move_to_sol() call will
-					refresh the entire video, so we shouldn't do anything. However, we 
-					must poke into the next line initial state the correct state. */
+					   refresh the entire video, so we shouldn't do anything. However, we
+					   must poke into the next line initial state the correct state. */
 					if (b->syn) {
 						freeze_attributes(b, b->cur_line_desc);
 						((line_desc *)b->cur_line_desc->ld_node.next)->highlight_state = b->next_state;
 					}
 
 					assert(b->cur_line_desc->ld_node.next->next != NULL);
-					if (b->opt.auto_indent) a = auto_indent_line(b, b->cur_line + 1, (line_desc *)b->cur_line_desc->ld_node.next, INT_MAX);
+					if (b->opt.auto_indent) {
+						int keep_terminated = is_text_terminated(b);
+						start_undo_chain(b);
+						a = auto_indent_line(b, b->cur_line + 1, (line_desc *)b->cur_line_desc->ld_node.next, INT_MAX);
+						if (keep_terminated) ensure_text_terminated(b);
+						end_undo_chain(b);
+					}
 
 					move_to_sol(b);
 					line_down(b);
@@ -671,7 +689,13 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 					if (b->syn) ((line_desc *)b->cur_line_desc->ld_node.next)->highlight_state = b->next_state;
 
 					assert(b->cur_line_desc->ld_node.next->next != NULL);
-					if (b->opt.auto_indent) a = auto_indent_line(b, b->cur_line + 1, (line_desc *)b->cur_line_desc->ld_node.next, INT_MAX);
+					if (b->opt.auto_indent) {
+						start_undo_chain(b);
+						int keep_terminated = is_text_terminated(b);
+						a = auto_indent_line(b, b->cur_line + 1, (line_desc *)b->cur_line_desc->ld_node.next, INT_MAX);
+						if (keep_terminated) ensure_text_terminated(b);
+						end_undo_chain(b);
+					}
 
 					move_to_sol(b);
 					line_down(b);
@@ -682,7 +706,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 					need_attr_update = true;
 				}
-			}
+			} else end_undo_chain(b);
 		}
 
 		return stop ? STOPPED : 0;
@@ -719,15 +743,15 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		start_undo_chain(b);
 		for(int64_t i = 0; i < c && !stop; i++) {
 			/* This is a bit tricky. First of all, if we are undeleting for
-				the first time and the local attribute buffer is not valid
-				we fill it. */
+			   the first time and the local attribute buffer is not valid
+			   we fill it. */
 			if (i == 0 && b->syn && b->attr_len < 0) freeze_attributes(b, b->cur_line_desc);
 			if (error = undelete_line(b)) break;
 			if (i == 0) {
 				if (b->syn) {
-					/* Now the only valid part of the local attribute buffer is before b->cur_pos. 
-						We perform a differential update so that if we undelete in the middle of
-						a line we avoid to rewrite the part up to b->cur_pos. */
+					/* Now the only valid part of the local attribute buffer is before b->cur_pos.
+					   We perform a differential update so that if we undelete in the middle of
+					   a line we avoid to rewrite the part up to b->cur_pos. */
 					b->attr_len = b->cur_pos;
 					update_line(b, b->cur_y, false, true);
 					next_line_state = b->next_state;
@@ -822,10 +846,10 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			/* 'c' -- flag meaning "Don't prompt if we've ever responded 'yes'." */
 			if (!dup || dup == b || (dprompt && !c) || (dprompt = request_response(b, info_msg[SAME_NAME], false))) {
 				error = load_file_in_buffer(b, p);
-				if (error != FILE_IS_MIGRATED 
-					&& error != FILE_IS_DIRECTORY 
-					&& error != IO_ERROR 
-					&& error != FILE_IS_TOO_LARGE 
+				if (error != FILE_IS_MIGRATED
+					&& error != FILE_IS_DIRECTORY
+					&& error != IO_ERROR
+					&& error != FILE_IS_TOO_LARGE
 					&& error != OUT_OF_MEMORY) {
 					change_filename(b, p);
 					b->syn = NULL; /* So that autoprefs will load the right syntax. */
@@ -922,7 +946,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 				if (a == REPLACEALL_A) start_undo_chain(b);
 
-				while(!stop && 
+				while(!stop &&
 						!(error = (b->last_was_regexp ? find_regexp : find)(b, NULL, !first_search && a != REPLACEALL_A && c != 'A' && c != 'Y'))) {
 
 					if (c != 'A' && a != REPLACEALL_A && a != REPLACEONCE_A) {
@@ -1290,7 +1314,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		reset_window();
 		return OK;
 
-	case CLOSEDOC_A: 
+	case CLOSEDOC_A:
 		if ((b->is_modified) && !request_response(b, info_msg[THIS_DOCUMENT_NOT_SAVED], false)) return ERROR;
 		if (!delete_buffer()) {
 			close_history();
@@ -1301,7 +1325,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		reset_window();
 
 		/* We always return ERROR after a buffer has been deleted. Otherwise,
-			the calling routines (and macros) could work on an unexisting buffer. */
+		   the calling routines (and macros) could work on an unexisting buffer. */
 
 		return ERROR;
 
@@ -1633,8 +1657,8 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 	case AUTOCOMPLETE_A:
 		/* Since we are going to call other actions (INSERTSTRING_A and DELETEPREVWORD_A),
-			we do not want to record this insertion twice. Also, we are counting on 
-			INSERTSTRING_A to handle character encoding issues. */
+		   we do not want to record this insertion twice. Also, we are counting on
+		   INSERTSTRING_A to handle character encoding issues. */
 		recording = b->recording;
 
 		int64_t pos = b->cur_pos;
