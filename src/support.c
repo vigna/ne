@@ -689,12 +689,12 @@ const char *cur_bookmarks_string(const buffer *b) {
 	int i;
   
 	memset(str,0,16);
-	for (i=0, bits &= 0b01111111111; i<10 && bits; i++, bits >>= 1) {
+	for (i=0, bits &= 0x03ff; i<10 && bits; i++, bits >>= 1) {
 		if ( bits & 1 ) {
 			*(s++) = '0' + i;
-			if ( (bits & 0b111) == 0b111 ) *(s++) = '-';
+			if ( (bits & 0x07 ) == 0x07 ) *(s++) = '-';
 			else *(s++) = ',';
-			while ( (bits & 0b111) == 0b111 ) {
+			while ( (bits & 0x07) == 0x07 ) {
 				bits >>= 1;
 				i++;
 			}
