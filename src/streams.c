@@ -287,7 +287,7 @@ int save_stream_to_fh(const char_stream *const cs, const int fh, const bool CRLF
 	for(int64_t pos = 0; pos < cs->len; ) {
 		const int64_t len = strnlen_ne(cs->stream + pos, cs->len - pos);
 
-		// ALERT: must fraction this and other write/read in gigabyte batches
+		/* ALERT: must fraction this and other write/read in gigabyte batches. */
 		if (write(fh, cs->stream + pos, len) < len) return ERROR_WHILE_WRITING;
 
 		if (pos + len < cs->len) {

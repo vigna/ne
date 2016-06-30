@@ -365,7 +365,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 						print_message(msg);
 					}
 				}
-			default: ; // Can't happen
+			default: ; /* Can't happen */
 			}
 			return OK;
 		}

@@ -122,12 +122,12 @@ unsigned long file_mod_time(const char *filename) {
 
 int64_t read_safely(const int fh, void * const buf, const int64_t len) {
 	for(int64_t done = 0; done < len; ) {
-		// We read one GiB at a time, lest some OS complains.
+		/* We read one GiB at a time, lest some OS complains. */
 		const int to_do = min(len - done, 1 << 30);
 		const int64_t t = read(fh, (char *)buf + done, to_do);
 		if (t < 0) {
 			if (errno == EINTR) continue;
-			if (errno == EAGAIN) { // We try again, but wait for a second.
+			if (errno == EAGAIN) { /* We try again, but wait for a second. */
 				sleep(1);
 				continue;
 			}
