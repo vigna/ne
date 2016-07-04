@@ -844,8 +844,17 @@ bool is_text_terminated(const buffer * const b) {
 }
 
 int ensure_text_terminated(buffer * const b) {
-	if (! is_text_terminated(b)) {
-		return insert_one_line(b, ((line_desc *)b->line_desc_list.tail_pred), b->num_lines-1, ((line_desc *)b->line_desc_list.tail_pred)->line_len);
+	if (! b->opt.binary && ! is_text_terminated(b)) {
+		HIGHLIGHT_STATE next_line_state = { 0, 0, "" };
+		line_desc *ld = (line_desc *)b->line_desc_list.tail_pred;  /* last line's ld */
+		/* parse the last line to get the correct syntax state for what will be the new last line */
+		if (b->syn) next_line_state = parse(b->syn, ld, ld->highlight_state, b->encoding == ENC_UTF8);
+		const int rc = insert_one_line(b, ld, b->num_lines-1, ld->line_len);
+		/* Poke the correct state into the new last line. */
+		if (rc == OK && b->syn)
+			((line_desc *)b->line_desc_list.tail_pred)->highlight_state = next_line_state;
+		assert_buffer_content(b);
+		return rc;
 	}
 	return OK;
 }
