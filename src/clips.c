@@ -336,7 +336,6 @@ int erase_block(buffer *b) {
 
 int paste_to_buffer(buffer *b, int n) {
 
-	bool keep_terminated;
 	clip_desc * const cd = get_nth_clip(n);
 	if (!cd) return CLIP_DOESNT_EXIST;
 
@@ -345,13 +344,11 @@ int paste_to_buffer(buffer *b, int n) {
 		line_desc * const ld = b->cur_line_desc, * const end_ld = (line_desc *)b->cur_line_desc->ld_node.next;
 		if (b->encoding == ENC_ASCII) b->encoding = cd->cs->encoding;
 
-		keep_terminated = is_text_terminated(b);
 		start_undo_chain(b);
 		if (b->cur_pos > ld->line_len) 
 			insert_spaces(b, ld, b->cur_line, ld->line_len, b->win_x + b->cur_x - calc_width(ld, ld->line_len, b->opt.tab_size, b->encoding));
 
 		insert_stream(b, ld, b->cur_line, b->cur_pos, cd->cs->stream, cd->cs->len);
-		if (keep_terminated) ensure_text_terminated(b);
 		end_undo_chain(b);
 
 		assert(ld == b->cur_line_desc);
@@ -564,7 +561,6 @@ int paste_vert_to_buffer(buffer *b, int n) {
 	const int64_t stream_len = cd->cs->len;
 	const uint64_t x = b->cur_x + b->win_x;
 	int64_t line = b->cur_line;
-	bool keep_terminated = is_text_terminated(b);
 
 	start_undo_chain(b);
 
@@ -594,7 +590,6 @@ int paste_vert_to_buffer(buffer *b, int n) {
 		ld = (line_desc *)ld->ld_node.next;
 		line++;
 	}
-	if (keep_terminated) ensure_text_terminated(b);
 	
 	end_undo_chain(b);
 	update_syntax_and_lines(b, b->cur_line_desc, ld);

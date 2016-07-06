@@ -443,7 +443,6 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		return error;
 
 	case INSERTCHAR_A: {
-		bool keep_terminated;
 		static int last_inserted_char = ' ';
 		int deleted_char, old_char;
 
@@ -466,8 +465,6 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		if (b->syn && b->attr_len < 0) freeze_attributes(b, b->cur_line_desc);
 
 		start_undo_chain(b);
-
-		keep_terminated = is_text_terminated(b);
 
 		if (deleted_char = !b->opt.insert && b->cur_pos < b->cur_line_desc->line_len) delete_one_char(b, b->cur_line_desc, b->cur_line, b->cur_pos);
 		if (b->cur_pos > b->cur_line_desc->line_len) {
@@ -523,8 +520,6 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			need_attr_update = true;
 			assert_buffer_content(b);
 		}
-
-		if (keep_terminated) ensure_text_terminated(b);
 
 		end_undo_chain(b);
 		return OK;
@@ -648,13 +643,6 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 			start_undo_chain(b);
 			if (insert_one_line(b, b->cur_line_desc, b->cur_line, b->cur_pos > b->cur_line_desc->line_len ? b->cur_line_desc->line_len : b->cur_pos) == OK) {
-				/* The other side of the coin for the fact that we sometimes append a blank line to preserve terminal line endings.
-				   That is, in special circumstances we have to delete that last blank line to avoid extra blank lines.
-				   If the line we just inserted is the penultimate line (we're still on the 3rd from the last line),
-				   and that penultimate line is blank, and the last line is also blank, get rid of that last blank line. */
-				if (b->cur_line == b->num_lines - 3 && ((line_desc *)b->cur_line_desc->ld_node.next)->line_len == 0 && is_text_terminated(b))
-					delete_one_char(b, (line_desc *)b->cur_line_desc->ld_node.next, b->cur_line+1, 0);
-
 				end_undo_chain(b);
 				if (b->win_x) {
 					int64_t a = -1;
@@ -668,10 +656,8 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 					assert(b->cur_line_desc->ld_node.next->next != NULL);
 					if (b->opt.auto_indent) {
-						int keep_terminated = is_text_terminated(b);
 						start_undo_chain(b);
 						a = auto_indent_line(b, b->cur_line + 1, (line_desc *)b->cur_line_desc->ld_node.next, INT_MAX);
-						if (keep_terminated) ensure_text_terminated(b);
 						end_undo_chain(b);
 					}
 
@@ -691,9 +677,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 					assert(b->cur_line_desc->ld_node.next->next != NULL);
 					if (b->opt.auto_indent) {
 						start_undo_chain(b);
-						int keep_terminated = is_text_terminated(b);
 						a = auto_indent_line(b, b->cur_line + 1, (line_desc *)b->cur_line_desc->ld_node.next, INT_MAX);
-						if (keep_terminated) ensure_text_terminated(b);
 						end_undo_chain(b);
 					}
 
