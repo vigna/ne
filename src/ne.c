@@ -151,7 +151,7 @@ int delete_buffer(void) {
 	return false;
 }
 
-void about() {
+void about(void) {
 	clear_entire_screen();
 	displaying_info = true;
 	int i;
@@ -467,8 +467,9 @@ int main(int argc, char **argv) {
 		const input_class ic = CHAR_CLASS(c);
 
 		if (displaying_info) {
-			about(false);
+			about();
 			displaying_info = false;
+			draw_status_bar();
 		}
 		else if (cur_buffer->automatch.shown) automatch_bracket(cur_buffer, false);
 
