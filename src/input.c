@@ -27,6 +27,44 @@
 
 #define MAX_INPUT_LINE_LEN		2048
 
+/* request() is the main function that serves request_number() and
+   request_string(). Given a prompt, a default string and a boolean flag which
+   establish the possibility of any alphabetical input (as opposed to digits
+   only), the user can edit a string of at most MAX_INPUT_LINE_LEN characters.
+   Many useful commands can be used here. The string edited by the user is
+   returned, or NULL if the input was escaped, or the empty string was entered.
+   Note that presently this function always returns a pointer to a static
+   buffer, but this could change in the future.
+
+   completion_type has several possible values:
+    0 COMPLETE_NONE	means no completion,
+    1 COMPLETE_FILE	complete as a filename,
+    2					  complete as a command followed by a filename, (not implemented?)
+    3 COMPLETE_SYNTAX complete as a recognized syntax name.
+
+   If prefer_utf8 is true, editing an ASCII line inserting an ISO-8859-1 character
+   will turn it into an UTF-8 line.
+
+   request() relies on a number of auxiliary functions and static data. As
+   always, we would really need nested functions, but, alas, C can't cope with
+   them. */
+
+static char input_buffer[MAX_INPUT_LINE_LEN + 1];
+
+/* The current encoding of the command line. Contrarily to buffers, the command line may (and will) move
+   back to ASCII if all non-US-ASCII characters are deleted .*/
+
+static encoding_type encoding;
+
+/* start_x  is the first usable screen x position for editing;
+   len      is the current raw length of the input buffer (input_buffer[len] is always a NULL);
+   x        is the screen x position of the cursor;
+   pos      is the position of the cursor inside the input buffer;
+   offset   is the first displayed buffer character. 
+*/
+
+static int start_x, len, pos, x, offset;
+
 
 
 /* Prints an input prompt in the input line. The prompt is assumed not to be
@@ -34,7 +72,7 @@
    first character to use for input is returned. Moreover, the status bar is
    reset, so that it will be updated. */
 
-static unsigned int print_prompt(const char * const prompt) {
+unsigned int print_prompt(const char * const prompt) {
 	static const char *prior_prompt;
 	assert(prompt != NULL || prior_prompt);
 
@@ -55,7 +93,7 @@ static unsigned int print_prompt(const char * const prompt) {
 
 	reset_status_bar();
 
-	return strlen(prior_prompt) + 2;
+	return start_x = strlen(prior_prompt) + 2;
 }
 
 
@@ -216,44 +254,6 @@ static void add_to_history(const char * const str) {
 	assert_buffer(history_buff);
 }
 
-/* request() is the main function that serves request_number() and
-   request_string(). Given a prompt, a default string and a boolean flag which
-   establish the possibility of any alphabetical input (as opposed to digits
-   only), the user can edit a string of at most MAX_INPUT_LINE_LEN characters.
-   Many useful commands can be used here. The string edited by the user is
-   returned, or NULL if the input was escaped, or the empty string was entered.
-   Note that presently this function always returns a pointer to a static
-   buffer, but this could change in the future.
-
-   completion_type has several possible values:
-    0 COMPLETE_NONE	means no completion,
-    1 COMPLETE_FILE	complete as a filename,
-    2					  complete as a command followed by a filename, (not implemented?)
-    3 COMPLETE_SYNTAX complete as a recognized syntax name.
-
-   If prefer_utf8 is true, editing an ASCII line inserting an ISO-8859-1 character
-   will turn it into an UTF-8 line.
-
-   request() relies on a number of auxiliary functions and static data. As
-   always, we would really need nested functions, but, alas, C can't cope with
-   them. */
-
-static char input_buffer[MAX_INPUT_LINE_LEN + 1];
-
-/* The current encoding of the command line. Contrarily to buffers, the command line may (and will) move
-   back to ASCII if all non-US-ASCII characters are deleted .*/
-
-static encoding_type encoding;
-
-/* start_x  is the first usable screen x position for editing;
-   len      is the current raw length of the input buffer (input_buffer[len] is always a NULL);
-   x        is the screen x position of the cursor;
-   pos      is the position of the cursor inside the input buffer;
-   offset   is the first displayed buffer character. 
-*/
-
-static int start_x, len, pos, x, offset;
-
 static int input_buffer_is_ascii() {
 	return is_ascii(input_buffer, len);
 }
@@ -268,6 +268,11 @@ static void input_refresh(void) {
 	}
 	clear_to_eol();
 	fflush(stdout);
+}
+
+void input_and_prompt_refresh() {
+	print_prompt(NULL);
+	input_refresh();
 }
 
 static void input_autocomplete(void) {
@@ -645,6 +650,11 @@ char *request(const char *prompt, const char * const default_string, const bool 
 			const int a = parse_command_line(key_binding[c], NULL, NULL, false);
 			if (a >= 0) {
 				switch(a) {
+
+				case SUSPEND_A:
+					stop_ne();
+					input_and_prompt_refresh();
+					break;
 
 				case LINEUP_A:
 				case LINEDOWN_A:

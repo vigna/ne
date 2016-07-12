@@ -1636,6 +1636,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 	case SUSPEND_A:
 		stop_ne();
+		reset_window();
 		keep_cursor_on_screen(cur_buffer);
 		return OK;
 

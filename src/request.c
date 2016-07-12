@@ -469,7 +469,7 @@ int request_strings(req_list *rlp0, int n) {
 			x = N2X(n);
 			y = N2Y(n);
 			print_strings();
-			print_message(NULL);
+			input_and_prompt_refresh();
 		}
 
 		n = PXY2N(page,x,y);
@@ -512,6 +512,11 @@ int request_strings(req_list *rlp0, int n) {
 				const int a = parse_command_line(key_binding[c], NULL, NULL, false);
 				if (a >= 0) {
 					switch(a) {
+					case SUSPEND_A:
+						stop_ne();
+						ne_lines0 = ne_columns0 = 0;
+						break;
+
 					case BACKSPACE_A:
 						fuzz_back();
 						break;

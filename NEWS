@@ -18,6 +18,8 @@
   * Options "--read-only" and "+N,M" can be applied to piped input:
       ls -l | ne --read-only +3,5 -
 
+  * Suspend (Crtl-Z) works in prompts, requesters.
+
 3.0  2015-06-18
 
   * ne is now fully 64-bit, and needs to be compiled by a C99-compliant

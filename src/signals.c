@@ -67,7 +67,6 @@ void stop_ne(void) {
 	set_interactive_mode();
 	clear_entire_screen();
 	ttysize();
-	reset_window();
 }
 
 

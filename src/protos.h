@@ -217,6 +217,8 @@ int   pop_prefs(buffer *b);
 int   push_prefs(buffer *b);
 
 /* input.c */
+unsigned int print_prompt(const char * const prompt);
+void  input_and_prompt_refresh(void);
 void  close_history(void);
 bool  request_response(const buffer *b, const char *prompt, bool default_value);
 char  request_char(const buffer *b, const char *prompt, const char default_value);
