@@ -828,6 +828,10 @@ void handle_menus(void) {
 			alert();
 			break;
 
+		case TAB:
+			draw_next_menu();
+			break;
+
 		case ALPHA:
 			if (c == ':') {
 				undraw_last_menu();
@@ -865,13 +869,31 @@ void handle_menus(void) {
 					break;
 
 				case PREVPAGE_A:
+				case PAGEUP_A:
 					draw_item(0);
 					break;
 
 				case NEXTPAGE_A:
+				case PAGEDOWN_A:
 					draw_item(menus[current_menu].item_num - 1);
 					break;
 
+				case MOVESOL_A:
+					if (current_menu != 0) {
+						undraw_menu(current_menu);
+						current_menu = 0;
+						draw_menu(current_menu);
+					}
+					break;
+					
+				case MOVEEOL_A:
+					if (current_menu != menu_num) {
+						undraw_menu(current_menu);
+						current_menu = menu_num - 1;
+						draw_menu(current_menu);
+					}
+					break;
+					
 				case ESCAPE_A:
 					undraw_last_menu();
 					return;

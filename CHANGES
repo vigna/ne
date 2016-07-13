@@ -12,6 +12,8 @@
   * AutoComplete keeps words containing apostrophes as single words ("can't"
     instead of "can" and "t").
 
+  * Home, End, Tab keys now work in menus.
+
 3.0.1 2015-06-22
 
   * Updated version of GNU regex library provides 64-bit regular
