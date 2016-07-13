@@ -1426,12 +1426,17 @@ at this manual when some doubts arise.
 You activate menus with the @key{f1} key, or in case your keyboard does
 not have such a key, @key{Escape}, @key{Escape}-@key{Escape} or any key
 that is bound to the @code{Escape} command. Move around the menus pressing
-with the cursor keys and the page up/down keys (which move to the first or
-last menu item in a menu). You can also move around menus and menu items by
+with the cursor keys, the @key{Page Up} and @key{Page Down} keys (which move to the first or
+last menu item in a menu), and the @key{Home} and @key{End} keys (which move to the first or
+last menus). You can also move around menus and menu items by
 pressing the alphabetic keys; a lower case letter will move to the first
 item in the current menu whose name starts with the given letter; an upper
 case letter will move to the first menu whose name starts with the given
 letter.
+
+If you've activated the menus and you want to switch immediately to the command line,
+press the @key{:} key. The menus will clear and you'll find yourself on the command
+line. @xref{The Command Line}
 
 Each menu item of @code{ne}'s standard menu corresponds to a
 single command. In explaining what each menu item allows you to
