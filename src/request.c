@@ -43,13 +43,13 @@ static int x, y, page, max_names_per_line, max_names_per_col, names_per_page, fu
 static bool prune;
 
 /* ne traditionally has displayed request entries by row, i.e.
-   	a	b	c
-   	d	e	f
-   	g	h
+      a   b   c
+      d   e   f
+      g   h
    rather than by column, i.e.
-   	a	d	g
-   	b	e	h
-   	c	f
+      a   d   g
+      b   e   h
+      c   f
    which, while easier to program, is somewhat harder to read.
    The request code was also full of tricky expressions like those in
    the macros below.
@@ -78,12 +78,12 @@ static bool prune;
 
     Translating the Perl "$x =" and "$y =" to the C macros NAMES_PER_LINE and NAMES_PER_COL,
     respectively, is a matter of substituting the following:
-   	$N  ($M - $n)
-   	$n  (rl.cur_entries % names_per_page)	 The number of actual entries on the last page.
-   	$X  max_names_per_line
-   	$Y  max_names_per_col
-   	$M  names_per_page
-   	$x  NAMES_PER_LINE(p)
+      $N  ($M - $n)
+      $n  (rl.cur_entries % names_per_page)    The number of actual entries on the last page.
+      $X  max_names_per_line
+      $Y  max_names_per_col
+      $M  names_per_page
+      $x  NAMES_PER_LINE(p)
 
 #!/usr/bin/perl -w
 use strict;
@@ -92,11 +92,11 @@ use integer; # use integer math, like C macros do
 ($X,$Y) = (5,9);  # change to test different column/row configurations.
 $M = $X * $Y;
 for $n ( 1 .. $M ) {
-	 $N = $M - $n;
-	 $x = $X - ($X*($N-1)*($N-1)-$M)/($M*$M);
-	 $y = ($n+$x-1) / $x;
-	 print  "  n (rows,cols) (capacity => n)\n" if $n == 1;
-	 printf "%3d: (%2d,%2d)  (%3d >= %3d)? %s\n", $n, $x, $y, $x*$y, $n, ($x*$y >= $n ? "good" : '**BAD**');
+    $N = $M - $n;
+    $x = $X - ($X*($N-1)*($N-1)-$M)/($M*$M);
+    $y = ($n+$x-1) / $x;
+    print  "  n (rows,cols) (capacity => n)\n" if $n == 1;
+    printf "%3d: (%2d,%2d)  (%3d >= %3d)? %s\n", $n, $x, $y, $x*$y, $n, ($x*$y >= $n ? "good" : '**BAD**');
 }
 
 */
@@ -447,7 +447,7 @@ static bool resume_bar = false;
 /* Given a list of strings, let the user pick one. If _rl->suffix is not '\0', we bold names ending with it.
    The integer returned is one of the following:
    n >= 0  User selected string n with the enter key.
-   -1		Error or abort; no selection made.
+   -1      Error or abort; no selection made.
    -n - 2  User selected string n with the TAB key.
    (Yes, it's kind of evil, but it's nothing compared to what request() does!) */
 
@@ -463,7 +463,7 @@ int request_strings(req_list *rlp0, int n) {
 	const int dx = rl.max_entry_len + 1 + (rl.suffix ? 1 : 0);
 
 	while(true) {
-		if (ne_lines0 != ne_lines || ne_columns0 != ne_columns) {
+		if (ne_lines0 != ne_lines || ne_columns0 != ne_columns || resume_bar) {
 			if (ne_lines0 && ne_columns0 ) n = PXY2N(page,x,y);
 			if (!(max_names_per_line = ne_columns / dx)) max_names_per_line = 1;
 			max_names_per_col = ne_lines - 1;
@@ -522,7 +522,6 @@ int request_strings(req_list *rlp0, int n) {
 					switch(a) {
 					case SUSPEND_A:
 						stop_ne();
-						ne_lines0 = ne_columns0 = 0;
 						resume_bar = true;
 						break;
 
@@ -634,7 +633,7 @@ int request_strings(req_list *rlp0, int n) {
 char *complete_filename(const char *start_prefix) {
 
 	/* This might be NULL if the current directory has been unlinked, or it is not readable.
-		in that case, we end up moving to the completion directory. */
+	   in that case, we end up moving to the completion directory. */
 	char * const cur_dir_name = ne_getcwd(CUR_DIR_MAX_SIZE);
 
 	char * const dir_name = str_dup(start_prefix);
@@ -880,8 +879,8 @@ int request_document(void) {
 		draw_status_bar();
 		if (i >= 0 && rl.reordered) {
 			/* We're going to cheat big time here. We have an array of pointers
-				at rl.entries that's big enough to hold all the buffer pointers,
-				and that's exactly what we're going to use it for now. */
+			   at rl.entries that's big enough to hold all the buffer pointers,
+			   and that's exactly what we're going to use it for now. */
 			b = (buffer *)buffers.head;
 			for (int j = 0; b->b_node.next; j++ ) {
 				rl.entries[j] = (char *)b;
@@ -908,8 +907,8 @@ int request_document(void) {
    values, and they are doubled each time more space is needed. This ensures a
    reasonable number of retries. */
 
-#define DEF_ENTRIES_ALLOC_SIZE	  256
-#define DEF_CHARS_ALLOC_SIZE	(4*1024)
+#define DEF_ENTRIES_ALLOC_SIZE     256
+#define DEF_CHARS_ALLOC_SIZE  (4*1024)
 
 #if 0
 /* The req_list_del() function works just fine; we just don't need it yet/any more. */
@@ -990,9 +989,11 @@ int req_list_init( req_list * const rl, int cmpfnc(const char *, const char *), 
    shifts the suffixes left, exchanging them for the preceeding '\0'. After this
    operation, all the strings will be just strings, some of which happen to end
    with the suffix character, and all of which are followed by two null bytes.
-   	req_list_finalize() also initializes the orig_order array if allow_reorder
+
+   req_list_finalize() also initializes the orig_order array if allow_reorder
    is true. If the array cannot be allocated, allow_reorder is simply reset to
    false rather than returning an error. */
+
 void req_list_finalize(req_list * const rl) {
 	for (int i = 0; i < rl->cur_entries; i++) {
 		const int len = strlen(rl->entries[i]);
