@@ -152,7 +152,7 @@ int save_prefs(buffer * const b, const char * const name) {
 		if (!saving_global && b->syn) record_action(cs, SYNTAX_A, -1, (const char *)b->syn->name, verbose_macros);
 
 		record_action(cs, TABSIZE_A,          b->opt.tab_size,       NULL, verbose_macros);
-		record_action(cs, CLIPNUMBER_A,       b->opt.cur_clip,       NULL, verbose_macros);
+		/* Skip cur_clip */
 		record_action(cs, RIGHTMARGIN_A,      b->opt.right_margin,   NULL, verbose_macros);
 		record_action(cs, FREEFORM_A,         b->opt.free_form,      NULL, verbose_macros);
 		record_action(cs, HEXCODE_A,          b->opt.hex_code,       NULL, verbose_macros);
