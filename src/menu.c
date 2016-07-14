@@ -525,10 +525,6 @@ static void do_menu_action(void) {
 	print_error(execute_command_line(cur_buffer, menus[current_menu].items[menus[current_menu].cur_item].command_line));
 }
 
-/* indicates the correct function to call to restore the status bar after
-   suspend/resume, particularly during requesters. */
-void (*resume_status_bar)(const char *message);
-
 /* showing_msg tells draw_status_bar() that a message is currently shown, and
    should be cancelled only on the next refresh. Bar gone says that the status
    bar doesn't exists any longer, so we have to rebuild it entirely. */

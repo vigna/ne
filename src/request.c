@@ -439,6 +439,11 @@ static int request_strings_cleanup(bool reordered) {
 	return n;
 }
 
+/* indicates the correct function to call to restore the status bar after
+   suspend/resume, particularly during requesters. */
+void (*resume_status_bar)(const char *message);
+static bool resume_bar = false;
+
 /* Given a list of strings, let the user pick one. If _rl->suffix is not '\0', we bold names ending with it.
    The integer returned is one of the following:
    n >= 0  User selected string n with the enter key.
@@ -469,7 +474,10 @@ int request_strings(req_list *rlp0, int n) {
 			x = N2X(n);
 			y = N2Y(n);
 			print_strings();
-			resume_status_bar(NULL);
+			if (resume_bar) {
+				resume_status_bar(NULL);
+				resume_bar = false;
+			}
 		}
 
 		n = PXY2N(page,x,y);
@@ -515,6 +523,7 @@ int request_strings(req_list *rlp0, int n) {
 					case SUSPEND_A:
 						stop_ne();
 						ne_lines0 = ne_columns0 = 0;
+						resume_bar = true;
 						break;
 
 					case BACKSPACE_A:
