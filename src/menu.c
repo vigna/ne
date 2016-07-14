@@ -900,7 +900,7 @@ void handle_menus(void) {
 
 				default:
 					undraw_last_menu();
-					do_action(cur_buffer, a, n, p);
+					print_error(do_action(cur_buffer, a, n, p));
 					return;
 				}
 			}
