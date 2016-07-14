@@ -637,6 +637,13 @@ extern bool last_replace_empty_match;
 
 #define MACRO_HASH_TABLE_SIZE (101)
 
+/* There are several functions that set the status bar:
+   print_message(), print_prompt() and input_refresh(), and
+   draw_status_bar(). If we're suspended while a requester is up, this
+   is how request() knows what to do to properly restore the status bar
+   upon resume. */
+extern void (*resume_status_bar)(const char *message);
+
 
 /* Upcasing vectors for the regex library. */
 extern unsigned char localised_up_case[];

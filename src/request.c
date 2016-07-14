@@ -469,7 +469,7 @@ int request_strings(req_list *rlp0, int n) {
 			x = N2X(n);
 			y = N2Y(n);
 			print_strings();
-			input_and_prompt_refresh();
+			resume_status_bar(NULL);
 		}
 
 		n = PXY2N(page,x,y);

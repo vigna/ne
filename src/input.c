@@ -76,6 +76,7 @@ unsigned int print_prompt(const char * const prompt) {
 	static const char *prior_prompt;
 	assert(prompt != NULL || prior_prompt);
 
+	resume_status_bar = (void (*)(const char *message))&input_and_prompt_refresh;
 	if (prompt) prior_prompt = prompt;
 
 	move_cursor(ne_lines - 1, 0);

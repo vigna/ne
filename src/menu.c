@@ -525,7 +525,9 @@ static void do_menu_action(void) {
 	print_error(execute_command_line(cur_buffer, menus[current_menu].items[menus[current_menu].cur_item].command_line));
 }
 
-
+/* indicates the correct function to call to restore the status bar after
+   suspend/resume, particularly during requesters. */
+void (*resume_status_bar)(const char *message);
 
 /* showing_msg tells draw_status_bar() that a message is currently shown, and
    should be cancelled only on the next refresh. Bar gone says that the status
@@ -630,6 +632,7 @@ void draw_status_bar(void) {
 		return;
 	}
 
+	resume_status_bar = (void (*)(const char *message))&draw_status_bar;
 	set_attr(0);
 	int len;
 
@@ -740,6 +743,7 @@ void draw_status_bar(void) {
 void print_message(const char * const message) {
 	static char msg_cache[MAX_MESSAGE_LENGTH];
 
+	resume_status_bar = (void (*)(const char *message))&print_message;
 	if (message) {
 		strncpy(msg_cache, message, MAX_MESSAGE_LENGTH);
 		msg_cache[MAX_MESSAGE_LENGTH - 1] = '\0';
