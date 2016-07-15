@@ -117,7 +117,11 @@ bool request_response(const buffer * const b, const char * const prompt, const b
    is returned. The default character is used if the user types RETURN. Note
    that the cursor is moved back to its current position. This offers a clear
    distinction between immediate and long inputs, and allows for interactive
-   search and replace. */
+   search and replace.
+   
+   We can get away with the INVALID_CHAR (window resizing) and SUSPEND_A/resume
+   code only because this is only ever called in regular editing mode, not from
+   requesters or command input.  */
 
 
 char request_char(const buffer * const b, const char * const prompt, const char default_value) {
@@ -135,7 +139,11 @@ char request_char(const buffer * const b, const char * const prompt, const char 
 		if (c == INVALID_CHAR) {
 			window_changed_size = false;
 			reset_window();
+			keep_cursor_on_screen((buffer * const)b);
+			refresh_window((buffer *)b);
 			print_prompt(NULL);
+			if (default_value) output_char(default_value, 0, false);
+			move_cursor(b->cur_y, b->cur_x);
 			continue; /* Window resizing. */
 		}
 
@@ -154,8 +162,13 @@ char request_char(const buffer * const b, const char * const prompt, const char 
 
 					case SUSPEND_A:
 						stop_ne();
+					case REFRESH_A:
 						reset_window();
+						keep_cursor_on_screen((buffer * const)b);
+						refresh_window((buffer *)b);
 						print_prompt(NULL);
+						if (default_value) output_char(default_value, 0, false);
+						move_cursor(b->cur_y, b->cur_x);
 						break;
                }
             }
