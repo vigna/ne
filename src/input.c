@@ -130,7 +130,14 @@ char request_char(const buffer * const b, const char * const prompt, const char 
 	while(true) {
 		int c;
 		input_class ic;
-		do c = get_key_code(); while(c > 0xFF || (ic = CHAR_CLASS(c)) == IGNORE || ic == INVALID);
+		do c = get_key_code(); while(c > 0xFF || (ic = CHAR_CLASS(c)) == IGNORE);
+
+		if (c == INVALID_CHAR) {
+			window_changed_size = false;
+			reset_window();
+			print_prompt(NULL);
+			continue; /* Window resizing. */
+		}
 
 		switch(ic) {
 			case ALPHA:
@@ -139,6 +146,19 @@ char request_char(const buffer * const b, const char * const prompt, const char 
 			case RETURN:
 				return (char)localised_up_case[(unsigned char)default_value];
 
+			case COMMAND:
+				if (c < 0) c = -c - 1;
+				const int a = parse_command_line(key_binding[c], NULL, NULL, false);
+				if (a >= 0) {
+					switch(a) {
+
+					case SUSPEND_A:
+						stop_ne();
+						reset_window();
+						print_prompt(NULL);
+						break;
+               }
+            }
 			default:
 				break;
 		}
@@ -536,6 +556,12 @@ char *request(const char *prompt, const char * const default_string, const bool 
 		int c;
 		input_class ic;
 		do c = get_key_code(); while((ic = CHAR_CLASS(c)) == IGNORE);
+
+		if (c == INVALID_CHAR) {
+			window_changed_size = false;
+			input_and_prompt_refresh();
+			continue; /* Window resizing. */
+		}
 
 		/* ISO 10646 characters *above 256* can be added only to UTF-8 lines, or ASCII lines (making them, of course, UTF-8). */
 		if (ic == ALPHA && c > 0xFF && encoding != ENC_ASCII && encoding != ENC_UTF8) ic = INVALID;
