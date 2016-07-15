@@ -492,7 +492,7 @@ int request_strings(req_list *rlp0, int n) {
 		input_class ic;
 		do c = get_key_code(); while((ic = CHAR_CLASS(c)) == IGNORE);
 
-		if (c == INVALID_CHAR) {
+		if (window_changed_size) {
 			window_changed_size = false;
 			resume_bar = true;
 			continue; /* Window resizing. */
@@ -502,7 +502,7 @@ int request_strings(req_list *rlp0, int n) {
 			case INVALID:
 				/* ignore and move on */
 				break;
-				
+
 			case ALPHA:
 				if (n >= rl.cur_entries) n = rl.cur_entries - 1;
 

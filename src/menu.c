@@ -823,6 +823,12 @@ void handle_menus(void) {
 		input_class ic;
 		do c = get_key_code(); while((ic = CHAR_CLASS(c)) == IGNORE);
 
+		if (window_changed_size) {
+			window_changed_size = false;
+			draw_first_menu();
+			continue;
+		}
+
 		switch(ic) {
 		case INVALID:
 			alert();

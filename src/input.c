@@ -136,7 +136,7 @@ char request_char(const buffer * const b, const char * const prompt, const char 
 		input_class ic;
 		do c = get_key_code(); while(c > 0xFF || (ic = CHAR_CLASS(c)) == IGNORE);
 
-		if (c == INVALID_CHAR) {
+		if (window_changed_size) {
 			window_changed_size = false;
 			reset_window();
 			keep_cursor_on_screen((buffer * const)b);
@@ -144,8 +144,9 @@ char request_char(const buffer * const b, const char * const prompt, const char 
 			print_prompt(NULL);
 			if (default_value) output_char(default_value, 0, false);
 			move_cursor(b->cur_y, b->cur_x);
-			continue; /* Window resizing. */
 		}
+			
+		if (c == INVALID_CHAR) continue; /* Window resizing. */
 
 		switch(ic) {
 			case ALPHA:
@@ -570,11 +571,12 @@ char *request(const char *prompt, const char * const default_string, const bool 
 		input_class ic;
 		do c = get_key_code(); while((ic = CHAR_CLASS(c)) == IGNORE);
 
-		if (c == INVALID_CHAR) {
+		if (window_changed_size) {
 			window_changed_size = false;
 			input_and_prompt_refresh();
-			continue; /* Window resizing. */
 		}
+
+		if (c == INVALID_CHAR) continue; /* Window resizing. */
 
 		/* ISO 10646 characters *above 256* can be added only to UTF-8 lines, or ASCII lines (making them, of course, UTF-8). */
 		if (ic == ALPHA && c > 0xFF && encoding != ENC_ASCII && encoding != ENC_UTF8) ic = INVALID;
