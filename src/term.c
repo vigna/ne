@@ -546,7 +546,6 @@ void set_terminal_modes(void) {
 	OUTPUT1_IF(ne_exit_attribute_mode);
 	OUTPUT1_IF(ne_exit_alt_charset_mode);
 	OUTPUT1_IF(ne_exit_standout_mode);
-
 	OUTPUT1_IF(ne_enter_ca_mode);
 	OUTPUT1_IF(ne_keypad_xmit);
 
@@ -562,7 +561,7 @@ void reset_terminal_modes (void) {
 
 	OUTPUT1_IF(ne_exit_attribute_mode);
 	OUTPUT1_IF(ne_exit_alt_charset_mode);
-	OUTPUT1_IF(ne_exit_standout_mode);
+	turn_off_standout();
 	OUTPUT1_IF(ne_keypad_local);
 	OUTPUT1_IF(ne_exit_ca_mode);
 }
