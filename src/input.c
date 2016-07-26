@@ -188,12 +188,12 @@ char request_char(const buffer * const b, const char * const prompt, const char 
    entered, negative on escaping or on entering the empty string. */
 
 
-int64_t request_number(const char * const prompt, const int64_t default_value) {
+int64_t request_number(const buffer * const b, const char * const prompt, const int64_t default_value) {
 	static char t[MAX_INT_LEN];
 
 	if (default_value >= 0) sprintf(t, "%" PRId64, default_value);
 
-	char * const result = request(prompt, default_value >= 0 ? t : NULL, false, 0, io_utf8);
+	char * const result = request(b, prompt, default_value >= 0 ? t : NULL, false, 0, io_utf8);
 	if (!result) return ABORT;
 	if (!*result) return ERROR;
 
@@ -212,9 +212,9 @@ int64_t request_number(const char * const prompt, const int64_t default_value) {
    in which case the empty string is duplicated and
    returned). completion_type and prefer_utf8 work as in request(). */
 
-char *request_string(const char * const prompt, const char * const default_string, const bool accept_null_string, const int completion_type, const bool prefer_utf8) {
+char *request_string(const buffer * const b, const char * const prompt, const char * const default_string, const bool accept_null_string, const int completion_type, const bool prefer_utf8) {
 
-	const char * const result = request(prompt, default_string, true, completion_type, prefer_utf8);
+	const char * const result = request(b, prompt, default_string, true, completion_type, prefer_utf8);
 
 	if (result && (*result || accept_null_string)) return str_dup(result);
 
@@ -542,7 +542,7 @@ static void input_paste(void) {
 	}
 }
 
-char *request(const char *prompt, const char * const default_string, const bool alpha_allowed, const int completion_type, const bool prefer_utf8) {
+char *request(const buffer * const b, const char *prompt, const char * const default_string, const bool alpha_allowed, const int completion_type, const bool prefer_utf8) {
 
 	set_attr(0);
 
@@ -573,6 +573,9 @@ char *request(const char *prompt, const char * const default_string, const bool 
 
 		if (window_changed_size) {
 			window_changed_size = false;
+			reset_window();
+			keep_cursor_on_screen((buffer * const)b);
+			refresh_window((buffer *)b);
 			input_and_prompt_refresh();
 		}
 

@@ -857,7 +857,7 @@ char *request_file(const buffer *b, const char *prompt, const char *default_name
 		if (p && *p) return p;
 	}
 
-	if (p = request_string(prompt, p ? p + 1 : default_name, false, COMPLETE_FILE, io_utf8)) return p;
+	if (p = request_string(b, prompt, p ? p + 1 : default_name, false, COMPLETE_FILE, io_utf8)) return p;
 
 	return NULL;
 }
