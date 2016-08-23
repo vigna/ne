@@ -621,7 +621,7 @@ access it later from any other directory. The @samp{Open Macro...} menu item
 and the @code{OpenMacro} command load a macro from a file into the
 current macro buffer just as if you had just @code{Record}ed it.
 
-The current setting your your @code{VerboseMacros} flag determines whether
+The current setting of your @code{VerboseMacros} flag determines whether
 long or abbreviated command names are used when saving a macro. For your
 convenience, @code{SaveMacro} will also convert sequences of
 @code{InsertChar} commands into single---usually much more readable---
