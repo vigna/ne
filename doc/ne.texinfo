@@ -3475,7 +3475,7 @@ spaces, relatively to the value of the right margin as set by the
 @noindent Abbreviation: @code{PA}
 
 @noindent reformats @var{n} paragraphs from the cursor position onwards. If
-@var{n} is not specified, it is assumed to be one. The paragraph are
+@var{n} is not specified, it is assumed to be one. The paragraphs are
 formatted relatively to the value of the right margin as set by the
 @code{RightMargin} command. See @ref{RightMargin}.
 
