@@ -3175,7 +3175,7 @@ or recorded).
 false, the macro recording is stopped, and the macro can be played
 or saved via @ref{Play}, or @ref{SaveMacro}.
 
-If you call invoke @code{Record} with no arguments, it will toggle the flag. If you
+If you invoke @code{Record} with no arguments, it will toggle the flag. If you
 specify 0 or 1, the flag will be set to false or true, respectively. An upper case
 @samp{R} will appear on the status bar if the flag is true.
 
