@@ -4118,7 +4118,7 @@ return) and a NL (new line) character are output as line terminators.
 This flag has no effect except when saving a file.
 
 This flag is automatically set if you load a file that has at least one
-CR/LF sequence into it.
+CR/LF sequence in it.
 
 If you invoke @code{CRLF} with no arguments, it will toggle the flag.
 If you specify 0 or 1, the flag will be set to false or true,
