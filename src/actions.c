@@ -776,7 +776,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		if (p || (q = p = request_file(b, "Filename", b->filename))) {
 			print_info(SAVING);
 
-			if (a==SAVE_A && buffer_file_modified(b,p) && !request_response(b, info_msg[FILE_HAS_BEEN_MODIFIED], false)) return DOCUMENT_NOT_SAVED;
+			if (buffer_file_modified(b,p) && !request_response(b, info_msg[a==SAVE_A ? FILE_HAS_BEEN_MODIFIED : FILE_ALREADY_EXISTS], false)) return DOCUMENT_NOT_SAVED;
 			error = save_buffer_to_file(b, p);
 
 			if (!print_error(error)) {

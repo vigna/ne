@@ -112,5 +112,6 @@ char *info_msg[INFO_COUNT] = {
 	"Partially completed.",
 	"Cancelled.",
 	"SELECT: cursor, enter. FILTER: chars, backspace. REORDER: F2/F3. ABORT: Esc",
-	"File has been modified since buffer was loaded or saved; are you sure?"
+	"File has been modified since buffer was loaded or saved; are you sure?",
+	"A file with that name already exists; are you sure?"
 };

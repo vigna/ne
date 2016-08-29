@@ -143,11 +143,9 @@ int64_t read_safely(const int fh, void * const buf, const int64_t len) {
 /* Check a named file's mtime relative to a buffer's stored mtime.
    Note that stat errors are treated like 0 mtime, which also is the value
    for new buffers. Return values:
-
-   1 if file's non-zero modification time differs from the buffer's non-zero mtime,
-   0 everything else, including if the files mtime couldn't be checked
-     (possibly no file or couldn't stat), buffer's stored mtime is 0,
-     no usable name.
+     true:  if file's non-zero modification time differs from the buffer's mtime,
+     false: everything else, including if the files mtime couldn't be checked
+            (for example: possibly no file or couldn't stat).
    Uses filename from the buffer unless passed a name. */
 
 bool buffer_file_modified(const buffer *b, const char *name) {
@@ -165,7 +163,7 @@ bool buffer_file_modified(const buffer *b, const char *name) {
 	name = tilde_expand(name);
 
 	unsigned long fmtime = file_mod_time(name);
-	if (fmtime && b->mtime && fmtime != b->mtime) return true;
+	if (fmtime && fmtime != b->mtime) return true;
 	return false;
 }
 
