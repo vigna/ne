@@ -621,7 +621,7 @@ access it later from any other directory. The @samp{Open Macro...} menu item
 and the @code{OpenMacro} command load a macro from a file into the
 current macro buffer just as if you had just @code{Record}ed it.
 
-The current setting your your @code{VerboseMacros} flag determines whether
+The current setting of your @code{VerboseMacros} flag determines whether
 long or abbreviated command names are used when saving a macro. For your
 convenience, @code{SaveMacro} will also convert sequences of
 @code{InsertChar} commands into single---usually much more readable---
@@ -669,7 +669,7 @@ the @file{macros} subdirectory of @code{ne}'s global directory. @xref{Arguments}
 
 Since loading a macro each time it is invoked would be a rather slow and
 expensive process, once a macro has been executed it is cached internally.
-Subsequent invocations of the macro will used the cached version.
+Subsequent invocations of the macro will use the cached version.
 
 @noindent @strong{Warning:} while path and file names are case sensitive
 when initially loading macros, loaded macro names are @emph{not} case
@@ -3175,7 +3175,7 @@ or recorded).
 false, the macro recording is stopped, and the macro can be played
 or saved via @ref{Play}, or @ref{SaveMacro}.
 
-If you call invoke @code{Record} with no arguments, it will toggle the flag. If you
+If you invoke @code{Record} with no arguments, it will toggle the flag. If you
 specify 0 or 1, the flag will be set to false or true, respectively. An upper case
 @samp{R} will appear on the status bar if the flag is true.
 
@@ -3475,7 +3475,7 @@ spaces, relatively to the value of the right margin as set by the
 @noindent Abbreviation: @code{PA}
 
 @noindent reformats @var{n} paragraphs from the cursor position onwards. If
-@var{n} is not specified, it is assumed to be one. The paragraph are
+@var{n} is not specified, it is assumed to be one. The paragraphs are
 formatted relatively to the value of the right margin as set by the
 @code{RightMargin} command. See @ref{RightMargin}.
 
@@ -4118,7 +4118,7 @@ return) and a NL (new line) character are output as line terminators.
 This flag has no effect except when saving a file.
 
 This flag is automatically set if you load a file that has at least one
-CR/LF sequence into it.
+CR/LF sequence in it.
 
 If you invoke @code{CRLF} with no arguments, it will toggle the flag.
 If you specify 0 or 1, the flag will be set to false or true,

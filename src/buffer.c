@@ -215,7 +215,7 @@ buffer *alloc_buffer(const buffer * const cur_b) {
 			b->opt.visual_bell    = cur_b->opt.visual_bell;
 
 		}
-		/* This leaves out onlyopt.read_only and opt.search_back, which are
+		/* This leaves out only opt.read_only and opt.search_back, which are
 		 implicitly set to 0 by the calloc(). */
 		return b;
 	}

@@ -113,7 +113,7 @@ bool do_syntax = true;
 /* Whether we are currently displaying an about message. */
 static bool displaying_info;
 
-/* These function live here because they access cur_buffer. new_buffer()
+/* These functions live here because they access cur_buffer. new_buffer()
    creates a new buffer, adds it to the buffer list, and assign it to
    cur_buffer. delete_buffer() destroys cur_buffer, and makes the previous or
    next buffer the current buffer, if any of the two exists. */
