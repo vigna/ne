@@ -72,7 +72,7 @@ static int start_x, len, pos, x, offset;
    first character to use for input is returned. Moreover, the status bar is
    reset, so that it will be updated. */
 
-unsigned int print_prompt(const char * const prompt) {
+static unsigned int print_prompt(const char * const prompt) {
 	static const char *prior_prompt;
 	assert(prompt != NULL || prior_prompt);
 
@@ -84,7 +84,7 @@ unsigned int print_prompt(const char * const prompt) {
 	clear_to_eol();
 
 	standout_on();
-
+   set_attr(0);
 	output_string(prior_prompt, false);
 	output_string(":", false);
 
@@ -125,7 +125,6 @@ bool request_response(const buffer * const b, const char * const prompt, const b
 
 
 char request_char(const buffer * const b, const char * const prompt, const char default_value) {
-	set_attr(0);
 	print_prompt(prompt);
 
 	if (default_value) output_char(default_value, 0, false);
@@ -375,7 +374,6 @@ static void input_autocomplete(void) {
 	if (ac_err == AUTOCOMPLETE_COMPLETED || ac_err == AUTOCOMPLETE_CANCELLED) {
 		do_action(cur_buffer, REFRESH_A, 0, NULL);
 		refresh_window(cur_buffer);
-		set_attr(0);
 		print_prompt(NULL);
 	}
 	input_refresh();
@@ -544,8 +542,6 @@ static void input_paste(void) {
 
 char *request(const buffer * const b, const char *prompt, const char * const default_string, const bool alpha_allowed, const int completion_type, const bool prefer_utf8) {
 
-	set_attr(0);
-
 	input_buffer[pos = len = offset = 0] = 0;
 	encoding = ENC_ASCII;
 	x = start_x = print_prompt(prompt);
@@ -698,6 +694,9 @@ char *request(const buffer * const b, const char *prompt, const char * const def
 
 				case SUSPEND_A:
 					stop_ne();
+					reset_window();
+					keep_cursor_on_screen((buffer * const)b);
+					refresh_window((buffer *)b);
 					input_and_prompt_refresh();
 					break;
 

@@ -534,8 +534,9 @@ static void turn_off_insert (void) {
 
 
 /* Prepares the terminal for interactive I/O. It
-initializes the terminal, prepares the cursor address mode, and
-activates the keypad and the meta key. */
+   initializes the terminal, puts standout in a known state,
+   prepares the cursor address mode, and
+   activates the keypad and the meta key. */
 
 void set_terminal_modes(void) {
 
@@ -550,7 +551,7 @@ void set_terminal_modes(void) {
 	OUTPUT1_IF(ne_keypad_xmit);
 
 	if (ne_has_meta_key) OUTPUT1_IF(ne_meta_on);
-
+   turn_off_standout();
 	losecursor();
 }
 
