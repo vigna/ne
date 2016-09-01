@@ -41,9 +41,6 @@ ne.pdf: ne.dvi
 html/index.html: ne.texinfo version.texinfo
 	-rm -fr html
 	makeinfo --html -o html ne.texinfo
-	for i in html/*html; do sed -i -e "s/\`/'/g" $$i; done
-	for i in html/*html; do sed -i -e "s/''''/'\`''/g" $$i; done
-	for i in html/*html; do sed -i -e "s/'ne'/ne/g" $$i; done
 
 clean:
 	rm -f ne.txt ne.info* ne.ps ne.pdf ne.dvi
