@@ -217,12 +217,13 @@ int   pop_prefs(buffer *b);
 int   push_prefs(buffer *b);
 
 /* input.c */
+void  input_and_prompt_refresh(void);
 void  close_history(void);
 bool  request_response(const buffer *b, const char *prompt, bool default_value);
 char  request_char(const buffer *b, const char *prompt, const char default_value);
-int64_t request_number(const char *prompt, int64_t default_value);
-char *request_string(const char *prompt, const char *default_string, bool accept_null_string, int completion_type, bool prefer_utf8);
-char *request(const char *prompt, const char *default_string, bool alpha_allowed, int completion_type, bool prefer_utf8);
+int64_t request_number(const buffer *b, const char *prompt, int64_t default_value);
+char *request_string(const buffer *b, const char *prompt, const char *default_string, bool accept_null_string, int completion_type, bool prefer_utf8);
+char *request(const buffer *b, const char *prompt, const char *default_string, bool alpha_allowed, int completion_type, bool prefer_utf8);
 
 /* request.c */
 int   request_strings(req_list * const rl, int default_entry);

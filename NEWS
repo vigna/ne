@@ -20,6 +20,9 @@
 
   * Warn if SaveAs would overwrite an existing file.
 
+  * Suspend (Crtl-Z) works in prompts, requesters.
+
+
 3.0  2015-06-18
 
   * ne is now fully 64-bit, and needs to be compiled by a C99-compliant

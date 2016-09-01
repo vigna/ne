@@ -282,7 +282,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 				if ( p[0] == '?' ) {
 					free(p);
 					snprintf(msg, MAX_MESSAGE_SIZE, "Cur Bookmarks: [%s] %s (0-9, -1, +1, or '-')", cur_bookmarks_string(b), a==SETBOOKMARK_A?"SetBookmark":"GotoBookmark");
-					p = request_string(msg, NULL, true, COMPLETE_NONE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto);
+					p = request_string(b, msg, NULL, true, COMPLETE_NONE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto);
 					if (!p) {
 						return INVALID_BOOKMARK_DESIGNATION;
 					}
@@ -371,13 +371,13 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		}
 
 	case GOTOLINE_A:
-		if (c < 0 && (c = request_number("Line", b->cur_line + 1))<0) return NUMERIC_ERROR(c);
+		if (c < 0 && (c = request_number(b, "Line", b->cur_line + 1))<0) return NUMERIC_ERROR(c);
 		if (c == 0 || c > b->num_lines) c = b->num_lines;
 		goto_line(b, --c);
 		return OK;
 
 	case GOTOCOLUMN_A:
-		if (c < 0 && (c = request_number("Column", b->cur_x + b->win_x + 1))<0) return NUMERIC_ERROR(c);
+		if (c < 0 && (c = request_number(b, "Column", b->cur_x + b->win_x + 1))<0) return NUMERIC_ERROR(c);
 		goto_column(b, c ? --c : 0);
 		return OK;
 
@@ -386,7 +386,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		recording= b->recording;
 		b->recording = 0;
 		error = ERROR;
-		if (p || (p = request_string("String", NULL, false, COMPLETE_NONE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
+		if (p || (p = request_string(b, "String", NULL, false, COMPLETE_NONE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
 			encoding_type encoding = detect_encoding(p, strlen(p));
 			error = OK;
 			start_undo_chain(b);
@@ -417,7 +417,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		return OK;
 
 	case AUTOMATCHBRACKET_A:
-		if (c < 0 && (c = request_number("Match mode (sum of 0:none, 1:brightness, 2:inverse, 4:bold, 8:underline)", b->opt.automatch))<0||c>15) return ((c) == ABORT ? OK : INVALID_MATCH_MODE);
+		if (c < 0 && (c = request_number(b, "Match mode (sum of 0:none, 1:brightness, 2:inverse, 4:bold, 8:underline)", b->opt.automatch))<0||c>15) return ((c) == ABORT ? OK : INVALID_MATCH_MODE);
 		b->opt.automatch = c;
 		return OK;
 
@@ -448,7 +448,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 
-		if (c < 0 && (c = request_number("Char Code", last_inserted_char))<0) return NUMERIC_ERROR(c);
+		if (c < 0 && (c = request_number(b, "Char Code", last_inserted_char))<0) return NUMERIC_ERROR(c);
 		if (c == 0) return CANT_INSERT_0;
 
 		if (b->encoding == ENC_ASCII) {
@@ -867,7 +867,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 	case FIND_A:
 	case FINDREGEXP_A:
-		if (p || (p = request_string(a == FIND_A ? "Find" : "Find RegExp", b->find_string, false, COMPLETE_NONE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
+		if (p || (p = request_string(b, a == FIND_A ? "Find" : "Find RegExp", b->find_string, false, COMPLETE_NONE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
 
 			const encoding_type encoding = detect_encoding(p, strlen(p));
 
@@ -895,7 +895,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			return DOCUMENT_IS_READ_ONLY;
 		}
 
-		if ((q = b->find_string) || (q = request_string(b->last_was_regexp ? "Find RegExp" : "Find", NULL, false, COMPLETE_NONE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
+		if ((q = b->find_string) || (q = request_string(b, b->last_was_regexp ? "Find RegExp" : "Find", NULL, false, COMPLETE_NONE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
 
 			const encoding_type search_encoding = detect_encoding(q, strlen(q));
 
@@ -911,7 +911,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 				b->find_string_changed = 1;
 			}
 
-			if (p || (p = request_string(b->last_was_regexp ? "Replace RegExp" : "Replace", b->replace_string, true, COMPLETE_NONE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
+			if (p || (p = request_string(b, b->last_was_regexp ? "Replace RegExp" : "Replace", b->replace_string, true, COMPLETE_NONE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
 				const encoding_type replace_encoding = detect_encoding(p, strlen(p));
 				bool first_search = true;
 				int64_t num_replace = 0;
@@ -1062,7 +1062,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		return OK;
 
 	case ESCAPETIME_A:
-		if (c < 0 && (c = request_number("Timeout (1/10s)", -1))<0) return NUMERIC_ERROR(c);
+		if (c < 0 && (c = request_number(b, "Timeout (1/10s)", -1))<0) return NUMERIC_ERROR(c);
 		if (c < 256) {
 			set_escape_time(c);
 			return OK;
@@ -1070,7 +1070,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		else return ESCAPE_TIME_OUT_OF_RANGE;
 
 	case TABSIZE_A:
-		if (c < 0 && (c = request_number("TAB Size", b->opt.tab_size))<=0) return NUMERIC_ERROR(c);
+		if (c < 0 && (c = request_number(b, "TAB Size", b->opt.tab_size))<=0) return NUMERIC_ERROR(c);
 		if (c < ne_columns / 2) {
 			const int64_t pos = b->cur_pos;
 			move_to_sol(b);
@@ -1082,17 +1082,17 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		return TAB_SIZE_OUT_OF_RANGE;
 
 	case TURBO_A:
-		if (c < 0 && (c = request_number("Turbo Threshold", turbo))<0) return NUMERIC_ERROR(c);
+		if (c < 0 && (c = request_number(b, "Turbo Threshold", turbo))<0) return NUMERIC_ERROR(c);
 		turbo = c;
 		return OK;
 
 	case CLIPNUMBER_A:
-		if (c < 0 && (c = request_number("Clip Number", b->opt.cur_clip))<0) return NUMERIC_ERROR(c);
+		if (c < 0 && (c = request_number(b, "Clip Number", b->opt.cur_clip))<0) return NUMERIC_ERROR(c);
 		b->opt.cur_clip = c;
 		return OK;
 
 	case RIGHTMARGIN_A:
-		if (c < 0 && (c = request_number("Right Margin", b->opt.right_margin))<0) return NUMERIC_ERROR(c);
+		if (c < 0 && (c = request_number(b, "Right Margin", b->opt.right_margin))<0) return NUMERIC_ERROR(c);
 		b->opt.right_margin = c;
 		return OK;
 
@@ -1253,7 +1253,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 	case PLAY_A:
 		if (!b->recording && !b->executing_internal_macro) {
-			if (c < 0 && (c = request_number("Times", 1))<=0) return NUMERIC_ERROR(c);
+			if (c < 0 && (c = request_number(b, "Times", 1))<=0) return NUMERIC_ERROR(c);
 			b->executing_internal_macro = 1;
 			for(int64_t i = 0; i < c && !(error = play_macro(b, b->cur_macro)); i++);
 			b->executing_internal_macro = 0;
@@ -1405,7 +1405,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		return ERROR;
 
 	case EXEC_A:
-		if (p || (p = request_string("Command", b->command_line, false, COMPLETE_FILE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
+		if (p || (p = request_string(b, "Command", b->command_line, false, COMPLETE_FILE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
 			free(b->command_line);
 			b->command_line = p;
 			return print_error(execute_command_line(b, p)) ? ERROR : 0;
@@ -1413,7 +1413,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		return ERROR;
 
 	case SYSTEM_A:
-		if (p || (p = request_string("Shell command", NULL, false, COMPLETE_FILE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
+		if (p || (p = request_string(b, "Shell command", NULL, false, COMPLETE_FILE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
 
 			unset_interactive_mode();
 			if (system(p)) error = EXTERNAL_COMMAND_ERROR;
@@ -1433,7 +1433,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 		if (!b->marking) b->mark_is_vertical = 0;
 
-		if (p || (p = request_string("Filter", NULL, false, COMPLETE_FILE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
+		if (p || (p = request_string(b, "Filter", NULL, false, COMPLETE_FILE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
 			int fin = -1, fout = -1;
 
 			char tmpnam1[strlen(P_tmpdir)+strlen(NE_TMP)+2], tmpnam2[strlen(P_tmpdir)+strlen(NE_TMP)+2], *command;
@@ -1577,7 +1577,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 	case SYNTAX_A:
 		if (!do_syntax) return SYNTAX_NOT_ENABLED;
-		if (p || (p = request_string("Syntax",  b->syn ? (const char *)b->syn->name : NULL, true, COMPLETE_SYNTAX, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
+		if (p || (p = request_string(b, "Syntax",  b->syn ? (const char *)b->syn->name : NULL, true, COMPLETE_SYNTAX, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
 			if (!strcmp(p, "*")) b->syn = NULL;
 			else error = print_error(load_syntax_by_name(b, p));
 			reset_window();
@@ -1636,6 +1636,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 	case SUSPEND_A:
 		stop_ne();
+		reset_window();
 		keep_cursor_on_screen(cur_buffer);
 		return OK;
 

@@ -525,8 +525,6 @@ static void do_menu_action(void) {
 	print_error(execute_command_line(cur_buffer, menus[current_menu].items[menus[current_menu].cur_item].command_line));
 }
 
-
-
 /* showing_msg tells draw_status_bar() that a message is currently shown, and
    should be cancelled only on the next refresh. Bar gone says that the status
    bar doesn't exists any longer, so we have to rebuild it entirely. */
@@ -630,6 +628,7 @@ void draw_status_bar(void) {
 		return;
 	}
 
+	resume_status_bar = (void (*)(const char *message))&draw_status_bar;
 	set_attr(0);
 	int len;
 
@@ -740,6 +739,7 @@ void draw_status_bar(void) {
 void print_message(const char * const message) {
 	static char msg_cache[MAX_MESSAGE_LENGTH];
 
+	resume_status_bar = (void (*)(const char *message))&print_message;
 	if (message) {
 		strncpy(msg_cache, message, MAX_MESSAGE_LENGTH);
 		msg_cache[MAX_MESSAGE_LENGTH - 1] = '\0';
@@ -823,6 +823,12 @@ void handle_menus(void) {
 		input_class ic;
 		do c = get_key_code(); while((ic = CHAR_CLASS(c)) == IGNORE);
 
+		if (window_changed_size) {
+			window_changed_size = false;
+			draw_first_menu();
+			continue;
+		}
+
 		switch(ic) {
 		case INVALID:
 			alert();
@@ -900,7 +906,7 @@ void handle_menus(void) {
 
 				default:
 					undraw_last_menu();
-					do_action(cur_buffer, a, n, p);
+					print_error(do_action(cur_buffer, a, n, p));
 					return;
 				}
 			}

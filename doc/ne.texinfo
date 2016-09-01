@@ -3990,7 +3990,7 @@ only customization @code{ne} offers for the @key{Tab} key.
 If set, either a lower case @samp{t} or upper case @samp{T} will appear
 in the status bar depending on the state of the @code{ShiftTabs} flag.
 (The @code{ShiftTabs} flag is irrelevant if the @code{Tabs} flag is off.)
-@xref{ShiftTabs}.
+See @ref{ShiftTabs}.
 
 
 
@@ -4005,7 +4005,7 @@ in the status bar depending on the state of the @code{ShiftTabs} flag.
 will appear on the status bar, and the @key{BackSpace} and @key{Del} keys will
 remove a tab's worth of @var{space} characters if a @var{TAB} character could
 have occupied the same whitespace in the current line as the removed spaces.
-This is the deletion counterpart to the @code{Tabs} flag. @xref{Tabs}.
+This is the deletion counterpart to the @code{Tabs} flag. See @ref{Tabs}.
 
 
 
@@ -4020,7 +4020,7 @@ This is the deletion counterpart to the @code{Tabs} flag. @xref{Tabs}.
 when the @code{Tabs} flag is set, in which case an upper case @samp{T}
 appears in the status bar. When this flag and the @code{Tabs} flag are
 both set, left and right @code{Shift} commands may use tab characters to
-adjust leading white space. Otherwise only spaces are used. @xref{Shift}.
+adjust leading white space. Otherwise only spaces are used. See @ref{Shift}.
 
 
 
