@@ -4345,11 +4345,11 @@ a list of common extensions. Don't get fancy with this format.
 @example
    ada: adb, ads
    asm: s
-   c: c++, cc, cpp, h, h++ hpp, l, lex, y, yacc
+   c: c++, cc, cpp, cxx, h, h++, hpp, l, lex, y, yacc
    cobol: cbl, cob
    csh: tcsh
    diff: patch
-   fortran: f, for
+   fortran: f, F, for, f90, F90
    html: htm
    java: js
    lisp: el, lsp
