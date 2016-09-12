@@ -469,7 +469,7 @@ int get_key_code(void) {
 					if (!key[cur_key].string) {
 						c = kbd_buffer[0];
 						if (--cur_len) memmove(kbd_buffer, kbd_buffer + 1, cur_len);
-						return c;
+						return (unsigned char)c;
 					}
 
 					/* Second case. We have a partial match on the first last_match
@@ -497,7 +497,7 @@ int get_key_code(void) {
 						if (kbd_buffer[last_match] > key[cur_key].string[last_match]) {
 							c = kbd_buffer[0];
 							if (--cur_len) memmove(kbd_buffer, kbd_buffer + 1, cur_len);
-							return c;
+							return (unsigned char)c;
 						}
 						else {
 							last_match = 0;
@@ -545,7 +545,7 @@ int get_key_code(void) {
 				else {
 					c = kbd_buffer[0];
 					if (--cur_len) memmove(kbd_buffer, kbd_buffer + 1, cur_len);
-					return c;
+					return (unsigned char)c;
 				}
 			}
 			else return INVALID_CHAR;

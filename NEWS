@@ -22,6 +22,7 @@
 
   * Suspend (Crtl-Z) works in prompts, requesters.
 
+  * Restored correct keyboard input for 8-bit character sets.
 
 3.0  2015-06-18
 
