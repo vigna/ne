@@ -2,6 +2,8 @@
 
 3.0.2
 
+  * Invoke .default#ap prefs when loading a file with no extension.
+
   * Status flag "!" indicates the last line of buffer is not empty, thus
     the last line of the resulting file will not be terminated when the
     buffer is saved.

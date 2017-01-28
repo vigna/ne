@@ -3631,8 +3631,10 @@ preferences file related to the extension of the file name. Automatic
 preferences files are kept in your @file{~/.ne} directory. They
 are named as an extension postfixed with @samp{#ap}. Each time you open
 a file whose name has an extension for which there is an automatic
-preferences file, the latter is executed. If you want to inhibit this
-process, you can clear the automatic preferences flag. See @ref{AutoPrefs}.
+preferences file, the latter is executed. Opening a file which has no
+extension causes the prefs from @file{~/.ne/.default#ap} to be loaded.
+If you want to inhibit this process, you can clear the automatic
+preferences flag. See @ref{AutoPrefs}.
 
 
 @menu
