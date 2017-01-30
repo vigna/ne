@@ -214,7 +214,7 @@ int load_prefs(buffer * const b, const char * const name) {
 		error = play_macro(b, cs);
 		free_char_stream(cs);
 	}
-	else error = ERROR;
+	else error = CANT_OPEN_FILE;
 
 	b->exec_only_options = 0;
 
