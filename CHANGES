@@ -2,6 +2,8 @@
 
 3.0.2
 
+  * Mark Find and FindRegExp patterns for recompilation when switching buffers.
+
   * Fixed missing screen update after ABOUT (regression introduced in 3.0.1).
     Thanks to Brian Callahan for reporting this bug.
 
