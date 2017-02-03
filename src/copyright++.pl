@@ -15,7 +15,7 @@ $| = 1;
 #     Copyright (C) $from_year-$to_year
 #
 # It should work on itself too! Behold:
-#   Copyright (C) 2011-2016 Todd M. Lewis and Sebastiano Vigna
+#   Copyright (C) 2011-2017 Todd M. Lewis and Sebastiano Vigna
 # Ciao!
 
 use Getopt::Long;

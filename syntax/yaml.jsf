@@ -2,7 +2,7 @@
 # by Christian Nicolai (http://mycrobase.de)
 
 =Idle
-=Comment		green
+=Comment	green
 =Constant	cyan
 =Escape		bold cyan
 =Type		bold
@@ -20,7 +20,7 @@
 :line_start Idle
 	*		maybe_key	noeat
 	"\t"		bad_tab		recolor=-1
-	"#"               maybe_lscomment1
+	"#"		maybe_lscomment1
 	" "		line_start
 
 :maybe_lscomment1 Idle
@@ -38,7 +38,7 @@
 :idle Constant
 	*		idle
 	"\n"		line_start
-	" "               maybe_idlecomment
+	" "		maybe_idlecomment
 	"%"		directive	recolor=-1
 	"'"		string_sq_1	recolor=-1
 	"\""		string_dq_1	recolor=-1
@@ -49,7 +49,7 @@
 
 :maybe_key Idle
 	*		maybe_key1	recolor=-1 mark
-	"\n"              line_start
+	"\n"		line_start
 	"%#'\"{[]}*&!"	idle		noeat
 	"-"		maybe_block1	mark
 
