@@ -4372,6 +4372,7 @@ a list of common extensions. Don't get fancy with this format.
    troff: 1
    verilog: v, vh, vhd
    xml: xsd
+   yaml: yml
 @end example
 
 

@@ -20,13 +20,26 @@
 :line_start Idle
 	*		maybe_key	noeat
 	"\t"		bad_tab		recolor=-1
+	"#"		maybe_lscomment1
 	" "		line_start
+
+:maybe_lscomment1 Idle
+	*		maybe_key	noeat
+	" "		line_comment	recolor=-2
+
+:maybe_idlecomment Comment
+	*		idle		noeat
+	"#"		maybe_idlecomment2
+
+:maybe_idlecomment2 Comment
+	*		idle		recolor=-2
+	" "		line_comment	recolor=-2
 
 :idle Constant
 	*		idle
 	"\n"		line_start
+	" "		maybe_idlecomment
 	"%"		directive	recolor=-1
-	"#"		line_comment	recolor=-1
 	"'"		string_sq_1	recolor=-1
 	"\""		string_dq_1	recolor=-1
 	"{[]}"		brace		recolor=-1
@@ -36,7 +49,8 @@
 
 :maybe_key Idle
 	*		maybe_key1	recolor=-1 mark
-	"\n%#'\"{[]}*&!"	idle		noeat
+	"\n"		line_start
+	"%#'\"{[]}*&!"	idle		noeat
 	"-"		maybe_block1	mark
 
 :maybe_key1 Constant

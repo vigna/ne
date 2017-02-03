@@ -1,7 +1,7 @@
 /* Main command processing loop.
 
    Copyright (C) 1993-1998 Sebastiano Vigna
-   Copyright (C) 1999-2016 Todd M. Lewis and Sebastiano Vigna
+   Copyright (C) 1999-2017 Todd M. Lewis and Sebastiano Vigna
 
    This file is part of ne, the nice editor.
 
@@ -817,6 +817,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 	case OPENNEW_A:
 		b = new_buffer();
+		b->find_string_changed = 1;
 		reset_window();
 
 	case OPEN_A:
@@ -1301,6 +1302,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 	case NEWDOC_A:
 		new_buffer();
+		cur_buffer->find_string_changed = 1;
 		reset_window();
 		return OK;
 
@@ -1311,6 +1313,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			unset_interactive_mode();
 			exit(0);
 		}
+		cur_buffer->find_string_changed = 1;
 		keep_cursor_on_screen(cur_buffer);
 		reset_window();
 
@@ -1322,6 +1325,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 	case NEXTDOC_A: /* Was NEXT_BUFFER: */
 		if (b->b_node.next->next) cur_buffer = (buffer *)b->b_node.next;
 		else cur_buffer = (buffer *)buffers.head;
+		cur_buffer->find_string_changed = 1;
 		keep_cursor_on_screen(cur_buffer);
 		reset_window();
 		need_attr_update = false;
@@ -1331,6 +1335,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 	case PREVDOC_A:
 		if (b->b_node.prev->prev) cur_buffer = (buffer *)b->b_node.prev;
 		else cur_buffer = (buffer *)buffers.tail_pred;
+		cur_buffer->find_string_changed = 1;
 		keep_cursor_on_screen(cur_buffer);
 		reset_window();
 		need_attr_update = false;
@@ -1341,6 +1346,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		const int n = request_document();
 		if (n < 0 || !(b = get_nth_buffer(n))) return ERROR;
 		cur_buffer = b;
+		cur_buffer->find_string_changed = 1;
 		keep_cursor_on_screen(cur_buffer);
 		reset_window();
 		need_attr_update = false;
