@@ -1,7 +1,7 @@
 /* Syntax highlighting from Joe's Own Editor: Types
 
 	Copyright (C) 2004 Joseph H. Allen
-	Copyright (C) 2009-2016 Todd M. Lewis and Sebastiano Vigna
+	Copyright (C) 2009-2017 Todd M. Lewis and Sebastiano Vigna
 
 	This file is part of ne, the nice editor.
 

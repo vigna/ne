@@ -4,7 +4,7 @@
 
 	Copyright (C) 1985, 1989 Free Software Foundation, Inc.
 	Copyright (C) 1993-1998 Sebastiano Vigna 
-	Copyright (C) 1999-2016 Todd M. Lewis and Sebastiano Vigna
+	Copyright (C) 1999-2017 Todd M. Lewis and Sebastiano Vigna
 
 	This file is part of ne, the nice editor.
 
