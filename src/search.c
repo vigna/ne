@@ -38,6 +38,11 @@ be the first time the string is searched for). */
 
 static unsigned int d[256];
 
+/* For tracking which buffer the last search was for. We must recompile
+if it was for a different buffer. */
+
+static buffer *last_search_buf;
+
 /* This macro upper cases a character or not, depending on the boolean
 sense_case. It is used in find(). Note that the argument *MUST* be unsigned. */
 
@@ -90,9 +95,10 @@ int find(buffer * const b, const char *pattern, const bool skip_first) {
 
 	if (!pattern) {
 		pattern = b->find_string;
-		recompile_string = b->find_string_changed || b->last_was_regexp;
+		recompile_string = b->find_string_changed || b->last_was_regexp || last_search_buf != b;
 	}
 	else recompile_string = true;
+	last_search_buf = b;
 
 	const int m = strlen(pattern);
 	if (!pattern || !m) return ERROR;
@@ -261,9 +267,10 @@ int find_regexp(buffer * const b, const char *regex, const bool skip_first) {
 
 	if (!regex) {
 		regex = b->find_string;
-		recompile_string = b->find_string_changed || !b->last_was_regexp;
+		recompile_string = b->find_string_changed || !b->last_was_regexp || last_search_buf != b;
 	}
 	else recompile_string = true;
+	last_search_buf = b;
 
 	if (!regex || !strlen(regex)) return ERROR;
 
