@@ -2,10 +2,20 @@
 
 =Idle
 =Tab	bg_cyan
+=LSpace	inverse red
 
 :idle Idle
 	*		idle
 	"\t"		tab	noeat
+	" "             maybe_last mark
+
+:maybe_last LSpace
+	*		idle	noeat recolormark
+	" "		maybe_last
+	"\n"		space_end noeat recolormark
+
+:space_end LSpace
+	*		idle	noeat
 
 :tab Tab
 	*		idle	noeat
