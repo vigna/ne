@@ -1,6 +1,6 @@
 /* Search/replace functions (with and without regular expressions).
 
-   Copyright (C) 1993-1998 Sebastiano Vigna 
+   Copyright (C) 1993-1998 Sebastiano Vigna
    Copyright (C) 1999-2017 Todd M. Lewis and Sebastiano Vigna
 
    This file is part of ne, the nice editor.
@@ -27,26 +27,30 @@
 
 #define START_BUFFER_SIZE 4096
 
-/* A boolean recording whether the last replace was for an empty string 
+/* A boolean recording whether the last replace was for an empty string
    (of course, this can happen only with regular expressions). */
 
 bool last_replace_empty_match;
 
 /* This array is used both by the Boyer-Moore algorithm and by the regex
-library. It is updated if b->find_string_changed is true (it should always
-be the first time the string is searched for). */
+library. It is updated if b->find_string_changed != search_serial_num (which 
+should be the case the first time the string is searched for). */
 
 static unsigned int d[256];
 
-/* For tracking which buffer the last search was for. We must recompile
-if it was for a different buffer. */
+/* Track static search compilation data by incremented serial counter.
+   Compared with b->find_string_changed, which gets set to 1 when the buffer
+   wants to force a recompile. We never set search_serial_num to 0 or 1. If
+   search_serial_num != b->find_string_changed we know either the last
+   compilation was for a different buffer, a different string for this
+   buffer, or this is the first compilation. */
 
-static buffer *last_search_buf;
+static unsigned int search_serial_num = 2;
 
 /* This macro upper cases a character or not, depending on the boolean
 sense_case. It is used in find(). Note that the argument *MUST* be unsigned. */
 
-#define CONV(c)	(sense_case ? c : up_case[c])
+#define CONV(c) (sense_case ? c : up_case[c])
 
 
 /* This vector is a translation table for the regex library which maps
@@ -81,11 +85,11 @@ const unsigned char ascii_up_case[256] = {
 
 /* Performs a search for the given pattern with a simplified Boyer-Moore
    algorithm starting at the given position, in the given direction, skipping a
-   possible match at the current cursor position if skip_first is true. The 
+   possible match at the current cursor position if skip_first is true. The
    search direction depends on b->opt.search_back. If pattern is NULL, it is
    fetched from b->find_string. In this case, b->find_string_changed is
-   checked, and, if it is false, the string is not recompiled. Please check to
-   set b->find_string_changed whenever a new string is set in
+   checked, and, if equal to search_serial_num, the string is not recompiled. Please check to
+   set b->find_string_changed = 1 to force a recompile whenever a new string is set in
    b->find_string. The cursor is moved on the occurrence position if a match is
    found. */
 
@@ -95,10 +99,14 @@ int find(buffer * const b, const char *pattern, const bool skip_first) {
 
 	if (!pattern) {
 		pattern = b->find_string;
-		recompile_string = b->find_string_changed || b->last_was_regexp || last_search_buf != b;
+		recompile_string = b->find_string_changed != search_serial_num || b->last_was_regexp;
 	}
 	else recompile_string = true;
-	last_search_buf = b;
+
+	if (recompile_string) {
+		b->find_string_changed = 0;
+		search_serial_num = ((search_serial_num & ~1) + 2)|2;
+	}
 
 	const int m = strlen(pattern);
 	if (!pattern || !m) return ERROR;
@@ -115,7 +123,7 @@ int find(buffer * const b, const char *pattern, const bool skip_first) {
 
 		if (recompile_string) {
 			for(int i = 0; i < m - 1; i++) d[CONV((unsigned char)pattern[i])] = m - i-1;
-			b->find_string_changed = 0;
+			b->find_string_changed = search_serial_num;
 		}
 
 		char * p = ld->line + b->cur_pos + m - 1 + (skip_first ? 1 : 0);
@@ -155,7 +163,7 @@ int find(buffer * const b, const char *pattern, const bool skip_first) {
 
 		if (recompile_string) {
 			for(int i = m - 1; i > 0; i--) d[CONV((unsigned char)pattern[i])] = i;
-			b->find_string_changed = 0;
+			b->find_string_changed = search_serial_num;
 		}
 
 		char * p = ld->line + (b->cur_pos > ld->line_len - m ? ld->line_len - m : b->cur_pos + (skip_first ? -1 : 0));
@@ -267,10 +275,14 @@ int find_regexp(buffer * const b, const char *regex, const bool skip_first) {
 
 	if (!regex) {
 		regex = b->find_string;
-		recompile_string = b->find_string_changed || !b->last_was_regexp || last_search_buf != b;
+		recompile_string = b->find_string_changed != search_serial_num || !b->last_was_regexp;
 	}
 	else recompile_string = true;
-	last_search_buf = b;
+
+	if (recompile_string) {
+		b->find_string_changed = 0;
+		search_serial_num = ((search_serial_num & ~1) + 2)|2;
+	}
 
 	if (!regex || !strlen(regex)) return ERROR;
 
@@ -373,14 +385,14 @@ int find_regexp(buffer * const b, const char *regex, const bool skip_first) {
 							q += strlen(UTF8COMP);
 							s++;
 							if (*(s+1) == ']') *(q++) = *(++s); /* A literal ]. */
-							do	*(q++) = *(++s); while (*s && *s != ']');
+							do *(q++) = *(++s); while (*s && *s != ']');
 							if (*s) *(q++) = ')';
 							real_group++;
 						}
 						else {
 							*(q++) = '[';
 							if (*(s+1) == ']') *(q++) = *(++s); /* A literal ]. */
-							do	*(q++) = *(++s); while (*s && *s != ']');
+							do *(q++) = *(++s); while (*s && *s != ']');
 						}
 					}
 				}
@@ -407,7 +419,7 @@ int find_regexp(buffer * const b, const char *regex, const bool skip_first) {
 
 	}
 
-	b->find_string_changed = 0;
+	b->find_string_changed = search_serial_num;
 
 	line_desc *ld = b->cur_line_desc;
 	int64_t y = b->cur_line;
