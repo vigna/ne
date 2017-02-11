@@ -490,7 +490,7 @@ typedef struct {
 	} bookmark[NUM_BOOKMARKS];
 	int bookmark_mask;          /* bit N is set if bookmark[N] is set */
 	int cur_bookmark;           /* For Goto(Next|Prev)Bookmark. */
-	
+
 	struct high_syntax *syn;    /* Syntax loaded for this buffer. */
 	uint32_t *attr_buf;              /* If attr_len >= 0, a pointer to the list of *current* attributes of the *current* line. */ 
 	int64_t attr_size;              /* attr_buf size. */
@@ -506,7 +506,6 @@ typedef struct {
 		x_wanted:1,              /* We're not where we would like to be */
 		y_wanted:1,              /* We've been paging up/down */
 		exec_only_options:1,     /* Only option changes can be executed */
-		find_string_changed:1,   /* The search string has to be recompiled before use. */
 		last_was_replace:1,      /* The last search operation was a replace */
 		last_was_regexp:1,       /* The last search operation was done with regexps */
 		undoing:1,               /* We are currently undoing an action */
@@ -516,6 +515,8 @@ typedef struct {
 		executing_macro:1,       /* We are currently executing a macro. */
 		executing_internal_macro:1,  /* We are currently executing the internal macro of the current buffer */
 		is_CRLF:1;               /* Buffer should be saved with CR/LF terminators */
+
+	unsigned int find_string_changed; /* 0 = unset; 1 = force; else prior search's serial number */
 
 	options_t opt;              /* These get pushed/popped on the prefs stack */
 } buffer;

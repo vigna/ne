@@ -59,6 +59,7 @@
 
 :maybeempty Brace
 	*			key		noeat
+	" \t\n"			maybeempty
 	"}"			end		recolor=-1
 
 :key Idle
@@ -105,6 +106,7 @@
 
 :maybeempty Bracket
 	*			value		noeat
+	" \t\n"			maybeempty
 	"]"			end		recolor=-1
 
 :value Idle
@@ -217,7 +219,7 @@ done
 	"eE"			exponentpart
 
 :decimalpoint Number
-	*			end
+	*			end		noeat
 	"0-9"			decimalpointBAD
 	"eE"			exponentpart
 	"."			decimalpart
