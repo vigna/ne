@@ -590,8 +590,8 @@ yaml 30 ^\+\+\+$
  ini 10 ^\[\w+\]$
 @end example
 
-The may also be a @file{.extensions} file in the global directory. If so,
-and you're @file{~/.ne/.extensions} file fails to map a virtual extension,
+There may also be a @file{.extensions} file in the global directory. If so,
+and youre @file{~/.ne/.extensions} file fails to map a virtual extension,
 then the one in the global directory will be consulted.
 
 @node Basic Macros
