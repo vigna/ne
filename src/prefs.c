@@ -31,10 +31,6 @@ be enough strange to avoid clashes with macros. */
 
 #define PREF_FILE_SUFFIX	"#ap"
 
-/* This string is appended to the filename extension. */
-
-#define SYNTAX_FILE_SUFFIX ".jsf"
-
 /* We suppose a configuration file won't be bigger than this. Having it
 bigger just causes a reallocation. */
 
@@ -47,14 +43,16 @@ bigger just causes a reallocation. */
 static bool saving_global;
 
 /* Returns a pointer to the extension of a filename, or NULL if there is no
-   extension. Note that filename has to be non NULL. */
+   extension (or no filename!). */
 
 const char *extension(const char * const filename) {
 
-	assert(filename != NULL);
-
-	for(int i = strlen(filename); i-- != 0;)
-		if (filename[i] == '.') return &filename[i + 1];
+	if ( filename ) {
+		for(int i = strlen(filename); i-- != 0;) {
+			if (filename[i] == '/') return NULL;
+			if (filename[i] == '.') return &filename[i + 1];
+		}
+	}
 
 	return NULL;
 }
@@ -62,8 +60,8 @@ const char *extension(const char * const filename) {
 
 
 
-/* Returns a pointer to the absolute name of ne's prefs directory. The name is
-   cached internally, so it needs not to be free()ed. If the directory does not
+/* Returns a pointer to the absolute name of ne's prefs directory with '/' appended.
+   The name is cached internally, so it needs not to be free()ed. If the directory does not
    exist, it is created. NULL is returned on failure. */
 
 
@@ -103,8 +101,8 @@ char *exists_prefs_dir(void) {
 }
 
 
-/* Returns a pointer to the absolute name of ne's global prefs directory. The
-   name is cached internally, so it needs not to be free()ed. If the directory
+/* Returns a pointer to the absolute name of ne's global prefs directory with '/' appended.
+   The name is cached internally, so it needs not to be free()ed. If the directory
    does not exist, it is not created. NULL is returned on failure. */
 
 char *exists_gprefs_dir(void) {
@@ -247,11 +245,13 @@ int load_syntax_by_name(buffer * const b, const char * const name) {
    returned.  */
 
 static int do_auto_prefs(buffer *b, const char * ext, int (prefs_func)(buffer *, const char *)) {
+	/* Track virtual_extension vext separate from ext b/c vext must be free()'d. */
+	char *vext = NULL;
 	if (!b) return ERROR;
 
 	assert_buffer(b);
 
-	if (!ext && (!b->filename || !(ext = extension(b->filename)))) return HAS_NO_EXTENSION;
+	if (!ext && !(ext = extension(b->filename)) && !(ext = vext = virtual_extension(b))) return HAS_NO_EXTENSION;
 
 	/* Try global autoprefs -- We always load these before ~/.ne autoprefs.
 	That way the user can override whatever he wants, but anything he
@@ -276,11 +276,13 @@ static int do_auto_prefs(buffer *b, const char * ext, int (prefs_func)(buffer *,
 			error = prefs_func(b, auto_name);
 			free(auto_name);
 		}
-		else return OUT_OF_MEMORY;
+		else error = OUT_OF_MEMORY;
 	}
 	else error = CANT_FIND_PREFS_DIR;
 
 	if (do_syntax && !b->syn) load_syntax_by_name(b, ext);
+
+	if (vext) free(vext);
 
 	return error;
 }
@@ -303,6 +305,106 @@ int save_auto_prefs(buffer * const b, const char *name) {
 	return do_auto_prefs(b, name, save_prefs);
 }
 
+/* "virtual extension" is all about preferences and syntax for files which
+   have no extension. We use a "virtual extensions" file VIRTUAL_EXT_NAME
+   (first local, then maybe global) to determine what auto_prefs and
+   syntax to load based on a buffer's contents. */
+
+static char *determine_virtual_extension( buffer * const b, char *vname) {
+	char *virt_ext = NULL;
+	buffer * vb;
+	/* Our find_regexp() is geared to work on buffers rather than streams, so we'll create a
+	   stand-alone buffer. This also buys us proper handling of encodings. */
+	if (vb = alloc_buffer(NULL)) {
+		clear_buffer(vb);
+		vb->opt.do_undo = 0;
+		vb->opt.auto_prefs = 0;
+		if (load_file_in_buffer(vb, vname) == OK ) {
+			goto_line(vb,0);
+			goto_column(vb,0);
+			int found = 0;
+			int stop = false;
+			/* Examine each line in vb. Most functions in navigation.c expect to display
+			   the buffer we're navigating through, but we don't want to show this buffer! */
+			int64_t earliest_found_line = INT64_MAX;
+			int skip_first = false;
+			vb->find_string = str_dup( "^[ \\t]*(\\w+)[ \\t]*([0-9]*)[ \\t]*(.+)" );
+			vb->find_string_changed = 1;
+			while ( earliest_found_line > 0 && find_regexp(vb,NULL,skip_first) == OK && !stop) {
+				skip_first = true;
+				char *ext         = nth_regex_substring(vb->cur_line_desc, 1);
+				char *maxline_str = nth_regex_substring(vb->cur_line_desc, 2);
+				char *regex       = nth_regex_substring(vb->cur_line_desc, 3);
+				D(fprintf(stderr,"[%d] Checking for <%s> <%s> <%s>\n",__LINE__, ext, maxline_str, regex);)
+				if (ext && maxline_str && regex ) {
+					errno = 0;
+					char *endptr;
+					int64_t maxline = strtoll(maxline_str, &endptr, 0);
+					if (maxline < 1 || errno) maxline = 1;
+					maxline--; /* users are 1-based, but internal line numbers are 0-based. */
+					/* Search in b for the first occurance of regex. */
+					int64_t b_cur_line    = b->cur_line;
+					int64_t b_cur_pos     = b->cur_pos;
+					int     b_search_back = b->opt.search_back;
+					b->opt.search_back = false;
+					goto_line(b, 0);
+					goto_pos(b, 0);
+					free(b->find_string);
+					b->find_string_changed = 1;
+					b->find_string = regex;
+					regex = NULL;
+					if ( find_regexp(b, NULL, false) == OK ) {
+						D(fprintf(stderr,"[%d] --- found on line <%d>\n",__LINE__, b->cur_line);)
+						if (b->cur_line <= maxline && b->cur_line < earliest_found_line) {
+							found++;
+							earliest_found_line = b->cur_line;
+							if (virt_ext) free(virt_ext);
+							virt_ext = ext;
+							ext = NULL;
+						}
+					}
+					goto_line(b, b_cur_line);
+					goto_pos(b, b_cur_pos);
+					b->opt.search_back = b_search_back;
+				}
+				if (maxline_str) free(maxline_str);
+				if (ext) free(ext);
+				if (regex) free(regex);
+			}
+		}
+		free_buffer(vb);
+	}
+	return virt_ext;
+}
+
+/* virtual_extension() returns an extension determined by a buffers contents and
+   the user's VIRTUAL_EXT_NAME file or possibly the global VIRTUAL_EXT_NAME file.
+   It's a pointer to a string that the caller must eventually free(). */
+   
+char * virtual_extension(buffer * const b) {
+
+	int error = OK;
+	char *virt_ext = NULL;
+	char *virt_name, *prefs_dir;
+
+	/* Try the user's ~/.ne/.extenstion first. We only check the global config if the
+	   users local one doesn't determine an extension. */
+	if (prefs_dir = exists_prefs_dir()) {
+		if (virt_name = malloc(strlen(VIRTUAL_EXT_NAME) + strlen(prefs_dir) + 2)) {
+			strcat(strcpy(virt_name, prefs_dir), VIRTUAL_EXT_NAME);
+			virt_ext = determine_virtual_extension(b, virt_name);
+			free(virt_name);
+		}
+	}
+	if (virt_ext == NULL && (prefs_dir = exists_gprefs_dir())) {
+		if (virt_name = malloc(strlen(VIRTUAL_EXT_NAME) + strlen(prefs_dir) + 2)) {
+			strcat(strcpy(virt_name, prefs_dir), VIRTUAL_EXT_NAME);
+			virt_ext = determine_virtual_extension(b, virt_name);
+			free(virt_name);
+		}
+	}
+	return virt_ext;
+}
 
 /* This bit has to do with pushing and popping preferences
    on the prefs stack. */

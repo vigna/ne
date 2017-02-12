@@ -265,6 +265,7 @@ static struct re_registers re_reg;
    RE_NREGS, in which case there is no way to recover it. */
 
 static int map_group[RE_NREGS];
+static int use_map_group;
 
 /* Works exactly like find(), but uses the regex library instead. */
 
@@ -318,7 +319,7 @@ int find_regexp(buffer * const b, const char *regex, const bool skip_first) {
 			const char *s;
 			char *q;
 			bool escape = false;
-			int virtual_group = 0, real_group = 0, dots = 0, comps = 0, nonwords = 0;
+			int virtual_group = 0, real_group = 0, dots = 0, comps = 0, nonwords = 0, use_map_group = 0;
 
 			s = regex;
 
@@ -377,7 +378,10 @@ int find_regexp(buffer * const b, const char *regex, const bool skip_first) {
 					}
 					else if (*s == '(') {
 						*(q++) = '(';
-						if (virtual_group < RE_NREGS - 1) map_group[++virtual_group] = ++real_group;
+						if (virtual_group < RE_NREGS - 1) {
+							map_group[++virtual_group] = ++real_group;
+							use_map_group = virtual_group;
+						}
 					}
 					else if (*s == '[') {
 						if (*(s+1) == '^') {
@@ -470,6 +474,25 @@ int find_regexp(buffer * const b, const char *regex, const bool skip_first) {
 	return stop ? STOPPED : NOT_FOUND;
 }
 
+
+/* This allows regexp users to retrieve matched substrings.
+   They are responsible for freeing these strings.
+   i0 should be <= number of paren groups in original regex. */
+char *nth_regex_substring( const line_desc *ld, int i0) {
+	char *str;
+	int j, i;
+
+	if ((i = use_map_group ? map_group[i0] : i0) >= RE_NREGS) return NULL;
+
+	if (i > 0 && i < re_reg.num_regs ) {
+		if (str = malloc(re_reg.end[i] - re_reg.start[i] + 1)) {
+			memcpy(str, ld->line + re_reg.start[i], re_reg.end[i] - re_reg.start[i]);
+			str[re_reg.end[i] - re_reg.start[i]] = 0;
+			return str;
+		}
+	}
+	return NULL;
+}
 
 
 /* Replaces a regular expression. The given string can contain \0, \1 etc. for

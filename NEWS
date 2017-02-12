@@ -2,7 +2,9 @@
 
 3.0.2
 
-  * Invoke .default#ap prefs when loading a file with no extension.
+  * For files with no extensions: determine a "virtual extension" based on
+    buffer contents and patterns from ~/.ne/.extensions. If still no extension,
+    use .default#ap prefs.
 
   * Status flag "!" indicates the last line of buffer is not empty, thus
     the last line of the resulting file will not be terminated when the

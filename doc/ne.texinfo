@@ -501,6 +501,7 @@ in that list with the @key{f2} and @key{f3} keys.
 @cindex Flags
 @cindex Insert mode
 @cindex Automatic preferences
+@cindex Virtual Extensions
 
 @code{ne} has a number of @dfn{flags} that specify alternative
 behaviors, the most prototypical example being the @dfn{insert} flag,
@@ -564,6 +565,34 @@ saved in the @file{.default#ap} file.
 Note also that a preferences file is just a macro (as described in the
 following section). Thus, it can be edited manually if necessary.
 
+Some files have no extension. For the purposes of automatic preferences
+and syntax definitions, @code{ne} provides a mechanism for determining
+@dfn{virtual extensions} based on a buffer's contents. If you create a
+@file{~/.ne/.extensions} file, @code{ne} will examine this file for
+certain extensions and corresponding patterns, and if it finds a match
+with the current buffer it will act as if the buffer's name had that
+extension. Here's an example @file{~/.ne/.extensions} file:
+
+@example
+# Comments and blank lines are allowed. Only lines which match
+# this regular expression are used:
+#    ^[ \t]*(\w+)[ \t]*([0-9]*)[ \t]*(.+)
+# These patterns match some common command interpreters.
+# Because we don't specify the optional number between the virtual
+# extension and the pattern, they must match on the first line.
+  sh    ^#![\t ]*/.*/(bash|sh|ksh|zsh)\s*
+ csh    ^#![\t ]*/.*/(csh|tcsh)\s*
+  pl    ^#![\t ]*/.*/perl\b
+  py    ^#![\t ]*/.*/python[0-9]*\s*
+  rb    ^#![\t ]*/.*/ruby\s*
+# These must match in the first 30 and 10 lines respectively to work.
+yaml 30 ^\+\+\+$
+ ini 10 ^\[\w+\]$
+@end example
+
+The may also be a @file{.extensions} file in the global directory. If so,
+and you're @file{~/.ne/.extensions} file fails to map a virtual extension,
+then the one in the global directory will be consulted.
 
 @node Basic Macros
 @section Basic Macros
@@ -1345,7 +1374,8 @@ Syntax definitions are stored in separate files. @code{ne} comes with a
 suite of syntax definitions for many popular programming languages.
 When you load a file, @code{ne} selects the appropriate syntax
 definition as determined by the filename extension in much the same way
-autoprefs are loaded. It also contains a built-in table of common
+autoprefs are loaded. (See @ref{Basic Preferences} for a discussion
+of virtual extensions.) It also contains a built-in table of common
 filename extensions that share the same syntax definitions. For
 example, both @samp{cbl}, and @samp{cob} files use the @samp{cobol}
 definition. See the @ref{Syntax} command for the complete list of

@@ -78,9 +78,13 @@ typedef enum {
 
 extern const char *input_class_names[];
 
-/* The name of the default preferences file name. */
+/* The name of the default preferences file. */
 
 #define DEF_PREFS_NAME     ".default"
+
+/* The name of the virtual extensions file (global and local). */
+
+#define VIRTUAL_EXT_NAME   ".extensions"
 
 /* The name of the syntax subdirectory (global and local). */
 

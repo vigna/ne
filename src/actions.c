@@ -785,9 +785,16 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			if (!print_error(error)) {
 				const bool load_syntax = b->filename == NULL || ! same_str(extension(p), extension(b->filename));
 				change_filename(b, p);
-				if (load_syntax && extension(p)) {
-					load_syntax_by_name(b, extension(p));
-					load_auto_prefs(b, extension(p));
+				if (load_syntax) {
+					char *ext;
+					b->syn = NULL; /* So that autoprefs will load the right syntax. */
+					if (extension(p)) 
+						load_auto_prefs(b, extension(p));
+					else if (ext = virtual_extension(b)) {
+						load_auto_prefs(b, ext);
+						free(ext);
+					}
+					reset_syntax_states(b);
 					reset_window();
 				}
 				print_info(SAVED);
@@ -842,10 +849,15 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 					b->syn = NULL; /* So that autoprefs will load the right syntax. */
 					if (b->opt.auto_prefs) {
 						if (b->allocated_chars - b->free_chars <= MAX_SYNTAX_SIZE) {
-							if (extension(p))
+							char *ext;
+							if (extension(p)) {
 								load_auto_prefs(b, extension(p));
-							else
+							} else if (ext = virtual_extension(b)) {
+								load_auto_prefs(b, ext);
+								free(ext);
+							} else {
 								load_auto_prefs(b, DEF_PREFS_NAME);
+							}
 							reset_syntax_states(b);
 						}
 						else if (error == OK) error = FILE_TOO_LARGE_SYNTAX_HIGHLIGHTING_DISABLED;
