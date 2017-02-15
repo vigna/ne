@@ -212,7 +212,6 @@ int   save_prefs(buffer *b, const char *name);
 int   load_prefs(buffer *b, const char *name);
 int   load_syntax_by_name(buffer *b, const char *name);
 int   load_auto_prefs(buffer *b, const char *name);
-char *virtual_extension(buffer * const b);
 int   save_auto_prefs(buffer *b, const char *name);
 int   pop_prefs(buffer *b);
 int   push_prefs(buffer *b);

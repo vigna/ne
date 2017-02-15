@@ -289,7 +289,7 @@ letters. This is called the @dfn{status bar} because it reports to you part of
 the internal state of the editor. At startup, the status bar has the following form:
 
 @example
- L:       1 C:       1  12% ia----pvu-t------@@A <unnamed>
+ L:       1 C:       1  12% ia----pvu-t------@@A* <unnamed>
 @end example
 
 @noindent (the numbers could be different, and a file name could be shown as
@@ -299,8 +299,9 @@ numbers, respectively, whereas the percentage indicates approximately
 your position in the file. The small letters represent user flags that
 you can turn on and off. In particular, @samp{i} tells you that insert
 mode is on, while @samp{p} tells that the automatic preferences system
-is activated. For a thorough explanation of the meaning of the flags on
-the status bar, see @ref{The Status Bar}.
+is activated. The @samp{*} means this buffer has no been saved. For a
+thorough explanation of the meaning of the flags on the status bar, see
+@ref{The Status Bar}.
 
 Once you are accustomed to cursor movement and line editing, it is time to
 press @key{f1} (the first function key), or in case your keyboard does not
@@ -331,8 +332,8 @@ with @key{Shift}). The descriptions of the form @key{f}@var{n} represent
 instead function keys. Finally, the symbol @samp{[} in front of a
 character denotes the shortcut produced by @key{Control} plus @key{Meta}
 (a.k.a. @key{Alt}) plus that character, @emph{or} @key{Meta} plus that
-character, depending on your terminal emulator---you must check by
-yourself. Moreover, these last bindings could not work with some
+character, depending on your terminal emulator---you must check for
+yourself. Moreover, these last bindings may not work with some
 terminals, in which case you can replace them with a sequence: just
 press the @key{Escape} key followed by the letter. A few menu items are
 bound to two control sequences (just in case one does not work, or it is
@@ -443,7 +444,7 @@ There is nothing special you have to do to start editing once you've
 started @code{ne}. Just start typing, and the text you type shows up in
 your document.
 
-@code{ne} provides two ways of deleting characters, the @key{Backspace}
+@code{ne} provides two ways of deleting characters: the @key{Backspace} key
 (or @kbd{@key{Control}-H}, if you have no such key) and the @key{Delete}
 key. In the former case you delete the character to the left of the
 cursor, while in the latter case you delete the character just under the
@@ -462,7 +463,7 @@ If you want to copy, cut, paste, shift or erase a block of text, you have to
 set a mark. This is done via the @code{Mark} command, activated by
 choosing the @samp{Mark Block} item of the @samp{Edit} menu, or by
 pressing @kbd{@key{Control}-B} (think ``block''). This command
-sets the mark at the current cursor position. Whenever the mark is set, the zone
+sets the invisible mark at the current cursor position. Whenever the mark is set, the text
 between the mark and the cursor can be cut, copied or erased. Note that
 by using @kbd{@key{Control}-@@} you can set a @emph{vertical} mark
 instead, which allows you to mark rectangles of text. Whenever a mark
@@ -471,9 +472,11 @@ has been set, either an @samp{M} appears on the command line or a
 is currently, you can use the @samp{Goto Mark} menu item of the
 @samp{Search} menu to move the cursor to it.
 
-When you cut or copy a block, you can save it to a file with the @samp{Save Clip...} menu
-item of the @samp{Edit} menu. You can also load a file into a clip with
-@samp{Open Clip...}, and paste it anywhere. All such operations act on the
+The block of text you cut or copy is saved in a @dfn{clip}, which you can
+@samp{Paste} somewhere else in your document, or save it
+to a file with the @samp{Save Clip...} menu
+item of the @samp{Edit} menu. You can also load a file directly into a clip with
+@samp{Open Clip...}, and @samp{Paste} it anywhere. All such operations act on the
 @dfn{current clip}, which is by default the clip 0. You can change the current
 clip number with the @code{ClipNumber} command. @xref{ClipNumber}.
 
@@ -482,11 +485,11 @@ undo/redo} capability. Each editing action is recorded, and can be played
 back and forth as much as you like. Undo and redo are bound to the function
 keys @key{f5} and @key{f6}.
 
-Another interesting feature of @code{ne} is it's ability to load an
+Another interesting feature of @code{ne} is its ability to load an
 unlimited number of documents. If you activate the @code{NewDoc} command
 (using the @samp{Document} menu or the command line), a new, empty
-document will be created. You can switch between the existing documents
-in memory with @key{f2} and @key{f3}, which are bound to the
+document will be created. You can switch between your documents
+with @key{f2} and @key{f3}, which are bound to the
 @code{PrevDoc} and @code{NextDoc} commands. If you have a lot of
 documents, the @samp{Select...} menu item (@key{f4}) prompts you with
 the list of names of currently loaded documents and allows you to
@@ -591,7 +594,7 @@ yaml 30 ^\+\+\+$
 @end example
 
 There may also be a @file{.extensions} file in the global directory. If so,
-and youre @file{~/.ne/.extensions} file fails to map a virtual extension,
+and your @file{~/.ne/.extensions} file fails to map a virtual extension,
 then the one in the global directory will be consulted.
 
 @node Basic Macros
@@ -643,7 +646,7 @@ commands in the @dfn{current macro} buffer, and it will go away when you
 exit @code{ne} or record another macro. If you want to save your
 recorded macro for future use, you can give it a name and save it with
 the @samp{Save Macro...} menu item or the @code{SaveMacro} command.
-The macro is saved as a file in your current directory by default or
+The macro is saved as a regular text file in your current directory by default or
 whatever directory you specify when prompted for the macro's name. If
 you save it in your @file{~/.ne} directory then it will be easy to
 access it later from any other directory. The @samp{Open Macro...} menu item
@@ -711,7 +714,7 @@ of @file{~/foobar/MyMacro}. You can clear the cache by using the
 @code{UnloadMacros} command. @xref{UnloadMacros}.
 
 The behaviour of macros may vary with different preferences. If the user
-changes the AutoIndent and WordWrap flags, for example, new lines and new
+changes the @code{AutoIndent} and @code{WordWrap} flags, for example, new lines and new
 text may not appear in the same way they would have when a macro was
 recorded. Good general purpose macros avoid such problems by using the
 @code{PushPrefs} command first. This preserves the user's preferences.
@@ -815,7 +818,7 @@ exist somewhere in your current document. @xref{AutoComplete}, and
 Unless you tell it not to (with the @code{AutoMatchBracket} command),
 @code{ne} will highlight any recognized bracket that matches the
 bracket your cursor is on if that matching bracket is currently visible on
-your screen. Recognized brackets are @samp{@{@}}, @samp{()}, @samp{[]},
+your screen. Recognized bracket pairs are @samp{@{@}}, @samp{()}, @samp{[]},
 @samp{<>}, and @samp{`'}. @xref{AutoMatchBracket}.
 
 @subsection MS-DOS files
@@ -915,7 +918,7 @@ document loaded, and it can appear multiple times on the command line.
 See @ref{Binary}.
 
 The @code{--read-only} option causes @code{ne} to load the next named file
-into a read-only document. You can still @ref{Save} a read-only document to a
+into a read-only document. You can still @code{Save} (@ref{Save}) a read-only document to a
 file if the file's permissions allow it, but you can't modify a read-only
 document without taking special action such as turning off the read-only flag
 first. The @code{--read-only} option only affects the next document loaded,

@@ -279,7 +279,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			/* *p can be  "", "-", "0".."9", "+1","-1", for which, respectively, */
 			/*  c becomes  0, AB,  0 .. 9,  next,prev. Anything else is out of range. */
 			if (p) {
-				if ( p[0] == '?' ) {
+				if (p[0] == '?') {
 					free(p);
 					snprintf(msg, MAX_MESSAGE_SIZE, "Cur Bookmarks: [%s] %s (0-9, -1, +1, or '-')", cur_bookmarks_string(b), a==SETBOOKMARK_A?"SetBookmark":"GotoBookmark");
 					p = request_string(b, msg, NULL, true, COMPLETE_NONE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto);
@@ -786,14 +786,8 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 				const bool load_syntax = b->filename == NULL || ! same_str(extension(p), extension(b->filename));
 				change_filename(b, p);
 				if (load_syntax) {
-					char *ext;
 					b->syn = NULL; /* So that autoprefs will load the right syntax. */
-					if (extension(p)) 
-						load_auto_prefs(b, extension(p));
-					else if (ext = virtual_extension(b)) {
-						load_auto_prefs(b, ext);
-						free(ext);
-					}
+					load_auto_prefs(b,NULL); /* Will get extension from the name, or virtual extension. */
 					reset_syntax_states(b);
 					reset_window();
 				}
@@ -849,15 +843,8 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 					b->syn = NULL; /* So that autoprefs will load the right syntax. */
 					if (b->opt.auto_prefs) {
 						if (b->allocated_chars - b->free_chars <= MAX_SYNTAX_SIZE) {
-							char *ext;
-							if (extension(p)) {
-								load_auto_prefs(b, extension(p));
-							} else if (ext = virtual_extension(b)) {
-								load_auto_prefs(b, ext);
-								free(ext);
-							} else {
+							if (load_auto_prefs(b, NULL) == HAS_NO_EXTENSION)
 								load_auto_prefs(b, DEF_PREFS_NAME);
-							}
 							reset_syntax_states(b);
 						}
 						else if (error == OK) error = FILE_TOO_LARGE_SYNTAX_HIGHLIGHTING_DISABLED;
@@ -1666,8 +1653,8 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 		int64_t pos = b->cur_pos;
 
-		if ( !p ) { /* no prefix given; find one left of the cursor. */
-			if ( context_prefix(b, &p, &pos) ) return OUT_OF_MEMORY;
+		if (!p) { /* no prefix given; find one left of the cursor. */
+			if (context_prefix(b, &p, &pos)) return OUT_OF_MEMORY;
 		}
 
 		snprintf(msg, MAX_MESSAGE_SIZE, "AutoComplete: prefix \"%s\"", p);

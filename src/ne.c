@@ -86,8 +86,8 @@ char ARG_HELP[] = ABOUT_MSG "\n"
 
 #define LOCALE_REGEX "\\(UTF-?8\\)\\|\\(ISO-?8859-?\\)\\(1?[0-9]\\)"
 
-/* These lists contains the existing buffers, clips and macros. cur_buffer
-   denotes the currently displayed buffer. */
+/* These lists contain the existing buffers, clips and macros.
+   cur_buffer denotes the currently displayed buffer. */
 
 list buffers = { (node *)&buffers.tail, NULL, (node *)&buffers.head };
 list clips = { (node *)&clips.tail, NULL, (node *)&clips.head };
@@ -272,13 +272,13 @@ int main(int argc, char **argv) {
 
 #ifdef NE_TEST
 	/* Dump the builtin menu and key bindings to compare to
-		doc/default.menus and doc/default.keys. */
+	   doc/default.menus and doc/default.keys. */
 	int dump_config(void);
 	dump_config();
 #endif
 
 	/* Unless --noconfig was specified, we try to configure the
-		menus and the keyboard. Note that these functions can exit() on error. */
+	   menus and the keyboard. Note that these functions can exit() on error. */
 
 	if (!no_config) {
 		get_menu_configuration(menu_conf_name);
@@ -315,9 +315,9 @@ int main(int argc, char **argv) {
 
 	re_set_syntax(
 		RE_CONTEXT_INDEP_ANCHORS |
-		RE_CONTEXT_INDEP_OPS	| RE_HAT_LISTS_NOT_NEWLINE |
-		RE_NEWLINE_ALT			| RE_NO_BK_PARENS				|
-		RE_NO_BK_VBAR			| RE_NO_EMPTY_RANGES
+		RE_CONTEXT_INDEP_OPS     | RE_HAT_LISTS_NOT_NEWLINE |
+		RE_NEWLINE_ALT           | RE_NO_BK_PARENS          |
+		RE_NO_BK_VBAR            | RE_NO_EMPTY_RANGES
 	);
 
 	bool first_file = true;
@@ -360,7 +360,7 @@ int main(int argc, char **argv) {
 
 		for(int i = 1; i < argc && !stop; i++) {
 			if (argv[i] && !skiplist[i]) {
-				if (argv[i][0] == '+' && !skip_plus) {	/* looking for "+", or "+N" or "+N,M"  */
+				if (argv[i][0] == '+' && !skip_plus) {       /* looking for "+", or "+N" or "+N,M"  */
 					uint64_t tmp_l = INT64_MAX, tmp_c = 0;
 					char *d;
 					errno = 0;
@@ -368,7 +368,7 @@ int main(int argc, char **argv) {
 						if (isdigit((unsigned char)argv[i][1])) {
 							tmp_l = strtoll(argv[i]+1, &d, 10);
 							if (!errno) {
-								if (*d) {							/* separator between N and M */
+								if (*d) {  /* separator between N and M */
 									if (isdigit((unsigned char)d[1])) {
 										tmp_c = strtoll(d+1, &d, 10);
 										if (*d) errno = ERANGE;
@@ -415,12 +415,12 @@ int main(int argc, char **argv) {
 					first_line =
 					first_col  = 0;
 					skip_plus  =
-					binary	  =
+					binary    =
 					read_only  = false;
 				}
 			}
 		}
-		
+
 		free(skiplist);
 
 		/* This call makes current the first specified file. It is called

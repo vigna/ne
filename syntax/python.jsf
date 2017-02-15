@@ -98,6 +98,7 @@
 	"in"		kw
 	"is"		kw
 	"lambda"	kw
+	"nonlocal"	kw
 	"not"		kw
 	"or"		kw
 	"pass"		kw
