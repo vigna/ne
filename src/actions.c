@@ -802,11 +802,14 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		return OK;
 
 	case KEYCODE_A:
-		print_message(info_msg[PRESS_A_KEY]);
-		c = get_key_code();
+		if (c >= NUM_KEYS) c = -1;
+		if (c < 0 ) {
+			print_message(info_msg[PRESS_A_KEY]);
+			c = get_key_code();
+		}
 		col = (c < 0) ? -c-1 : c;
 		snprintf(msg, MAX_MESSAGE_SIZE, "Key Code: 0x%02x,  Input Class: %s,  Assigned Command: %s", (int)col, input_class_names[CHAR_CLASS(c)],
-					(key_binding[col] && key_binding[col][0]) ? key_binding[col] : "(none)" );
+		         (key_binding[col] && key_binding[col][0]) ? key_binding[col] : "(none)" );
 		print_message(msg);
 		return OK;
 
@@ -885,10 +888,10 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			b->find_string = p;
 			b->find_string_changed = 1;
 			print_error(error = (a == FIND_A ? find : find_regexp)(b, NULL, false));
+			b->last_was_replace = 0;
+			b->last_was_regexp = (a == FINDREGEXP_A);
 		}
 
-		b->last_was_replace = 0;
-		b->last_was_regexp = (a == FINDREGEXP_A);
 		return error ? ERROR : 0;
 
 	case REPLACE_A:

@@ -82,10 +82,6 @@ extern const char *input_class_names[];
 
 #define DEF_PREFS_NAME     ".default"
 
-/* The name of the virtual extensions file (global and local). */
-
-#define VIRTUAL_EXT_NAME   ".extensions"
-
 /* The name of the syntax subdirectory (global and local). */
 
 #define SYNTAX_DIR         "syntax"

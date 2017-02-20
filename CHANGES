@@ -5,7 +5,7 @@
   * Comments in .yaml files are highlighted more correctly.
 
   * Determine better whether Find and FindRegExp patterns need to be recompiled
-    when switching buffers.
+    when switching buffers. Fix possible lockup after cancelled Find.
 
   * Fixed missing screen update after ABOUT (regression introduced in 3.0.1).
     Thanks to Brian Callahan for reporting this bug.

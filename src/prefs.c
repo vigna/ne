@@ -31,6 +31,11 @@ be enough strange to avoid clashes with macros. */
 
 #define PREF_FILE_SUFFIX   "#ap"
 
+/* The name of the virtual extensions file (local and global). */
+
+#define VIRTUAL_EXT_NAME    ".extensions"
+#define VIRTUAL_EXT_NAME_G   "extensions"
+
 /* We suppose a configuration file won't be bigger than this. Having it
 bigger just causes a reallocation. */
 
@@ -242,16 +247,18 @@ int load_syntax_by_name(buffer * const b, const char * const name) {
    (first local, then maybe global) to determine what auto_prefs and
    syntax to load based on a buffer's contents. */
 
-static char *determine_virtual_extension( buffer * const b, char *vname) {
+static char *determine_virtual_extension( buffer * const b, char *vname, buffer **vbp) {
 	char *virt_ext = NULL;
-	buffer * vb;
+	buffer * vb = *vbp;
 	/* Our find_regexp() is geared to work on buffers rather than streams, so we'll create a
 	   stand-alone buffer. This also buys us proper handling of encodings. */
-	if (vb = alloc_buffer(NULL)) {
+	if (vb == NULL && (*vbp = vb = alloc_buffer(NULL))) {
 		clear_buffer(vb);
 		vb->opt.do_undo = 0;
 		vb->opt.auto_prefs = 0;
-		if (load_file_in_buffer(vb, vname) == OK ) {
+	}
+	if (vb) {
+		if (! buffer_file_modified(vb, vname) || load_file_in_buffer(vb, vname) == OK ) {
 			goto_line(vb,0);
 			goto_column(vb,0);
 			int found = 0;
@@ -260,7 +267,7 @@ static char *determine_virtual_extension( buffer * const b, char *vname) {
 			   the buffer we're navigating through, but we don't want to show this buffer! */
 			int64_t earliest_found_line = INT64_MAX;
 			int skip_first = false;
-			vb->find_string = str_dup( "^[ \\t]*(\\w+)[ \\t]*([0-9]*)[ \\t]*(.+)" );
+			vb->find_string = str_dup( "^\\s*(\\w+)\\s+([0-9]+)\\s+(.+)" );
 			vb->find_string_changed = 1;
 			while ( earliest_found_line > 0 && find_regexp(vb,NULL,skip_first) == OK && !stop) {
 				skip_first = true;
@@ -272,7 +279,7 @@ static char *determine_virtual_extension( buffer * const b, char *vname) {
 					errno = 0;
 					char *endptr;
 					int64_t maxline = strtoll(maxline_str, &endptr, 0);
-					if (maxline < 1 || errno) maxline = 1;
+					if (maxline < 1 || errno) maxline = UINT64_MAX;
 					maxline--; /* users are 1-based, but internal line numbers are 0-based. */
 					/* Search in b for the first occurance of regex. */
 					int64_t b_cur_line    = b->cur_line;
@@ -304,7 +311,7 @@ static char *determine_virtual_extension( buffer * const b, char *vname) {
 				if (regex) free(regex);
 			}
 		}
-		free_buffer(vb);
+		/* free_buffer(vb); Not any more, because we're caching in *vbp. */
 	}
 	return virt_ext;
 }
@@ -315,6 +322,7 @@ static char *determine_virtual_extension( buffer * const b, char *vname) {
 
 static char *virtual_extension(buffer * const b) {
 
+	static buffer *g_extensions_buf, *u_extensions_buf;
 	int error = OK;
 	char *virt_ext = NULL;
 	char *virt_name, *prefs_dir;
@@ -324,14 +332,14 @@ static char *virtual_extension(buffer * const b) {
 	if (prefs_dir = exists_prefs_dir()) {
 		if (virt_name = malloc(strlen(VIRTUAL_EXT_NAME) + strlen(prefs_dir) + 2)) {
 			strcat(strcpy(virt_name, prefs_dir), VIRTUAL_EXT_NAME);
-			virt_ext = determine_virtual_extension(b, virt_name);
+			virt_ext = determine_virtual_extension(b, virt_name, &u_extensions_buf);
 			free(virt_name);
 		}
 	}
 	if (virt_ext == NULL && (prefs_dir = exists_gprefs_dir())) {
-		if (virt_name = malloc(strlen(VIRTUAL_EXT_NAME) + strlen(prefs_dir) + 2)) {
-			strcat(strcpy(virt_name, prefs_dir), VIRTUAL_EXT_NAME);
-			virt_ext = determine_virtual_extension(b, virt_name);
+		if (virt_name = malloc(strlen(VIRTUAL_EXT_NAME_G) + strlen(prefs_dir) + 2)) {
+			strcat(strcpy(virt_name, prefs_dir), VIRTUAL_EXT_NAME_G);
+			virt_ext = determine_virtual_extension(b, virt_name, &g_extensions_buf);
 			free(virt_name);
 		}
 	}
@@ -352,7 +360,7 @@ static int do_auto_prefs(buffer *b, const char * ext, int (prefs_func)(buffer *,
 
 	assert_buffer(b);
 
-	if (!ext && !(ext = extension(b->filename)) && !(ext = vext = virtual_extension(b))) return HAS_NO_EXTENSION;
+	if (!ext && !(ext = vext = virtual_extension(b)) && !(ext = extension(b->filename))) return HAS_NO_EXTENSION;
 
 	/* Try global autoprefs -- We always load these before ~/.ne autoprefs.
 	   That way the user can override whatever he wants, but anything he
