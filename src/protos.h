@@ -244,6 +244,7 @@ int  find(buffer *b, const char *pattern, const bool skip_first);
 int  replace(buffer *b, int n, const char *string);
 int  find_regexp(buffer *b, const char *regex, const bool skip_first);
 int  replace_regexp(buffer *b, const char *string);
+char *nth_regex_substring( const line_desc *ld, int i);
 
 /* signals.c */
 void stop_ne(void);

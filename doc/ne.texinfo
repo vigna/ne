@@ -289,7 +289,7 @@ letters. This is called the @dfn{status bar} because it reports to you part of
 the internal state of the editor. At startup, the status bar has the following form:
 
 @example
- L:       1 C:       1  12% ia----pvu-t------@@A <unnamed>
+ L:       1 C:       1  12% ia----pvu-t------@@A* <unnamed>
 @end example
 
 @noindent (the numbers could be different, and a file name could be shown as
@@ -299,8 +299,9 @@ numbers, respectively, whereas the percentage indicates approximately
 your position in the file. The small letters represent user flags that
 you can turn on and off. In particular, @samp{i} tells you that insert
 mode is on, while @samp{p} tells that the automatic preferences system
-is activated. For a thorough explanation of the meaning of the flags on
-the status bar, see @ref{The Status Bar}.
+is activated. The @samp{*} means this buffer has no been saved. For a
+thorough explanation of the meaning of the flags on the status bar, see
+@ref{The Status Bar}.
 
 Once you are accustomed to cursor movement and line editing, it is time to
 press @key{f1} (the first function key), or in case your keyboard does not
@@ -331,8 +332,8 @@ with @key{Shift}). The descriptions of the form @key{f}@var{n} represent
 instead function keys. Finally, the symbol @samp{[} in front of a
 character denotes the shortcut produced by @key{Control} plus @key{Meta}
 (a.k.a. @key{Alt}) plus that character, @emph{or} @key{Meta} plus that
-character, depending on your terminal emulator---you must check by
-yourself. Moreover, these last bindings could not work with some
+character, depending on your terminal emulator---you must check for
+yourself. Moreover, these last bindings may not work with some
 terminals, in which case you can replace them with a sequence: just
 press the @key{Escape} key followed by the letter. A few menu items are
 bound to two control sequences (just in case one does not work, or it is
@@ -443,7 +444,7 @@ There is nothing special you have to do to start editing once you've
 started @code{ne}. Just start typing, and the text you type shows up in
 your document.
 
-@code{ne} provides two ways of deleting characters, the @key{Backspace}
+@code{ne} provides two ways of deleting characters: the @key{Backspace} key
 (or @kbd{@key{Control}-H}, if you have no such key) and the @key{Delete}
 key. In the former case you delete the character to the left of the
 cursor, while in the latter case you delete the character just under the
@@ -462,7 +463,7 @@ If you want to copy, cut, paste, shift or erase a block of text, you have to
 set a mark. This is done via the @code{Mark} command, activated by
 choosing the @samp{Mark Block} item of the @samp{Edit} menu, or by
 pressing @kbd{@key{Control}-B} (think ``block''). This command
-sets the mark at the current cursor position. Whenever the mark is set, the zone
+sets the invisible mark at the current cursor position. Whenever the mark is set, the text
 between the mark and the cursor can be cut, copied or erased. Note that
 by using @kbd{@key{Control}-@@} you can set a @emph{vertical} mark
 instead, which allows you to mark rectangles of text. Whenever a mark
@@ -471,9 +472,11 @@ has been set, either an @samp{M} appears on the command line or a
 is currently, you can use the @samp{Goto Mark} menu item of the
 @samp{Search} menu to move the cursor to it.
 
-When you cut or copy a block, you can save it to a file with the @samp{Save Clip...} menu
-item of the @samp{Edit} menu. You can also load a file into a clip with
-@samp{Open Clip...}, and paste it anywhere. All such operations act on the
+The block of text you cut or copy is saved in a @dfn{clip}, which you can
+@samp{Paste} somewhere else in your document, or save it
+to a file with the @samp{Save Clip...} menu
+item of the @samp{Edit} menu. You can also load a file directly into a clip with
+@samp{Open Clip...}, and @samp{Paste} it anywhere. All such operations act on the
 @dfn{current clip}, which is by default the clip 0. You can change the current
 clip number with the @code{ClipNumber} command. @xref{ClipNumber}.
 
@@ -482,11 +485,11 @@ undo/redo} capability. Each editing action is recorded, and can be played
 back and forth as much as you like. Undo and redo are bound to the function
 keys @key{f5} and @key{f6}.
 
-Another interesting feature of @code{ne} is it's ability to load an
+Another interesting feature of @code{ne} is its ability to load an
 unlimited number of documents. If you activate the @code{NewDoc} command
 (using the @samp{Document} menu or the command line), a new, empty
-document will be created. You can switch between the existing documents
-in memory with @key{f2} and @key{f3}, which are bound to the
+document will be created. You can switch between your documents
+with @key{f2} and @key{f3}, which are bound to the
 @code{PrevDoc} and @code{NextDoc} commands. If you have a lot of
 documents, the @samp{Select...} menu item (@key{f4}) prompts you with
 the list of names of currently loaded documents and allows you to
@@ -501,6 +504,7 @@ in that list with the @key{f2} and @key{f3} keys.
 @cindex Flags
 @cindex Insert mode
 @cindex Automatic preferences
+@cindex Virtual Extensions
 
 @code{ne} has a number of @dfn{flags} that specify alternative
 behaviors, the most prototypical example being the @dfn{insert} flag,
@@ -564,6 +568,14 @@ saved in the @file{.default#ap} file.
 Note also that a preferences file is just a macro (as described in the
 following section). Thus, it can be edited manually if necessary.
 
+Some files have no extension. Others have obviously incorrect extensions.
+For example, a file named @code{example.conf} which contains XML. For the
+purposes of applying automatic preferences and syntax definitions, @code{ne} provides
+a mechanism for overriding a wrong or missing extension with
+a @dfn{virtual extension} based on a document's contents. You do this
+by creating a @file{~/.ne/.extensions} file which is fully described
+in the @ref{Virtual Extensions} section.
+
 
 @node Basic Macros
 @section Basic Macros
@@ -614,7 +626,7 @@ commands in the @dfn{current macro} buffer, and it will go away when you
 exit @code{ne} or record another macro. If you want to save your
 recorded macro for future use, you can give it a name and save it with
 the @samp{Save Macro...} menu item or the @code{SaveMacro} command.
-The macro is saved as a file in your current directory by default or
+The macro is saved as a regular text file in your current directory by default or
 whatever directory you specify when prompted for the macro's name. If
 you save it in your @file{~/.ne} directory then it will be easy to
 access it later from any other directory. The @samp{Open Macro...} menu item
@@ -682,7 +694,7 @@ of @file{~/foobar/MyMacro}. You can clear the cache by using the
 @code{UnloadMacros} command. @xref{UnloadMacros}.
 
 The behaviour of macros may vary with different preferences. If the user
-changes the AutoIndent and WordWrap flags, for example, new lines and new
+changes the @code{AutoIndent} and @code{WordWrap} flags, for example, new lines and new
 text may not appear in the same way they would have when a macro was
 recorded. Good general purpose macros avoid such problems by using the
 @code{PushPrefs} command first. This preserves the user's preferences.
@@ -760,9 +772,9 @@ document and activate the @code{AutoComplete} command. With the cursor at the
 right end of your prefix, activate the @code{AutoComplete} command by entering
 either the @key{Escape}-@key{Tab} or the @key{Escape}-@key{I} key sequence, or
 the @kbd{@key{Control}-@key{META}-@key{I}} key combination, or by selecting
-@code{AutoComplete} from the @code{Extras} menu. 
+@code{AutoComplete} from the @code{Extras} menu.
 
-If the prefix can be extended 
+If the prefix can be extended
 unambiguously, the extension will be immediately inserted into your
 document (this is the case, for instance, if only one word matches the
 prefix), and a message will tell you whether the extension is an actual word
@@ -771,7 +783,7 @@ or just the longest possible extension (for instance, if you expand
 partial match will be @samp{foo}). Otherwise, @code{ne} presents you with
 a list of all matching words: choose the one you want and press
 @key{Return}, to select it; otherwise, press @key{f1}, @key{Escape} or
-@key{Escape}-@key{Escape} to cancel the completion operation. 
+@key{Escape}-@key{Escape} to cancel the completion operation.
 
 The current
 state of the @code{CaseSearch} flag determines whether the prefix match is
@@ -786,7 +798,7 @@ exist somewhere in your current document. @xref{AutoComplete}, and
 Unless you tell it not to (with the @code{AutoMatchBracket} command),
 @code{ne} will highlight any recognized bracket that matches the
 bracket your cursor is on if that matching bracket is currently visible on
-your screen. Recognized brackets are @samp{@{@}}, @samp{()}, @samp{[]},
+your screen. Recognized bracket pairs are @samp{@{@}}, @samp{()}, @samp{[]},
 @samp{<>}, and @samp{`'}. @xref{AutoMatchBracket}.
 
 @subsection MS-DOS files
@@ -825,11 +837,17 @@ to standard output, e.g., @code{sort}). @xref{Through}. Finally, you can use the
 return to your command shell. @xref{Suspend}.
 
 @subsection Advanced key bindings
+@code{ne} allows you to associate any keystroke with any command, both
+built-in commands (with or without parameters) and macros. These associations
+are refered to as @dfn{key bindings}, which you define in your
+@code{~/.ne/.keys} file. The @code{KeyCode} command allows you to see the key
+code @code{ne} sees in response to any key or key combination on your
+keyboard. It also shows the command string currently associated with that key
+code. This is described in @ref{Key Bindings}.
 
 
-
-For an exhaustive list of the remaining features of @code{ne}, see
-@ref{Reference}.
+The following chapters provide an exhaustive list of the remaining features of @code{ne}.
+@xref{Reference}.
 
 
 
@@ -886,7 +904,7 @@ document loaded, and it can appear multiple times on the command line.
 See @ref{Binary}.
 
 The @code{--read-only} option causes @code{ne} to load the next named file
-into a read-only document. You can still @ref{Save} a read-only document to a
+into a read-only document. You can still @code{Save} (@ref{Save}) a read-only document to a
 file if the file's permissions allow it, but you can't modify a read-only
 document without taking special action such as turning off the read-only flag
 first. The @code{--read-only} option only affects the next document loaded,
@@ -1101,7 +1119,7 @@ appears if the binary flag is true. @xref{Binary}.
 
 @item !
 appears in place of @samp{B} when not in binary mode
-and the last line of the buffer is not empty (i.e. the last line of the
+and the last line of the document is not empty (i.e. the last line of the
 saved file would not be terminated).
 
 @item M
@@ -1124,7 +1142,7 @@ appears if the CRLF flag is true. @xref{CRLF}.
 appears if UTF-8 I/O is enabled. @xref{UTF8IO}.
 
 @item A/8/U
-denotes the current buffer encoding---US-ASCII, 8-bit or UTF-8. @xref{UTF8}.
+denotes the current document encoding---US-ASCII, 8-bit or UTF-8. @xref{UTF8}.
 
 @item *
 appears if the document has been modified since the last save, or if
@@ -1345,14 +1363,15 @@ Syntax definitions are stored in separate files. @code{ne} comes with a
 suite of syntax definitions for many popular programming languages.
 When you load a file, @code{ne} selects the appropriate syntax
 definition as determined by the filename extension in much the same way
-autoprefs are loaded. It also contains a built-in table of common
+autoprefs are loaded. (See @ref{Basic Preferences} for a discussion
+of virtual extensions.) It also contains a built-in table of common
 filename extensions that share the same syntax definitions. For
 example, both @samp{cbl}, and @samp{cob} files use the @samp{cobol}
 definition. See the @ref{Syntax} command for the complete list of
 built-in extension mappings.
 
 If there is no matching syntax definition for the filename extension,
-or if the buffer you are editing has no filename yet, or you just want
+or if the document you are editing has no filename yet, or you just want
 to try a different syntax definition, you can load and use the
 syntax definition of your choice with the @code{Syntax} command. It
 takes the syntax name as a parameter. For example, the name ``@code{c}''
@@ -1851,7 +1870,7 @@ your preferred document flags.
 
 Regular expressions are a powerful way of specifying complex search and
 replace operations. @code{ne} supports the full regular expression
-syntax on US-ASCII and 8-bit buffers, but has to impose a restriction on
+syntax on US-ASCII and 8-bit documents, but has to impose a restriction on
 character sets when searching in UTF-8 text. @xref{UTF-8 Support}.
 
 @subsection Syntax
@@ -2070,7 +2089,7 @@ matches the empty string, but only if it is at the end of a word.
 
 @item \w
 matches any word-constituent character. These are US-ASCII letters,
-numbers and the underscore, independently of the buffer encoding.
+numbers and the underscore, independently of the document encoding.
 
 @item \W
 matches any character that is not a word-constituent.
@@ -2155,18 +2174,18 @@ suitable command line option (see @pxref{Arguments}), or using
 keyboard a wide range of characters.
 
 Independently of the input/output encoding, @code{ne} keeps track of the
-encoding of each buffer. @code{ne} does not try to select a particular
-coding on a buffer, unless it is forced to do so, for instance because a
-certain character is inserted. Once a buffer has a definite encoding,
+encoding of each document. @code{ne} does not try to select a particular
+coding on a document, unless it is forced to do so, for instance because a
+certain character is inserted. Once a document has a definite encoding,
 however, it keeps it forever.
 
-More precisely, every buffer may be in one of three @emph{encoding
+More precisely, every document may be in one of three @emph{encoding
 modes}: US-ASCII, when it is entirely composed of US-ASCII characters;
 8-bit, if it contains also other characters, but it is not UTF-8
 encoded; and finally, UTF-8, if it is UTF-8-encoded.
 
 The behaviour of @code{ne} in US-ASCII and 8-bit mode is similar to
-previous versions: each byte in the buffer is considered a separate
+previous versions: each byte in the document is considered a separate
 character.
 
 There are, however, two important differences: first, if I/O is not
@@ -2174,24 +2193,24 @@ UTF-8 encoded, @emph{any} encoding of the ISO-8859 family will work
 flawlessly, as @code{ne} merely reads bytes from the keyboard and
 displays bytes on the screen. On the contrary, in the case of UTF-8
 input/output @code{ne} must take a decision as to which encoding is used
-for non-UTF-8 buffers, and presently this is hardwired to ISO-8859-1.
-Second, since version 1.34, 8-bit buffers use localized casing and
+for non-UTF-8 documents, and presently this is hardwired to ISO-8859-1.
+Second, since version 1.34, 8-bit documents use localized casing and
 character type functions. This means that case-insensitive searches or
 case foldings will work with, say, Cyrillic characters, provided that
 your locale is set correctly.
 
-In UTF-8 mode, instead, @code{ne} interprets the bytes in the buffer in
+In UTF-8 mode, instead, @code{ne} interprets the bytes in the document in
 a different way---several bytes may encode a single character. The whole
 process is completely transparent to the user, but if you really want to
-look at the buffer content, you can switch to 8-bit mode (see
+look at the document content, you can switch to 8-bit mode (see
 @pxref{UTF8}).
 
 For most operations, UTF-8 support should be transparent. However, in
-some cases, in particular when mixing buffers with different encodings,
+some cases, in particular when mixing documents with different encodings,
 @code{ne} will refuse to perform certain operations because of
 incompatible encodings.
 
-The main limitation of UTF-8 buffers is that when searching for a
+The main limitation of UTF-8 documents is that when searching for a
 regular expression in a UTF-8 text, character sets may only contain
 US-ASCII characters (see @pxref{Regular Expressions}). You can, of
 course, partially emulate a full UTF-8 character set implementation
@@ -2445,9 +2464,9 @@ the updated file.
 
 @noindent saves all modified documents. If any modified documents cannot be
 saved, the action is suspended and an error message is issued. Note that
-only named buffers can be saved, so @code{SaveAll} will report an error
-if you have any modified unnamed buffers, or if any of the modified
-documents' corresponding files have been updated since the buffers were
+only named documents can be saved, so @code{SaveAll} will report an error
+if you have any modified unnamed documents, or if any of the modified
+documents' corresponding files have been updated since they were
 loaded or last saved.
 
 
@@ -2492,9 +2511,9 @@ have to confirm the action.
 
 @noindent saves all modified documents, closes them and exits. If
 any documents cannot be saved, the action is suspended and an error message
-is issued and no documents are closed. Note that only named buffers can be
+is issued and no documents are closed. Note that only named documents can be
 saved, so @code{Exit} will report an error if you have any modified unnamed
-buffers. Like @code{SaveAll}, @code{Exit} will not save a document if its
+documents. Like @code{SaveAll}, @code{Exit} will not save a document if its
 corresponding file has been modified since the document was loaded or last
 saved, in which case an error is reported and no documents are closed.
 
@@ -2746,7 +2765,7 @@ copied into any clip.
 @noindent Abbreviation: @code{SH}
 
 @noindent shifts the text on lines between the mark and the cursor either
-right (@samp{>}, the default) or left (@samp{<}) by adding or removing 
+right (@samp{>}, the default) or left (@samp{<}) by adding or removing
 white space on each line. The adjustment size, specified as an unsigned
 integer @samp{n}, is in units of the current tab size (@samp{t}) or spaces
 (@samp{s}). The default is 1. Adjustments start at the left edge of a
@@ -3631,8 +3650,10 @@ preferences file related to the extension of the file name. Automatic
 preferences files are kept in your @file{~/.ne} directory. They
 are named as an extension postfixed with @samp{#ap}. Each time you open
 a file whose name has an extension for which there is an automatic
-preferences file, the latter is executed. If you want to inhibit this
-process, you can clear the automatic preferences flag. See @ref{AutoPrefs}.
+preferences file, the latter is executed. Opening a file which has no
+extension causes the prefs from @file{~/.ne/.default#ap} to be loaded.
+If you want to inhibit this process, you can clear the automatic
+preferences flag. See @ref{AutoPrefs}.
 
 
 @menu
@@ -3711,7 +3732,7 @@ A/8/U UTF8          U8   the document encoding (ASCII, 8-bit or UTF-8)
 
 The @code{RequestOrder} and @code{AutoMatchBracket} flags' states are not indicated on the status bar.
 See @ref{RequestOrder} and @ref{AutoMatchBracket} respectively.
-@samp{!} indicates saved buffer would have no terminating line ending.
+A @samp{!} indicates the last line is not terminated.
 
 @node AutoPrefs
 @subsection AutoPrefs
@@ -3761,9 +3782,9 @@ normal activity, but rather an exceptional one.
 If you invoke @code{Binary} with no arguments, it will toggle the flag. If you
 specify 0 or 1, the flag will be set to false or true, respectively. An upper
 case @samp{B} will appear on the status bar if the flag is true. If false,
-a @samp{-} or @samp{!} will indicate whether the last line of the buffer is
+a @samp{-} or @samp{!} will indicate whether the last line of the document is
 empty, which will determine whether the resulting file will have a normal line
-termination when the buffer is saved.
+termination when the document is saved.
 
 
 
@@ -4092,11 +4113,11 @@ It is not saved by the @code{SaveAutoPrefs} command.
 @noindent Abbreviation: @code{PCR}
 
 @noindent sets the preserve carriage returns flag.  When a file is
-loaded into a buffer for which this flag is false, both CR (carriage
+loaded into a document for which this flag is false, both CR (carriage
 return) and NL (new line) characters are treated as line terminators.
 If the flag is true, CR characters do not act as line terminators but
-are instead preserved in the buffer. This flag has no effect except
-when loading a file into a buffer.
+are instead preserved in the document. This flag has no effect except
+when loading a file into a document.
 
 If you invoke @code{PreserveCR} with no arguments, it will toggle the flag.
 If you specify 0 or 1, the flag will be set to false or true,
@@ -4113,7 +4134,7 @@ flag is true.
 @noindent Abbreviation: @code{CRLF}
 
 @noindent sets the CR/LF flag. When a file is
-saved from a buffer for which this flag is true, both a CR (carriage
+saved from a document for which this flag is true, both a CR (carriage
 return) and a NL (new line) character are output as line terminators.
 This flag has no effect except when saving a file.
 
@@ -4152,10 +4173,10 @@ you specify 0 or 1, the flag will be set to false or true, respectively.
 @noindent pushes @var{n} copies of the user preferences onto a stack. If
 not specified, @var{n} defaults to one. Use the @code{PopPrefs} command
 to pop preferences off the stack and restore the values. See @ref{PopPrefs}. Note that the
-preferences stack is global, not buffer-specific, so you could
-@code{PushPrefs} one buffer's preferences, switch buffers, then
+preferences stack is global, not document-specific, so you could
+@code{PushPrefs} one document's preferences, switch documents, then
 @code{PopPrefs} those preferences, thereby altering the preferences for
-the second buffer. The maximum preferences stack depth is 32.
+the second document. The maximum preferences stack depth is 32.
 
 @code{PushPrefs} and @code{PopPrefs} are useful in macros that require
 certain preferences to work properly.  A macro can @code{PushPrefs},
@@ -4170,7 +4191,7 @@ restore the users previous preferences settings.
   Binary      FreeForm  ReadOnly     Tabs
   CaseSearch  HexCode   RightMargin  TabSize
   ClipNumber  Insert    SearchBack   UTF8Auto
-@end example   
+@end example
 
 
 
@@ -4183,10 +4204,10 @@ restore the users previous preferences settings.
 
 @noindent pops @var{n} sets of preferences from the preferences stack (where they were
 placed previously by @code{PushPrefs}) and applies those preferences to the
-current buffer. See @ref{PushPrefs}. If not specified, @var{n} defaults to one. Note that the
-preferences stack is global, not buffer specific. Therefore you could
-@code{PushPrefs} one buffer's preferences, switch buffers, then @code{PopPrefs}
-those settings altering the preferences for the second buffer. The
+current document. See @ref{PushPrefs}. If not specified, @var{n} defaults to one. Note that the
+preferences stack is global, not document specific. Therefore you could
+@code{PushPrefs} one document's preferences, switch documents, then @code{PopPrefs}
+those settings altering the preferences for the second document. The
 maximum preferences stack depth is 32.
 
 @code{PushPrefs} and @code{PopPrefs} are useful in macros that require
@@ -4296,11 +4317,11 @@ This file is always loaded by @code{ne} at startup.
 @noindent Abbreviation: @code{MOD}
 
 @noindent sets the modified flag.  This flag is set automatically
-whenever a buffer is modified, and is used to determine which buffers
+whenever a document is modified, and is used to determine which documents
 need to be saved when @code{ne} exits.  Normally you would not alter
-this flag, but when a buffer is inadvertently modified and you don't
+this flag, but when a document is inadvertently modified and you don't
 want the changes saved, @code{Modified} provides a way to make
-@code{ne} consider the buffer unchanged.
+@code{ne} consider the document unchanged.
 
 If you invoke @code{Modified} with no arguments, it will toggle the flag.
 If you specify 0 or 1, the flag will be set to false or true,
@@ -4317,7 +4338,7 @@ flag is true.
 @noindent Abbreviation: @code{SY}
 
 @noindent loads the syntax with the given name, and colors the
-current buffer accordingly.
+current document accordingly.
 
 If the optional @var{name} argument is not specified, you are
 prompted for one. The current one, if set, is suggested as the
@@ -4383,21 +4404,21 @@ a list of common extensions. Don't get fancy with this format.
 @noindent Abbreviation: @code{U8}
 
 @noindent sets the UTF-8 flag.  When this flag is
-true, @code{ne} considers the current buffer as UTF-8 coded.  Note that
+true, @code{ne} considers the current document as UTF-8 coded.  Note that
 this flag is set automatically upon file loading (if possible) if you
 required automatic detection. See @ref{UTF8Auto}.
 
 If you invoke @code{UTF8} with no arguments, it will toggle the flag.
 If you specify 0 or 1, the flag will be set to false or true,
-respectively. When you try to set this flag, the buffer will be checked
+respectively. When you try to set this flag, the document will be checked
 for UTF-8 compliance, and you will get an error message in case of
-failure. When you try to reset it, the buffer is set to ASCII or
+failure. When you try to reset it, the document is set to ASCII or
 8-bit, depending on its content.  A @samp{U} will appear on the
 status bar if the flag is true. Alternatively, an @samp{A} or an
-@samp{8} will be displayed to denote whether the buffer is composed
+@samp{8} will be displayed to denote whether the document is composed
 exclusively by US-ASCII characters, or also by other 8-bit characters
 (whose encoding is likely to be part of the ISO-8859 family). Note that
-each time this command modifies the buffer encoding, it also resets the
+each time this command modifies the document encoding, it also resets the
 undo buffer.
 
 
@@ -4412,7 +4433,7 @@ undo buffer.
 @noindent sets the UTF-8 automatic-detection flag.  When this flag is
 true, @code{ne} will try to guess whether a file just loaded is UTF-8
 encoded. Moreover, when a non US-ASCII character is inserted in a pure
-US-ASCII buffer, ne will automatically switch to UTF-8. See @ref{UTF8}. The
+US-ASCII document, ne will automatically switch to UTF-8. See @ref{UTF8}. The
 flag is true by default if @code{ne} detects UTF-8 I/O at
 startup. See @ref{UTF8IO}.
 
@@ -5296,16 +5317,18 @@ never registered while recording a macro. See @ref{Record}.
 @subsection KeyCode
 @cmindex KeyCode
 
-@noindent Syntax: @code{KeyCode}@*
+@noindent Syntax: @code{KeyCode [@var{k}]}@*
 @noindent Abbreviation: @code{KC}
 
 @noindent prompts you to press a key, and reports on the status bar
-the key code @code{ne} associates with that key. This can be useful
-while configuring your @file{~/.ne/.keys} file. It also reports the
-input class for that key. Input class codes are: ALPHA, COMMAND,
-RETURN, TAB, IGNORE, and INVALID.
+the key code @code{ne} associates with that key, the
+command currently associated with that key code, as well as the
+input class for that key code. Input class codes are: ALPHA, COMMAND,
+RETURN, TAB, IGNORE, and INVALID. This can be useful while
+configuring your @file{~/.ne/.keys} file.
 
-
+If the optional integer @var{k} (between 0 and 511) is given, @code{KeyCode}
+uses @var{k} as the key code and displays the information described above.
 
 
 @node Configuration
@@ -5313,9 +5336,12 @@ RETURN, TAB, IGNORE, and INVALID.
 @cindex Meta key
 
 In this chapter we shall see how the menus and the key bindings of @code{ne} can
-be completely configured. Note that the configuration is parsed at startup
+be completely configured. Note that menu and key configuration is parsed at startup
 time, and cannot be changed during the execution of the program. This is a
 chosen limitation.
+
+We will also see how to override incorrect or missing file name extensions by
+comparing the contents of documents to patterns to determine @emph{virtual extensions}.
 
 @ignore
 It should also be remarked that the standard configuration of @code{ne} does
@@ -5331,6 +5357,7 @@ ASCII characters between 128 and 159, and will be parsed as shortcuts by
 @menu
 * Key Bindings::
 * Changing Menus::
+* Virtual Extensions::
 @end menu
 
 
@@ -5363,7 +5390,8 @@ distribution: it contains a complete, commented definition of
 @code{ne}'s standard bindings that you can modify with a trial-and-error
 approach.) The easiest way to see the code @code{ne} uses for a given
 key is by using the @ref{KeyCode} command. It prompts you to press a
-key, then reports the code for that key on the status bar.
+key, then reports the code for that key on the status bar. It also
+displays the command bound to that key if there is one.
 
 You can write just the hexadecimal digits, nothing else is
 necessary (but a prefixing @samp{0x} is tolerated).  For instance,
@@ -5528,6 +5556,55 @@ work, @code{ne} exits displaying an error message. If you want @code{ne} to
 skip the menu configuration phase (for instance, to correct the
 broken file), just give @code{ne} the @code{--no-config} argument.
 @xref{Arguments}.
+
+
+@node Virtual Extensions
+@section Virtual Extensions
+@cindex Virtual Extensions
+@cindex Extension by Content
+
+When a document is loaded or saved under a different name, @code{ne} will
+examine the contents of the document to determine whether to ignore the
+corresponding file's real extension and use instead a @dfn{virtual
+extension}. This affects which AutoPrefs and Syntax settings @code{ne}
+applies to the document. The document's contents are matched against the regular
+expressions (see @pxref{Regular Expressions}) you include in your
+@file{~/.ne/.extensions} file. If @code{ne} finds a match it will act as if
+the document's name had the corresponding extension.
+
+@noindent Here's an example @file{~/.ne/.extensions} file:
+
+@example
+# The following patterns match some common command interpreters.
+# They must match on the first line.
+ sh   1  ^#!\s*/.*\b(bash|sh|ksh|zsh)\s*
+ csh  1  ^#!\s*/.*\b(csh|tcsh)\s*
+ pl   1  ^#!\s*/.*\bperl\b
+ py   1  ^#!\s*/.*\bpython[0-9]*\s*
+ rb   1  ^#!\s*/.*\bruby\s*
+ xml  1  ^<\?xml
+# These must match in the first 30 and 1000 lines, respectively.
+ yaml   30 ^\+\+\+$
+ ini  1000 ^\[\s*(\w|[.-])+\s*\]\s*$
+@end example
+
+@noindent The only lines which are considered consist of a space-delimited set of
+@verbatim
+  extension   number   regular_expression
+@end verbatim
+@noindent Anything else is treated as a comment. The number must be a positive integer
+indicating the maximum line number of the document in which the corresponding
+regular expression must match. The exception is zero, which allows a match on
+any line in the document.
+
+If two different patterns match, the one matching the document's lower line number
+will take precedence. If they match on the same line, then the first one listed
+in the @file{~/.ne/.extensions} file wins. Note that once a match is found on
+the document's first line, there's no point in checking the remaining patterns.
+
+There may also be an @file{extensions} file (no leading `.') in the global directory.
+If so, and your @file{~/.ne/.extensions} file fails to map a virtual extension,
+then the one in the global directory will be consulted.
 
 
 
@@ -5843,8 +5920,8 @@ had a significant advantage: @code{ne} could handle easily several
 different encodings, with minor nuisances for the end user.
 
 Since version 1.30, @code{ne} supports UTF-8. It can use UTF-8 for its
-input/output, and it can also interpret one or more buffers as containing
-UTF-8 encoded text, acting accordingly. Note that the buffer content is
+input/output, and it can also interpret one or more documents as containing
+UTF-8 encoded text, acting accordingly. Note that the document content is
 actual UTF-8 text---@code{ne} does not use wide characters. As a
 positive side-effect, @code{ne} can support fully the ISO-10646
 standard, but nonetheless non-UTF-8 texts occupy exactly one byte per
@@ -5854,7 +5931,7 @@ More precisely, @emph{any} piece of text in @code{ne} is classified as
 US-ASCII, 8-bit or UTF-8. A US-ASCII text contains only US-ASCII
 characters. An 8-bit text sports a one-to-one correspondence between
 characters and bytes, whereas an UTF-8 text is interpreted in UTF-8.  Of
-course, this rises a difficult question: @emph{when} should a buffer be
+course, this rises a difficult question: @emph{when} should a document be
 classified as UTF-8?
 
 Character encodings are a mess. There is nothing we can do to change
@@ -5865,9 +5942,9 @@ way of guessing the encoding of a file.
 
 @code{ne} stays on the safe side: it will never try to convert a file
 from an encoding to another one. It can, however, interpret data
-contained in a buffer depending on an encoding: in other words,
+contained in a document depending on an encoding: in other words,
 encodings are truly treated as metadata. You can switch off UTF-8
-at any time, and see the same buffer as a standard 8-bit file.
+at any time, and see the same document as a standard 8-bit file.
 
 Moreover, @code{ne} uses a @emph{lazy} approach to the problem: first of
 all, unless the UTF-8 automatic detection flag is set
@@ -5875,8 +5952,8 @@ all, unless the UTF-8 automatic detection flag is set
 encoded.  Every file, clip, command line, etc., is firstly scanned for
 non-US-ASCII characters: if it is entirely made of US-ASCII characters,
 it is classified as US-ASCII. An US-ASCII piece of text is compatible
-with anything else---it may be pasted in any buffer, or, if it is a
-buffer, it may accept any form of text. Buffers classified as US-ASCII
+with anything else---it may be pasted in any document, or, if it is a
+document, it may accept any form of text. Documents classified as US-ASCII
 are distinguished by an @samp{A} on the status bar.
 
 As soon as a user action forces a choice of encoding (e.g., an accented
@@ -6012,6 +6089,9 @@ Comments, complaints, desiderata are welcome.
     USA
 
     utoddl@@email.unc.edu
+
+    ne home page: http://ne.di.unimi.it/
+    Discuss ne at http://groups.google.com/group/niceeditor/
 
 @end example
 @page

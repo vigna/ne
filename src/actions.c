@@ -279,7 +279,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			/* *p can be  "", "-", "0".."9", "+1","-1", for which, respectively, */
 			/*  c becomes  0, AB,  0 .. 9,  next,prev. Anything else is out of range. */
 			if (p) {
-				if ( p[0] == '?' ) {
+				if (p[0] == '?') {
 					free(p);
 					snprintf(msg, MAX_MESSAGE_SIZE, "Cur Bookmarks: [%s] %s (0-9, -1, +1, or '-')", cur_bookmarks_string(b), a==SETBOOKMARK_A?"SetBookmark":"GotoBookmark");
 					p = request_string(b, msg, NULL, true, COMPLETE_NONE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto);
@@ -785,9 +785,10 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			if (!print_error(error)) {
 				const bool load_syntax = b->filename == NULL || ! same_str(extension(p), extension(b->filename));
 				change_filename(b, p);
-				if (load_syntax && extension(p)) {
-					load_syntax_by_name(b, extension(p));
-					load_auto_prefs(b, extension(p));
+				if (load_syntax) {
+					b->syn = NULL; /* So that autoprefs will load the right syntax. */
+					load_auto_prefs(b,NULL); /* Will get extension from the name, or virtual extension. */
+					reset_syntax_states(b);
 					reset_window();
 				}
 				print_info(SAVED);
@@ -801,11 +802,14 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		return OK;
 
 	case KEYCODE_A:
-		print_message(info_msg[PRESS_A_KEY]);
-		c = get_key_code();
+		if (c >= NUM_KEYS) c = -1;
+		if (c < 0 ) {
+			print_message(info_msg[PRESS_A_KEY]);
+			c = get_key_code();
+		}
 		col = (c < 0) ? -c-1 : c;
 		snprintf(msg, MAX_MESSAGE_SIZE, "Key Code: 0x%02x,  Input Class: %s,  Assigned Command: %s", (int)col, input_class_names[CHAR_CLASS(c)],
-					(key_binding[col] && key_binding[col][0]) ? key_binding[col] : "(none)" );
+		         (key_binding[col] && key_binding[col][0]) ? key_binding[col] : "(none)" );
 		print_message(msg);
 		return OK;
 
@@ -840,9 +844,10 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 					&& error != OUT_OF_MEMORY) {
 					change_filename(b, p);
 					b->syn = NULL; /* So that autoprefs will load the right syntax. */
-					if (b->opt.auto_prefs && extension(p)) {
+					if (b->opt.auto_prefs) {
 						if (b->allocated_chars - b->free_chars <= MAX_SYNTAX_SIZE) {
-							load_auto_prefs(b, extension(p));
+							if (load_auto_prefs(b, NULL) == HAS_NO_EXTENSION)
+								load_auto_prefs(b, DEF_PREFS_NAME);
 							reset_syntax_states(b);
 						}
 						else if (error == OK) error = FILE_TOO_LARGE_SYNTAX_HIGHLIGHTING_DISABLED;
@@ -883,10 +888,10 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			b->find_string = p;
 			b->find_string_changed = 1;
 			print_error(error = (a == FIND_A ? find : find_regexp)(b, NULL, false));
+			b->last_was_replace = 0;
+			b->last_was_regexp = (a == FINDREGEXP_A);
 		}
 
-		b->last_was_replace = 0;
-		b->last_was_regexp = (a == FINDREGEXP_A);
 		return error ? ERROR : 0;
 
 	case REPLACE_A:
@@ -1651,8 +1656,8 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 		int64_t pos = b->cur_pos;
 
-		if ( !p ) { /* no prefix given; find one left of the cursor. */
-			if ( context_prefix(b, &p, &pos) ) return OUT_OF_MEMORY;
+		if (!p) { /* no prefix given; find one left of the cursor. */
+			if (context_prefix(b, &p, &pos)) return OUT_OF_MEMORY;
 		}
 
 		snprintf(msg, MAX_MESSAGE_SIZE, "AutoComplete: prefix \"%s\"", p);

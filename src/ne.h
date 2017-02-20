@@ -78,7 +78,7 @@ typedef enum {
 
 extern const char *input_class_names[];
 
-/* The name of the default preferences file name. */
+/* The name of the default preferences file. */
 
 #define DEF_PREFS_NAME     ".default"
 

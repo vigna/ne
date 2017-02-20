@@ -2,6 +2,10 @@
 
 3.0.2
 
+  * Determine a "virtual extension" based on buffer contents and patterns
+    from ~/.ne/.extensions. If no match, use filename extension, else
+    use .default#ap prefs.
+
   * Status flag "!" indicates the last line of buffer is not empty, thus
     the last line of the resulting file will not be terminated when the
     buffer is saved.
@@ -23,6 +27,8 @@
   * Suspend (Crtl-Z) works in prompts, requesters.
 
   * Restored correct keyboard input for 8-bit character sets.
+
+  * "KeyCode" now takes optional parameter.
 
 3.0  2015-06-18
 

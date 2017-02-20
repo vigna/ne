@@ -42,17 +42,17 @@ typedef struct {
 } command;
 
 
-#define NO_ARGS					(1<<1)			/* This command must be called without argument. */
-#define ARG_IS_STRING			(1<<2)			/* The argument is a string (default is a number). */
-#define IS_OPTION					(1<<3)			/* The command controls an option,
-															and can be played while exec_only_options is true. */
-#define DO_NOT_RECORD			(1<<4)			/* Never record this command. */
-#define EMPTY_STRING_OK			(1<<5)			/* This command can accept an empty string ("") as an argument. */
+#define NO_ARGS          (1<<1)   /* This command must be called without argument. */
+#define ARG_IS_STRING    (1<<2)   /* The argument is a string (default is a number). */
+#define IS_OPTION        (1<<3)   /* The command controls an option,
+                                     and can be played while exec_only_options is true. */
+#define DO_NOT_RECORD    (1<<4)   /* Never record this command. */
+#define EMPTY_STRING_OK  (1<<5)   /* This command can accept an empty string ("") as an argument. */
 
 
 /* These macros makes the following vector more readable. */
 
-#define HELP_LEN(x)			(sizeof(x ## _HELP) / sizeof(char *) - 1)
+#define HELP_LEN(x)         (sizeof(x ## _HELP) / sizeof(char *) - 1)
 #define NAHL(x) x ## _NAME, x ##_ABBREV, x ## _HELP, HELP_LEN(x)
 
 /* This is the command vector. Note that the command names come from names.h,
