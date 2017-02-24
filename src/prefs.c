@@ -267,7 +267,7 @@ static char *determine_virtual_extension( buffer * const b, char *vname, buffer 
 			   the buffer we're navigating through, but we don't want to show this buffer! */
 			int64_t earliest_found_line = INT64_MAX;
 			int skip_first = false;
-			vb->find_string = str_dup( "^\\s*(\\w+)\\s+([0-9]+)\\s+(.+)" );
+			vb->find_string = str_dup( "^\\s*(\\w+)\\s+([0-9]+)\\s+(.+[^ \\t])\\s*$" );
 			vb->find_string_changed = 1;
 			while ( earliest_found_line > 0 && find_regexp(vb,NULL,skip_first) == OK && !stop) {
 				skip_first = true;

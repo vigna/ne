@@ -569,12 +569,13 @@ Note also that a preferences file is just a macro (as described in the
 following section). Thus, it can be edited manually if necessary.
 
 Some files have no extension. Others have obviously incorrect extensions.
-For example, a file named @code{example.conf} which contains XML. For the
-purposes of applying automatic preferences and syntax definitions, @code{ne} provides
-a mechanism for overriding a wrong or missing extension with
-a @dfn{virtual extension} based on a document's contents. You do this
-by creating a @file{~/.ne/.extensions} file which is fully described
-in the @ref{Virtual Extensions} section.
+Consider for example a file named @code{example.conf} which contains XML.
+You may reasonably expect it to be considered a @code{.xml} file rather than
+a @code{.conf} file. For the purposes of applying automatic preferences and
+syntax definitions, @code{ne} provides a mechanism for overriding a wrong or
+missing extension with a @dfn{virtual extension} based on a document's
+contents. You do this by creating a @file{~/.ne/.extensions} file which is
+fully described in the @ref{Virtual Extensions} section.
 
 
 @node Basic Macros
@@ -1360,11 +1361,13 @@ Colors indicate different syntactic categories of text according to
 the syntax definition in use.
 
 Syntax definitions are stored in separate files. @code{ne} comes with a
-suite of syntax definitions for many popular programming languages.
+suite of syntax definitions for many popular programming languages and
+other common text file types.
 When you load a file, @code{ne} selects the appropriate syntax
 definition as determined by the filename extension in much the same way
-autoprefs are loaded. (See @ref{Basic Preferences} for a discussion
-of virtual extensions.) It also contains a built-in table of common
+autoprefs are loaded. (See @ref{Virtual Extensions} for ways to override
+a file's extension based on file contents.)
+It also contains a built-in table of common
 filename extensions that share the same syntax definitions. For
 example, both @samp{cbl}, and @samp{cob} files use the @samp{cobol}
 definition. See the @ref{Syntax} command for the complete list of
@@ -1969,7 +1972,9 @@ characters, as in @samp{[a-z$%.]}, which matches any lower case letter or
 
 Note that the usual special characters are not special any more inside a
 character set.  A completely different set of special characters exists
-inside character sets: @samp{]}, @samp{-} and @samp{^}.
+inside character sets: @samp{]}, @samp{-} and @samp{^}. As @samp{\} is 
+not special inside character sets, you cannot use the shortcuts
+@samp{\s} or @samp{\w} there.
 
 To include a @samp{]} in a character set, you must make it
 the first character.  For example, @samp{[]a]} matches @samp{]} or @samp{a}.
@@ -2086,6 +2091,13 @@ of a word.
 
 @item \>
 matches the empty string, but only if it is at the end of a word.
+
+@item \s
+matches any white-space character in US-ASCII. These are @key{tab},
+@kbd{@key{Control}-J} (line feed), 
+@kbd{@key{Control}-k} (vertical tab), 
+@kbd{@key{Control}-L} (form feed), 
+@kbd{@key{Control}-M} (carriage return), and space. 
 
 @item \w
 matches any word-constituent character. These are US-ASCII letters,
@@ -5595,7 +5607,8 @@ the document's name had the corresponding extension.
 @noindent Anything else is treated as a comment. The number must be a positive integer
 indicating the maximum line number of the document in which the corresponding
 regular expression must match. The exception is zero, which allows a match on
-any line in the document.
+any line in the document. Trailing spaces are not included as part of the
+regular_expression.
 
 If two different patterns match, the one matching the document's lower line number
 will take precedence. If they match on the same line, then the first one listed
