@@ -273,6 +273,7 @@ int insert_in_stream(char_stream *cs, const char *s, int64_t p, int64_t len);
 /* support.c */
 bool same_str(const char *p, const char *q);
 char *ne_getcwd(const int bufsize);
+char *relpath(const char *a, const char *b);
 const char *get_global_dir(void);
 const char *tilde_expand(const char *filename);
 const char *file_part(const char *pathname);

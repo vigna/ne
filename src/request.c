@@ -820,6 +820,10 @@ char *request_files(const char * const filename, bool use_prefix) {
 						result = ne_getcwd(CUR_DIR_MAX_SIZE + strlen(p) + 2);
 						if (strcmp(result, "/")) strcat(result, "/");
 						strcat(result, p);
+						/* This is where we "relative-ize" result wrt cur_dir_name. */
+						char *rp = relpath(result,cur_dir_name);
+						free(result);
+						result = rp;
 						if (t < 0) {
 							memmove(result + 1, result, strlen(result) + 1);
 							result[0] = 0;

@@ -53,6 +53,40 @@ char *ne_getcwd(const int bufsize) {
 	return result;
 }
 
+/* Given two absolute paths a and b where b is a directory, return a newly
+   allocated path c that is the relative path from b to a.
+   Ex: "/aa/bb/cc/x.c","/aa/bb/dd" -> "../cc/x.c" 
+   The returned string has one extra '\0' so request_files() can shift it. */
+char *relpath(const char *a, const char *b) {
+	int match = max_prefix(a,b);
+	char *c;
+	int common_dirs=0, up_dirs=0, i, j=0;
+	for (i=1; i<match; i++) {  /* skip initial '/' */
+		if (a[i] == '/') {
+			common_dirs++;
+			j = i + 1;
+		} else if (b[i+1] == '\0') {
+			common_dirs++;
+			j = i + 2;
+		}
+	}
+	/* if (match == strlen(b)) common_dirs++; */
+	for (i=j; i<=strlen(b); i++) {
+		if (b[i] == '/' || b[i] == '\0') up_dirs++;
+	}
+	if (common_dirs > up_dirs) {
+		int newlen = 3 * up_dirs + (strlen(a+j) ) + 2; /* 3 for each "../" and two trailing '\0' */
+		c = malloc(newlen);
+		if (c) {
+			*c = '\0';
+			for (i=0; i<up_dirs; i++)
+				strcat(c,"../");
+			strcat(c,a+j);
+		}
+	} else
+		if (c = malloc(strlen(a)+2)) strcpy(c,a);
+	return c;
+}
 
 /* is_migrated() tells whether the specified file is currently migrated.  A
    migrated file is one which is not actually on-line but is out on tape or
