@@ -773,9 +773,11 @@ char *request_files(const char * const filename, bool use_prefix) {
 	char * const cur_dir_name = ne_getcwd(CUR_DIR_MAX_SIZE);
 	if (!cur_dir_name) return NULL;
 
+	bool absolute = false;
 	char * const dir_name = str_dup(filename);
 	if (dir_name) {
 		int result = 0;
+		if (dir_name[0] == '/') absolute = true;
 		char * const p = (char *)file_part(dir_name);
 		if (p != dir_name) {
 			*p = 0;
@@ -820,10 +822,11 @@ char *request_files(const char * const filename, bool use_prefix) {
 						result = ne_getcwd(CUR_DIR_MAX_SIZE + strlen(p) + 2);
 						if (strcmp(result, "/")) strcat(result, "/");
 						strcat(result, p);
-						/* This is where we "relative-ize" result wrt cur_dir_name. */
-						char *rp = relpath(result,cur_dir_name);
-						free(result);
-						result = rp;
+						if (!absolute) {
+							char *rp = relpath(result,cur_dir_name);
+							free(result);
+							result = rp;
+						}
 						if (t < 0) {
 							memmove(result + 1, result, strlen(result) + 1);
 							result[0] = 0;

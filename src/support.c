@@ -70,11 +70,11 @@ char *relpath(const char *a, const char *b) {
 			j = i + 2;
 		}
 	}
-	/* if (match == strlen(b)) common_dirs++; */
+
 	for (i=j; i<=strlen(b); i++) {
 		if (b[i] == '/' || b[i] == '\0') up_dirs++;
 	}
-	if (common_dirs > up_dirs) {
+	/* if (common_dirs > up_dirs) { */
 		int newlen = 3 * up_dirs + (strlen(a+j) ) + 2; /* 3 for each "../" and two trailing '\0' */
 		c = malloc(newlen);
 		if (c) {
@@ -83,8 +83,8 @@ char *relpath(const char *a, const char *b) {
 				strcat(c,"../");
 			strcat(c,a+j);
 		}
-	} else
-		if (c = malloc(strlen(a)+2)) strcpy(c,a);
+	/* } else
+		if (c = malloc(strlen(a)+2)) strcpy(c,a); */
 	return c;
 }
 
