@@ -1420,6 +1420,13 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		}
 		return ERROR;
 
+	case NAMECONVERT_A:
+		/* This is a stub to be replaced by the NAMECONVERT_A	code once it's written. */
+		/* Functions suspiciously like HEXCODE_A right now. */
+		SET_USER_FLAG(b, c, opt.hex_code);
+		reset_status_bar();
+		return OK;
+
 	case SYSTEM_A:
 		if (p || (p = request_string(b, "Shell command", NULL, false, COMPLETE_FILE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
 

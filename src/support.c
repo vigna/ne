@@ -53,11 +53,45 @@ char *ne_getcwd(const int bufsize) {
 	return result;
 }
 
-/* Given two absolute paths a and b where b is a directory, return a newly
-   allocated path c that is the relative path from b to a.
+/* Given relative file path a and absolute directory path b, return a newly
+   allocated file path c that is the absolute path to file a.
+   Ex: "../../xx/yy/f.c","/aa/bb/dd" -> "/aa/xx/yy/f.c"
+   The returned string has at least one extra char so it can be shifted
+   if necessary as per relative_file_path(). */
+
+char *absolute_file_path(const char *a, const char *b) {
+	char *c = malloc(strlen(a)+strlen(b)+2);
+	char *p;
+	const char *q;
+	strcpy(c,b);
+	p = c+strlen(c);
+	q = a;
+	while (*q) {
+		if (q[0] == '.' && q[1] == '.' && q[2] == '/') {
+			q += 3;
+			while (p > c && *--p != '/')
+				;
+		} else if (q[0] == '.' && q[1] == '/') {
+			q += 2;
+		} else {
+			*p++ = '/';
+			do {
+				*p++ = *q++;
+			} while (*q && *q != '/');
+			if (*q == '/') q++;
+		}
+	}
+	*p = '\0';
+	return c;
+}
+
+
+/* Given absolute file path a and absolute directory path b, return a newly
+   allocated file path c that is the relative path from b to a.
    Ex: "/aa/bb/cc/x.c","/aa/bb/dd" -> "../cc/x.c" 
    The returned string has one extra '\0' so request_files() can shift it. */
-char *relpath(const char *a, const char *b) {
+
+char *relative_file_path(const char *a, const char *b) {
 	int match = max_prefix(a,b);
 	char *c;
 	int common_dirs=0, up_dirs=0, i, j=0;

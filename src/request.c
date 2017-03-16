@@ -823,7 +823,7 @@ char *request_files(const char * const filename, bool use_prefix) {
 						if (strcmp(result, "/")) strcat(result, "/");
 						strcat(result, p);
 						if (!absolute) {
-							char *rp = relpath(result,cur_dir_name);
+							char *rp = relative_file_path(result,cur_dir_name);
 							free(result);
 							result = rp;
 						}

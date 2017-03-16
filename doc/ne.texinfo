@@ -5155,6 +5155,7 @@ provide access to the shell and a way to assign the functionality of
 * System::
 * Escape::
 * KeyCode::
+* NameConvert::
 @end menu
 
 
@@ -5341,6 +5342,21 @@ configuring your @file{~/.ne/.keys} file.
 
 If the optional integer @var{k} (between 0 and 511) is given, @code{KeyCode}
 uses @var{k} as the key code and displays the information described above.
+
+
+@node NameConvert
+@subsection NameConvert
+@cmindex NameConvert
+
+@noindent Syntax: @code{NameConvert [0|1]}@*
+@noindent Abbreviation: @code{NC}
+
+@noindent converts the current buffer's name between relative and
+absolute path names. With no parameter it switches the current name
+from relative to absolute, or absolute to relative. With @code{1} it
+converts the relative path to absolute or leaves the absolute path
+unchanged. With @code{0} it converts the absolute path to relative or
+leaves the relative path unchanged.
 
 
 @node Configuration
