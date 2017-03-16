@@ -1421,10 +1421,18 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		return ERROR;
 
 	case NAMECONVERT_A:
-		/* This is a stub to be replaced by the NAMECONVERT_A	code once it's written. */
-		/* Functions suspiciously like HEXCODE_A right now. */
-		SET_USER_FLAG(b, c, opt.hex_code);
-		reset_status_bar();
+		q = NULL;
+		if (b->filename && (p = ne_getcwd(CUR_DIR_MAX_SIZE))) {
+			if (b->filename[0] == '/' && (c < 1))
+				q = relative_file_path(b->filename, p);
+			else if (b->filename[0] != '/' && (c != 0))
+				q = absolute_file_path(b->filename, p);
+			if (q) {
+				change_filename(b, q);
+				reset_status_bar();
+			}
+			free(p);
+		}
 		return OK;
 
 	case SYSTEM_A:

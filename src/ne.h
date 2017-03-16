@@ -78,6 +78,10 @@ typedef enum {
 
 extern const char *input_class_names[];
 
+/* This is the expected max length of the current directory name. */
+
+#define CUR_DIR_MAX_SIZE    (16*1024)
+
 /* The name of the default preferences file. */
 
 #define DEF_PREFS_NAME     ".default"

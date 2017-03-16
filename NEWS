@@ -2,17 +2,23 @@
 
 3.0.2
 
-  * Determine a "virtual extension" based on buffer contents and patterns
+  * Determine a "virtual extension" based on document contents and patterns
     from ~/.ne/.extensions. If no match, use filename extension, else
     use .default#ap prefs.
 
-  * Status flag "!" indicates the last line of buffer is not empty, thus
+  * Status flag "!" indicates the last line of document is not empty, thus
     the last line of the resulting file will not be terminated when the
     buffer is saved.
 
   * Requesters by default no longer remove non-matching entries as you
-    enter characters. Use Insert or Delete keys to toggle between these
-    behaviors.
+    enter characters. Use Insert or Delete keys within a requester
+    to toggle between these behaviors.
+
+  * Documents loaded through file requesters now have relative instead of
+    absolute paths.
+
+  * New NameConvert command (NC for short) changes current document's file
+    name from relative to absolute path or absolute to relative path.
 
   * "SetBookmark ?" and "GotoBookmark ?" now prompt for the bookmark you
     want to set/goto. The prompt also indicates which bookmarks are set.

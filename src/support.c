@@ -63,6 +63,7 @@ char *absolute_file_path(const char *a, const char *b) {
 	char *c = malloc(strlen(a)+strlen(b)+2);
 	char *p;
 	const char *q;
+	if (!a || !b || !c || a[0] == '/' || b[0] != '/') return NULL;
 	strcpy(c,b);
 	p = c+strlen(c);
 	q = a;
@@ -95,6 +96,7 @@ char *relative_file_path(const char *a, const char *b) {
 	int match = max_prefix(a,b);
 	char *c;
 	int common_dirs=0, up_dirs=0, i, j=0;
+	if (!a || !b || a[0] != '/' || b[0] != '/') return NULL;
 	for (i=1; i<match; i++) {  /* skip initial '/' */
 		if (a[i] == '/') {
 			common_dirs++;
@@ -108,17 +110,14 @@ char *relative_file_path(const char *a, const char *b) {
 	for (i=j; i<=strlen(b); i++) {
 		if (b[i] == '/' || b[i] == '\0') up_dirs++;
 	}
-	/* if (common_dirs > up_dirs) { */
-		int newlen = 3 * up_dirs + (strlen(a+j) ) + 2; /* 3 for each "../" and two trailing '\0' */
-		c = malloc(newlen);
-		if (c) {
-			*c = '\0';
-			for (i=0; i<up_dirs; i++)
-				strcat(c,"../");
-			strcat(c,a+j);
-		}
-	/* } else
-		if (c = malloc(strlen(a)+2)) strcpy(c,a); */
+	int newlen = 3 * up_dirs + (strlen(a+j) ) + 2; /* 3 for each "../" and two trailing '\0' */
+	c = malloc(newlen);
+	if (c) {
+		*c = '\0';
+		for (i=0; i<up_dirs; i++)
+			strcat(c,"../");
+		strcat(c,a+j);
+	}
 	return c;
 }
 

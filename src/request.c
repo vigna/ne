@@ -24,10 +24,6 @@
 #include <dirent.h>
 
 
-/* This is the expected max length of the current directory name. */
-
-#define CUR_DIR_MAX_SIZE    (16*1024)
-
 /* request_strings() prompts the user to choose one between several (cur_entries) strings,
    contained in the entries array. The maximum string width is given as
    max_name_len. The strings are displayed as an array. More than one page will
