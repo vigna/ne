@@ -404,7 +404,7 @@ You can also escape with @key{f1}, @key{Escape} or
 @key{Escape}-@key{Escape}  and manually type the file name on the command
 line (or escape again, and abort the @code{Open} operation). If you escape
 with @key{Tab} instead, the file or directory under the cursor will be
-copied in the input line, where you can modify it manually. @code{ne} also
+copied to the input line, where you can modify it manually. @code{ne} also
 has file name completion features activated by @key{Tab} (@pxref{The Input
 Line}).
 
@@ -569,9 +569,9 @@ Note also that a preferences file is just a macro (as described in the
 following section). Thus, it can be edited manually if necessary.
 
 Some files have no extension. Others have obviously incorrect extensions.
-Consider for example a file named @code{example.conf} which contains XML.
-You may reasonably expect it to be considered a @code{.xml} file rather than
-a @code{.conf} file. For the purposes of applying automatic preferences and
+Consider for example a file named @file{example.conf} which contains XML.
+You may reasonably expect it to be considered a @file{.xml} file rather than
+a @file{.conf} file. For the purposes of applying automatic preferences and
 syntax definitions, @code{ne} provides a mechanism for overriding a wrong or
 missing extension with a @dfn{virtual extension} based on a document's
 contents. You do this by creating a @file{~/.ne/.extensions} file which is
@@ -1227,7 +1227,7 @@ Whenever a file name is requested, you can type a partial file name and
 @dfn{complete} it with the @key{Tab} key. @code{ne} will scan the
 current directory (or the directory that you partially specified) and
 search for the files matching your partial suggestion. The longest
-prefix common to all such files will be copied on the input line
+prefix common to all such files will be copied to the input line
 (@code{ne} will beep if no completion exists). It's easier done than
 said---just try. If you press @key{Tab} again, you will be brought into
 the file requester: only the files and directories matching your partial
@@ -1293,54 +1293,72 @@ bindings. Thus, for instance, you can page up and down through the
 list with @kbd{@key{Control}-P} and @kbd{@key{Control}-N} (in the standard keyboard
 configuration).
 
-As with the input line (@pxref{The Input Line}), you can confirm your
-input with @key{Return} or escape the requester with @key{f1} or the
-@key{Escape} key (or whatever has been bound to the @code{Escape}
-command). Moreover, if you are selecting a file name there is a third
-possibility: by escaping with the @key{Tab} key, the file or directory
-name that the cursor is currently on will be copied to the input
-line. This allows you to choose an existing name with @key{Tab} and
-modify it before hitting @key{Return}.
-
 A special feature is bound to printing characters: the requester
 progressively advances to entries that match the characters you
 type without regard to case. You can use @key{Backspace} to
-incrementally undo your character matches. This progressive matching
+incrementally undo your matched characters. This progressive matching
 works in two modes which you can switch between on the fly with either
 the @key{Insert} or @key{Delete} key. In the default mode, the cursor
 indicating your current selection simply advances to the next matching
 entry (if there is one). In the other mode, all entries which don't
 match the characters you've entered are removed from the list so you
 only see the matching entries. The @key{Backspace} key incrementally
-returns them to your list. You can switch between the two modes as
-often as you wish while searching for your desired entry. This lets you
-quickly navigate large lists to get to the entries you really want.
+returns them to your list as your match becomes less specific. You can
+switch between the two modes as often as you wish while searching for
+your desired entry. This lets you quickly navigate large lists to get
+to the entries you really want.
 
-An example of a requester is the list of commands appearing when you use
+One example of a requester is the list of commands appearing when you use
 the @code{Help} command. Another is the list of document words matching
-a prefix given to the @code{AutoComplete} command. A third example is the file requester that
-@code{ne} issues whenever a file operation is going to take place. In
-this case, pressing @key{Return} while on a directory name will enter
-the directory. Note also that, should the requester take too long to
+a prefix given to the @code{AutoComplete} command. A third example is
+the file requester that @code{ne} issues whenever a file operation is
+going to take place. In this case, pressing @key{Return} while on a
+directory name will enter that directory and refresh the requester with
+its entries. Note also that, should the requester take too long to
 appear, you can interrupt the directory scanning with
 @kbd{@key{Control}-\}. However, the listing will likely be incomplete.
 
-Note that there are two items that always appear in the file requester:
-@file{./} and @file{../}. The first one represents the current directory
-and can be used to force a reread of the directory. The second one represents the
-parent directory and can be used to move up by one directory level.
+Yet another example of a requester is the list of documents you
+currently have open. This requester is displayed when you use the
+@code{Select...} entry from the @code{Documents} menu, or invoke the
+@code{SelectDoc} command with the @key{f4} key. Documents with unsaved
+changes will be bold (if your terminal supports bold) and marked with
+an asterisk. These documents are generally listed in the order they
+were opened. However, in this requester you can reorder these documents
+by using the keys bound to the @code{NextDoc} and @code{PrevDoc}
+commands, usually @key{f2} and @key{f3}. Any document reordering and
+selection will only take effect if you exit the requester with the
+@key{Return} key.
 
-Another example of a requester is the list of current documents which
-is displayed when you use the @code{Select...} entry from the @code{Documents}
-menu, or invoke the @code{SelectDoc} command with the @key{f4} key.
-Documents with unsaved changes will be bold (if your terminal supports
-bold) and marked with an asterisk. These documents are generally listed in the
-order they were opened. However, in this requester you can reorder these
-documents by using the keys bound to the @code{NextDoc} and @code{PrevDoc}
-commands, usually @key{f2} and @key{f3}. Any document reordering and selection
-will only take effect if you exit the requester with the @key{Return} key.
+Regardless of the type of requester, you can confirm your selection
+with @key{Return} just as with the input line (@pxref{The Input Line}), or
+you can escape the requester without making a selection with @key{f1}
+or the @key{Escape} key (or whatever has been bound to the
+@code{Escape} command).
 
-The requester presents the strings by default in ``row major order,''
+Moreover, if you are selecting a file name through the requester there
+is a third possibility: by escaping with the @key{Tab} key, the file or
+directory name that the cursor is currently on will be copied to the
+input line. This allows you to choose an existing name with @key{Tab}
+and modify the name on the input line before hitting @key{Return}.
+
+Note that there are two items that always appear at the top of a file
+requester: @file{./} and @file{../}. The first one represents the
+current directory and can be used to force a reread of the directory.
+The second one represents the parent directory and can be used to move
+up by one directory level.
+
+The path to file names and directories selected through the requester
+will be relative to the current directory, i.e. the directory you were
+in when you invoked @code{ne}. The exception is when you've entered a
+path on the command line that starts with a @key{/}, then hit @key{Tab}
+to invoke the requester. In that case the path eventually returned by the
+requester will be an absolute path. (Note that you can change the
+current document's name from relative to absolute or absolute to
+relative with the @code{NameConvert} command either on the command line
+or from the @code{Extras} menu.)
+
+All requesters present their selections by default in ``row major order,''
 which means the second string is on the same row as the first but to
 its right, at the top of the second column, and so on across each row
 before filling in the next row down. If you prefer your lists displayed in

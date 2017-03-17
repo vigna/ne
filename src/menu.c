@@ -175,6 +175,7 @@ static const menu_item extras_item[] =
 		{ "Paragraph    [P", PARAGRAPH_ABBREV },
 		{ "Adjust View  ^^", ADJUSTVIEW_ABBREV },
 		{ "Middle View  [C", MIDDLEVIEW_ABBREV },
+		{ "Name Convert   ", NAMECONVERT_ABBREV },
 		{ "ToUpper      [V", TOUPPER_ABBREV },
 		{ "ToLower      [L", TOLOWER_ABBREV },
 		{ "Capitalize     ", CAPITALIZE_ABBREV },
