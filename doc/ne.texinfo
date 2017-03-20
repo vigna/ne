@@ -5369,7 +5369,7 @@ uses @var{k} as the key code and displays the information described above.
 @noindent Syntax: @code{NameConvert [0|1]}@*
 @noindent Abbreviation: @code{NC}
 
-@noindent converts the current buffer's name between relative and
+@noindent converts the current document's name between relative and
 absolute path names. With no parameter it switches the current name
 from relative to absolute, or absolute to relative. With @code{1} it
 converts the relative path to absolute or leaves the absolute path

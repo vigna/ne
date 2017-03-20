@@ -7,8 +7,7 @@
     use .default#ap prefs.
 
   * Status flag "!" indicates the last line of document is not empty, thus
-    the last line of the resulting file will not be terminated when the
-    buffer is saved.
+    the last line of the resulting saved file will not be terminated.
 
   * Requesters by default no longer remove non-matching entries as you
     enter characters. Use Insert or Delete keys within a requester
@@ -31,8 +30,6 @@
   * Warn if SaveAs would overwrite an existing file.
 
   * Suspend (Crtl-Z) works in prompts, requesters.
-
-  * Restored correct keyboard input for 8-bit character sets.
 
   * "KeyCode" now takes optional parameter.
 

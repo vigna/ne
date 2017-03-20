@@ -23,6 +23,7 @@
 
   * Resizing the window in inputs, requesters is more sane.
 
+  * Restored correct keyboard input for 8-bit character sets.
 
 3.0.1 2015-06-22
 
