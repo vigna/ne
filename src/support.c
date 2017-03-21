@@ -1,6 +1,6 @@
 /* Miscellaneous support functions.
 
-   Copyright (C) 1993-1998 Sebastiano Vigna 
+   Copyright (C) 1993-1998 Sebastiano Vigna
    Copyright (C) 1999-2017 Todd M. Lewis and Sebastiano Vigna
 
    This file is part of ne, the nice editor.
@@ -53,6 +53,33 @@ char *ne_getcwd(const int bufsize) {
 	return result;
 }
 
+/* 'normalize' path c. That is, remove multiple consecutive
+   '/', "./", and deep "../". */
+void normalize_path(char *c) {
+	char *p = c;
+	while (*p) {
+		if ((p[0] == '.' || p[0] == '/') && p[1] == '/') {
+			while ((p[0] == '.' || p[0] == '/') && p[1] == '/') {
+				memmove(p,p+1,strlen(p));
+			}
+		} else if (p[0] == '/') {
+			p++;
+		} else if (p[0] == '.' && p[1] == '.' && p[2] == '/') {
+			char *t = p;
+			if (t > c && *--t == '/') {
+				while (t > c && *--t != '/') /* empty loop */ ;
+				if (*t == '/' && (t == c || !( t[1] == '.' && t[2] == '.' && t[3] == '/'))) {
+					memmove(t,p+2,strlen(p+2)+1);
+					p = t + 1;
+				} else p += 2;
+			} else p += 2;
+		} else {
+			while (*p && *p != '/') p++;
+		}
+		while (p > c && *p == '/' && p[-1] == '/') p--;
+	}
+}
+
 /* Given relative file path a and absolute directory path b, return a newly
    allocated file path c that is the absolute path to file a.
    Ex: "../../xx/yy/f.c","/aa/bb/dd" -> "/aa/xx/yy/f.c"
@@ -61,42 +88,54 @@ char *ne_getcwd(const int bufsize) {
 
 char *absolute_file_path(const char *a, const char *b) {
 	char *c = malloc(strlen(a)+strlen(b)+2);
-	char *p;
-	const char *q;
-	if (!a || !b || !c || a[0] == '/' || b[0] != '/') return NULL;
+	char *cc;
+	const char *aa;
+	if (!a || !b || !c || a[0] == '/' || b[0] != '/') {
+		if (c) free(c);
+		return NULL;
+	}
 	strcpy(c,b);
-	p = c+strlen(c);
-	q = a;
-	while (*q) {
-		if (q[0] == '.' && q[1] == '.' && q[2] == '/') {
-			q += 3;
-			while (p > c && *--p != '/')
+	normalize_path(c);
+	cc = c+strlen(c);
+	aa = a;
+	while (*aa) {
+		if (aa[0] == '.' && aa[1] == '.' && aa[2] == '/') {
+			aa += 3;
+			while (cc > c && *--cc != '/')
 				;
-		} else if (q[0] == '.' && q[1] == '/') {
-			q += 2;
+		} else if (aa[0] == '.' && aa[1] == '/') {
+			aa += 2;
 		} else {
-			*p++ = '/';
+			*cc++ = '/';
 			do {
-				*p++ = *q++;
-			} while (*q && *q != '/');
-			if (*q == '/') q++;
+				*cc++ = *aa++;
+			} while (*aa && *aa != '/');
+			if (*aa == '/') aa++;
 		}
 	}
-	*p = '\0';
+	*cc = '\0';
+	normalize_path(c);
 	return c;
 }
 
 
-/* Given absolute file path a and absolute directory path b, return a newly
-   allocated file path c that is the relative path from b to a.
-   Ex: "/aa/bb/cc/x.c","/aa/bb/dd" -> "../cc/x.c" 
+/* Given absolute file path aa and absolute directory path b, return a newly
+   allocated file path c that is the relative path from b to aa.
+   Ex: "/aa/bb/cc/x.c","/aa/bb/dd" -> "../cc/x.c"
    The returned string has one extra '\0' so request_files() can shift it. */
 
-char *relative_file_path(const char *a, const char *b) {
-	int match = max_prefix(a,b);
-	char *c;
+char *relative_file_path(const char *aa, const char *b) {
 	int common_dirs=0, up_dirs=0, i, j=0;
-	if (!a || !b || a[0] != '/' || b[0] != '/') return NULL;
+	char *a, *c;
+	if (!aa || !b) return NULL;
+	a = str_dup(aa);
+	if (!a) return NULL;
+	normalize_path(a);
+	int match = max_prefix(a,b);
+	if (a[0] != '/' || b[0] != '/') {
+		if (a) free(a);
+		return NULL;
+	}
 	for (i=1; i<match; i++) {  /* skip initial '/' */
 		if (a[i] == '/') {
 			common_dirs++;
@@ -117,6 +156,7 @@ char *relative_file_path(const char *a, const char *b) {
 		for (i=0; i<up_dirs; i++)
 			strcat(c,"../");
 		strcat(c,a+j);
+		normalize_path(c);
 	}
 	return c;
 }
@@ -162,7 +202,7 @@ bool is_migrated(const char * const name) {
 bool is_migrated(const char * const name) {
 	return false;
 }
-#endif  
+#endif
 
 
 bool is_directory(const char * const name) {
@@ -361,11 +401,11 @@ int strcmpp(const void *a, const void *b) {
 
 /* Another comparison for qsort, this one does dictionary order. */
 
-int strdictcmpp(const void *a, const void *b)	{
+int strdictcmpp(const void *a, const void *b) {
 	return strdictcmp(*(const char **)a, *(const char **)b);
 }
 
-int strdictcmp(const char *a, const char *b)	{
+int strdictcmp(const char *a, const char *b) {
 	const int ci = strcasecmp(a, b);
 	if (ci) return ci;
 	return strcmp(a, b);
@@ -563,7 +603,7 @@ int64_t calc_pos(const line_desc * const ld, const int64_t col, const int tab_si
 /* Returns true if the specified character is invariant on the left edge of re-wrapped paragraphs */
 /* This will require a re-think for leading non-space invariants. For now, always assume false. */
 bool isparaspot(const int c) {
-	/* 
+	/*
 	char *spots = "%*#/>\t ";
 	char *p = spots;
 	while (*p) {
@@ -690,7 +730,7 @@ int get_string_width(const char * const s, const int64_t len, const encoding_typ
 	return width;
 }
 
-/* Returns whether the given character is a punctuation character. This function is 
+/* Returns whether the given character is a punctuation character. This function is
    compiled differently depending on whether wide-character function support is inhibited. */
 
 bool ne_ispunct(const int c, const int encoding) {
@@ -701,7 +741,7 @@ bool ne_ispunct(const int c, const int encoding) {
 #endif
 }
 
-/* Returns whether the given character is whitespace. This function is 
+/* Returns whether the given character is whitespace. This function is
    compiled differently depending on whether wide-character function support is inhibited. */
 
 bool ne_isspace(const int c, const int encoding) {
@@ -738,7 +778,7 @@ int context_prefix(const buffer *b, char **p, int64_t *prefix_pos) {
 		*p = malloc(b->cur_pos + 1 - *prefix_pos);
 		if (!*p) return OUT_OF_MEMORY;
 		strncpy(*p, &b->cur_line_desc->line[*prefix_pos], b->cur_pos - *prefix_pos);
-	} 
+	}
 	else *p = malloc(1); /* no prefix left of the cursor; we'll give an empty one. */
 
 	(*p)[b->cur_pos - *prefix_pos] = 0;
@@ -752,7 +792,7 @@ const char *cur_bookmarks_string(const buffer *b) {
 	static char str[16];
 	char *s = str;
 	int i;
-  
+
 	memset(str,0,16);
 	for (i=0, bits &= 0x03ff; i<10 && bits; i++, bits >>= 1) {
 		if ( bits & 1 ) {
