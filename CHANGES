@@ -25,6 +25,8 @@
 
   * Restored correct keyboard input for 8-bit character sets.
 
+  * Update syntax code for feature parity with current Joe.
+
 3.0.1 2015-06-22
 
   * Updated version of GNU regex library provides 64-bit regular

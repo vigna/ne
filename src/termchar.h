@@ -1,99 +1,104 @@
 /* extern's of flags describing terminal's characteristics.
 
-	Copyright (C) 1993-1998 Sebastiano Vigna 
-	Copyright (C) 1999-2017 Todd M. Lewis and Sebastiano Vigna
+   Copyright (C) 1993-1998 Sebastiano Vigna
+   Copyright (C) 1999-2017 Todd M. Lewis and Sebastiano Vigna
 
-	This file is part of ne, the nice editor.
+   This file is part of ne, the nice editor.
 
-	This library is free software; you can redistribute it and/or modify it
-	under the terms of the GNU General Public License as published by
-	the Free Software Foundation; either version 3 of the License, or (at your
-	option) any later version.
+   This library is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or (at your
+   option) any later version.
 
-	This library is distributed in the hope that it will be useful, but
-	WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-	or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-	for more details.
+   This library is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, see <http://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
 
 /** #define's from Joe's sources for colors and attributes. Please keep in sync. */
 
 #include <stdbool.h>
 
-#define INVERSE		 256
-#define UNDERLINE	 512
-#define BOLD		1024
-#define BLINK		2048
-#define DIM		4096
-#define AT_MASK		(INVERSE+UNDERLINE+BOLD+BLINK+DIM)
+#define CONTEXT_COMMENT 1
+#define CONTEXT_STRING  2
+#define CONTEXT_MASK    (CONTEXT_COMMENT+CONTEXT_STRING)
 
-#define BG_SHIFT	13
-#define BG_VALUE	(255<<BG_SHIFT)
-#define BG_NOT_DEFAULT	(256<<BG_SHIFT)
-#define BG_MASK		(511<<BG_SHIFT)
+#define ITALIC        128
+#define INVERSE       256
+#define UNDERLINE     512
+#define BOLD         1024
+#define BLINK        2048
+#define DIM          4096
+#define AT_MASK      (INVERSE+UNDERLINE+BOLD+BLINK+DIM)
 
-#define BG_DEFAULT	(0<<BG_SHIFT)
+#define BG_SHIFT        13
+#define BG_VALUE        (255<<BG_SHIFT)
+#define BG_NOT_DEFAULT  (256<<BG_SHIFT)
+#define BG_MASK         (511<<BG_SHIFT)
 
-/* #define BG_COLOR(color)	(BG_NOT_DEFAULT^(color)<<BG_SHIFT) */
-#define BG_COLOR(color)	(color)
+#define BG_DEFAULT      (0<<BG_SHIFT)
 
-#define BG_BLACK	(BG_NOT_DEFAULT|(0<<BG_SHIFT))
-#define BG_RED		(BG_NOT_DEFAULT|(1<<BG_SHIFT))
-#define BG_GREEN	(BG_NOT_DEFAULT|(2<<BG_SHIFT))
-#define BG_YELLOW	(BG_NOT_DEFAULT|(3<<BG_SHIFT))
-#define BG_BLUE		(BG_NOT_DEFAULT|(4<<BG_SHIFT))
-#define BG_MAGENTA	(BG_NOT_DEFAULT|(5<<BG_SHIFT))
-#define BG_CYAN		(BG_NOT_DEFAULT|(6<<BG_SHIFT))
-#define BG_WHITE	(BG_NOT_DEFAULT|(7<<BG_SHIFT))
-#define BG_BBLACK	(BG_NOT_DEFAULT|(8<<BG_SHIFT))
-#define BG_BRED		(BG_NOT_DEFAULT|(9<<BG_SHIFT))
-#define BG_BGREEN	(BG_NOT_DEFAULT|(10<<BG_SHIFT))
-#define BG_BYELLOW	(BG_NOT_DEFAULT|(11<<BG_SHIFT))
-#define BG_BBLUE	(BG_NOT_DEFAULT|(12<<BG_SHIFT))
-#define BG_BMAGENTA	(BG_NOT_DEFAULT|(13<<BG_SHIFT))
-#define BG_BCYAN	(BG_NOT_DEFAULT|(14<<BG_SHIFT))
-#define BG_BWHITE	(BG_NOT_DEFAULT|(15<<BG_SHIFT))
+/* #define BG_COLOR(color)    (BG_NOT_DEFAULT^(color)<<BG_SHIFT) */
+#define BG_COLOR(color) (color)
 
-#define FG_SHIFT	22
-#define FG_VALUE	(255<<FG_SHIFT)
-#define FG_NOT_DEFAULT	(256<<FG_SHIFT)
-#define FG_MASK		(511<<FG_SHIFT)
+#define BG_BLACK     (BG_NOT_DEFAULT|(0<<BG_SHIFT))
+#define BG_RED       (BG_NOT_DEFAULT|(1<<BG_SHIFT))
+#define BG_GREEN     (BG_NOT_DEFAULT|(2<<BG_SHIFT))
+#define BG_YELLOW    (BG_NOT_DEFAULT|(3<<BG_SHIFT))
+#define BG_BLUE      (BG_NOT_DEFAULT|(4<<BG_SHIFT))
+#define BG_MAGENTA   (BG_NOT_DEFAULT|(5<<BG_SHIFT))
+#define BG_CYAN      (BG_NOT_DEFAULT|(6<<BG_SHIFT))
+#define BG_WHITE     (BG_NOT_DEFAULT|(7<<BG_SHIFT))
+#define BG_BBLACK    (BG_NOT_DEFAULT|(8<<BG_SHIFT))
+#define BG_BRED      (BG_NOT_DEFAULT|(9<<BG_SHIFT))
+#define BG_BGREEN    (BG_NOT_DEFAULT|(10<<BG_SHIFT))
+#define BG_BYELLOW   (BG_NOT_DEFAULT|(11<<BG_SHIFT))
+#define BG_BBLUE     (BG_NOT_DEFAULT|(12<<BG_SHIFT))
+#define BG_BMAGENTA  (BG_NOT_DEFAULT|(13<<BG_SHIFT))
+#define BG_BCYAN     (BG_NOT_DEFAULT|(14<<BG_SHIFT))
+#define BG_BWHITE    (BG_NOT_DEFAULT|(15<<BG_SHIFT))
 
-#define FG_DEFAULT	(0<<FG_SHIFT)
-#define FG_BWHITE	(FG_NOT_DEFAULT|(15<<FG_SHIFT))
-#define FG_BCYAN	(FG_NOT_DEFAULT|(14<<FG_SHIFT))
-#define FG_BMAGENTA	(FG_NOT_DEFAULT|(13<<FG_SHIFT))
-#define FG_BBLUE	(FG_NOT_DEFAULT|(12<<FG_SHIFT))
-#define FG_BYELLOW	(FG_NOT_DEFAULT|(11<<FG_SHIFT))
-#define FG_BGREEN	(FG_NOT_DEFAULT|(10<<FG_SHIFT))
-#define FG_BRED		(FG_NOT_DEFAULT|(9<<FG_SHIFT))
-#define FG_BBLACK	(FG_NOT_DEFAULT|(8<<FG_SHIFT))
-#define FG_WHITE	(FG_NOT_DEFAULT|(7<<FG_SHIFT))
-#define FG_CYAN		(FG_NOT_DEFAULT|(6<<FG_SHIFT))
-#define FG_MAGENTA	(FG_NOT_DEFAULT|(5<<FG_SHIFT))
-#define FG_BLUE		(FG_NOT_DEFAULT|(4<<FG_SHIFT))
-#define FG_YELLOW	(FG_NOT_DEFAULT|(3<<FG_SHIFT))
-#define FG_GREEN	(FG_NOT_DEFAULT|(2<<FG_SHIFT))
-#define FG_RED		(FG_NOT_DEFAULT|(1<<FG_SHIFT))
-#define FG_BLACK	(FG_NOT_DEFAULT|(0<<FG_SHIFT))
+#define FG_SHIFT        22
+#define FG_VALUE        (255<<FG_SHIFT)
+#define FG_NOT_DEFAULT  (256<<FG_SHIFT)
+#define FG_MASK         (511<<FG_SHIFT)
+
+#define FG_DEFAULT    (0<<FG_SHIFT)
+#define FG_BWHITE     (FG_NOT_DEFAULT|(15<<FG_SHIFT))
+#define FG_BCYAN      (FG_NOT_DEFAULT|(14<<FG_SHIFT))
+#define FG_BMAGENTA   (FG_NOT_DEFAULT|(13<<FG_SHIFT))
+#define FG_BBLUE      (FG_NOT_DEFAULT|(12<<FG_SHIFT))
+#define FG_BYELLOW    (FG_NOT_DEFAULT|(11<<FG_SHIFT))
+#define FG_BGREEN     (FG_NOT_DEFAULT|(10<<FG_SHIFT))
+#define FG_BRED       (FG_NOT_DEFAULT|(9<<FG_SHIFT))
+#define FG_BBLACK     (FG_NOT_DEFAULT|(8<<FG_SHIFT))
+#define FG_WHITE      (FG_NOT_DEFAULT|(7<<FG_SHIFT))
+#define FG_CYAN       (FG_NOT_DEFAULT|(6<<FG_SHIFT))
+#define FG_MAGENTA    (FG_NOT_DEFAULT|(5<<FG_SHIFT))
+#define FG_BLUE       (FG_NOT_DEFAULT|(4<<FG_SHIFT))
+#define FG_YELLOW     (FG_NOT_DEFAULT|(3<<FG_SHIFT))
+#define FG_GREEN      (FG_NOT_DEFAULT|(2<<FG_SHIFT))
+#define FG_RED        (FG_NOT_DEFAULT|(1<<FG_SHIFT))
+#define FG_BLACK      (FG_NOT_DEFAULT|(0<<FG_SHIFT))
 
 
-extern bool line_ins_del_ok;			/* Terminal can insert and delete lines */
+extern bool line_ins_del_ok;    /* Terminal can insert and delete lines */
 
-extern bool char_ins_del_ok;			/* Terminal can insert and delete chars */
+extern bool char_ins_del_ok;    /* Terminal can insert and delete chars */
 
-extern bool scroll_region_ok;			/* Terminal supports setting the scroll window */
+extern bool scroll_region_ok;   /* Terminal supports setting the scroll window */
 
-extern bool standout_ok;					/* Terminal supports standout without magic cookies */
+extern bool standout_ok;        /* Terminal supports standout without magic cookies */
 
-extern bool cursor_on_off_ok;			/* Terminal can make the cursor visible or invisible */
+extern bool cursor_on_off_ok;   /* Terminal can make the cursor visible or invisible */
 
-extern bool ansi_color_ok;				/* Terminal supports ANSI color */
+extern bool ansi_color_ok;      /* Terminal supports ANSI color */
 
-extern bool color_ok;						/* Terminal supports color */
+extern bool color_ok;           /* Terminal supports color */
 
 extern bool ne_generic_type;
 

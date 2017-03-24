@@ -174,12 +174,13 @@ uint32_t *attr_buf = 0;
 int64_t attr_size = 0;
 int64_t attr_len = 0;
 int stack_count = 0;
+static int state_count = 0; /* Max transitions possible without cycling */
 
 HIGHLIGHT_STATE parse(struct high_syntax * const syntax, line_desc * const ld, HIGHLIGHT_STATE h_state, const bool utf8)
 {
-	struct high_frame *stack = h_state.stack;
+	struct high_frame *stack;
 
-	struct high_state *h = (stack ? stack->syntax : syntax)->states[h_state.state];
+	struct high_state *h;
 
 			/* Current state */
 
@@ -198,8 +199,17 @@ HIGHLIGHT_STATE parse(struct high_syntax * const syntax, line_desc * const ld, H
 	int mark_en = 0;			/* set if marking */
 	int recolor_delimiter_or_keyword;
 
+	/* Nothing should reference 'h' above here. */
+	if (h_state.state < 0) {
+		/* Indicates a previous error -- highlighting disabled */
+		return h_state;
+	}
+
 	const unsigned char *p = (const unsigned char *)ld->line;
 	unsigned char *q = (unsigned char *)(ld->line  + ld->line_len);
+
+   stack = h_state.stack;
+   h = (stack ? stack->syntax : syntax)->states[h_state.state];
 
 	buf[0]=0;				/* Forgot this originally... took 5 months to fix! */
 
@@ -208,6 +218,7 @@ HIGHLIGHT_STATE parse(struct high_syntax * const syntax, line_desc * const ld, H
 							/* Una iterazione in più: aggiungo '\n' come ultimo carattere. */
 	while( p <= q ) { /* On the last itteration, process the virtual '\n' character. */
 		struct high_cmd *cmd, *kw_cmd;
+		int iters = -8; /* +8 extra iterations before cycle detect. */
 		int x;
 
 		if (p == q) c = '\n';
@@ -221,8 +232,6 @@ HIGHLIGHT_STATE parse(struct high_syntax * const syntax, line_desc * const ld, H
 			c = 0x1F;
 
 		/* Create or expand attribute array if necessary */
-
-
 		if(attr==attr_end) {
 			if(!attr_buf) {
 				attr_size = 1024;
@@ -241,6 +250,12 @@ HIGHLIGHT_STATE parse(struct high_syntax * const syntax, line_desc * const ld, H
 
 		/* Loop while noeat */
 		do {
+			/* Guard against infinite loops from buggy syntaxes */
+			if (iters++ > state_count) {
+				invalidate_state(&h_state);
+				return h_state;
+			}
+
 			/* Color with current state */
 			attr[-1] = h->color;
 
@@ -415,6 +430,7 @@ static struct high_state *find_state(struct high_syntax *syntax,unsigned char *n
 			state->cmd[y] = &syntax->default_cmd;
 		state->delim = 0;
 		htadd(syntax->ht_states, state->name, state);
+		++state_count;
 	}
 	return state;
 }
@@ -796,6 +812,15 @@ struct high_state *load_dfa(struct high_syntax *syntax)
 					else {
 						state->color=0;
 						i_printf_2((char *)joe_gettext(_("%s %d: Unknown class\n")),name,line);
+					}
+					while(parse_ws(&p, '#'), !parse_ident(&p, bf, sizeof(bf))) {
+						if(!zcmp(bf, USTR "comment")) {
+							state->color |= CONTEXT_COMMENT;
+						} else if(!zcmp(bf, USTR "string")) {
+							state->color |= CONTEXT_STRING;
+						} else {
+							i_printf_2((char *)joe_gettext(_("%s %d: Unknown context\n")),name,line);
+						}
 					}
 				} else
 					i_printf_2((char *)joe_gettext(_("%s %d: Missing color for state definition\n")),name,line);
