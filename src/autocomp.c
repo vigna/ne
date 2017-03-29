@@ -19,6 +19,7 @@
 
 
 #include "ne.h"
+#include "support.h"
 
 #define EXTERNAL_FLAG_CHAR '*'
 

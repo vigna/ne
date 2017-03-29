@@ -20,6 +20,7 @@
 
 
 #include "ne.h"
+#include "support.h"
 #include "version.h"
 #include <limits.h>
 
@@ -350,8 +351,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 					b->cur_bookmark = c;
 					int avshift;
 					delay_update();
-					goto_line(b, b->bookmark[c].line);
-					goto_pos(b, b->bookmark[c].pos);
+					goto_line_pos(b, b->bookmark[c].line, b->bookmark[c].pos);
 					if (avshift = b->cur_y - b->bookmark[c].cur_y) {
 						snprintf(msg, MAX_MESSAGE_SIZE, "%c%d", avshift > 0 ? 'T' :'B', avshift > 0 ? avshift : -avshift);
 						adjust_view(b, msg);
@@ -1388,8 +1388,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 	case GOTOMARK_A:
 		if (b->marking) {
 			delay_update();
-			goto_line(b, b->block_start_line);
-			goto_column(b, calc_width(b->cur_line_desc, b->block_start_pos, b->opt.tab_size, b->encoding));
+			goto_line_pos(b, b->block_start_line, b->block_start_pos);
 			return OK;
 		}
 		print_error(MARK_BLOCK_FIRST);

@@ -20,6 +20,7 @@
 
 
 #include "ne.h"
+#include "support.h"
 
 
 /* How many undo steps we (re)allocate whenever we need more. */
@@ -195,8 +196,8 @@ int undo(buffer * const b) {
 		b->undo.cur_step--;
 
 		if (b->undo.steps[b->undo.cur_step].len) {
-			goto_line(b, b->undo.steps[b->undo.cur_step].line);
-			goto_pos(b, b->undo.steps[b->undo.cur_step].pos >= 0 ? b->undo.steps[b->undo.cur_step].pos : -(1 + b->undo.steps[b->undo.cur_step].pos));
+			goto_line_pos(b, b->undo.steps[b->undo.cur_step].line,
+				b->undo.steps[b->undo.cur_step].pos >= 0 ? b->undo.steps[b->undo.cur_step].pos : -(1 + b->undo.steps[b->undo.cur_step].pos));
 
 			if (b->undo.steps[b->undo.cur_step].len < 0) {
 				delete_stream(b, b->cur_line_desc, b->cur_line, b->cur_pos, -b->undo.steps[b->undo.cur_step].len);
@@ -242,8 +243,8 @@ int redo(buffer * const b) {
 #endif
 	do {
 		if (b->undo.steps[b->undo.cur_step].len) {
-			goto_line(b, b->undo.steps[b->undo.cur_step].line);
-			goto_pos(b, b->undo.steps[b->undo.cur_step].pos >= 0 ? b->undo.steps[b->undo.cur_step].pos : -(1 + b->undo.steps[b->undo.cur_step].pos));
+			goto_line_pos(b, b->undo.steps[b->undo.cur_step].line,
+				b->undo.steps[b->undo.cur_step].pos >= 0 ? b->undo.steps[b->undo.cur_step].pos : -(1 + b->undo.steps[b->undo.cur_step].pos));
 
 			if (b->undo.steps[b->undo.cur_step].len < 0) { 
 				line_desc *end_ld = (line_desc *)b->cur_line_desc->ld_node.next;

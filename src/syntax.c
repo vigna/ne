@@ -20,6 +20,7 @@
 
 
 #include "ne.h"
+#include "support.h"
 #include "termchar.h"
 #undef joe_gettext
 #define joe_gettext(a) (a)

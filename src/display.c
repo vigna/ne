@@ -20,6 +20,7 @@
 
 
 #include "ne.h"
+#include "support.h"
 #include "cm.h"
 #include "termchar.h"
 

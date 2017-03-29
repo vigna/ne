@@ -135,21 +135,21 @@ enums.h names.c names.h hash.c hash.h help.c help.h ext.c: ne.texinfo version.te
 	perl info2src.pl
 	rm -f ne.info*
 
-actions.o: $(MAINH)	keycodes.h names.h names.c errors.h errors.c protos.h version.h
+actions.o: $(MAINH)	support.h keycodes.h names.h names.c errors.h errors.c protos.h version.h
 
-autocomp.o: $(MAINH) protos.h
+autocomp.o: $(MAINH) support.h protos.h
 
-buffer.o: $(MAINH) keycodes.h names.h errors.h protos.h
+buffer.o: $(MAINH) support.h keycodes.h names.h errors.h protos.h
 
-clips.o: $(MAINH) keycodes.h names.h errors.h protos.h
+clips.o: $(MAINH) support.h keycodes.h names.h errors.h protos.h
 
 cm.o: cm.h
 
-command.o: $(MAINH) keycodes.h names.h errors.h protos.h help.h hash.h
+command.o: $(MAINH) support.h keycodes.h names.h errors.h protos.h help.h hash.h
 
-display.o: $(MAINH) keycodes.h names.h errors.h protos.h termchar.h
+display.o: $(MAINH) support.h keycodes.h names.h errors.h protos.h termchar.h
 
-edit.o: $(MAINH) keycodes.h names.h errors.h protos.h
+edit.o: $(MAINH) support.h keycodes.h names.h errors.h protos.h
 
 errors.o: errors.h
 
@@ -159,31 +159,31 @@ hash.o: hash.h
 
 info2cap.o: info2cap.h
 
-input.o: $(MAINH) keycodes.h names.h errors.h protos.h
+input.o: $(MAINH) support.h keycodes.h names.h errors.h protos.h
 
 inputclass.o: $(MAINH) keycodes.h names.h errors.h protos.h
 
 keys.o: $(MAINH) keycodes.h names.h errors.h protos.h
 
-menu.o: $(MAINH) keycodes.h names.h errors.h protos.h
+menu.o: $(MAINH) support.h keycodes.h names.h errors.h protos.h
 
-navigation.o: $(MAINH) keycodes.h names.h errors.h protos.h
+navigation.o: $(MAINH) support.h keycodes.h names.h errors.h protos.h
 
 ne.o: $(MAINH) keycodes.h names.h errors.h protos.h version.h regex.h
 
-prefs.o: $(MAINH) keycodes.h names.h errors.h protos.h
+prefs.o: $(MAINH) support.h keycodes.h names.h errors.h protos.h
 
 regex.o: regex.h regex_internal.h regex_internal.c regexec.c regcomp.c
 
 request.o: $(MAINH) keycodes.h names.h errors.h protos.h
 
-search.o: $(MAINH) keycodes.h names.h errors.h protos.h regex.h
+search.o: $(MAINH) support.h keycodes.h names.h errors.h protos.h regex.h
 
 signals.o: $(MAINH) keycodes.h names.h errors.h protos.h
 
 streams.o: $(MAINH) keycodes.h names.h errors.h protos.h
 
-support.o: $(MAINH) support.c keycodes.h names.h errors.h protos.h
+support.o: $(MAINH) support.h support.c keycodes.h names.h errors.h protos.h
 	$(CC) $(CFLAGS) -DGLOBALDIR=\"$(NE_GLOBAL_DIR)\" -c support.c
 
 syntax.o: $(MAINH)
@@ -202,6 +202,6 @@ termcap.o: termcap.h
 
 tparam.o: termcap.h
 
-undo.o: $(MAINH) keycodes.h names.h errors.h protos.h
+undo.o: $(MAINH) support.h keycodes.h names.h errors.h protos.h
 
 utf8.o: utf8.h

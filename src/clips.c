@@ -20,6 +20,7 @@
 
 
 #include "ne.h"
+#include "support.h"
 
 
 /* A clip is a numbered node in the global clip list. The contents of the clip
@@ -178,8 +179,7 @@ int copy_to_clip(buffer *b, int n, bool cut) {
 				assert_clip_desc(cd);
 
 				if (cut) {
-					goto_line(b, b->block_start_line);
-					goto_column(b, calc_width(b->cur_line_desc, b->block_start_pos, b->opt.tab_size, b->encoding));
+					goto_line_pos(b, b->block_start_line, b->block_start_pos);
 					delete_stream(b, b->cur_line_desc, b->cur_line, b->cur_pos, clip_len);
 					update_syntax_and_lines(b, b->cur_line_desc, NULL);
 				}
@@ -298,8 +298,7 @@ int erase_block(buffer *b) {
 			erase_len += len + 1;
 			ld = (line_desc *)ld->ld_node.prev;
 		}
-		goto_line(b, b->block_start_line);
-		goto_column(b, calc_width(b->cur_line_desc, b->block_start_pos, b->opt.tab_size, b->encoding));
+		goto_line_pos(b, b->block_start_line, b->block_start_pos);
 	}
 	else {
 		for(int64_t i = y; i <= b->block_start_line; i++) {
@@ -425,8 +424,7 @@ int copy_vert_to_clip(buffer *b, int n, bool cut) {
 				assert_clip_desc(cd);
 				if (cut) {
 					update_syntax_and_lines(b, (line_desc *)ld->ld_node.next, b->cur_line_desc);
-					goto_line(b, min(b->block_start_line, b->cur_line));
-					goto_column(b, min(calc_width(b->cur_line_desc, b->block_start_pos, b->opt.tab_size, b->encoding), b->win_x + b->cur_x));
+					goto_line_pos(b, min(b->block_start_line, b->cur_line), min(b->block_start_pos, b->cur_pos));
 					end_undo_chain(b);
 				}
 				return OK;
@@ -467,8 +465,7 @@ int copy_vert_to_clip(buffer *b, int n, bool cut) {
 				assert_clip_desc(cd);
 				if (cut) {
 					update_syntax_and_lines(b, b->cur_line_desc, (line_desc *)ld->ld_node.prev);
-					goto_line(b, min(b->block_start_line, b->cur_line));
-					goto_column(b, min(calc_width(b->cur_line_desc, b->block_start_pos, b->opt.tab_size, b->encoding), b->win_x + b->cur_x));
+					goto_line_pos(b, min(b->block_start_line, b->cur_line), min(b->block_start_pos, b->cur_pos));
 					end_undo_chain(b);
 				}
 				return OK;
@@ -534,8 +531,7 @@ int erase_vert_block(buffer *b) {
 
 	end_undo_chain(b);
 
-	goto_line(b, min(b->block_start_line, b->cur_line));
-	goto_column(b, min(calc_width(b->cur_line_desc, b->block_start_pos, b->opt.tab_size, b->encoding), b->win_x + b->cur_x));
+	goto_line_pos(b, min(b->block_start_line, b->cur_line), min(b->block_start_pos, b->cur_pos));
 
 	return OK;
 }

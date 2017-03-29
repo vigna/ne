@@ -20,6 +20,7 @@
 
 
 #include "ne.h"
+#include "support.h"
 #include "termchar.h"
 
 /* This is the maximum number of bytes which can be typed on the input

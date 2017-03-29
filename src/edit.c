@@ -20,6 +20,7 @@
 
 
 #include "ne.h"
+#include "support.h"
 
 /* The number of type of brackets we recognize. */
 #define NUM_BRACKETS 5
@@ -129,8 +130,7 @@ int match_bracket(buffer *b) {
 	int64_t match_line, match_pos;
 	const int rc = find_matching_bracket(b, 0, b->num_lines-1, &match_line, &match_pos, NULL, NULL);
 	if (rc == OK) {
-		goto_line(b, match_line);
-		goto_pos(b, match_pos);
+		goto_line_pos(b, match_line, match_pos);
 		return OK;
 	}
 	return rc;
@@ -276,8 +276,7 @@ int word_wrap2(buffer * const b) {
 	b->bookmark[WORDWRAP_BOOKMARK].cur_y = b->cur_y;
 	b->bookmark_mask |= (1 << WORDWRAP_BOOKMARK);
 	paragraph(b);
-	goto_line(b, b->bookmark[WORDWRAP_BOOKMARK].line);
-	goto_pos( b, b->bookmark[WORDWRAP_BOOKMARK].pos);
+	goto_line_pos(b, b->bookmark[WORDWRAP_BOOKMARK].line, b->bookmark[WORDWRAP_BOOKMARK].pos);
 	line = b->cur_line_desc->line;
 	b->bookmark[WORDWRAP_BOOKMARK].cur_y += b->bookmark[WORDWRAP_BOOKMARK].line - original_line;
 	if (avshift = b->cur_y - b->bookmark[WORDWRAP_BOOKMARK].cur_y) {
@@ -611,8 +610,7 @@ int paragraph(buffer * const b) {
 		if (ld->line) {
 			for (pos = 0; pos < ld->line_len; pos = next_pos(ld->line, pos, b->encoding)) {
 				if (!isasciispace(ld->line[pos])) {
-					goto_line(b, line);
-					goto_pos(b, pos);
+					goto_line_pos(b, line, pos);
 					return ld->ld_node.next ? OK : ERROR;
 				}
 			}
@@ -748,7 +746,7 @@ int shift(buffer * const b, char *p, char *msg, int msg_size) {
 		for (int64_t line = first_line; line <= last_line; line++) {
 			int64_t pos, c_pos, c_col_orig, offset;
 			b->attr_len = -1;
-			goto_line(b,line);
+			goto_line(b, line);
 			ld = b->cur_line_desc;
 			if (line == first_line) start_line_desc = ld;
 			pos = calc_pos(ld, left_col, b->opt.tab_size, b->encoding);
@@ -819,8 +817,7 @@ int shift(buffer * const b, char *p, char *msg, int msg_size) {
 	}
 
 	/* put the screen back where way we found it. */
-	goto_line(b, init_line);
-	goto_pos(b, init_pos);
+	goto_line_pos(b, init_line, init_pos);
 	delay_update();
 	const int64_t avshift = b->cur_y - init_y;
 	if (avshift) {

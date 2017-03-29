@@ -20,6 +20,7 @@
 
 
 #include "ne.h"
+#include "support.h"
 #include "help.h"
 #include "hash.h"
 

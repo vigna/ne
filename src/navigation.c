@@ -20,6 +20,7 @@
 
 
 #include "ne.h"
+#include "support.h"
 
 /* The functions in this file move the cursor. They also update the screen
 accordingly. There are some assumptions which are made in order to simplify
@@ -667,11 +668,15 @@ int adjust_view(buffer * const b, const char *p) {
 }
 
 
-
 void goto_line(buffer * const b, const int64_t n) {
+	goto_line_pos(b, n, -1);
+}
+
+
+void goto_line_pos(buffer * const b, const int64_t n, const int64_t pos) {
 	b->y_wanted = 0;
 
-	if (n >= b->num_lines || n == b->cur_line) return;
+	if (n >= b->num_lines || n == b->cur_line && (pos == -1 || pos == b->cur_pos)) return;
 
 	line_desc *ld;
 
@@ -683,7 +688,8 @@ void goto_line(buffer * const b, const int64_t n) {
 		ld = b->top_line_desc;
 		for(int64_t i = 0; i < b->cur_y; i++) ld = (line_desc *)ld->ld_node.next;
 		b->cur_line_desc = ld;
-		resync_pos(b);
+		if (pos != -1) goto_pos(b, pos);
+		else resync_pos(b);
 		return;
 	}
 
@@ -705,7 +711,8 @@ void goto_line(buffer * const b, const int64_t n) {
 	b->top_line_desc = ld;
 
 	if (b == cur_buffer) update_window(b);
-	resync_pos(b);
+	if (pos != -1) goto_pos(b, pos);
+	else resync_pos(b);
 }
 
 
@@ -734,10 +741,48 @@ void goto_column(buffer * const b, const int64_t n) {
 
 
 /* This is like a goto_column(), but you specify a position (i.e.,
-a character offset) instead. */
+a byte offset) instead. The specified position is arbitrary,
+and it will be rounded to the next legal position if it lands
+in the middle of a UTF-8 character. */
 
 void goto_pos(buffer * const b, const int64_t pos) {
-	goto_column(b, calc_width(b->cur_line_desc, pos, b->opt.tab_size, b->encoding));
+	const line_desc * const ld = b->cur_line_desc;
+	const int64_t last_pos = min(pos, ld->line_len);
+	int64_t col, real_pos;
+
+	for(col = real_pos = b->cur_char = 0; real_pos < last_pos; b->cur_char++, real_pos = next_pos(ld->line, real_pos, b->encoding)) {
+		if (ld->line[real_pos] != '\t') col += get_char_width(&ld->line[real_pos], b->encoding);
+		else col += b->opt.tab_size - col % b->opt.tab_size;
+	}
+
+	b->x_wanted = 0;
+
+	if (pos > ld->line_len) {
+		if (b->opt.free_form) {
+			col += pos - ld->line_len;
+			b->cur_char += pos - ld->line_len;
+			b->cur_pos = pos;
+		}
+		else {
+			b->cur_pos = ld->line_len;
+			b->x_wanted = 1;
+			b->wanted_x = col + pos - ld->line_len;
+		}
+	}
+	else b->cur_pos = real_pos;
+
+	if (col == b->win_x + b->cur_x) return;
+
+	if (col >= b->win_x && col < b->win_x + ne_columns) {
+		b->cur_x = col - b->win_x;
+		return;
+	}
+
+	if ((b->win_x = col - ne_columns / 2)<0) b->win_x = 0;
+	b->win_x -= b->win_x % b->opt.tab_size;
+	b->cur_x = col - b->win_x;
+
+	if (b == cur_buffer) update_window(b);
 }
 
 
@@ -920,21 +965,18 @@ int search_word(buffer * const b, const int dir) {
 
 			if (dir > 0) {
 				if (space_skipped && ne_isword(c, b->encoding)) {
-					goto_line(b, y);
-					goto_pos(b, pos);
+					goto_line_pos(b, y, pos);
 					return OK;
 				}
 			}
 			else {
 				if (word_started) {
 					if (!ne_isword(c, b->encoding)) {
-						goto_line(b, y);
-						goto_pos(b, pos + 1);
+						goto_line_pos(b, y, pos + 1);
 						return OK;
 					}
 					else if (pos == 0) {
-						goto_line(b, y);
-						goto_pos(b, 0);
+						goto_line_pos(b, y, 0);
 						return OK;
 					}
 				}

@@ -20,6 +20,7 @@
 
 
 #include "ne.h" 
+#include "support.h"
 
 /* The standard pool allocation dimension. */
 

@@ -20,6 +20,7 @@
 
 
 #include "ne.h"
+#include "support.h"
 #include "termchar.h"
 
 /* The default number of menus. */

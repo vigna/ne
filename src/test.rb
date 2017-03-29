@@ -175,7 +175,7 @@ ARGV[0].to_i.times do |i|
 	
 
 	elsif r < 50 # Editing
-		case rand(13)
+		case rand(14)
 		when 0
 			puts("CAPITALIZE " + (rand(10)).to_s)
 		when 1
@@ -226,6 +226,8 @@ ARGV[0].to_i.times do |i|
 			puts("REPEATLAST")
 		when 12
 			puts(rand(2)==0?"SYNTAX *":"SYNTAX texinfo")
+		when 13
+			puts("NAMECONVERT")
 		end
 	elsif r < 60 # Atomicity
 		puts("ATOMICUNDO")

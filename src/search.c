@@ -21,7 +21,7 @@
 
 #include "ne.h"
 #include "regex.h"
-
+#include "support.h"
 
 /* This is the initial allocation size for regex.library. */
 
@@ -146,8 +146,7 @@ int find(buffer * const b, const char *pattern, const bool skip_first) {
 								break;
 							}
 						if (i == m) {
-							goto_line(b, y);
-							goto_pos(b, (p - ld->line) - m + 1);
+							goto_line_pos(b, y, (p - ld->line) - m + 1);
 							return OK;
 						}
 					}
@@ -187,8 +186,7 @@ int find(buffer * const b, const char *pattern, const bool skip_first) {
 								break;
 							}
 						if (i == m) {
-							goto_line(b, y);
-							goto_pos(b, p - ld->line);
+							goto_line_pos(b, y, p - ld->line);
 							return OK;
 						}
 					}
@@ -439,8 +437,7 @@ int find_regexp(buffer * const b, const char *regex, const bool skip_first) {
 			int64_t pos;
 			if (start_pos <= ld->line_len &&
 				 (pos = re_search(&re_pb, ld->line ? ld->line : "", ld->line_len, start_pos, ld->line_len - start_pos, &re_reg)) >= 0) {
-				goto_line(b, y);
-				goto_pos(b, pos);
+				goto_line_pos(b, y, pos);
 				return OK;
 			}
 
@@ -460,8 +457,7 @@ int find_regexp(buffer * const b, const char *regex, const bool skip_first) {
 			int64_t pos;
 			if (start_pos >= 0 &&
 				 (pos = re_search(&re_pb, ld->line ? ld->line : "", ld->line_len, start_pos, -start_pos - 1, &re_reg)) >= 0) {
-				goto_line(b, y);
-				goto_pos(b, pos);
+				goto_line_pos(b, y, pos);
 				return OK;
 			}
 

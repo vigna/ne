@@ -20,6 +20,7 @@
 
 
 #include "ne.h"
+#include "support.h"
 
 
 /* These are the names of ne's autoprefs directory. */
@@ -259,8 +260,7 @@ static char *determine_virtual_extension( buffer * const b, char *vname, buffer 
 	}
 	if (vb) {
 		if (! buffer_file_modified(vb, vname) || load_file_in_buffer(vb, vname) == OK ) {
-			goto_line(vb,0);
-			goto_column(vb,0);
+			goto_line_pos(vb, 0, 0);
 			int found = 0;
 			int stop = false;
 			/* Examine each line in vb. Most functions in navigation.c expect to display
@@ -286,8 +286,7 @@ static char *determine_virtual_extension( buffer * const b, char *vname, buffer 
 					int64_t b_cur_pos     = b->cur_pos;
 					int     b_search_back = b->opt.search_back;
 					b->opt.search_back = false;
-					goto_line(b, 0);
-					goto_pos(b, 0);
+					goto_line_pos(b, 0, 0);
 					free(b->find_string);
 					b->find_string_changed = 1;
 					b->find_string = regex;
@@ -302,8 +301,7 @@ static char *determine_virtual_extension( buffer * const b, char *vname, buffer 
 							ext = NULL;
 						}
 					}
-					goto_line(b, b_cur_line);
-					goto_pos(b, b_cur_pos);
+					goto_line_pos(b, b_cur_line, b_cur_pos);
 					b->opt.search_back = b_search_back;
 				}
 				if (maxline_str) free(maxline_str);
