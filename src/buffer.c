@@ -1308,6 +1308,8 @@ void reset_syntax_states(buffer *b) {
 			ld->highlight_state = next_line_state;
 			next_line_state = parse(b->syn, ld, next_line_state, b->encoding == ENC_UTF8);
 		}
+
+		b->attr_len = -1;
 	}	
 }
 
