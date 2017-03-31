@@ -92,7 +92,7 @@ static int to_something(buffer *b, int (to_first)(int), int (to_rest)(int)) {
 	}
 
 	b->attr_len = -1;
-	update_line(b, b->cur_line_desc, b->cur_y, false, false);
+	update_partial_line(b, b->cur_line_desc, b->cur_y, 0, false);
 	if (b->syn) {
 		need_attr_update = true;
 		update_syntax_states(b, b->cur_y, b->cur_line_desc, NULL);

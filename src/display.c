@@ -226,24 +226,28 @@ void output_line_desc(const int row, const int col, const line_desc *ld, const i
 	}
 }
 
-/* Updates part of a line given its number and a starting column. It can handle
-   lines with no associated line descriptor (such as lines after the end of the
-   buffer). It checks for updated_lines bypassing TURBO. if cleared_at_end is
-   true, this function assumes that it doesn't have to clean up the rest of the
-   line if the string is not long enough to fill the line. 
+/* Updates part of a line given its number, its line descriptor and a starting 
+	column. It can handle lines after the end of the buffer (just pass the
+   tail of the line list). It checks for updated_lines bypassing TURBO, in
+   which case it simply updates first_line and last_line.
 
-   If differential is nonzero, the line is update differentially w.r.t.
+   If cleared_at_end is true, this function assumes that it doesn't have
+   to clean up the rest of the line if the string is not long enough to
+   fill the line. 
+
+   IF b->attr_len is nonnegative, the line is updated differentially w.r.t.
    the content of b->attr_buf. The caller is thus responsible to guarantee
-   that b->attr_buf contents reflect the currently displayed characters. 
+   that b->attr_buf contents reflect the currently displayed attributes.
 
-   Note that this function guarantees that it will call parse() on the
-   specified line.
+   After a call to this function with argument b->cur_line_desc,,
+   b->attr_buf will be updated so to contain again the currently displayed
+   attributes, unless no refresh has been performed, in which base
+   b->attr_len will be set to -1.
+*/
 
-   Returns the line descriptor corresponding to row, or NULL if the
-   row is beyond the end of text. */
 
-void update_partial_line(buffer * const b, const line_desc * const ld, const int row, const int64_t from_col, const bool cleared_at_end, const bool differential) {
-	assert(! b->syn);
+void update_partial_line(buffer * const b, line_desc * const ld, const int row, const int64_t from_col, const bool cleared_at_end) {
+	assert(ld);
 	assert(row < ne_lines - 1); 
 
 	if (++updated_lines > TURBO) window_needs_refresh = true;
@@ -251,56 +255,34 @@ void update_partial_line(buffer * const b, const line_desc * const ld, const int
 	if (window_needs_refresh) {
 		if (row < first_line) first_line = row;
 		if (row > last_line) last_line = row;
+		b->attr_len = -1;
 		return;
 	}
 
 	/* If the line descriptor is not valid, we just clear the line from the required position. This
 	   can happen while updating a region after the last line. */
 	if (! ld->ld_node.next) {
-		move_cursor(row, from_col);
-		clear_to_eol();
+		assert(from_col == 0);
+		if (! cleared_at_end) {
+			move_cursor(row, from_col);
+			clear_to_eol();
+		}
 		return;
 	}
 
-	output_line_desc(row, from_col, ld, from_col + b->win_x, ne_columns - from_col, b->opt.tab_size, cleared_at_end, b->encoding == ENC_UTF8, NULL, NULL, 0);
-}
+	if (b->syn) {
+		const bool differential = ld == b->cur_line_desc && b->attr_len >= 0;
+		HIGHLIGHT_STATE next_state = parse(b->syn, ld, ld->highlight_state, b->encoding == ENC_UTF8);
+		output_line_desc(row, from_col, ld, b->win_x, ne_columns, b->opt.tab_size, cleared_at_end, b->encoding == ENC_UTF8, attr_buf, differential ? b->attr_buf : NULL, differential ? b->attr_len : 0);
 
-
-
-/* Similar to the previous call, but updates the whole line. If the updated line is the current line,
-   we update the local attribute buffer. */
-
-void update_line(buffer * const b, line_desc * const ld, const int row, const bool cleared_at_end, const bool differential) {
-	if (! b->syn) {
-		update_partial_line(b, ld, row, 0, cleared_at_end, differential);
-		return;
+		if (ld == b->cur_line_desc) {
+			/* If we updated current line, we update the local attribute buffer. */
+			b->next_state = next_state;
+			ensure_attr_buf(b, attr_len);	
+			memcpy(b->attr_buf, attr_buf, (b->attr_len = attr_len) * sizeof *b->attr_buf);
+		}
 	}
-
-	assert(b->syn);
-	assert(row < ne_lines - 1); 
-
-	if (++updated_lines > TURBO) window_needs_refresh = true;
-
-	if (window_needs_refresh) {
-		if (row < first_line) first_line = row;
-		if (row > last_line) last_line = row;
-	}
-
-	//if (b->syn) parse(b->syn, ld, ld->highlight_state, b->encoding == ENC_UTF8);
-
-	if (! window_needs_refresh) {
-		assert(b->syn || ! differential);
-		assert(b->attr_len >= 0 || ! differential);
-		output_line_desc(row, 0, ld, b->win_x, ne_columns, b->opt.tab_size, cleared_at_end, b->encoding == ENC_UTF8, b->syn ? attr_buf : NULL, differential ? b->attr_buf : NULL, differential ? b->attr_len : 0);
-	}
-
-	update_partial_line(b, ld, row, 0, cleared_at_end, differential);
-	if (b->syn && ld == b->cur_line_desc) {
-		/* If we updated the entire current line, we update the local attribute buffer. */
-		b->next_state = parse(b->syn, ld, ld->highlight_state, b->encoding == ENC_UTF8);	
-		ensure_attr_buf(b, attr_len);	
-		memcpy(b->attr_buf, attr_buf, (b->attr_len = attr_len) * sizeof *b->attr_buf);
-	}
+	else output_line_desc(row, from_col, ld, from_col + b->win_x, ne_columns - from_col, b->opt.tab_size, cleared_at_end, b->encoding == ENC_UTF8, NULL, NULL, 0);
 }
 
 
@@ -404,8 +386,7 @@ void update_deleted_char(buffer * const b, const int c, const int a, line_desc *
 
 	if (!char_ins_del_ok) {
 		/* Argh! We can't insert or delete! Just update the rest of the line. */
-		if (b->syn) update_line(b, ld, line, false, false);
-		else update_partial_line(b, ld, line, x, false, false);
+		update_partial_line(b, ld, line, x, false);
 		return;
 	}
 
@@ -432,7 +413,7 @@ void update_deleted_char(buffer * const b, const int c, const int a, line_desc *
 				move_cursor(line, i - c_width);
 				delete_chars(b->opt.tab_size - c_width);
 
-				update_partial_line(b, ld, line, ne_columns - b->opt.tab_size, true, false);
+				update_partial_line(b, ld, line, ne_columns - b->opt.tab_size, true);
 			}
 			else {
 				/* In this case, instead, we just shift the piece of text between
@@ -449,7 +430,7 @@ void update_deleted_char(buffer * const b, const int c, const int a, line_desc *
 	/* No TAB was found. We just delete the character and fill the end of the line. */
 	if (!tab_found) {
 		delete_chars(c_width);
-		update_partial_line(b, ld, line, ne_columns - c_width, true, false);
+		update_partial_line(b, ld, line, ne_columns - c_width, true);
 	}
 }
 
@@ -457,7 +438,7 @@ void update_deleted_char(buffer * const b, const int c, const int a, line_desc *
 
 /* See comments for update_deleted_char(). */
 
-void update_inserted_char(buffer * const b, const int c, const line_desc * const ld, const int64_t pos, const int64_t attr_pos, const int line, const int x) {
+void update_inserted_char(buffer * const b, const int c, line_desc * const ld, const int64_t pos, const int64_t attr_pos, const int line, const int x) {
 	assert(pos < ld->line_len);
 
 	const uint32_t * const attr = b->syn ? &attr_buf[attr_pos] : NULL;
@@ -493,7 +474,7 @@ void update_inserted_char(buffer * const b, const int c, const line_desc * const
 	}
 
 	if (!char_ins_del_ok) {
-		update_partial_line(b, ld, line, x, false, false);
+		update_partial_line(b, ld, line, x, false);
 		return;
 	}
 
@@ -528,7 +509,7 @@ void update_inserted_char(buffer * const b, const int c, const line_desc * const
 
 /* See comments for update_deleted_char(). */
 
-void update_overwritten_char(buffer * const b, const int old_char, const int new_char, const line_desc * const ld, int64_t pos, const int64_t attr_pos, const int line, const int x) {
+void update_overwritten_char(buffer * const b, const int old_char, const int new_char, line_desc * const ld, int64_t pos, const int64_t attr_pos, const int line, const int x) {
 	assert(ld != NULL);
 	assert(pos < ld->line_len);
 
@@ -565,7 +546,7 @@ void update_overwritten_char(buffer * const b, const int old_char, const int new
 	}
 
 	if (!char_ins_del_ok) {
-		update_partial_line(b, ld, line, x, false, false);
+		update_partial_line(b, ld, line, x, false);
 		return;
 	}
 
@@ -606,7 +587,7 @@ void update_overwritten_char(buffer * const b, const int old_char, const int new
 						delete_chars(b->opt.tab_size - width_delta);
 					}
 
-					update_partial_line(b, ld, line, ne_columns - b->opt.tab_size, true, false);
+					update_partial_line(b, ld, line, ne_columns - b->opt.tab_size, true);
 				}
 				return;
 			}
@@ -615,7 +596,7 @@ void update_overwritten_char(buffer * const b, const int old_char, const int new
 		delete_chars(width_delta);
 		if (new_char == '\t') output_spaces(new_width, attr);
 		else output_char(new_char, attr ? *attr : -1, b->encoding == ENC_UTF8);
-		update_partial_line(b, ld, line, ne_columns - width_delta, true, false);
+		update_partial_line(b, ld, line, ne_columns - width_delta, true);
 	}
 	else {
 		/* The character has been enlarged by width_delta. */
@@ -713,11 +694,11 @@ void scroll_window(buffer * const b, line_desc * const ld, const int line, const
 		return;
 	}
 
-	if (n > 0) update_line(b, ld, line, ins_del_lines(line, 1), false);
+	if (n > 0) update_partial_line(b, ld, line, 0, ins_del_lines(line, 1));
 	else {
 		line_desc * last_line_ld = b->top_line_desc;
 		for(int i = ne_lines - 2; i-- != 0 && last_line_ld->ld_node.next;) last_line_ld = (line_desc *)last_line_ld->ld_node.next;
-		update_line(b, last_line_ld, ne_lines - 2, ins_del_lines(line, -1), false);
+		update_partial_line(b, last_line_ld, ne_lines - 2, 0, ins_del_lines(line, -1));
 	}
 }
 
