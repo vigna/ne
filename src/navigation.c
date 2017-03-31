@@ -722,7 +722,10 @@ void goto_column(buffer * const b, const int64_t n) {
 	b->x_wanted = 0;
 	b->y_wanted = 0;
 
-	if (n == b->win_x + b->cur_x) return;
+	if (n == b->win_x + b->cur_x) {
+		if (b->cur_pos == -1) resync_pos(b);
+		return;
+	}
 
 	if (n >= b->win_x && n < b->win_x + ne_columns) {
 		b->cur_x = n - b->win_x;

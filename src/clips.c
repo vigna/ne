@@ -393,7 +393,11 @@ int copy_vert_to_clip(buffer *b, int n, bool cut) {
 		end_x = t;
 	}
 
-	if (cut) start_undo_chain(b);
+	const int64_t cur_pos = b->cur_pos;
+	if (cut) {
+		b->cur_pos = -1;
+		start_undo_chain(b);
+	}
 
 	char *p = NULL;
 	if (y > b->block_start_line) {
@@ -424,7 +428,7 @@ int copy_vert_to_clip(buffer *b, int n, bool cut) {
 				assert_clip_desc(cd);
 				if (cut) {
 					update_syntax_and_lines(b, (line_desc *)ld->ld_node.next, b->cur_line_desc);
-					goto_line_pos(b, min(b->block_start_line, b->cur_line), min(b->block_start_pos, b->cur_pos));
+					goto_line_pos(b, min(b->block_start_line, b->cur_line), min(b->block_start_pos, cur_pos));
 					end_undo_chain(b);
 				}
 				return OK;
@@ -465,7 +469,7 @@ int copy_vert_to_clip(buffer *b, int n, bool cut) {
 				assert_clip_desc(cd);
 				if (cut) {
 					update_syntax_and_lines(b, b->cur_line_desc, (line_desc *)ld->ld_node.prev);
-					goto_line_pos(b, min(b->block_start_line, b->cur_line), min(b->block_start_pos, b->cur_pos));
+					goto_line_pos(b, min(b->block_start_line, b->cur_line), min(b->block_start_pos, cur_pos));
 					end_undo_chain(b);
 				}
 				return OK;
@@ -499,6 +503,9 @@ int erase_vert_block(buffer *b) {
 		b->block_start_pos >= ld->line_len) 
 		return OK;
 
+	const int64_t cur_pos = b->cur_pos;
+	b->cur_pos = -1;
+
 	int64_t start_x = calc_width(nth_line_desc(b, b->block_start_line), b->block_start_pos, b->opt.tab_size, b->encoding);
 	int64_t end_x = b->win_x + b->cur_x;
 
@@ -531,7 +538,7 @@ int erase_vert_block(buffer *b) {
 
 	end_undo_chain(b);
 
-	goto_line_pos(b, min(b->block_start_line, b->cur_line), min(b->block_start_pos, b->cur_pos));
+	goto_line_pos(b, min(b->block_start_line, b->cur_line), min(b->block_start_pos, cur_pos));
 
 	return OK;
 }

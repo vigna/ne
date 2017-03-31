@@ -206,15 +206,15 @@ int find_matching_bracket(buffer *b, const int64_t min_line, int64_t max_line, i
 /* Breaks a line at the first possible position before the current cursor
    position (i.e., at a tab or at a space). The space is deleted, and a
    new line is inserted. The cursor is repositioned coherently. The number
-   of characters existing on the new line is returned, or ERROR if no word
+   of bytes existing on the new line is returned, or ERROR if no word
    wrap was possible. */
 
-int word_wrap(buffer * const b) {
+int64_t word_wrap(buffer * const b) {
 	const int64_t len = b->cur_line_desc->line_len;
 	char * const line = b->cur_line_desc->line;
-	int64_t cur_pos, pos, first_pos;
+	int64_t pos, first_pos;
 
-	if (!(cur_pos = pos = b->cur_pos)) return ERROR;
+	if (!(pos = b->cur_pos)) return ERROR;
 
 	/* Find the first possible position we could break a line on. */
 	first_pos = 0;
@@ -234,6 +234,7 @@ int word_wrap(buffer * const b) {
 
 	start_undo_chain(b);
 
+	if (pos < b->cur_pos) b->cur_pos = -1;
 	delete_one_char(b, b->cur_line_desc, b->cur_line, pos);
 	insert_one_line(b, b->cur_line_desc, b->cur_line, pos);
 
@@ -461,6 +462,7 @@ int paragraph(buffer * const b) {
 			)
 		 ) return line_down(b);
 
+	b->cur_pos = -1;
 
 	/** Step 2 **/
 	start_undo_chain(b);
@@ -599,7 +601,7 @@ int paragraph(buffer * const b) {
 	update_window_lines(b, b->cur_y, ne_lines - 2, false);
 
 	/** Step 9 **/
-	goto_line(b, line);
+	goto_line_pos(b, line, pos);
 	if (stop || line_down(b) == ERROR) return stop ? STOPPED : ERROR;
 
 	/* Try to find the first non-blank starting with this line. */
@@ -643,6 +645,7 @@ int center(buffer * const b) {
 	len = b->encoding == ENC_UTF8 ? utf8strlen(&ld->line[start_pos], end_pos - start_pos) : end_pos - start_pos;
 	if (len >= right_margin) return OK;
 
+	b->cur_pos = -1;
 	start_undo_chain(b);
 
 	delete_stream(b, ld, b->cur_line, end_pos, ld->line_len - end_pos);
@@ -663,9 +666,9 @@ int center(buffer * const b) {
 int auto_indent_line(buffer * const b, const int64_t line, line_desc * const ld, const int64_t up_to_col) {
 
 	line_desc * const prev_ld = (line_desc *)ld->ld_node.prev;
-	assert_line_desc(prev_ld, b->encoding);
 
 	if (!prev_ld->ld_node.prev || prev_ld->line_len == 0) return 0;
+	assert_line_desc(prev_ld, b->encoding);
 
 	int c;
 	int64_t pos = 0;	
@@ -741,12 +744,14 @@ int shift(buffer * const b, char *p, char *msg, int msg_size) {
 		}
 	}
 
+
 	if (!rc) {
 		start_undo_chain(b);
 		for (int64_t line = first_line; line <= last_line; line++) {
 			int64_t pos, c_pos, c_col_orig, offset;
 			b->attr_len = -1;
 			goto_line(b, line);
+			b->cur_pos = -1;
 			ld = b->cur_line_desc;
 			if (line == first_line) start_line_desc = ld;
 			pos = calc_pos(ld, left_col, b->opt.tab_size, b->encoding);

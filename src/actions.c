@@ -85,6 +85,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 	int64_t col;
 	char *q;
 
+	assert(b->cur_pos >= 0);
 	assert_buffer(b);
 	assert_buffer_content(b);
 	assert(b->encoding != ENC_UTF8 || b->cur_pos >= b->cur_line_desc->line_len || utf8len(b->cur_line_desc->line[b->cur_pos]) > 0);
@@ -390,7 +391,6 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			encoding_type encoding = detect_encoding(p, strlen(p));
 			error = OK;
 			start_undo_chain(b);
-
 			/* We cannot rely on encoding promotion done by INSERTCHAR_A, because it could work
 			   just for part of the string if UTF-8 auto-detection is not enabled. */
 			if (b->encoding == ENC_ASCII || encoding == ENC_ASCII || (b->encoding == encoding)) {
@@ -701,6 +701,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		NORMALIZE(c);
 
 		col = b->win_x + b->cur_x;
+		b->cur_pos = -1;
 		start_undo_chain(b);
 		for(int64_t i = 0; i < c && !stop; i++) {
 			if (error = delete_one_line(b, b->cur_line_desc, b->cur_line)) break;
@@ -711,7 +712,6 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			update_line(b, b->cur_y, false, false);
 			need_attr_update = true;
 		}
-		resync_pos(b);
 		goto_column(b, col);
 
 		return stop ? STOPPED : error;
@@ -1487,7 +1487,6 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 									if (b->marking) (b->mark_is_vertical ? erase_vert_block : erase_block)(b);
 									error = (b->mark_is_vertical ? paste_vert_to_buffer : paste_to_buffer)(b, INT_MAX);
-
 									end_undo_chain(b);
 
 									b->marking = 0;

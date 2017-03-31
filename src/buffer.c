@@ -700,6 +700,8 @@ void delete_to_eol(buffer * const b, line_desc * const ld, const int64_t line, c
    true. */
 
 int insert_stream(buffer * const b, line_desc * ld, int64_t line, int64_t pos, const char * const stream, const int64_t stream_len) {
+	assert(pos >= 0);
+	assert(stream_len >= 0);
 	if (!b || !ld || !stream || stream_len < 1 || pos > ld->line_len) return ERROR;
 
 	assert_line_desc(ld, b->encoding);

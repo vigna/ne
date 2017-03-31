@@ -122,7 +122,7 @@ int to_lower(buffer *b);
 int capitalize(buffer *b);
 int match_bracket(buffer *b);
 int find_matching_bracket(buffer *b, const int64_t min_line, const int64_t max_line, int64_t *match_line, int64_t *match_pos, int *c, line_desc ** ld);
-int word_wrap(buffer *b);
+int64_t word_wrap(buffer *b);
 int paragraph(buffer *b);
 int center(buffer *b);
 int auto_indent_line(buffer * const b, const int64_t line, line_desc * const ld, const int64_t up_to_col);

@@ -221,7 +221,8 @@ ARGV[0].to_i.times do |i|
 		when 9
 			puts("AUTOCOMPLETE")
 		when 10
-			puts("SHIFT " + (rand(2)==0?"<":">") + rand(20).to_s + (rand(2)==0?"t":"s"))
+			# TODO put it back in
+			# puts("SHIFT " + (rand(2)==0?"<":">") + rand(20).to_s + (rand(2)==0?"t":"s"))
 		when 11
 			puts("REPEATLAST")
 		when 12

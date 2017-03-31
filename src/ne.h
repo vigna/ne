@@ -474,8 +474,8 @@ typedef struct {
 	int64_t wanted_y;         /* desired y position modulo top or bottom of buffer. Valid if y_wanted is true. */
 	int64_t wanted_cur_y;     /* desired cur_y, valid if y_wanted is true */
 	int64_t cur_line;         /* the current line */
-	int64_t cur_pos;          /* position of cursor within the document buffer (counts bytes) */
-	int64_t cur_char;         /* position of cursor within the attribute buffer (counts characters) */
+	int64_t cur_pos;          /* position of cursor within the document buffer (counts bytes); -1 if not in sync with win_x/cur_x */
+	int64_t cur_char;         /* position of cursor within the attribute buffer (counts characters); invalid if cur_pos == -1 */
 	int64_t num_lines;
 	int64_t block_start_line, block_start_pos;
 	struct {
@@ -539,6 +539,8 @@ typedef struct {
 	assert((b)->opt.tab_size > 0);\
 	assert((b)->free_chars <= (b)->allocated_chars);\
 	assert((b)->cur_line == (b)->win_y + (b)->cur_y);\
+	assert(b->cur_pos == -1 || calc_width((b)->cur_line_desc, (b)->cur_pos, b->opt.tab_size, b->encoding) == (b)->win_x + (b)->cur_x);\
+	assert(b->cur_pos == -1 || calc_virt_pos((b)->cur_line_desc, (b)->win_x + (b)->cur_x, b->opt.tab_size, b->encoding) == (b)->cur_pos);\
 	assert((b)->cur_pos >= (b)->cur_line_desc->line_len || b->encoding != ENC_UTF8 || utf8len((b)->cur_line_desc->line[(b)->cur_pos] > 0));\
 	assert_undo_buffer(&(b)->undo);\
 }}

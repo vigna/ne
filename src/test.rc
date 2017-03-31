@@ -23,6 +23,7 @@ function check_differences {
 }
 
 orig=ne.texinfo
+export EF_ALLOW_MALLOC_0=1
 
 ./test.rb 2000 $orig > test.macro
 time ./ne --macro test.macro 2>test.err
