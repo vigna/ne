@@ -92,7 +92,7 @@ static int to_something(buffer *b, int (to_first)(int), int (to_rest)(int)) {
 	}
 
 	b->attr_len = -1;
-	update_line(b, b->cur_y, false, false);
+	update_line(b, b->cur_line_desc, b->cur_y, false, false);
 	if (b->syn) {
 		need_attr_update = true;
 		update_syntax_states(b, b->cur_y, b->cur_line_desc, NULL);
@@ -598,7 +598,7 @@ int paragraph(buffer * const b) {
 		need_attr_update = true;
 		update_syntax_states(b, -1, start_line_desc, (line_desc *)ld->ld_node.next);
 	}
-	update_window_lines(b, b->cur_y, ne_lines - 2, false);
+	update_window_lines(b, b->cur_line_desc, b->cur_y, ne_lines - 2, false);
 
 	/** Step 9 **/
 	goto_line_pos(b, line, pos);
@@ -818,7 +818,7 @@ int shift(buffer * const b, char *p, char *msg, int msg_size) {
 			need_attr_update = true;
 			update_syntax_states(b, -1, start_line_desc, (line_desc *)ld->ld_node.next);
 		}
-		update_window_lines(b, 0, ne_lines - 2, false);
+		update_window_lines(b, b->top_line_desc, 0, ne_lines - 2, false);
 	}
 
 	/* put the screen back where way we found it. */

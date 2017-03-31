@@ -181,7 +181,7 @@ int line_up(buffer * const b) {
 			b->cur_line_desc = (line_desc *)b->cur_line_desc->ld_node.prev;
 			b->top_line_desc = (line_desc *)b->top_line_desc->ld_node.prev;
 			b->attr_len = -1;
-			if (b == cur_buffer) scroll_window(b, 0, 1);
+			if (b == cur_buffer) scroll_window(b, b->top_line_desc, 0, 1);
 			resync_pos(b);
 			return OK;
 		}
@@ -211,7 +211,7 @@ int line_down(buffer * const b) {
 			b->cur_line_desc = (line_desc *)b->cur_line_desc->ld_node.next;
 			b->top_line_desc = (line_desc *)b->top_line_desc->ld_node.next;
 			b->attr_len = -1;
-			if (b == cur_buffer) scroll_window(b, 0, -1);
+			if (b == cur_buffer) scroll_window(b, b->top_line_desc, 0, -1);
 			resync_pos(b);
 			return OK;
 		}

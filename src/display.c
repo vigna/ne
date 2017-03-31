@@ -152,7 +152,7 @@ void update_syntax_states(buffer *b, int row, line_desc *ld, line_desc *end_ld) 
    specified in diff. If diff_size is shorter than the current line, all
    characters without differential information will be updated. */
 
-void output_line_desc(const int row, const int col, line_desc *ld, const int64_t from_col, const int64_t num_cols, const int tab_size, const bool cleared_at_end, const bool utf8, const uint32_t * const attr, const uint32_t * const diff, const int64_t diff_size) {
+void output_line_desc(const int row, const int col, const line_desc *ld, const int64_t from_col, const int64_t num_cols, const int tab_size, const bool cleared_at_end, const bool utf8, const uint32_t * const attr, const uint32_t * const diff, const int64_t diff_size) {
 	assert(ld != NULL);
 	assert(row < ne_lines - 1 && col < ne_columns);
 
@@ -242,7 +242,41 @@ void output_line_desc(const int row, const int col, line_desc *ld, const int64_t
    Returns the line descriptor corresponding to row, or NULL if the
    row is beyond the end of text. */
 
-line_desc *update_partial_line(buffer * const b, const int row, const int64_t from_col, const bool cleared_at_end, const bool differential) {
+void update_partial_line(buffer * const b, const line_desc * const ld, const int row, const int64_t from_col, const bool cleared_at_end, const bool differential) {
+	assert(! b->syn);
+	assert(row < ne_lines - 1); 
+
+	if (++updated_lines > TURBO) window_needs_refresh = true;
+
+	if (window_needs_refresh) {
+		if (row < first_line) first_line = row;
+		if (row > last_line) last_line = row;
+		return;
+	}
+
+	// TODO
+	if (! ld->ld_node.next) {
+		move_cursor(row, from_col);
+		clear_to_eol();
+		return;
+	}
+
+	if (! window_needs_refresh)
+		output_line_desc(row, from_col, ld, from_col + b->win_x, ne_columns - from_col, b->opt.tab_size, cleared_at_end, b->encoding == ENC_UTF8, NULL, NULL, 0);
+}
+
+
+
+/* Similar to the previous call, but updates the whole line. If the updated line is the current line,
+   we update the local attribute buffer. */
+
+void update_line(buffer * const b, line_desc * const ld, const int row, const bool cleared_at_end, const bool differential) {
+	if (! b->syn) {
+		update_partial_line(b, ld, row, 0, cleared_at_end, differential);
+		return;
+	}
+
+	assert(b->syn);
 	assert(row < ne_lines - 1); 
 
 	if (++updated_lines > TURBO) window_needs_refresh = true;
@@ -252,33 +286,15 @@ line_desc *update_partial_line(buffer * const b, const int row, const int64_t fr
 		if (row > last_line) last_line = row;
 	}
 
-	line_desc *ld = b->top_line_desc;
-	assert_line_desc(ld, b->encoding);
-
-	for(int i = 0; i < row && ld->ld_node.next; i++) ld = (line_desc *)ld->ld_node.next;
-
-	if (! ld->ld_node.next) {
-		move_cursor(row, from_col);
-		clear_to_eol();
-		return NULL;
-	}
-	else if (b->syn) parse(b->syn, ld, ld->highlight_state, b->encoding == ENC_UTF8);
+	//if (b->syn) parse(b->syn, ld, ld->highlight_state, b->encoding == ENC_UTF8);
 
 	if (! window_needs_refresh) {
 		assert(b->syn || ! differential);
 		assert(b->attr_len >= 0 || ! differential);
-		output_line_desc(row, from_col, ld, from_col + b->win_x, ne_columns - from_col, b->opt.tab_size, cleared_at_end, b->encoding == ENC_UTF8, b->syn ? attr_buf : NULL, differential ? b->attr_buf : NULL, differential ? b->attr_len : 0);
+		output_line_desc(row, 0, ld, b->win_x, ne_columns, b->opt.tab_size, cleared_at_end, b->encoding == ENC_UTF8, b->syn ? attr_buf : NULL, differential ? b->attr_buf : NULL, differential ? b->attr_len : 0);
 	}
-	return ld;
-}
 
-
-
-/* Similar to the previous call, but updates the whole line. If the updated line is the current line,
-   we update the local attribute buffer. */
-
-void update_line(buffer * const b, const int n, const bool cleared_at_end, const bool differential) {
-	line_desc * const ld = update_partial_line(b, n, 0, cleared_at_end, differential);
+	update_partial_line(b, ld, row, 0, cleared_at_end, differential);
 	if (b->syn && ld == b->cur_line_desc) {
 		/* If we updated the entire current line, we update the local attribute buffer. */
 		b->next_state = parse(b->syn, ld, ld->highlight_state, b->encoding == ENC_UTF8);	
@@ -296,7 +312,7 @@ void update_line(buffer * const b, const int n, const bool cleared_at_end, const
    some refresh is needed, and from where it should be done. Setting doit to
    true forces a real update. Generally, doit should be false. */
 
-void update_window_lines(buffer * const b, const int start_line, const int end_line, const bool doit) {
+void update_window_lines(buffer * const b, line_desc * ld, const int start_line, const int end_line, const bool doit) {
 	if ((updated_lines += (end_line - start_line + 1)) > TURBO && !doit) window_needs_refresh = true;
 
 	if (start_line < first_line) first_line = start_line;
@@ -304,17 +320,15 @@ void update_window_lines(buffer * const b, const int start_line, const int end_l
 
 	if (window_needs_refresh && ! doit) return;
 
-	line_desc *ld = b->top_line_desc;
+	assert(first_line >= start_line);
+	if (first_line != start_line) for(uint64_t i = first_line - start_line; i-- != 0; ) ld = (line_desc *)ld->ld_node.next;
 	assert_line_desc(ld, b->encoding);
 
 	int i;
-	for(i = 0; i <= last_line && i + b->win_y < b->num_lines; i++) {
+	for(i = first_line; i <= last_line && i + b->win_y < b->num_lines; i++) {
 		assert(ld->ld_node.next != NULL);
-
-		if (i >= first_line) {
-			if (b->syn) parse(b->syn, ld, ld->highlight_state, b->encoding == ENC_UTF8);
-			output_line_desc(i, 0, ld, b->win_x, ne_columns, b->opt.tab_size, false, b->encoding == ENC_UTF8, b->syn ? attr_buf : NULL, NULL, 0);
-		}
+		if (b->syn) parse(b->syn, ld, ld->highlight_state, b->encoding == ENC_UTF8);
+		output_line_desc(i, 0, ld, b->win_x, ne_columns, b->opt.tab_size, false, b->encoding == ENC_UTF8, b->syn ? attr_buf : NULL, NULL, 0);
 		ld = (line_desc *)ld->ld_node.next;
 	}
 
@@ -333,7 +347,7 @@ void update_window_lines(buffer * const b, const int start_line, const int end_l
    an update. */
 
 void update_window(buffer * const b) {
-	update_window_lines(b, 0, ne_lines - 2, false);
+	update_window_lines(b, b->top_line_desc, 0, ne_lines - 2, false);
 }
 
 /* Updates the current line, the following syntax states if necessary,
@@ -367,7 +381,7 @@ void update_syntax_and_lines(buffer *b, line_desc *start_ld, line_desc *end_ld) 
    optimized (such as writing a space at the end of a line). TURBO is
    taken into consideration. */
 
-void update_deleted_char(buffer * const b, const int c, const int a, const line_desc * const ld, int64_t pos, int64_t attr_pos, const int line, const int x) {
+void update_deleted_char(buffer * const b, const int c, const int a, line_desc * const ld, int64_t pos, int64_t attr_pos, const int line, const int x) {
 	if (b->syn) {
 		assert(b->attr_len >= 0);
 		assert(b->attr_len - 1 == calc_char_len(ld, b->encoding));
@@ -390,8 +404,8 @@ void update_deleted_char(buffer * const b, const int c, const int a, const line_
 
 	if (!char_ins_del_ok) {
 		/* Argh! We can't insert or delete! Just update the rest of the line. */
-		if (b->syn) update_line(b, line, false, false);
-		else update_partial_line(b, line, x, false, false);
+		if (b->syn) update_line(b, ld, line, false, false);
+		else update_partial_line(b, ld, line, x, false, false);
 		return;
 	}
 
@@ -418,7 +432,7 @@ void update_deleted_char(buffer * const b, const int c, const int a, const line_
 				move_cursor(line, i - c_width);
 				delete_chars(b->opt.tab_size - c_width);
 
-				update_partial_line(b, line, ne_columns - b->opt.tab_size, true, false);
+				update_partial_line(b, ld, line, ne_columns - b->opt.tab_size, true, false);
 			}
 			else {
 				/* In this case, instead, we just shift the piece of text between
@@ -435,7 +449,7 @@ void update_deleted_char(buffer * const b, const int c, const int a, const line_
 	/* No TAB was found. We just delete the character and fill the end of the line. */
 	if (!tab_found) {
 		delete_chars(c_width);
-		update_partial_line(b, line, ne_columns - c_width, true, false);
+		update_partial_line(b, ld, line, ne_columns - c_width, true, false);
 	}
 }
 
@@ -479,7 +493,7 @@ void update_inserted_char(buffer * const b, const int c, const line_desc * const
 	}
 
 	if (!char_ins_del_ok) {
-		update_partial_line(b, line, x, false, false);
+		update_partial_line(b, ld, line, x, false, false);
 		return;
 	}
 
@@ -551,7 +565,7 @@ void update_overwritten_char(buffer * const b, const int old_char, const int new
 	}
 
 	if (!char_ins_del_ok) {
-		update_partial_line(b, line, x, false, false);
+		update_partial_line(b, ld, line, x, false, false);
 		return;
 	}
 
@@ -592,7 +606,7 @@ void update_overwritten_char(buffer * const b, const int old_char, const int new
 						delete_chars(b->opt.tab_size - width_delta);
 					}
 
-					update_partial_line(b, line, ne_columns - b->opt.tab_size, true, false);
+					update_partial_line(b, ld, line, ne_columns - b->opt.tab_size, true, false);
 				}
 				return;
 			}
@@ -601,7 +615,7 @@ void update_overwritten_char(buffer * const b, const int old_char, const int new
 		delete_chars(width_delta);
 		if (new_char == '\t') output_spaces(new_width, attr);
 		else output_char(new_char, attr ? *attr : -1, b->encoding == ENC_UTF8);
-		update_partial_line(b, line, ne_columns - width_delta, true, false);
+		update_partial_line(b, ld, line, ne_columns - width_delta, true, false);
 	}
 	else {
 		/* The character has been enlarged by width_delta. */
@@ -665,8 +679,12 @@ void reset_window(void) {
    interact, so that he is presented with a correctly updated display. */
 
 void refresh_window(buffer * const b) {
-	if (window_needs_refresh) update_window_lines(b, first_line, last_line, true);
-	updated_lines = 0;
+	if (window_needs_refresh) {
+		line_desc *ld = b->top_line_desc;		
+		for(int i = first_line; i-- != 0 && (line_desc *)ld->ld_node.next;) ld = (line_desc *)ld->ld_node.next;
+		if (ld->ld_node.next) update_window_lines(b, ld, first_line, last_line, true);
+		updated_lines = 0;
+	}
 }
 
 
@@ -674,7 +692,7 @@ void refresh_window(buffer * const b) {
 /* Scrolls a region starting at a given line upward (n == -1) or downward
 (n == 1). TURBO is checked. */
 
-void scroll_window(buffer * const b, const int line, const int n) {
+void scroll_window(buffer * const b, line_desc * const ld, const int line, const int n) {
 	assert(n == -1 || n == 1);
 	assert(line >= 0);
 	assert(line < ne_lines);
@@ -691,12 +709,16 @@ void scroll_window(buffer * const b, const int line, const int n) {
 		/* Argh! We can't insert or delete lines. The only chance is
 		rewriting the last lines of the screen. */
 
-		update_window_lines(b, line, ne_lines - 2, false);
+		update_window_lines(b, ld, line, ne_lines - 2, false);
 		return;
 	}
 
-	if (n > 0) update_line(b, line, ins_del_lines(line, 1), false);
-	else update_line(b, ne_lines - 2, ins_del_lines(line, -1), false);
+	if (n > 0) update_line(b, ld, line, ins_del_lines(line, 1), false);
+	else {
+		line_desc * last_line_ld = b->top_line_desc;
+		for(int i = ne_lines - 2; i-- != 0;) last_line_ld = (line_desc *)last_line_ld->ld_node.next;
+		update_line(b, last_line_ld, ne_lines - 2, ins_del_lines(line, -1), false);
+	}
 }
 
 
