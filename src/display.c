@@ -254,15 +254,15 @@ void update_partial_line(buffer * const b, const line_desc * const ld, const int
 		return;
 	}
 
-	// TODO
+	/* If the line descriptor is not valid, we just clear the line from the required position. This
+	   can happen while updating a region after the last line. */
 	if (! ld->ld_node.next) {
 		move_cursor(row, from_col);
 		clear_to_eol();
 		return;
 	}
 
-	if (! window_needs_refresh)
-		output_line_desc(row, from_col, ld, from_col + b->win_x, ne_columns - from_col, b->opt.tab_size, cleared_at_end, b->encoding == ENC_UTF8, NULL, NULL, 0);
+	output_line_desc(row, from_col, ld, from_col + b->win_x, ne_columns - from_col, b->opt.tab_size, cleared_at_end, b->encoding == ENC_UTF8, NULL, NULL, 0);
 }
 
 
@@ -716,7 +716,7 @@ void scroll_window(buffer * const b, line_desc * const ld, const int line, const
 	if (n > 0) update_line(b, ld, line, ins_del_lines(line, 1), false);
 	else {
 		line_desc * last_line_ld = b->top_line_desc;
-		for(int i = ne_lines - 2; i-- != 0;) last_line_ld = (line_desc *)last_line_ld->ld_node.next;
+		for(int i = ne_lines - 2; i-- != 0 && last_line_ld->ld_node.next;) last_line_ld = (line_desc *)last_line_ld->ld_node.next;
 		update_line(b, last_line_ld, ne_lines - 2, ins_del_lines(line, -1), false);
 	}
 }

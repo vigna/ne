@@ -103,7 +103,7 @@ ARGV[0].to_i.times do |i|
 		end
 
 	elsif r < 20 then # Changing flags
-		case rand(8)
+		case rand(9)
 		when 0
 			puts("FREEFORM")
 		when 1
@@ -120,6 +120,8 @@ ARGV[0].to_i.times do |i|
 			puts("SHIFTTABS")
 		when 7
 			puts("TABSIZE " + (rand(20) + 1).to_s)
+		when 8
+			puts("DELTABS")
 		end
 
 	elsif r < 30 # Deleting text
