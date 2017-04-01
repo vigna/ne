@@ -273,7 +273,7 @@ void update_partial_line(buffer * const b, line_desc * const ld, const int row, 
 	if (b->syn) {
 		const bool differential = ld == b->cur_line_desc && b->attr_len >= 0;
 		HIGHLIGHT_STATE next_state = parse(b->syn, ld, ld->highlight_state, b->encoding == ENC_UTF8);
-		output_line_desc(row, from_col, ld, b->win_x, ne_columns, b->opt.tab_size, cleared_at_end, b->encoding == ENC_UTF8, attr_buf, differential ? b->attr_buf : NULL, differential ? b->attr_len : 0);
+		output_line_desc(row, 0, ld, b->win_x, ne_columns, b->opt.tab_size, cleared_at_end, b->encoding == ENC_UTF8, attr_buf, differential ? b->attr_buf : NULL, differential ? b->attr_len : 0);
 
 		if (ld == b->cur_line_desc) {
 			/* If we updated current line, we update the local attribute buffer. */
