@@ -825,7 +825,7 @@ void move_to_eol(buffer * const b) {
 		/* We move to a visible position. */
 		b->cur_x = total_width - b->win_x;
 		b->cur_pos = ld->line_len;
-		b->cur_char = calc_char_len(ld, b->encoding);
+		b->cur_char = calc_char_len(ld, ld->line_len, b->encoding);
 		return;
 	}
 
@@ -838,7 +838,7 @@ void move_to_eol(buffer * const b) {
 			b->win_x = width - width % b->opt.tab_size;
 			b->cur_x = total_width - b->win_x;
 			b->cur_pos = ld->line_len;
-			b->cur_char = calc_char_len(ld, b->encoding);
+			b->cur_char = calc_char_len(ld, ld->line_len, b->encoding);
 			if (t != b->win_x && b == cur_buffer) update_window(b);
 			return;
 		}

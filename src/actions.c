@@ -89,6 +89,14 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 	assert_buffer(b);
 	assert_buffer_content(b);
 	assert(b->encoding != ENC_UTF8 || b->cur_pos >= b->cur_line_desc->line_len || utf8len(b->cur_line_desc->line[b->cur_pos]) > 0);
+#ifndef NDEBUG
+	if (b->syn && b->attr_len != -1) {
+		HIGHLIGHT_STATE next_state = parse(b->syn, b->cur_line_desc, b->cur_line_desc->highlight_state, b->encoding == ENC_UTF8);
+		assert(attr_len == b->attr_len);
+		assert(memcmp(attr_buf, b->attr_buf, attr_len) == 0);
+		assert(memcmp(&next_state, &b->next_state, sizeof next_state) == 0);
+	}
+#endif
 
 	stop = false;
 
@@ -461,9 +469,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 		old_char = b->cur_pos < b->cur_line_desc->line_len ? get_char(&b->cur_line_desc->line[b->cur_pos], b->encoding) : 0;
 
-		/* Freeze the line attributes before any real update. */
-		if (b->syn && b->attr_len < 0) freeze_attributes(b, b->cur_line_desc);
-
+		ensure_attributes(b);
 		start_undo_chain(b);
 
 		if (deleted_char = !b->opt.insert && b->cur_pos < b->cur_line_desc->line_len) delete_one_char(b, b->cur_line_desc, b->cur_line, b->cur_pos);
@@ -570,7 +576,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 				   TAB, doing some magick to keep everything in sync. */
 				if (col > 1 && (b->win_x + b->cur_x + col) % b->opt.tab_size == 0) {
 					if (b->syn) {
-						freeze_attributes(b, b->cur_line_desc);
+						ensure_attributes(b);
 						memmove(b->attr_buf + b->cur_pos + 1, b->attr_buf + b->cur_pos + col, b->attr_len - (b->cur_pos + col));
 						b->attr_buf[b->cur_pos] = -1;
 						b->attr_len -= (col - 1);
@@ -594,10 +600,10 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 				}
 				/* We need spaces if the line was not empty, or if we were sitting in the middle of a TAB. */
 				insert_spaces(b, b->cur_line_desc, b->cur_line, b->cur_line_desc->line_len, col - calc_width(b->cur_line_desc, b->cur_line_desc->line_len, b->opt.tab_size, b->encoding));
-				if (b->syn) freeze_attributes(b, b->cur_line_desc);
+				if (b->syn) store_attributes(b, b->cur_line_desc);
 			}
 
-			if (b->syn && b->attr_len < 0) freeze_attributes(b, b->cur_line_desc);
+			ensure_attributes(b);
 
 			if (b->cur_pos < b->cur_line_desc->line_len) {
 				/* Deletion inside a line. */
@@ -634,9 +640,8 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		   There could also be extant macros out there that expect Undo to revert autoindent and
 		   InsertLine in two steps. So, again, this sillyness with excessive start_ and end_undo_chain. */
 		for(int64_t i = 0; i < c && !stop; i++) {
-			if (b->syn && b->attr_len < 0) freeze_attributes(b, b->cur_line_desc);
-
 			start_undo_chain(b);
+			if (b->win_x == 0) ensure_attributes(b);
 			if (insert_one_line(b, b->cur_line_desc, b->cur_line, b->cur_pos > b->cur_line_desc->line_len ? b->cur_line_desc->line_len : b->cur_pos) == OK) {
 				end_undo_chain(b);
 				if (b->win_x) {
@@ -645,7 +650,8 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 					   refresh the entire video, so we shouldn't do anything. However, we
 					   must poke into the next line initial state the correct state. */
 					if (b->syn) {
-						freeze_attributes(b, b->cur_line_desc);
+						b->attr_len = -1;
+						ensure_attributes(b);
 						((line_desc *)b->cur_line_desc->ld_node.next)->highlight_state = b->next_state;
 					}
 
@@ -666,7 +672,11 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 					/* We need to avoid updates until we fix the next line. */
 					need_attr_update = false;
 					/* We poke into the next line initial state the correct state. */
-					if (b->syn) ((line_desc *)b->cur_line_desc->ld_node.next)->highlight_state = b->next_state;
+					if (b->syn) {
+						b->attr_len = -1;
+						ensure_attributes(b);
+						((line_desc *)b->cur_line_desc->ld_node.next)->highlight_state = b->next_state;
+					}
 
 					assert(b->cur_line_desc->ld_node.next->next != NULL);
 					if (b->opt.auto_indent) {
@@ -682,8 +692,8 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 					if (b->cur_line == b->num_lines - 1) update_partial_line(b, b->cur_line_desc, b->cur_y, 0, false);
 					else scroll_window(b, b->cur_line_desc, b->cur_y, 1);
 
-					need_attr_update = true;
 				}
+				need_attr_update = true;
 			} else end_undo_chain(b);
 		}
 
@@ -724,15 +734,13 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			/* This is a bit tricky. First of all, if we are undeleting for
 			   the first time and the local attribute buffer is not valid
 			   we fill it. */
-			if (i == 0 && b->syn && b->attr_len < 0) freeze_attributes(b, b->cur_line_desc);
+			if (i == 0) ensure_attributes(b);
 			if (error = undelete_line(b)) break;
 			if (i == 0) {
 				if (b->syn) {
-					/* Now the only valid part of the local attribute buffer is before b->cur_pos.
-					   We perform a differential update so that if we undelete in the middle of
-					   a line we avoid to rewrite the part up to b->cur_pos. */
-					b->attr_len = b->cur_pos;
-					update_partial_line(b, b->cur_line_desc, b->cur_y, 0, false);
+					/* Now the only valid part of the local attribute buffer is before b->cur_pos. */
+					b->attr_len = b->cur_char;
+					update_partial_line(b, b->cur_line_desc, b->cur_y, b->cur_x, false);
 					next_line_state = b->next_state;
 				}
 				else update_partial_line(b, b->cur_line_desc, b->cur_y, b->cur_x, false);
@@ -743,7 +751,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 				((line_desc *)b->cur_line_desc->ld_node.next)->highlight_state = next_line_state;
 			}
 			/* We actually scroll down the remaining lines, if necessary. */
-			if (b->cur_y < ne_lines - 2) scroll_window(b, b->cur_line_desc, b->cur_y + 1, 1);
+			if (b->cur_y < ne_lines - 2) scroll_window(b, (line_desc *)b->cur_line_desc->ld_node.next, b->cur_y + 1, 1);
 		}
 		if (b->syn) {
 			/* Finally, we force the update of the initial states of all following lines up to next_ld. */
@@ -756,7 +764,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 	case DELETEEOL_A:
 
 		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
-		if (b->syn && b->attr_len < 0) freeze_attributes(b, b->cur_line_desc);
+		ensure_attributes(b);
 		delete_to_eol(b, b->cur_line_desc, b->cur_line, b->cur_pos);
 		update_partial_line(b, b->cur_line_desc, b->cur_y, b->cur_x, false);
 		need_attr_update = true;

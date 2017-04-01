@@ -112,7 +112,8 @@ void update_overwritten_char(buffer *b, int old_char, int new_char, line_desc *l
 void reset_window(void);
 void refresh_window(buffer *b);
 void scroll_window(buffer *b, line_desc *ld, int line, int n);
-HIGHLIGHT_STATE freeze_attributes(buffer *b, line_desc *ld);
+void ensure_attributes(buffer *b);
+void store_attributes(buffer *b, line_desc *ld);
 void automatch_bracket(buffer * const b, const bool show);
 
 /* edit.c */

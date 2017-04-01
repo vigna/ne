@@ -539,21 +539,22 @@ typedef struct {
 	assert((b)->opt.tab_size > 0);\
 	assert((b)->free_chars <= (b)->allocated_chars);\
 	assert((b)->cur_line == (b)->win_y + (b)->cur_y);\
-	assert(b->cur_pos == -1 || calc_width((b)->cur_line_desc, (b)->cur_pos, b->opt.tab_size, b->encoding) == (b)->win_x + (b)->cur_x);\
-	assert(b->cur_pos == -1 || calc_virt_pos((b)->cur_line_desc, (b)->win_x + (b)->cur_x, b->opt.tab_size, b->encoding) == (b)->cur_pos);\
-	assert((b)->cur_pos >= (b)->cur_line_desc->line_len || b->encoding != ENC_UTF8 || utf8len((b)->cur_line_desc->line[(b)->cur_pos] > 0));\
+	assert((b)->cur_pos == -1 || calc_width((b)->cur_line_desc, (b)->cur_pos, (b)->opt.tab_size, (b)->encoding) == (b)->win_x + (b)->cur_x);\
+	assert((b)->cur_pos == -1 || calc_virt_pos((b)->cur_line_desc, (b)->win_x + (b)->cur_x, (b)->opt.tab_size, (b)->encoding) == (b)->cur_pos);\
+	assert((b)->cur_pos == -1 || (b)->cur_pos > (b)->cur_line_desc->line_len || calc_char_len((b)->cur_line_desc, (b)->cur_pos, (b)->encoding) == (b)->cur_char);\
+	assert((b)->cur_pos >= (b)->cur_line_desc->line_len || (b)->encoding != ENC_UTF8 || utf8len((b)->cur_line_desc->line[(b)->cur_pos] > 0));\
 	assert_undo_buffer(&(b)->undo);\
 }}
 
 #define assert_buffer_content(b) {if ((b)) {\
 	line_desc *ld;\
-	ld = (line_desc *)b->line_desc_list.head;\
+	ld = (line_desc *)(b)->line_desc_list.head;\
 	while(ld->ld_node.next) {\
 		assert_line_desc(ld, (b)->encoding);\
 		if ((b)->syn) assert(ld->highlight_state.state != -1);\
 		ld = (line_desc *)ld->ld_node.next;\
 	}\
-	if ((b)->syn) assert(b->attr_len < 0 || b->attr_len == calc_char_len(b->cur_line_desc, b->encoding));\
+	if ((b)->syn) assert((b)->attr_len < 0 || (b)->attr_len == calc_char_len((b)->cur_line_desc, (b)->cur_line_desc->line_len, (b)->encoding));\
 }}
 #else
 #define assert_buffer(b) ;

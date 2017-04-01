@@ -95,17 +95,16 @@ void update_syntax_states(buffer *b, int row, line_desc *ld, line_desc *end_ld) 
 		bool invalidate_attr_buf = false;
 		HIGHLIGHT_STATE next_line_state = b->attr_len < 0 ? parse(b->syn, ld, ld->highlight_state, b->encoding == ENC_UTF8) : b->next_state;
 
-		assert(b->attr_len < 0 || b->attr_len == calc_char_len(ld, b->encoding));
+		assert(b->attr_len < 0 || b->attr_len == calc_char_len(ld, ld->line_len, b->encoding));
 
-		/* We update lines until the currenct starting state is equal to next_line_state, but we go until
-			end_ld if it is not NULL. In any case, we bail out at the end of the file. */
 		for(;;) {
 
 			/* We move one row down. */
 			ld = (line_desc *) ld->ld_node.next;
 
+			/* We update lines until next_line_state is equal to our current highlight_state, but we go until
+			   end_ld if it is not NULL. In any case, we bail out at the end of the file. */
 			if ((highlight_cmp(&ld->highlight_state, &next_line_state) && got_end_ld) || !ld->ld_node.next) break;
-			if (ld == end_ld) got_end_ld = true;
 
 			if (row >= 0) {
 				row++;
@@ -116,17 +115,27 @@ void update_syntax_states(buffer *b, int row, line_desc *ld, line_desc *end_ld) 
 						if (row > last_line) last_line = row;
 					}
 					else {
-						freeze_attributes(b, ld);
+						/* If row is positive, the row is visible and we are not in TURBO mode,
+						   we need to update a line differentially. To do so, we store in
+						   b->attr_buf the attributes of the current line *starting with the
+						   current highlight_state*, which should reflect what's on screen. */
+						store_attributes(b, ld);
 						invalidate_attr_buf = true;
 					}
 				}
 			}
 
+			/* This is where we go on parsing each line, updating highlight_state and next_line_state at each step. */
 			ld->highlight_state = next_line_state;
 			next_line_state = parse(b->syn, ld, ld->highlight_state, b->encoding == ENC_UTF8);
 
+			/* If we are in the visible range and window_needs_refresh is false, b->attr_buf contains the
+			   current on-screen attributes, whereas attr_buf contains the new attributes, so we can
+			   perform a differential update. */
 			if (row >= 0 && row < ne_lines - 1 && ! window_needs_refresh)
 				output_line_desc(row, 0, ld, b->win_x, ne_columns, b->opt.tab_size, true, b->encoding == ENC_UTF8, attr_buf, b->attr_buf, b->attr_len);
+
+			if (ld == end_ld) got_end_ld = true;
 		}
 
 		if (invalidate_attr_buf) b->attr_len = -1;
@@ -229,7 +238,8 @@ void output_line_desc(const int row, const int col, const line_desc *ld, const i
 /* Updates part of a line given its number, its line descriptor and a starting 
 	column. It can handle lines after the end of the buffer (just pass the
    tail of the line list). It checks for updated_lines bypassing TURBO, in
-   which case it simply updates first_line and last_line.
+   which case it simply updates first_line and last_line. Note that the
+   starting column is ignored in case b->syn is not NULL.
 
    If cleared_at_end is true, this function assumes that it doesn't have
    to clean up the rest of the line if the string is not long enough to
@@ -262,7 +272,6 @@ void update_partial_line(buffer * const b, line_desc * const ld, const int row, 
 	/* If the line descriptor is not valid, we just clear the line from the required position. This
 	   can happen while updating a region after the last line. */
 	if (! ld->ld_node.next) {
-		assert(from_col == 0);
 		if (! cleared_at_end) {
 			move_cursor(row, from_col);
 			clear_to_eol();
@@ -366,7 +375,7 @@ void update_syntax_and_lines(buffer *b, line_desc *start_ld, line_desc *end_ld) 
 void update_deleted_char(buffer * const b, const int c, const int a, line_desc * const ld, int64_t pos, int64_t attr_pos, const int line, const int x) {
 	if (b->syn) {
 		assert(b->attr_len >= 0);
-		assert(b->attr_len - 1 == calc_char_len(ld, b->encoding));
+		assert(b->attr_len - 1 == calc_char_len(ld, ld->line_len, b->encoding));
 		memmove(b->attr_buf + attr_pos, b->attr_buf + attr_pos + 1, (--b->attr_len - attr_pos) * sizeof *b->attr_buf);
 	}
 
@@ -445,8 +454,8 @@ void update_inserted_char(buffer * const b, const int c, line_desc * const ld, c
 
 	if (b->syn) {
 		assert(b->attr_len >= 0);
-		/*fprintf(stderr, "+b->attr_len: %d calc_char_len: %d pos: %d ld->line_len %d attr_pos: %d\n", b->attr_len,calc_char_len(ld, b->encoding), pos, ld->line_len, attr_pos);*/
-		assert(b->attr_len + 1 == calc_char_len(ld, b->encoding));
+		/*fprintf(stderr, "+b->attr_len: %d calc_char_len: %d pos: %d ld->line_len %d attr_pos: %d\n", b->attr_len,calc_char_len(ld, ld->line_len, b->encoding), pos, ld->line_len, attr_pos);*/
+		assert(b->attr_len + 1 == calc_char_len(ld, ld->line_len, b->encoding));
 		/* We update the stored attribute vector. */
 		ensure_attr_buf(b, b->attr_len + 1);	
 		memmove(b->attr_buf + attr_pos + 1, b->attr_buf + attr_pos, (b->attr_len++ - attr_pos) * sizeof *b->attr_buf );
@@ -516,8 +525,8 @@ void update_overwritten_char(buffer * const b, const int old_char, const int new
 	const uint32_t * const attr = b->syn ? &attr_buf[attr_pos] : NULL;
 
 	if (b->syn) {
-		/* fprintf(stderr, "-b->attr_len: %d calc_char_len: %d pos: %d ld->line_len %d attr_pos: %d\n", b->attr_len,calc_char_len(ld, b->encoding), pos, ld->line_len, attr_pos);*/
-		assert(b->attr_len + 1 == calc_char_len(ld, b->encoding) || b->attr_len == calc_char_len(ld, b->encoding));
+		/* fprintf(stderr, "-b->attr_len: %d calc_char_len: %d pos: %d ld->line_len %d attr_pos: %d\n", b->attr_len,calc_char_len(ld, ld->line_len, b->encoding), pos, ld->line_len, attr_pos);*/
+		assert(b->attr_len + 1 == calc_char_len(ld, ld->line_len, b->encoding) || b->attr_len == calc_char_len(ld, ld->line_len, b->encoding));
 		assert(attr_pos <= b->attr_len);
 		if (attr_pos == b->attr_len) ensure_attr_buf(b, ++b->attr_len);
 		b->attr_buf[attr_pos] = *attr;
@@ -703,17 +712,27 @@ void scroll_window(buffer * const b, line_desc * const ld, const int line, const
 }
 
 
+/* If syntax is enabled, and b->attr_len < 0, computes the attributes
+   of the current line descriptor, stores them in b->attr_buf, and
+   stores in b->next_state the return value of parse(). */
 
-/* Computes the attributes of the given line and stores them into the
-attribute buffer. Note that if you call this function on a line different
-from the current line, you must take care of invalidating the attribute
-buffer afterwards (b->attr_len = -1). */
+void ensure_attributes(buffer *b) {
+	if (! b->syn || b->attr_len >= 0) return;
+	store_attributes(b, b->cur_line_desc);
+}
 
-HIGHLIGHT_STATE freeze_attributes(buffer *b, line_desc *ld) {
+
+/* Computes the attributes of the given line, stores them into b->attr_buf
+   and stores in b->next_state the return value of parse(). Note that if
+   you call this function on a line different from the current line, you
+   must take care of invalidating the attribute buffer afterwards
+   (b->attr_len = -1). */
+
+void store_attributes(buffer *b, line_desc *ld) {
 	b->next_state = parse(b->syn, ld, ld->highlight_state, b->encoding == ENC_UTF8);	
+	assert(calc_char_len(ld, ld->line_len, b->encoding) == attr_len);
 	ensure_attr_buf(b, attr_len);	
 	memcpy(b->attr_buf, attr_buf, (b->attr_len = attr_len) * sizeof *b->attr_buf);
-	return b->next_state;
 }
 
 /* (Un)highlights (depending on the value of show) the bracket matching

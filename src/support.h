@@ -89,11 +89,12 @@ static int64_t inline calc_width_hint(const line_desc * const ld, const int64_t 
 	else return calc_width(ld, n, tab_size, encoding);
 }
 
-/* Computes character length of a line descriptor. */
 
-static int64_t inline calc_char_len(const line_desc * const ld, const encoding_type encoding) {
+/* Computes character length of a line descriptor up to a given position. */
+
+static int64_t inline calc_char_len(const line_desc * const ld, const int64_t n, const encoding_type encoding) {
 	int64_t len = 0;
-	for(int64_t pos = 0; pos < ld->line_len; pos = next_pos(ld->line, pos, encoding), len++);
+	for(int64_t pos = 0; pos < n; pos = next_pos(ld->line, pos, encoding), len++);
 	return len;
 }
 
