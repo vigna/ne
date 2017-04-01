@@ -739,8 +739,8 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			if (error = undelete_line(b)) break;
 			if (i == 0) {
 				if (b->syn) {
-					/* Now the only valid part of the local attribute buffer is before b->cur_pos. */
-					b->attr_len = b->cur_char;
+					/* Now the only valid part of the local attribute buffer is before b->cur_char. */
+					if (b->cur_char < b->attr_len) b->attr_len = b->cur_char;
 					update_partial_line(b, b->cur_line_desc, b->cur_y, b->cur_x, false);
 					next_line_state = b->next_state;
 				}

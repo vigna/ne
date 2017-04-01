@@ -121,7 +121,7 @@ ARGV[0].to_i.times do |i|
 		when 7
 			puts("TABSIZE " + (rand(20) + 1).to_s)
 		when 8
-			#puts("DELTABS") TODO
+			puts("DELTABS")
 		end
 
 	elsif r < 30 # Deleting text
