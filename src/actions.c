@@ -553,8 +553,10 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 						&& (b->cur_pos > b->cur_line_desc->line_len || b->cur_line_desc->line[b->cur_pos - 1] == ' ')) {
 						/* We are deleting one or more spaces from a tabbing position. We go left until the
 						   previous tabbing, or when spaces end. */
-						do char_left(b); while((b->win_x + b->cur_x) % b->opt.tab_size != 0
-														&& (b->cur_pos > b->cur_line_desc->line_len || b->cur_line_desc->line[b->cur_pos - 1] == ' '));
+						int64_t back = 1;
+						while((b->cur_pos - back > b->cur_line_desc->line_len || b->cur_line_desc->line[b->cur_pos - back - 1] == ' ')
+							&& (b->win_x + b->cur_x - back) % b->opt.tab_size != 0) back++;
+						goto_pos(b, b->cur_pos - back);
 					}
 					else char_left(b);
 					/* If we are not over text, we are in free form mode; the backspace
@@ -577,13 +579,12 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 				if (col > 1 && (b->win_x + b->cur_x + col) % b->opt.tab_size == 0) {
 					if (b->syn) {
 						ensure_attributes(b);
-						memmove(b->attr_buf + b->cur_pos + 1, b->attr_buf + b->cur_pos + col, b->attr_len - (b->cur_pos + col));
-						b->attr_buf[b->cur_pos] = -1;
+						memmove(b->attr_buf + b->cur_char + 1, b->attr_buf + b->cur_char + col, b->attr_len - (b->cur_char + col));
+						b->attr_buf[b->cur_char] = -1;
 						b->attr_len -= (col - 1);
 					}
 					delete_stream(b, b->cur_line_desc, b->cur_line, b->cur_pos, col);
 					insert_one_char(b, b->cur_line_desc, b->cur_line, b->cur_pos, '\t');
-					if (b->syn) update_partial_line(b, b->cur_line_desc, b->cur_y, 0, true);
 				}
 			}
 
