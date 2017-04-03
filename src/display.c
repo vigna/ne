@@ -31,7 +31,7 @@
    if more than turbo (or lines*2, if turbo is zero) lines have been updated,
    the update stops and is delayed to the next call to refresh_window(). This
    function should be called whenever the screen has to be sync'd with its
-   contents (for instance, whenever the user gets back in control). The 
+   contents (for instance, whenever the user gets back in control). The
    mechanism allows for fast, responsive screen updates for short operations,
    and one-in-all updates for long operations. */
 
@@ -235,7 +235,7 @@ void output_line_desc(const int row, const int col, const line_desc *ld, const i
 	}
 }
 
-/* Updates part of a line given its number, its line descriptor and a starting 
+/* Updates part of a line given its number, its line descriptor and a starting
 	column. It can handle lines after the end of the buffer (just pass the
    tail of the line list). It checks for updated_lines bypassing TURBO, in
    which case it simply updates first_line and last_line. Note that the
@@ -243,7 +243,7 @@ void output_line_desc(const int row, const int col, const line_desc *ld, const i
 
    If cleared_at_end is true, this function assumes that it doesn't have
    to clean up the rest of the line if the string is not long enough to
-   fill the line. 
+   fill the line.
 
    IF b->attr_len is nonnegative, the line is updated differentially w.r.t.
    the content of b->attr_buf. The caller is thus responsible to guarantee
@@ -258,7 +258,7 @@ void output_line_desc(const int row, const int col, const line_desc *ld, const i
 
 void update_partial_line(buffer * const b, line_desc * const ld, const int row, const int64_t from_col, const bool cleared_at_end) {
 	assert(ld);
-	assert(row < ne_lines - 1); 
+	assert(row < ne_lines - 1);
 
 	if (++updated_lines > TURBO) window_needs_refresh = true;
 
@@ -287,7 +287,7 @@ void update_partial_line(buffer * const b, line_desc * const ld, const int row, 
 		if (ld == b->cur_line_desc) {
 			/* If we updated current line, we update the local attribute buffer. */
 			b->next_state = next_state;
-			ensure_attr_buf(b, attr_len);	
+			ensure_attr_buf(b, attr_len);
 			memcpy(b->attr_buf, attr_buf, (b->attr_len = attr_len) * sizeof *b->attr_buf);
 		}
 	}
@@ -457,7 +457,7 @@ void update_inserted_char(buffer * const b, const int c, line_desc * const ld, c
 		/*fprintf(stderr, "+b->attr_len: %d calc_char_len: %d pos: %d ld->line_len %d attr_pos: %d\n", b->attr_len,calc_char_len(ld, ld->line_len, b->encoding), pos, ld->line_len, attr_pos);*/
 		assert(b->attr_len + 1 == calc_char_len(ld, ld->line_len, b->encoding));
 		/* We update the stored attribute vector. */
-		ensure_attr_buf(b, b->attr_len + 1);	
+		ensure_attr_buf(b, b->attr_len + 1);
 		memmove(b->attr_buf + attr_pos + 1, b->attr_buf + attr_pos, (b->attr_len++ - attr_pos) * sizeof *b->attr_buf );
 		b->attr_buf[attr_pos] = *attr;
 	}
@@ -670,7 +670,7 @@ void reset_window(void) {
 
 void refresh_window(buffer * const b) {
 	if (window_needs_refresh) {
-		line_desc *ld = b->top_line_desc;		
+		line_desc *ld = b->top_line_desc;
 		for(int i = first_line; i-- != 0 && (line_desc *)ld->ld_node.next;) ld = (line_desc *)ld->ld_node.next;
 		if (ld->ld_node.next) update_window_lines(b, ld, first_line, last_line, true);
 		updated_lines = 0;
@@ -729,9 +729,9 @@ void ensure_attributes(buffer *b) {
    (b->attr_len = -1). */
 
 void store_attributes(buffer *b, line_desc *ld) {
-	b->next_state = parse(b->syn, ld, ld->highlight_state, b->encoding == ENC_UTF8);	
+	b->next_state = parse(b->syn, ld, ld->highlight_state, b->encoding == ENC_UTF8);
 	assert(calc_char_len(ld, ld->line_len, b->encoding) == attr_len);
-	ensure_attr_buf(b, attr_len);	
+	ensure_attr_buf(b, attr_len);
 	memcpy(b->attr_buf, attr_buf, (b->attr_len = attr_len) * sizeof *b->attr_buf);
 }
 
@@ -779,7 +779,7 @@ void automatch_bracket(buffer * const b, const bool show) {
 					case BG_BCYAN:    tmp_attr = (tmp_attr & ~BG_MASK ) | BG_CYAN;         break;
 					case BG_BWHITE:   tmp_attr = (tmp_attr & ~BG_MASK ) | BG_WHITE;        break;
 					default:          tmp_attr = (tmp_attr & ~BG_MASK ) | BG_BWHITE;       break;
-					}                           
+					}
 
 					switch (orig_attr & FG_MASK) {
 					case FG_BLACK:    tmp_attr = (tmp_attr & ~FG_MASK) | FG_BBLACK;      break;

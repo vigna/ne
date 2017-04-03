@@ -474,7 +474,7 @@ int find_regexp(buffer * const b, const char *regex, const bool skip_first) {
 /* This allows regexp users to retrieve matched substrings.
    They are responsible for freeing these strings.
    i0 should be <= number of paren groups in original regex. */
-char *nth_regex_substring( const line_desc *ld, int i0) {
+char *nth_regex_substring(const line_desc *ld, int i0) {
 	char *str;
 	int j, i;
 

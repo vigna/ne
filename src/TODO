@@ -9,3 +9,5 @@
    allocating line by line.
 
 2) Check that update_partial_line() is always given the best start column.
+
+3) Rewrite SHIFT to use direct buffer access rather than cursor movements.
