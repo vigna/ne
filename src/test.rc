@@ -22,7 +22,7 @@ function check_differences {
 	fi
 }
 
-orig=ne.texinfo
+orig=testutf8.tex
 export EF_ALLOW_MALLOC_0=1
 
 ./test.rb 2000 $orig > test.macro

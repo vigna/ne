@@ -228,11 +228,11 @@ unsigned long file_mod_time(const char *filename) {
    more than 1GiB in a single read(), ignores interruptions (EINTR) and
    tries again in case of EAGAIN errors. */
 
-int64_t read_safely(const int fh, void * const buf, const int64_t len) {
+int64_t read_safely(const int fd, void * const buf, const int64_t len) {
 	for(int64_t done = 0; done < len; ) {
 		/* We read one GiB at a time, lest some OS complains. */
 		const int to_do = min(len - done, 1 << 30);
-		const int64_t t = read(fh, (char *)buf + done, to_do);
+		const int64_t t = read(fd, (char *)buf + done, to_do);
 		if (t < 0) {
 			if (errno == EINTR) continue;
 			if (errno == EAGAIN) { /* We try again, but wait for a second. */
@@ -539,6 +539,20 @@ void unset_interactive_mode(void) {
 	signal(SIGTSTP, SIG_DFL);
 }
 
+
+/* Given a file handler, copies it into the given file for memory mapping. */
+
+int copy_file(int in, int out) {
+	if (!in || !out) return IO_ERROR;
+	char buffer[8192];
+
+	for(;;) {
+		ssize_t result = read(in, buffer, sizeof(buffer));
+		if (result < 0) return IO_ERROR;
+		if (!result) return OK;
+		if (write(out, buffer, result) < result) return CANNOT_MEMORY_MAP_DISK_FULL;
+	}
+}
 
 /* Detects (heuristically) the encoding of a piece of text. */
 

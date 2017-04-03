@@ -90,8 +90,9 @@ char *error_msg[ERROR_COUNT] = {
 	/* 62 */ "Invalid Shift specified (use [<|>][#][s|t]; default is \">1t\").",
 	/* 63 */ "Insufficient white space for requested left shift.",
 	/* 64 */ "Document not saved.",
-	/* 65*/	"File is too large--syntax highlighting disabled (use SYNTAX to reactivate)."
-
+	/* 65*/	"File is too large--syntax highlighting disabled (use SYNTAX to reactivate).",
+	/* 66*/	"Cannot save: disk full.",
+	/* 67*/	"Cannot load using memory mapping: disk full."
 };
 
 char *info_msg[INFO_COUNT] = {

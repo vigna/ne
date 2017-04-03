@@ -326,7 +326,7 @@ int main(int argc, char **argv) {
 	buffer *stdin_buffer = NULL;
 	if (!isatty(fileno(stdin))) {
 		first_file = false;
-		const int error = load_fh_in_buffer(cur_buffer, fileno(stdin));
+		const int error = load_fd_in_buffer(cur_buffer, fileno(stdin));
 		print_error(error);
 		stdin_buffer = cur_buffer;
 

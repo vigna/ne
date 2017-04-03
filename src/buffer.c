@@ -21,6 +21,7 @@
 
 #include "ne.h" 
 #include "support.h"
+#include <sys/mman.h>
 
 /* The standard pool allocation dimension. */
 
@@ -100,11 +101,17 @@ char_pool *alloc_char_pool_from_memory(char * const pool, const int64_t size) {
 
 void free_char_pool(char_pool * const cp) {
 	if (cp == NULL) return;
-
 	free(cp->pool);
 	free(cp);
 }
 
+
+void free_mapped_pool(buffer * const b) {
+	munmap(b->mapped_char_pool->pool, b->mapped_char_pool->size);
+	rem(&b->mapped_char_pool->cp_node);
+	free(b->mapped_char_pool);
+	b->mapped_char_pool = NULL;
+}
 
 
 /* Given a pointer in a character pool and a buffer, this function returns the
@@ -150,11 +157,8 @@ line_desc_pool *alloc_line_desc_pool(int64_t pool_size) {
 }
 
 void free_line_desc_pool(line_desc_pool * const ldp) {
-
 	if (ldp == NULL) return;
-
 	assert_line_desc_pool(ldp);
-
 	free(ldp->pool);
 	free(ldp);
 }
@@ -224,6 +228,7 @@ buffer *alloc_buffer(const buffer * const cur_b) {
 	return NULL;
 }
 
+
 /* This function is useful when resetting a buffer, but not really
 destroying it. Since it modifies some lists, it cannot be interrupted
 from a signal. Note that the search, replace and command_line strings are
@@ -235,6 +240,7 @@ void free_buffer_contents(buffer * const b) {
 
 	block_signals();
 
+	if (b->mapped_char_pool) free_mapped_pool(b);
 	free_list(&b->line_desc_pool_list, free_line_desc_pool);
 	free_list(&b->char_pool_list, free_char_pool);
 	new_list(&b->line_desc_list);
@@ -609,11 +615,14 @@ void free_chars(buffer *const b, char *const p, const int64_t len) {
 	if (p + len - 1 == &cp->pool[cp->last_used]) while(!cp->pool[cp->last_used] && cp->first_used <= cp->last_used) cp->last_used--;
 
 	if (cp->last_used < cp->first_used) {
-		rem(&cp->cp_node);
-		b->allocated_chars -= cp->size;
-		b->free_chars -= cp->size;
-		free_char_pool(cp);
-		release_signals();
+		if (cp == b->mapped_char_pool) free_mapped_pool(b);
+		else {
+			rem(&cp->cp_node);
+			b->allocated_chars -= cp->size;
+			b->free_chars -= cp->size;
+			free_char_pool(cp);
+			release_signals();
+		}
 		return;
 	}
 
@@ -1113,10 +1122,10 @@ int load_file_in_buffer(buffer * const b, const char *name) {
 	if (is_directory(name)) return FILE_IS_DIRECTORY;
 	if (is_migrated(name)) return FILE_IS_MIGRATED;
 
-	const int fh = open(name, READ_FLAGS);
-	if (fh >= 0) {
-		const int result = load_fh_in_buffer(b, fh);
-		close(fh);
+	const int fd = open(name, READ_FLAGS);
+	if (fd >= 0) {
+		const int result = load_fd_in_buffer(b, fd);
+		close(fd);
 		b->mtime = file_mod_time(name);
 		if (!result) b->opt.read_only = (access(name, W_OK) != 0);
 		return result;
@@ -1133,12 +1142,12 @@ int load_file_in_buffer(buffer * const b, const char *name) {
    files. The flexible pool structure of ne makes it possible loading the
    file with a single read in a big pool. */
 
-int load_fh_in_buffer(buffer *b, int fh) {
+int load_fd_in_buffer(buffer *b, int fd) {
 	char terminators[] = { 0x0d, 0x0a };
 
 	if (b->opt.preserve_cr) terminators[0] = 0;
 
-	off_t len = lseek(fh, 0, SEEK_END);
+	off_t len = lseek(fd, 0, SEEK_END);
 
 	if (len == 0) {
 		clear_buffer(b);
@@ -1148,23 +1157,50 @@ int load_fh_in_buffer(buffer *b, int fh) {
 	}
 
 	char_pool *cp;
+	bool mapped = false;
 
 	if (len > 0) { /* Seekable */
-		if (lseek(fh, 0, SEEK_SET) < 0) return IO_ERROR;
+		if (lseek(fd, 0, SEEK_SET) < 0) return IO_ERROR;
 
 		block_signals();
-		free_buffer_contents(b);
 
-		cp = alloc_char_pool(len + STANDARD_INCREMENT);
+		cp = NULL;//alloc_char_pool(len + STANDARD_INCREMENT);
 		if (!cp) {
-			release_signals();
-			return OUT_OF_MEMORY;
+			int error = OK;
+			/* Let's try with memory mapping. */
+			if (cp = alloc_char_pool(0)) {
+				char template[15] = "ne-mmap-XXXXXX";
+				const int mapped_fd = mkstemp(template);
+				if (mapped_fd == -1) error = IO_ERROR;
+				else {
+					unlink(template);
+					if (!(error = copy_file(fd, mapped_fd))) {
+						/* This is really weird, but it's better if we cover it anyway. */
+						if (lseek(mapped_fd, 0, SEEK_END) == len) {
+							cp->size = len;
+							if ((cp->pool = mmap(NULL, len, PROT_READ | PROT_WRITE, MAP_SHARED, mapped_fd, 0)) != MAP_FAILED) {
+								free_buffer_contents(b);
+								mapped = true;
+								b->mapped_char_pool = cp;
+							} else error = IO_ERROR;
+						} else  error = IO_ERROR;
+					}
+				}
+				close(mapped_fd);
+			} else error = OUT_OF_MEMORY;
+			if (error) {
+				if (cp) free(cp);
+				release_signals();
+				return error;
+			}
 		}
-		if (read_safely(fh, cp->pool, len) < len) {
+		else if (read_safely(fd, cp->pool, len) < len) {
 			free_char_pool(cp);
 			release_signals();
 			return IO_ERROR;
 		}
+		else free_buffer_contents(b);
+
 	}
 	else { /* Not seekable */
 		block_signals();
@@ -1174,7 +1210,7 @@ int load_fh_in_buffer(buffer *b, int fh) {
 		len = 0;
 		char *pool = calloc(curr_size, 1);
 		for(;;) {
-			const int64_t res = read_safely(fh, pool + len, curr_size - len);
+			const int64_t res = read_safely(fd, pool + len, curr_size - len);
 			if (res < 0) {
 				free(pool);
 				release_signals();
@@ -1210,10 +1246,10 @@ int load_fh_in_buffer(buffer *b, int fh) {
 			if (i < len - 1 && !b->opt.preserve_cr && p[0] == '\r' && p[1] == '\n') {
 				b->is_CRLF = true;
 				p++, i++;
-				b->free_chars++;
+				if (!mapped) b->free_chars++;
 			}
 			num_lines++;
-			b->free_chars++;
+			if (!*p || ! mapped) b->free_chars++;
 		}
 
 	num_lines++;
@@ -1246,21 +1282,25 @@ int load_fh_in_buffer(buffer *b, int fh) {
 			/* last line */
 			if (i == num_lines - 1) {
 				if (p - cp->pool < len) {
-					assert(*p && *p != terminators[0] && *p != terminators[1]);
+					assert(*p && (mapped || *p != terminators[0] && *p != terminators[1]));
 					ld->line = p;
 					ld->line_len = len - (p - cp->pool);
 				}
-			}
-
-			else {
+			} else {
 				char *q = p;
 				while((b->opt.binary || *q != terminators[0] && *q != terminators[1]) && *q) q++;
 
 				ld->line_len = q - p;
 				ld->line = q - p ? p : NULL;
 
-				if (q - cp->pool < len - 1 && !b->opt.preserve_cr && q[0] == '\r' && q[1] == '\n') *q++ = 0;
-				*q++ = 0;
+				if (mapped) {
+					if (q - cp->pool < len - 1 && !b->opt.preserve_cr && q[0] == '\r' && q[1] == '\n') q++;
+					q++;
+				}
+				else {
+					if (q - cp->pool < len - 1 && !b->opt.preserve_cr && q[0] == '\r' && q[1] == '\n') *q++ = 0;
+					*q++ = 0;
+				}
 				p = q;
 
 			}
@@ -1356,8 +1396,8 @@ int save_buffer_to_file(buffer *b, const char *name) {
 	block_signals();
 
 	int error = OK;
-	const int fh = open(name, WRITE_FLAGS, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-	if (fh >= 0) {
+	const int fd = open(name, WRITE_FLAGS, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+	if (fd >= 0) {
 
 		/* If we can allocate SAVE_BLOCK_LEN bytes, we will use
 		them as a buffer for our saves. */
@@ -1390,8 +1430,8 @@ int save_buffer_to_file(buffer *b, const char *name) {
 
 						used = 0;
 
-						if (write(fh, p, SAVE_BLOCK_LEN) < SAVE_BLOCK_LEN) {
-							error = IO_ERROR;
+						if (write(fd, p, SAVE_BLOCK_LEN) < SAVE_BLOCK_LEN) {
+							error = CANNOT_SAVE_DISK_FULL;
 							break;
 						}
 					}
@@ -1413,7 +1453,7 @@ int save_buffer_to_file(buffer *b, const char *name) {
 				}
 
 				if (used >= SAVE_BLOCK_LEN) {
-					if (write(fh, p, used) < used) {
+					if (write(fd, p, used) < used) {
 						error = IO_ERROR;
 						break;
 					}
@@ -1421,7 +1461,7 @@ int save_buffer_to_file(buffer *b, const char *name) {
 				}
 			}
 
-			if (!error && used && write(fh, p, used) < used) error = IO_ERROR;
+			if (!error && used && write(fd, p, used) < used) error = IO_ERROR;
 
 			free(p);
 		}
@@ -1432,7 +1472,7 @@ int save_buffer_to_file(buffer *b, const char *name) {
 			while(ld->ld_node.next) {
 
 				if (ld->line) {
-					if (write(fh, ld->line, ld->line_len) < ld->line_len) {
+					if (write(fd, ld->line, ld->line_len) < ld->line_len) {
 						error = IO_ERROR;
 						break;
 					}
@@ -1441,11 +1481,11 @@ int save_buffer_to_file(buffer *b, const char *name) {
 				ld = (line_desc *)ld->ld_node.next;
 
 				if (ld->ld_node.next) {
-					if (!b->opt.binary && b->is_CRLF && write(fh, "\r", 1) < 1) {
+					if (!b->opt.binary && b->is_CRLF && write(fd, "\r", 1) < 1) {
 						error = IO_ERROR;
 						break;
 					}
-					if (write(fh, b->opt.binary ? "\0" : "\n", 1) < 1) {
+					if (write(fd, b->opt.binary ? "\0" : "\n", 1) < 1) {
 						error = IO_ERROR;
 						break;
 					}
@@ -1453,7 +1493,7 @@ int save_buffer_to_file(buffer *b, const char *name) {
 			}
 		}
 
-		if (close(fh)) error = IO_ERROR;
+		if (close(fd)) error = IO_ERROR;
 		if (error == OK) b->is_modified = 0;
 		b->mtime = file_mod_time(name);
 	}

@@ -193,30 +193,30 @@ char_stream *load_stream(char_stream * cs, const char *name, const bool preserve
 
 	if (is_directory(name) || is_migrated(name)) return NULL;
 
-	const int fh = open(name, READ_FLAGS);
-	cs = load_stream_from_fh(cs, fh, preserve_cr, binary);
-	if (fh >= 0) close(fh);
+	const int fd = open(name, READ_FLAGS);
+	cs = load_stream_from_fd(cs, fd, preserve_cr, binary);
+	if (fd >= 0) close(fd);
 
 	return cs;
 }
 
-char_stream *load_stream_from_fh(char_stream *cs, const int fh, const bool preserve_cr, const bool binary) {
-	if (fh < 0) return NULL;
+char_stream *load_stream_from_fd(char_stream *cs, const int fd, const bool preserve_cr, const bool binary) {
+	if (fd < 0) return NULL;
 
 	char terminators[] = { 0x0d, 0x0a };
 	if (preserve_cr) terminators[0] = 0;
 
 	assert_char_stream(cs);
 
-	off_t len = lseek(fh, 0, SEEK_END);
+	off_t len = lseek(fd, 0, SEEK_END);
 
 	if (len < 0) return NULL;
 
-	lseek(fh, 0, SEEK_SET);
+	lseek(fd, 0, SEEK_SET);
 
 	if (!(cs = realloc_char_stream(cs, len))) return NULL;
 
-	if (read_safely(fh, cs->stream, len) < len) {
+	if (read_safely(fd, cs->stream, len) < len) {
 		free_char_stream(cs);
 		return NULL;
 	}
@@ -262,10 +262,10 @@ int save_stream(const char_stream *const cs, const char *name, const bool CRLF, 
 	if (is_directory(name)) return  FILE_IS_DIRECTORY ;
 	if (is_migrated(name)) return  FILE_IS_MIGRATED ;
 
-	const int fh = open(name, WRITE_FLAGS, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-	if (fh >= 0) {
-		const int error = save_stream_to_fh(cs, fh, CRLF, binary);
-		close(fh);
+	const int fd = open(name, WRITE_FLAGS, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+	if (fd >= 0) {
+		const int error = save_stream_to_fd(cs, fd, CRLF, binary);
+		close(fd);
 		return error;
 	}
 
@@ -273,14 +273,14 @@ int save_stream(const char_stream *const cs, const char *name, const bool CRLF, 
 }
 
 
-int save_stream_to_fh(const char_stream *const cs, const int fh, const bool CRLF, const bool binary) {
+int save_stream_to_fd(const char_stream *const cs, const int fd, const bool CRLF, const bool binary) {
 
 	if (!cs) return ERROR;
 
 	assert_char_stream(cs);
 
 	if (binary) {
-		if (write(fh, cs->stream, cs->len) < cs->len) return ERROR_WHILE_WRITING;
+		if (write(fd, cs->stream, cs->len) < cs->len) return ERROR_WHILE_WRITING;
 		return OK;
 	}
 
@@ -288,11 +288,11 @@ int save_stream_to_fh(const char_stream *const cs, const int fh, const bool CRLF
 		const int64_t len = strnlen_ne(cs->stream + pos, cs->len - pos);
 
 		/* ALERT: must fraction this and other write/read in gigabyte batches. */
-		if (write(fh, cs->stream + pos, len) < len) return ERROR_WHILE_WRITING;
+		if (write(fd, cs->stream + pos, len) < len) return ERROR_WHILE_WRITING;
 
 		if (pos + len < cs->len) {
-			if (CRLF && write(fh, "\r", 1) < 1) return ERROR_WHILE_WRITING;
-			if (write(fh, "\n", 1) < 1) return ERROR_WHILE_WRITING;
+			if (CRLF && write(fd, "\r", 1) < 1) return ERROR_WHILE_WRITING;
+			if (write(fd, "\n", 1) < 1) return ERROR_WHILE_WRITING;
 		}
 		
 		pos += len + 1;

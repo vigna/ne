@@ -459,6 +459,7 @@ typedef struct {
 	list line_desc_pool_list;
 	list line_desc_list;
 	list char_pool_list;
+	char_pool *mapped_char_pool;
 	line_desc *cur_line_desc;
 	line_desc *top_line_desc;
 	char_stream *cur_macro;

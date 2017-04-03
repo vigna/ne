@@ -1,6 +1,9 @@
 (This file, NEWS, lists new features and enhancements. See CHANGES for fixes.)
 
-3.0.2
+3.1.0
+
+  * Large files that do not fit into memory are memory-mapped transparently
+    if enough disk space is available.
 
   * Determine a "virtual extension" based on document contents and patterns
     from ~/.ne/.extensions. If no match, use filename extension, else
