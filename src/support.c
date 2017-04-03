@@ -24,6 +24,7 @@
 #include "cm.h"
 #include <signal.h>
 #include <pwd.h>
+#include <sys/mman.h>
 
 /* Some systems do not define _POSIX_VDISABLE. We try to establish a reasonable value. */
 
@@ -228,11 +229,11 @@ unsigned long file_mod_time(const char *filename) {
    more than 1GiB in a single read(), ignores interruptions (EINTR) and
    tries again in case of EAGAIN errors. */
 
-int64_t read_safely(const int fd, void * const buf, const int64_t len) {
-	for(int64_t done = 0; done < len; ) {
+ssize_t read_safely(const int fd, void * const buf, const int64_t len) {
+	for(size_t done = 0; done < len; ) {
 		/* We read one GiB at a time, lest some OS complains. */
 		const int to_do = min(len - done, 1 << 30);
-		const int64_t t = read(fd, (char *)buf + done, to_do);
+		const ssize_t t = read(fd, (char *)buf + done, to_do);
 		if (t < 0) {
 			if (errno == EINTR) continue;
 			if (errno == EAGAIN) { /* We try again, but wait for a second. */
@@ -540,18 +541,60 @@ void unset_interactive_mode(void) {
 }
 
 
-/* Given a file handler, copies it into the given file for memory mapping. */
+/* Given a file handler, copies it into the given file. Returns 0 on success, -1 on error. */
 
-int copy_file(int in, int out) {
-	if (!in || !out) return IO_ERROR;
+bool copy_file(const int in, const int out, size_t size) {
 	char buffer[8192];
 
-	for(;;) {
-		ssize_t result = read(in, buffer, sizeof(buffer));
-		if (result < 0) return IO_ERROR;
-		if (!result) return OK;
-		if (write(out, buffer, result) < result) return CANNOT_MEMORY_MAP_DISK_FULL;
+	while(size) {
+		const ssize_t to_do = min(size, sizeof buffer);
+		ssize_t result = read(in, buffer, to_do);
+		if (result < to_do) return false;
+		if (write(out, buffer, to_do) < to_do) return false;
+		size -= to_do;
 	}
+
+	return true;
+}
+
+/* Given a writable file handler, writes size zeroes to it. Returns 0 on success, -1 on error. */
+
+bool zero_file(const int out, size_t size) {
+	char buffer[8192] = { 0 };
+
+	while(size) {
+		const ssize_t to_do = min(size, sizeof buffer);
+		if (write(out, buffer, to_do) < to_do) return false;
+		size -= to_do;
+	}
+
+	return true;
+}
+
+void *alloc_or_mmap(const size_t size, const int fd_or_zero, bool *force_mmap) {
+	void *p = NULL;
+	if (*force_mmap || !(p = fd_or_zero? malloc(size) : calloc(1, size))) {
+		*force_mmap = true;
+		char template[15] = "ne-mmap-XXXXXX";
+		const int mapped_fd = mkstemp(template);
+		if (mapped_fd) {
+			//fprintf(stderr, template); fprintf(stderr, "\n");
+			if ((fd_or_zero ? copy_file(fd_or_zero, mapped_fd, size) : zero_file(mapped_fd, size)) &&
+				(p = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, mapped_fd, 0)) == MAP_FAILED) p = NULL;
+
+			unlink(template);
+			close(mapped_fd);
+		}
+		return p;
+	}
+
+	if (fd_or_zero) {
+		if (read_safely(fd_or_zero, p, size) < size) {
+			free(p);
+			return NULL;
+		}
+	}
+	return p;
 }
 
 /* Detects (heuristically) the encoding of a piece of text. */

@@ -271,6 +271,7 @@ typedef struct {
 	int64_t size;
 	int64_t allocated_items;
 	line_desc *pool;
+	bool mapped;
 } line_desc_pool;
 
 #ifndef NDEBUG
@@ -298,6 +299,7 @@ typedef struct {
 	int64_t size;
 	int64_t first_used, last_used;
 	char *pool;
+	bool mapped;
 } char_pool;
 
 #ifndef NDEBUG
@@ -459,7 +461,6 @@ typedef struct {
 	list line_desc_pool_list;
 	list line_desc_list;
 	list char_pool_list;
-	char_pool *mapped_char_pool;
 	line_desc *cur_line_desc;
 	line_desc *top_line_desc;
 	char_stream *cur_macro;

@@ -31,10 +31,9 @@
 
 #define STD_LINE_DESC_POOL_SIZE (512)
 
-/* The amount by which we increment the first pool dimension, with respect
-to the size of the given file. */
+/* The starting size when reading a non-seekable file. */
 
-#define STANDARD_INCREMENT (8 * 1024)
+#define START_SIZE (8 * 1024)
 
 /* The number of lines by which we increment the first line descriptor
 pool dimension, with respect to the number of lines of the given file. */
@@ -74,12 +73,13 @@ pool is the number of characters, and it is forced to be at least
 STD_POOL_SIZE. */
 
 
-char_pool *alloc_char_pool(int64_t size) {
-	if (size < STD_POOL_SIZE) size = STD_POOL_SIZE;
+char_pool *alloc_char_pool(int64_t size, const int fd_or_zero, const bool mapped) {
+	if (size < STD_POOL_SIZE && ! fd_or_zero) size = STD_POOL_SIZE;
 
 	char_pool * const cp = calloc(1, sizeof(char_pool));
 	if (cp) {
-		if (cp->pool = calloc(sizeof(char), size)) {
+		cp->mapped = mapped;
+		if (cp->pool = alloc_or_mmap(size, fd_or_zero, &cp->mapped)) {
 			cp->size = size;
 			return cp;
 		}
@@ -101,17 +101,11 @@ char_pool *alloc_char_pool_from_memory(char * const pool, const int64_t size) {
 
 void free_char_pool(char_pool * const cp) {
 	if (cp == NULL) return;
-	free(cp->pool);
+	if (cp->mapped) munmap(cp->pool, cp->size);
+	else free(cp->pool);
 	free(cp);
 }
 
-
-void free_mapped_pool(buffer * const b) {
-	munmap(b->mapped_char_pool->pool, b->mapped_char_pool->size);
-	rem(&b->mapped_char_pool->cp_node);
-	free(b->mapped_char_pool);
-	b->mapped_char_pool = NULL;
-}
 
 
 /* Given a pointer in a character pool and a buffer, this function returns the
@@ -136,12 +130,13 @@ char_pool *get_char_pool(buffer * const b, char * const p) {
    STD_LINE_DESC_POOL_SIZE. */
 
 
-line_desc_pool *alloc_line_desc_pool(int64_t pool_size) {
+line_desc_pool *alloc_line_desc_pool(int64_t pool_size, const bool mapped) {
 	if (pool_size < STD_LINE_DESC_POOL_SIZE) pool_size = STD_LINE_DESC_POOL_SIZE;
 
 	line_desc_pool * const ldp = calloc(1, sizeof(line_desc_pool));
 	if (ldp) {
-		if (ldp->pool = calloc(pool_size, do_syntax ? sizeof(line_desc) : sizeof(no_syntax_line_desc))) {
+		ldp->mapped = mapped;
+		if (ldp->pool = alloc_or_mmap(pool_size * (do_syntax ? sizeof(line_desc) : sizeof(no_syntax_line_desc)), 0, &ldp->mapped)) {
 			ldp->size = pool_size;
 			new_list(&ldp->free_list);
 			for(int64_t i = 0; i < pool_size; i++) 
@@ -159,7 +154,8 @@ line_desc_pool *alloc_line_desc_pool(int64_t pool_size) {
 void free_line_desc_pool(line_desc_pool * const ldp) {
 	if (ldp == NULL) return;
 	assert_line_desc_pool(ldp);
-	free(ldp->pool);
+	if (ldp->mapped) munmap(ldp->pool, ldp->size * (do_syntax ? sizeof(line_desc) : sizeof(no_syntax_line_desc)));
+	else free(ldp->pool);
 	free(ldp);
 }
 
@@ -240,7 +236,6 @@ void free_buffer_contents(buffer * const b) {
 
 	block_signals();
 
-	if (b->mapped_char_pool) free_mapped_pool(b);
 	free_list(&b->line_desc_pool_list, free_line_desc_pool);
 	free_list(&b->char_pool_list, free_char_pool);
 	new_list(&b->line_desc_list);
@@ -296,13 +291,9 @@ void clear_buffer(buffer * const b) {
 
 void free_buffer(buffer * const b) {
 	if (b == NULL) return;
-
 	assert_buffer(b);
-
 	free_buffer_contents(b);
-
 	free_char_stream(b->cur_macro);
-
 	free(b->find_string);
 	free(b->replace_string);
 	free(b->command_line);
@@ -424,7 +415,7 @@ line_desc *alloc_line_desc(buffer * const b) {
 	using the standard pool size, and let's put it at the start
 	of the list, so that it is always scanned first. */
 
-	if (ldp = alloc_line_desc_pool(0)) {
+	if (ldp = alloc_line_desc_pool(0, false)) {
 		add_head(&b->line_desc_pool_list, &ldp->ldp_node);
 		line_desc * const ld = (line_desc *)ldp->free_list.head;
 		rem(&ld->ld_node);
@@ -518,7 +509,7 @@ char *alloc_chars(buffer * const b, const int64_t len) {
 	/* If no free space has been found, we allocate a new pool which is guaranteed
 	to contain at least len characters. The pool is added to the head of the list. */
 
-	if (cp = alloc_char_pool(len)) {
+	if (cp = alloc_char_pool(len, 0, false)) {
 		add_head(&b->char_pool_list, &cp->cp_node);
 		cp->last_used = len - 1;
 
@@ -615,14 +606,11 @@ void free_chars(buffer *const b, char *const p, const int64_t len) {
 	if (p + len - 1 == &cp->pool[cp->last_used]) while(!cp->pool[cp->last_used] && cp->first_used <= cp->last_used) cp->last_used--;
 
 	if (cp->last_used < cp->first_used) {
-		if (cp == b->mapped_char_pool) free_mapped_pool(b);
-		else {
-			rem(&cp->cp_node);
-			b->allocated_chars -= cp->size;
-			b->free_chars -= cp->size;
-			free_char_pool(cp);
-			release_signals();
-		}
+		rem(&cp->cp_node);
+		b->allocated_chars -= cp->size;
+		b->free_chars -= cp->size;
+		free_char_pool(cp);
+		release_signals();
 		return;
 	}
 
@@ -1157,56 +1145,22 @@ int load_fd_in_buffer(buffer *b, int fd) {
 	}
 
 	char_pool *cp;
-	bool mapped = false;
 
 	if (len > 0) { /* Seekable */
 		if (lseek(fd, 0, SEEK_SET) < 0) return IO_ERROR;
-
 		block_signals();
-
-		cp = NULL;//alloc_char_pool(len + STANDARD_INCREMENT);
+		cp = alloc_char_pool(len, fd, true);
 		if (!cp) {
-			int error = OK;
-			/* Let's try with memory mapping. */
-			if (cp = alloc_char_pool(0)) {
-				char template[15] = "ne-mmap-XXXXXX";
-				const int mapped_fd = mkstemp(template);
-				if (mapped_fd == -1) error = IO_ERROR;
-				else {
-					unlink(template);
-					if (!(error = copy_file(fd, mapped_fd))) {
-						/* This is really weird, but it's better if we cover it anyway. */
-						if (lseek(mapped_fd, 0, SEEK_END) == len) {
-							cp->size = len;
-							if ((cp->pool = mmap(NULL, len, PROT_READ | PROT_WRITE, MAP_SHARED, mapped_fd, 0)) != MAP_FAILED) {
-								free_buffer_contents(b);
-								mapped = true;
-								b->mapped_char_pool = cp;
-							} else error = IO_ERROR;
-						} else  error = IO_ERROR;
-					}
-				}
-				close(mapped_fd);
-			} else error = OUT_OF_MEMORY;
-			if (error) {
-				if (cp) free(cp);
-				release_signals();
-				return error;
-			}
-		}
-		else if (read_safely(fd, cp->pool, len) < len) {
-			free_char_pool(cp);
 			release_signals();
-			return IO_ERROR;
+			return OUT_OF_MEMORY;
 		}
-		else free_buffer_contents(b);
-
+		free_buffer_contents(b);
 	}
 	else { /* Not seekable */
 		block_signals();
 		free_buffer_contents(b);
 
-		int64_t curr_size = STANDARD_INCREMENT;
+		int64_t curr_size = START_SIZE;
 		len = 0;
 		char *pool = calloc(curr_size, 1);
 		for(;;) {
@@ -1230,6 +1184,7 @@ int load_fd_in_buffer(buffer *b, int fd) {
 		}
 	}
 
+	const bool mapped = cp->mapped;
 	b->allocated_chars = cp->size;
 	b->free_chars = cp->size - len;
 
@@ -1264,7 +1219,7 @@ int load_fd_in_buffer(buffer *b, int fd) {
 		else b->encoding = ENC_8_BIT;
 	}
 
-	line_desc_pool * const ldp = alloc_line_desc_pool(num_lines + STANDARD_LINE_INCREMENT);
+	line_desc_pool * const ldp = alloc_line_desc_pool(num_lines + STANDARD_LINE_INCREMENT, mapped);
 	if (ldp) {
 
 		char *p = cp->pool;
