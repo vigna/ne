@@ -554,8 +554,8 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 						/* We are deleting one or more spaces from a tabbing position. We go left until the
 						   previous tabbing, or when spaces end. */
 						int64_t back = 1;
-						while((b->cur_pos - back > b->cur_line_desc->line_len || b->cur_line_desc->line[b->cur_pos - back - 1] == ' ')
-							&& (b->win_x + b->cur_x - back) % b->opt.tab_size != 0) back++;
+						while((b->win_x + b->cur_x - back) % b->opt.tab_size != 0
+							&& (b->cur_pos - back > b->cur_line_desc->line_len || b->cur_line_desc->line[b->cur_pos - back - 1] == ' ')) back++;
 						goto_pos(b, b->cur_pos - back);
 					}
 					else char_left(b);
