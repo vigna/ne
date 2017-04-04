@@ -1149,7 +1149,7 @@ int load_fd_in_buffer(buffer *b, int fd) {
 	if (len > 0) { /* Seekable */
 		if (lseek(fd, 0, SEEK_SET) < 0) return IO_ERROR;
 		block_signals();
-		cp = alloc_char_pool(len, fd, true);
+		cp = alloc_char_pool(len, fd, false);
 		if (!cp) {
 			release_signals();
 			return OUT_OF_MEMORY_DISK_FULL;
