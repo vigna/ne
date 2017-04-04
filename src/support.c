@@ -541,7 +541,9 @@ void unset_interactive_mode(void) {
 }
 
 
-/* Given a file handler, copies it into the given file. Returns 0 on success, -1 on error. */
+/* Given a readable file descriptor and a writable file descriptor, copies
+   the content of the former into the latter for at most size bytes. Returns
+   true on success, false on error. */
 
 bool copy_file(const int in, const int out, size_t size) {
 	char buffer[8192];
@@ -557,10 +559,11 @@ bool copy_file(const int in, const int out, size_t size) {
 	return true;
 }
 
-/* Given a writable file handler, writes size zeroes to it. Returns 0 on success, -1 on error. */
+/* Given a writable file descriptor, writes size zeroes to it. Returns
+   true on success, false on error. */
 
 bool zero_file(const int out, size_t size) {
-	char buffer[8192] = { 0 };
+	char buffer[8192] = {};
 
 	while(size) {
 		const ssize_t to_do = min(size, sizeof buffer);
@@ -570,6 +573,19 @@ bool zero_file(const int out, size_t size) {
 
 	return true;
 }
+
+/* Allocates a region of memory either using malloc(), or using mmap() on a
+   newly created file. If *force_mmap is true, malloc() is not even tried.
+   If the result is not NULL, *force_mmap is set to true or false depending
+   on whether mmap() or malloc() were used to allocate the region. In the
+   case mmap() was used, the file is unlink()'d and its file descriptor
+   closed: thus, after munmap()'ing the region it will automatically
+   disappear.
+
+   If fd_or_zero is zero, the region will be initialized to zero. Otherwise,
+   fd_or_zero must be a readable file descriptor whose content will be used
+   to initialize the region. If less than size bytes are available for
+   reading this function will return NULL. */
 
 void *alloc_or_mmap(const size_t size, const int fd_or_zero, bool *force_mmap) {
 	void *p = NULL;
