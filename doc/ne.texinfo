@@ -5662,6 +5662,7 @@ then the one in the global directory will be consulted.
 @cindex Shortcuts not working
 @cindex Meta key
 @cindex Changing colors
+@cindex Large files
 
 @table @emph
 
@@ -5686,6 +5687,10 @@ theory to configure about 150 shortcuts. @xref{Configuration}. In any
 case, prefixing a key with @key{Escape} has the same effect as holding
 down @key{Meta}, so with the standard key bindings
 you can, for instance, advance by word with @kbd{@key{Escape}} followed by @kbd{F}.
+
+@item When editing very large files, please use the @code{--no-syntax} option.
+Even if @code{ne} will switch transparently to memory-mapped disk files, syntax
+highlighting requires a great deal of additional memory.
 
 @item Mac users should turn on ``Delete sends CTRL-H'' in the @command{Terminal} settings.
 If you are a Mac user, you need to check the ``Delete sends CTRL-H'' option
