@@ -1172,7 +1172,13 @@ int load_fd_in_buffer(buffer *b, int fd) {
 			}
 			len += res;
 			if (len < curr_size) break;
-			pool = realloc(pool, curr_size *= 2);
+			char * const new_pool = realloc(pool, curr_size *= 2);
+			if (new_pool == NULL) {
+				free(pool);
+				release_signals();
+				return OUT_OF_MEMORY;
+			}
+			pool = new_pool;
 			memset(pool + len, 0, curr_size - len);
 		}
 		
