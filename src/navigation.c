@@ -108,7 +108,7 @@ void resync_pos(buffer * const b) {
 
 				if (x - b->win_x < ne_columns) b->cur_x = x - b->win_x;
 				else {
-					b->win_x = x - ne_columns;
+					b->win_x = x - ne_columns + 1;
 					b->win_x += b->opt.tab_size - b->win_x % b->opt.tab_size;
 					b->cur_x = x - b->win_x;
 					if (b == cur_buffer) update_window(b);
@@ -130,7 +130,7 @@ void resync_pos(buffer * const b) {
 					(more precisely, its right margin is not). We shift the screen
 					to the left. */
 				assert(b->win_x > 0);
-				b->win_x = max(0, width - ne_columns);
+				b->win_x = max(0, width - ne_columns + 1);
 				b->win_x -= b->win_x % b->opt.tab_size;
 				b->cur_x = width - b->win_x;
 				if (b == cur_buffer) update_window(b);
@@ -147,6 +147,8 @@ void resync_pos(buffer * const b) {
 	}
 
 	if (b->opt.free_form) {
+		b->win_x = max(0, x - ne_columns + 1);
+		b->win_x += b->opt.tab_size - b->win_x % b->opt.tab_size;
 		b->cur_pos = ld->line_len + x - width;
 		b->cur_char = i + x - width;
 		b->cur_x = x - b->win_x;

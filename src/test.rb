@@ -223,12 +223,11 @@ ARGV[0].to_i.times do |i|
 		when 9
 			puts("AUTOCOMPLETE")
 		when 10
-			# TODO put it back in
-			# puts("SHIFT " + (rand(2)==0?"<":">") + rand(20).to_s + (rand(2)==0?"t":"s"))
+			puts("SHIFT " + (rand(2)==0 ? "<" : ">") + rand(20).to_s + (rand(2)==0?"t":"s"))
 		when 11
 			puts("REPEATLAST")
 		when 12
-			puts(rand(2)==0?"SYNTAX *":"SYNTAX texinfo")
+			puts(rand(2)==0 ? "SYNTAX *" : "SYNTAX " + ARGV[1][/\.[a-z0-9]+$/][1..-1])
 		when 13
 			puts("NAMECONVERT")
 		end

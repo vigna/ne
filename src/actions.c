@@ -89,6 +89,8 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 	assert_buffer(b);
 	assert_buffer_content(b);
 	assert(b->encoding != ENC_UTF8 || b->cur_pos >= b->cur_line_desc->line_len || utf8len(b->cur_line_desc->line[b->cur_pos]) > 0);
+	assert(b != cur_buffer || b->cur_x < ne_columns);
+	assert(b != cur_buffer || b->cur_y < ne_lines - 1);
 #ifndef NDEBUG
 	if (b->syn && b->attr_len != -1) {
 		HIGHLIGHT_STATE next_state = parse(b->syn, b->cur_line_desc, b->cur_line_desc->highlight_state, b->encoding == ENC_UTF8);
@@ -643,6 +645,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		for(int64_t i = 0; i < c && !stop; i++) {
 			start_undo_chain(b);
 			if (b->win_x == 0) ensure_attributes(b);
+
 			if (insert_one_line(b, b->cur_line_desc, b->cur_line, b->cur_pos > b->cur_line_desc->line_len ? b->cur_line_desc->line_len : b->cur_pos) == OK) {
 				end_undo_chain(b);
 				if (b->win_x) {
@@ -656,7 +659,6 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 						((line_desc *)b->cur_line_desc->ld_node.next)->highlight_state = b->next_state;
 					}
 
-					assert(b->cur_line_desc->ld_node.next->next != NULL);
 					if (b->opt.auto_indent) {
 						start_undo_chain(b);
 						a = auto_indent_line(b, b->cur_line + 1, (line_desc *)b->cur_line_desc->ld_node.next, INT_MAX);
@@ -679,7 +681,6 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 						((line_desc *)b->cur_line_desc->ld_node.next)->highlight_state = b->next_state;
 					}
 
-					assert(b->cur_line_desc->ld_node.next->next != NULL);
 					if (b->opt.auto_indent) {
 						start_undo_chain(b);
 						a = auto_indent_line(b, b->cur_line + 1, (line_desc *)b->cur_line_desc->ld_node.next, INT_MAX);
@@ -746,11 +747,8 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 				}
 				else update_partial_line(b, b->cur_line_desc, b->cur_y, b->cur_x, false);
 			}
-			if (b->syn) {
-				assert(b->cur_line_desc->ld_node.next->next != NULL);
-				/* For each undeletion, we must poke into the next line its correct initial state. */
-				((line_desc *)b->cur_line_desc->ld_node.next)->highlight_state = next_line_state;
-			}
+			/* For each undeletion, we must poke into the next line its correct initial state. */
+			if (b->syn) ((line_desc *)b->cur_line_desc->ld_node.next)->highlight_state = next_line_state;
 			/* We actually scroll down the remaining lines, if necessary. */
 			if (b->cur_y < ne_lines - 2) scroll_window(b, (line_desc *)b->cur_line_desc->ld_node.next, b->cur_y + 1, 1);
 		}
