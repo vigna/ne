@@ -729,7 +729,7 @@ int insert_stream(buffer * const b, line_desc * ld, int64_t line, int64_t pos, c
 				}
 				else {
 					release_signals();
-					return OUT_OF_MEMORY;
+					return OUT_OF_MEMORY_DISK_FULL;
 				}
 			}
 
@@ -753,7 +753,7 @@ int insert_stream(buffer * const b, line_desc * ld, int64_t line, int64_t pos, c
 					}
 					else {
 						release_signals();
-						return OUT_OF_MEMORY;
+						return OUT_OF_MEMORY_DISK_FULL;
 					}
 				}
 				else { /* Third case. There are enough free characters around ld->line. */
@@ -818,7 +818,7 @@ int insert_stream(buffer * const b, line_desc * ld, int64_t line, int64_t pos, c
 			}
 			else {
 				release_signals();
-				return OUT_OF_MEMORY;
+				return OUT_OF_MEMORY_DISK_FULL;
 			}
 		}
 
@@ -948,7 +948,7 @@ int delete_stream(buffer * const b, line_desc * const ld, const int64_t line, co
 					else {
 						release_signals();
 						if (b->opt.do_undo && !(b->undoing || b->redoing)) fix_last_undo_step(b, -len);
-						return OUT_OF_MEMORY;
+						return OUT_OF_MEMORY_DISK_FULL;
 					}
 				}
 
@@ -1152,7 +1152,7 @@ int load_fd_in_buffer(buffer *b, int fd) {
 		cp = alloc_char_pool(len, fd, true);
 		if (!cp) {
 			release_signals();
-			return OUT_OF_MEMORY;
+			return OUT_OF_MEMORY_DISK_FULL;
 		}
 		free_buffer_contents(b);
 	}
@@ -1293,7 +1293,7 @@ int load_fd_in_buffer(buffer *b, int fd) {
 	free_char_pool(cp);
 	release_signals();
 	clear_buffer(b);
-	return OUT_OF_MEMORY;
+	return OUT_OF_MEMORY_DISK_FULL;
 }
 
 /* Recomputes initial states for all lines in a buffer. */

@@ -844,7 +844,8 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 					&& error != FILE_IS_DIRECTORY
 					&& error != IO_ERROR
 					&& error != FILE_IS_TOO_LARGE
-					&& error != OUT_OF_MEMORY) {
+					&& error != OUT_OF_MEMORY
+					&& error != OUT_OF_MEMORY_DISK_FULL) {
 					change_filename(b, p);
 					b->syn = NULL; /* So that autoprefs will load the right syntax. */
 					if (b->opt.auto_prefs) {

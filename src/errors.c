@@ -92,7 +92,7 @@ char *error_msg[ERROR_COUNT] = {
 	/* 64 */ "Document not saved.",
 	/* 65*/	"File is too large--syntax highlighting disabled (use SYNTAX to reactivate).",
 	/* 66*/	"Cannot save: disk full.",
-	/* 67*/	"Cannot load using memory mapping: disk full."
+	/* 67*/	"Out of memory (disk full?). DANGER!"
 };
 
 char *info_msg[INFO_COUNT] = {
