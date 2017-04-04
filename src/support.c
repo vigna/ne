@@ -591,7 +591,7 @@ void *alloc_or_mmap(const size_t size, const int fd_or_zero, bool *force_mmap) {
 	void *p = NULL;
 	if (*force_mmap || !(p = fd_or_zero? malloc(size) : calloc(1, size))) {
 		*force_mmap = true;
-		char template[15] = "ne-mmap-XXXXXX";
+		char template[16] = ".ne-mmap-XXXXXX";
 		const int mapped_fd = mkstemp(template);
 		if (mapped_fd) {
 			//fprintf(stderr, template); fprintf(stderr, "\n");
