@@ -516,7 +516,7 @@ int replace_regexp(buffer * const b, const char * const string) {
 				q++;
 				len--;
 			}
-			else if (i >= 0 && i < RE_NREGS && re_reg.start[i] >= 0) {
+			else if (i >= 0 && i < re_reg.num_regs && re_reg.start[i] >= 0) {
 				if (b->encoding == ENC_UTF8) {
 					/* In the UTF-8 case, the replacement group index must be
 						mapped through map_group to recover the real group. */
