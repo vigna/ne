@@ -574,10 +574,11 @@ bool zero_file(const int out, size_t size) {
 	return true;
 }
 
-/* Allocates a region of memory either using malloc(), or using mmap() on a
-   newly created file. If *force_mmap is true, malloc() is not even tried.
-   If the result is not NULL, *force_mmap is set to true or false depending
-   on whether mmap() or malloc() were used to allocate the region. In the
+/* Allocates a region of memory either using malloc(), or using mmap() on
+   a newly created file. If *force is -1, malloc() is tried first, then
+   mmap(). If it is 0, just malloc() is tried. If it is 1, just mmap() is
+   tried. If the result is not NULL, *force is set to 1 or 0 depending on
+   whether mmap() or malloc() were used to allocate the region. In the
    case mmap() was used, the file is unlink()'d and its file descriptor
    closed: thus, after munmap()'ing the region it will automatically
    disappear.
@@ -587,14 +588,13 @@ bool zero_file(const int out, size_t size) {
    to initialize the region. If less than size bytes are available for
    reading this function will return NULL. */
 
-void *alloc_or_mmap(const size_t size, const int fd_or_zero, bool *force_mmap) {
+void *alloc_or_mmap(const size_t size, const int fd_or_zero, int *force) {
 	void *p = NULL;
-	if (*force_mmap || !(p = fd_or_zero? malloc(size) : calloc(1, size))) {
-		*force_mmap = true;
+	if (*force == 1 || *force == -1 && !(p = fd_or_zero? malloc(size) : calloc(1, size))) {
+		*force = 1;
 		char template[16] = ".ne-mmap-XXXXXX";
 		const int mapped_fd = mkstemp(template);
 		if (mapped_fd) {
-			//fprintf(stderr, template); fprintf(stderr, "\n");
 			if ((fd_or_zero ? copy_file(fd_or_zero, mapped_fd, size) : zero_file(mapped_fd, size)) &&
 				(p = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, mapped_fd, 0)) == MAP_FAILED) p = NULL;
 
@@ -604,12 +604,18 @@ void *alloc_or_mmap(const size_t size, const int fd_or_zero, bool *force_mmap) {
 		return p;
 	}
 
-	if (fd_or_zero) {
-		if (read_safely(fd_or_zero, p, size) < size) {
-			free(p);
-			return NULL;
+	if (p == NULL) p = fd_or_zero? malloc(size) : calloc(1, size);
+
+	if (p) {
+		*force = 0;
+		if (fd_or_zero) {
+			if (read_safely(fd_or_zero, p, size) < size) {
+				free(p);
+				return NULL;
+			}
 		}
 	}
+
 	return p;
 }
 

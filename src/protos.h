@@ -29,10 +29,10 @@ char *autocomplete(char *p, char *req_msg, const int ext, int * const error);
 
 /* buffer.c */
 encoding_type detect_buffer_encoding(const buffer *b);
-char_pool *alloc_char_pool(int64_t size, int fd_or_zero, bool mapped);
+char_pool *alloc_char_pool(int64_t size, int fd_or_zero, int force);
 void free_char_pool(char_pool *cp);
 char_pool *get_char_pool(buffer *b, char * const p);
-line_desc_pool *alloc_line_desc_pool(int64_t pool_size, bool mapped);
+line_desc_pool *alloc_line_desc_pool(int64_t pool_size, int force);
 void free_line_desc_pool(line_desc_pool *ldp);
 buffer *alloc_buffer(const buffer *cur_b);
 void free_buffer_contents(buffer *b);
@@ -291,7 +291,7 @@ int filenamecmpp(const void *a, const void *b);
 int filenamecmp(const char *a, const char *b);
 void set_interactive_mode(void);
 void unset_interactive_mode(void);
-void *alloc_or_mmap(size_t size, int fd_or_zero, bool *force_mmap);
+void *alloc_or_mmap(size_t size, int fd_or_zero, int *force);
 int max_prefix(const char *s, const char *t);
 bool is_prefix(const char *p, const char *s);
 bool is_migrated(const char *name);

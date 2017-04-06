@@ -269,7 +269,7 @@ typedef struct {
 	list free_list;
 	int64_t size;
 	int64_t allocated_items;
-	line_desc *pool;
+	void *pool; // The type of line descriptor can vary.
 	bool mapped;
 } line_desc_pool;
 
