@@ -261,8 +261,7 @@ typedef struct {
 
 
 /* This structure defines a pool of line descriptors. pool points to an
-   array of size line descriptors. The first free descriptor is contained in
-   first_free. The last free descriptor is contained in last_free. The
+   array of size line descriptors, which are kept in free_list. The
    allocated_items field keeps track of how many items are allocated. */
 
 typedef struct {

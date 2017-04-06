@@ -49,6 +49,10 @@ pool dimension, with respect to the number of lines of the given file. */
 
 #define SAVE_BLOCK_LEN	(64 * 1024 - 1)
 
+/* The length of a half of the circular buffer used for memory mapping. */
+
+#define CIRC_BUFFER_SIZE (8 * 1024)
+
 
 /* Detects (heuristically) the encoding of a buffer. */
 
@@ -148,7 +152,18 @@ line_desc_pool *alloc_line_desc_pool(int64_t pool_size, const bool mapped) {
 	}
 
 	return NULL;
+}
 
+
+line_desc_pool *alloc_line_desc_pool_from_memory(line_desc *pool, int64_t pool_size) {
+	line_desc_pool * const ldp = calloc(1, sizeof(line_desc_pool));
+	if (ldp) {
+		new_list(&ldp->free_list);
+		ldp->pool = pool;
+		ldp->size = ldp->allocated_items = pool_size;
+		return ldp;
+	}
+	return NULL;
 }
 
 void free_line_desc_pool(line_desc_pool * const ldp) {
@@ -1145,12 +1160,120 @@ int load_fd_in_buffer(buffer *b, int fd) {
 	}
 
 	char_pool *cp;
+	line_desc_pool * ldp;
+	int64_t num_lines = 0;
 
 	if (len > 0) { /* Seekable */
 		if (lseek(fd, 0, SEEK_SET) < 0) return IO_ERROR;
 		block_signals();
-		cp = alloc_char_pool(len, fd, false);
+		cp = NULL;// alloc_char_pool(len, fd, false);
 		if (!cp) {
+			char template[16];
+			const int char_fd = mkstemp(strcpy(template, ".ne-mmap-XXXXXX"));
+			unlink(template);
+			const int ld_fd = mkstemp(strcpy(template, ".ne-mmap-XXXXXX"));
+			unlink(template);
+			free_buffer_contents(b);
+
+			if (char_fd != -1 && ld_fd != -1) {
+				bool first_pass = true;
+				char buffer[CIRC_BUFFER_SIZE * 2];
+				size_t remaining = len;
+				line_desc ld = {};
+
+				size_t to_do = min(remaining, CIRC_BUFFER_SIZE * 2);
+				ssize_t result = read(fd, buffer, to_do);
+				if (result < to_do) return IO_ERROR;
+				remaining -= to_do;
+				int i = 0;
+				int64_t curr_pos = 0, curr_line_start = 0;
+
+				while(curr_pos < len) {
+					if ((i & sizeof buffer / 2 - 1) == 0) {
+						if (first_pass) first_pass = false;
+						else {
+							char * const p = buffer + (i ^ sizeof buffer / 2);
+							if (write(char_fd, p, sizeof buffer / 2) < sizeof buffer / 2) return IO_ERROR;
+							to_do = min(remaining, sizeof buffer / 2);
+							ssize_t result = read(fd, p, to_do);
+							if (result < to_do) return IO_ERROR;
+							remaining -= to_do;
+						}
+					}
+
+					if (!b->opt.binary && (buffer[i] == terminators[0] || buffer[i] == terminators[1]) || !buffer[i]) {
+						const int64_t end_of_line = curr_pos;
+						if (curr_pos < len - 1 && !b->opt.preserve_cr && buffer[i] == '\r' && buffer[i + 1 & sizeof buffer - 1] == '\n') {
+							b->is_CRLF = true;
+							buffer[i] = 0;
+							i = i + 1 & sizeof buffer - 1;
+							curr_pos++;
+							b->free_chars++;
+
+							if ((i & sizeof buffer / 2 - 1) == 0) {
+								char * const p = buffer + (i ^ sizeof buffer / 2);
+								if (write(char_fd, p, sizeof buffer / 2) < sizeof buffer / 2) return IO_ERROR;
+								to_do = min(remaining, sizeof buffer / 2);
+								ssize_t result = read(fd, p, to_do);
+								if (result < to_do) return IO_ERROR;
+								remaining -= to_do;
+							}
+						}
+
+						num_lines++;
+						assert(curr_line_start <= curr_pos);
+						ld.line = (char *)curr_line_start;
+						ld.line_len = end_of_line - curr_line_start;
+						if (write(ld_fd, &ld, sizeof ld) < sizeof ld) return IO_ERROR;
+						if (buffer[i]) b->free_chars++;
+						buffer[i] = 0;
+						curr_line_start = curr_pos + 1;
+					}
+
+					i = i + 1 & sizeof buffer - 1;
+					curr_pos++;
+				}
+
+				if (write(char_fd, buffer + (i & sizeof buffer / 2), i & sizeof buffer / 2 - 1) < (i & sizeof buffer / 2 - 1)) return IO_ERROR;
+
+				assert(curr_line_start <= curr_pos);
+				ld.line = (char *)curr_line_start;
+				ld.line_len = curr_pos - curr_line_start;
+				num_lines++;
+				if (write(ld_fd, &ld, sizeof ld) < sizeof ld) return IO_ERROR;
+
+				char * const char_p = mmap(NULL, len, PROT_READ | PROT_WRITE, MAP_SHARED, char_fd, 0);
+				line_desc * const ld_p = mmap(NULL, num_lines * sizeof(line_desc), PROT_READ | PROT_WRITE, MAP_SHARED, ld_fd, 0);
+
+				cp = alloc_char_pool_from_memory(char_p, len);
+				cp->mapped = true;
+				b->allocated_chars = len;
+
+				ldp = alloc_line_desc_pool_from_memory(ld_p, num_lines);
+				ldp->mapped = true;
+				ldp->allocated_items = num_lines;
+
+				int64_t l = 0;
+				for(int64_t i = 0; i < num_lines; i++) {
+					l += ld_p[i].line_len;
+					ld_p[i].line = ld_p[i].line_len ? char_p + (int64_t)ld_p[i].line : NULL;
+					add_tail(&b->line_desc_list, &ld_p[i].ld_node);
+				}
+
+				goto ok;			
+				/*if (char_p != MAP_FAILED && ld_p != MAP_FAILED) {
+					ldp = alloc_line_desc_pool_from_memory(ld_p, ...);
+
+					if (cp != NULL && ldp != NULL) {
+					}
+				}*/
+
+				if (char_p != MAP_FAILED) munmap(char_p, len);
+				if (ld_p != MAP_FAILED) munmap(ld_p, num_lines * sizeof(line_desc));
+			}
+			if (char_fd != -1) close(char_fd);
+			if (ld_fd != -1) close(ld_fd);
+
 			release_signals();
 			return OUT_OF_MEMORY_DISK_FULL;
 		}
@@ -1201,7 +1324,6 @@ int load_fd_in_buffer(buffer *b, int fd) {
 	files, we decide the file is of CR/LF type. Note that this cannot happen
 	if preserve_cr is set. */
 
-	int64_t num_lines;
 	for(int64_t i = num_lines = 0; i < len; i++, p++)
 		if (!b->opt.binary && (*p == terminators[0] || *p == terminators[1]) || !*p) {
 			if (i < len - 1 && !b->opt.preserve_cr && p[0] == '\r' && p[1] == '\n') {
@@ -1225,7 +1347,7 @@ int load_fd_in_buffer(buffer *b, int fd) {
 		else b->encoding = ENC_8_BIT;
 	}
 
-	line_desc_pool * const ldp = alloc_line_desc_pool(num_lines + STANDARD_LINE_INCREMENT, mapped);
+	ldp = alloc_line_desc_pool(num_lines + STANDARD_LINE_INCREMENT, mapped);
 	if (ldp) {
 
 		char *p = cp->pool;
@@ -1270,7 +1392,7 @@ int load_fd_in_buffer(buffer *b, int fd) {
 
 		ldp->allocated_items = num_lines;
 
-
+ok:
 
 		/* We set correctly the offsets of the first and last character used. If no
 		character is used (i.e., we have a file of line feeds), the char pool is
@@ -1279,7 +1401,7 @@ int load_fd_in_buffer(buffer *b, int fd) {
 		if (b->free_chars < b->allocated_chars) {
 			cp->last_used = len;
 			while(!cp->pool[cp->first_used]) cp->first_used++;
-			while(!cp->pool[cp->last_used]) cp->last_used--;
+			while(!cp->pool[--cp->last_used]);
 			add_head(&b->char_pool_list, &cp->cp_node);
 
 			assert_char_pool(cp);
@@ -1287,7 +1409,6 @@ int load_fd_in_buffer(buffer *b, int fd) {
 		else free_char_pool(cp);
 
 		add_head(&b->line_desc_pool_list, &ldp->ldp_node);
-
 		b->num_lines = num_lines;
 
 		reset_position_to_sof(b);
