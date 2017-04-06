@@ -1214,7 +1214,7 @@ static int create_mmap_files(buffer * const b, const int fd, const int char_fd, 
 				if (write(ld_fd, ld_buffer, LD_BUFFER_COUNT * line_desc_size) < LD_BUFFER_COUNT * line_desc_size) return OUT_OF_MEMORY_DISK_FULL;
 				ld_count = 0;
 			}
-			if (buffer[i]) b->free_chars++;
+			b->free_chars++;
 			buffer[i] = 0;
 			start_of_line = curr_pos + 1;
 		}
@@ -1333,7 +1333,7 @@ int load_fd_in_buffer(buffer *b, int fd) {
 		if (lseek(fd, 0, SEEK_SET) < 0) return IO_ERROR;
 		block_signals();
 		free_buffer_contents(b);
-		cp = NULL; //alloc_char_pool(len, fd, 0);
+		cp = alloc_char_pool(len, fd, 0);
 
 		if (! cp) {  // mmap()
 			const int error = load_fd_mmap(b, fd, len, terminators, &cp, &ldp);
@@ -1400,7 +1400,7 @@ int load_fd_in_buffer(buffer *b, int fd) {
 					b->free_chars++;
 				}
 				b->num_lines++;
-				if (!*p) b->free_chars++;
+				b->free_chars++;
 			}
 
 		b->num_lines++;
