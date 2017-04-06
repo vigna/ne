@@ -53,6 +53,10 @@ pool dimension, with respect to the number of lines of the given file. */
 
 #define CIRC_BUFFER_SIZE (8 * 1024)
 
+/* The number of line descriptors in the buffer used for memory mapping. */
+
+#define LD_BUFFER_COUNT (256)
+
 
 /* Detects (heuristically) the encoding of a buffer. */
 
@@ -155,7 +159,7 @@ line_desc_pool *alloc_line_desc_pool(int64_t pool_size, const bool mapped) {
 }
 
 
-line_desc_pool *alloc_line_desc_pool_from_memory(line_desc *pool, int64_t pool_size) {
+line_desc_pool *alloc_line_desc_pool_from_memory(void *pool, int64_t pool_size) {
 	line_desc_pool * const ldp = calloc(1, sizeof(line_desc_pool));
 	if (ldp) {
 		new_list(&ldp->free_list);
@@ -1173,13 +1177,18 @@ int load_fd_in_buffer(buffer *b, int fd) {
 			unlink(template);
 			const int ld_fd = mkstemp(strcpy(template, ".ne-mmap-XXXXXX"));
 			unlink(template);
+			const int line_desc_size = do_syntax ? sizeof(line_desc) : sizeof(no_syntax_line_desc);
 			free_buffer_contents(b);
+			int64_t end_of_line = 0;
 
 			if (char_fd != -1 && ld_fd != -1) {
 				bool first_pass = true;
 				char buffer[CIRC_BUFFER_SIZE * 2];
+				char ld_buffer[LD_BUFFER_COUNT * line_desc_size];
+				line_desc *ld_buffer_syn = (line_desc *)ld_buffer;
+				no_syntax_line_desc *ld_buffer_no_syn = (no_syntax_line_desc *)ld_buffer;
+				int ld_count = 0;
 				size_t remaining = len;
-				line_desc ld = {};
 
 				size_t to_do = min(remaining, CIRC_BUFFER_SIZE * 2);
 				ssize_t result = read(fd, buffer, to_do);
@@ -1202,7 +1211,8 @@ int load_fd_in_buffer(buffer *b, int fd) {
 					}
 
 					if (!b->opt.binary && (buffer[i] == terminators[0] || buffer[i] == terminators[1]) || !buffer[i]) {
-						const int64_t end_of_line = curr_pos;
+						end_of_line = curr_pos;
+
 						if (curr_pos < len - 1 && !b->opt.preserve_cr && buffer[i] == '\r' && buffer[i + 1 & sizeof buffer - 1] == '\n') {
 							b->is_CRLF = true;
 							buffer[i] = 0;
@@ -1221,10 +1231,19 @@ int load_fd_in_buffer(buffer *b, int fd) {
 						}
 
 						num_lines++;
-						assert(curr_line_start <= curr_pos);
-						ld.line = (char *)curr_line_start;
-						ld.line_len = end_of_line - curr_line_start;
-						if (write(ld_fd, &ld, sizeof ld) < sizeof ld) return IO_ERROR;
+						assert(curr_line_start <= end_of_line);
+						if (do_syntax) {
+							ld_buffer_syn[ld_count].line = (char *)curr_line_start;
+							ld_buffer_syn[ld_count].line_len = end_of_line - curr_line_start;
+						}
+						else {
+							ld_buffer_no_syn[ld_count].line = (char *)curr_line_start;
+							ld_buffer_no_syn[ld_count].line_len = end_of_line - curr_line_start;
+						}
+						if (++ld_count == LD_BUFFER_COUNT) {
+							if (write(ld_fd, ld_buffer, LD_BUFFER_COUNT * line_desc_size) < LD_BUFFER_COUNT * line_desc_size) return IO_ERROR;
+							ld_count = 0;
+						}
 						if (buffer[i]) b->free_chars++;
 						buffer[i] = 0;
 						curr_line_start = curr_pos + 1;
@@ -1237,13 +1256,21 @@ int load_fd_in_buffer(buffer *b, int fd) {
 				if (write(char_fd, buffer + (i & sizeof buffer / 2), i & sizeof buffer / 2 - 1) < (i & sizeof buffer / 2 - 1)) return IO_ERROR;
 
 				assert(curr_line_start <= curr_pos);
-				ld.line = (char *)curr_line_start;
-				ld.line_len = curr_pos - curr_line_start;
+
+				if (do_syntax) {
+					ld_buffer_syn[ld_count].line = (char *)curr_line_start;
+					ld_buffer_syn[ld_count].line_len = curr_pos - curr_line_start;
+				}
+				else {
+					ld_buffer_no_syn[ld_count].line = (char *)curr_line_start;
+					ld_buffer_no_syn[ld_count].line_len = curr_pos - curr_line_start;
+				}
+				ld_count++;
 				num_lines++;
-				if (write(ld_fd, &ld, sizeof ld) < sizeof ld) return IO_ERROR;
+				if (write(ld_fd, ld_buffer, ld_count * line_desc_size) < ld_count * line_desc_size) return IO_ERROR;
 
 				char * const char_p = mmap(NULL, len, PROT_READ | PROT_WRITE, MAP_SHARED, char_fd, 0);
-				line_desc * const ld_p = mmap(NULL, num_lines * sizeof(line_desc), PROT_READ | PROT_WRITE, MAP_SHARED, ld_fd, 0);
+				void * const ld_p = mmap(NULL, num_lines * line_desc_size, PROT_READ | PROT_WRITE, MAP_SHARED, ld_fd, 0);
 
 				cp = alloc_char_pool_from_memory(char_p, len);
 				cp->mapped = true;
@@ -1253,11 +1280,17 @@ int load_fd_in_buffer(buffer *b, int fd) {
 				ldp->mapped = true;
 				ldp->allocated_items = num_lines;
 
-				int64_t l = 0;
-				for(int64_t i = 0; i < num_lines; i++) {
-					l += ld_p[i].line_len;
-					ld_p[i].line = ld_p[i].line_len ? char_p + (int64_t)ld_p[i].line : NULL;
-					add_tail(&b->line_desc_list, &ld_p[i].ld_node);
+				if (do_syntax) {
+					for(line_desc *ld = ld_p, *ld_end = ld + num_lines; ld < ld_end; ld++) {
+						ld->line = ld->line_len ? char_p + (int64_t)ld->line : NULL;
+						add_tail(&b->line_desc_list, &ld->ld_node);
+					}
+				}
+				else {
+					for(no_syntax_line_desc *ld = ld_p, *ld_end = ld + num_lines; ld < ld_end; ld++) {
+						ld->line = ld->line_len ? char_p + (int64_t)ld->line : NULL;
+						add_tail(&b->line_desc_list, &ld->ld_node);
+					}
 				}
 
 				goto ok;			
