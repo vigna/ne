@@ -1262,7 +1262,7 @@ int load_fd_mmap(buffer * const b, const int fd, const size_t len, char * const 
 		ld_p = mmap(NULL, b->num_lines * line_desc_size, PROT_READ | PROT_WRITE, MAP_SHARED, ld_fd, 0);
 
 		if (char_p != MAP_FAILED && ld_p != MAP_FAILED
-			&& (*cp = alloc_char_pool_from_memory(char_p, len)) && (*ldp = alloc_line_desc_pool_from_memory(ld_p, b->num_lines)) && (*cp = NULL)) {
+			&& (*cp = alloc_char_pool_from_memory(char_p, len)) && (*ldp = alloc_line_desc_pool_from_memory(ld_p, b->num_lines))) {
 			(*cp)->mapped = true;
 			(*ldp)->mapped = true;
 			b->allocated_chars = len;
