@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# You can set the variables file and opts to change the default
+# filename, or introduce ne options (e.g., --no-syntax).
+
 # Run this file only if you have built ne with NE_TEST=1
 if ! grep -q ne_test_dump_config ./ne ; then
 	echo "Warning: ./ne apparently not built with NE_TEST=1 NE_DEBUG=1."
@@ -22,18 +25,18 @@ function check_differences {
 	fi
 }
 
-orig=${orig:-buffer.c}
+file=${file:-buffer.c}
 export EF_ALLOW_MALLOC_0=1
 
-./test.rb 2000 $orig > test.macro
-time ./ne --macro test.macro 2>test.err
-check_differences $orig
+./test.rb 2000 $file > test.macro
+time ./ne $opts --macro test.macro 2>test.err
+check_differences $file
 
 # Create another macro from the same text file, but
 # this one will run in binary mode. Mung the extension
 # so that autoprefs don't override the Binary flag.
-cp $orig $orig.bin$$
-orig=$orig.bin$$
-./test.rb 2000 $orig BINARY > test.binary.macro
-time ./ne --macro test.binary.macro 2>test.binary.err
-check_differences $orig
+cp $file $file.bin$$
+file=$file.bin$$
+./test.rb 2000 $file BINARY > test.binary.macro
+time ./ne $opts --macro test.binary.macro 2>test.binary.err
+check_differences $file
