@@ -47,7 +47,7 @@ pool dimension, with respect to the number of lines of the given file. */
 
 /* The length of the block used in order to optimize saves. */
 
-#define SAVE_BLOCK_LEN	(64 * 1024 - 1)
+#define SAVE_BLOCK_LEN	(16 * 1024 - 1)
 
 /* The length of a half of the circular buffer used for memory mapping. */
 
@@ -1167,27 +1167,18 @@ static int create_mmap_files(buffer * const b, const int fd, const int char_fd, 
 	int64_t curr_pos = 0, start_of_line = 0, end_of_line = 0;
 
 	while(curr_pos < len) {
-		if ((i & sizeof buffer / 2 - 1) == 0 && curr_pos != 0) { // Buffer flip-flop
-			char * const p = buffer + (i ^ sizeof buffer / 2);
-			if (write(char_fd, p, sizeof buffer / 2) < sizeof buffer / 2) return OUT_OF_MEMORY_DISK_FULL;
-			to_do = min(remaining, sizeof buffer / 2);
-			ssize_t result = read(fd, p, to_do);
-			if (result < to_do) return IO_ERROR;
-			remaining -= to_do;
-		}
-
 		/* Here we replicate the logic of load_fd_in_buffer(). The circularity of the buffer
 		   makes it possible to check the current character and the following one. */
 		if (!b->opt.binary && (buffer[i] == terminators[0] || buffer[i] == terminators[1]) || !buffer[i]) {
 			end_of_line = curr_pos;
 
-			if (curr_pos < len - 1 && !b->opt.preserve_cr && buffer[i] == '\r' && buffer[i + 1 & sizeof buffer - 1] == '\n') {
+			if (curr_pos < len - 1 && buffer[i] == '\r' && buffer[i + 1 & sizeof buffer - 1] == '\n') {
 				b->is_CRLF = true;
 				buffer[i] = 0;
-				i = i + 1 & sizeof buffer - 1;
 				curr_pos++;
 				b->free_chars++;
 
+				i = i + 1 & sizeof buffer - 1;
 				if ((i & sizeof buffer / 2 - 1) == 0) { // Buffer flip-flop
 					char * const p = buffer + (i ^ sizeof buffer / 2);
 					if (write(char_fd, p, sizeof buffer / 2) < sizeof buffer / 2) return OUT_OF_MEMORY_DISK_FULL;
@@ -1219,11 +1210,21 @@ static int create_mmap_files(buffer * const b, const int fd, const int char_fd, 
 			start_of_line = curr_pos + 1;
 		}
 
-		i = i + 1 & sizeof buffer - 1;
 		curr_pos++;
+
+		i = i + 1 & sizeof buffer - 1;
+		if ((i & sizeof buffer / 2 - 1) == 0) { // Buffer flip-flop
+			char * const p = buffer + (i ^ sizeof buffer / 2);
+			if (write(char_fd, p, sizeof buffer / 2) < sizeof buffer / 2) return OUT_OF_MEMORY_DISK_FULL;
+			to_do = min(remaining, sizeof buffer / 2);
+			ssize_t result = read(fd, p, to_do);
+			if (result < to_do) return IO_ERROR;
+			remaining -= to_do;
+		}
 	}
 
-	if (write(char_fd, buffer + (i & sizeof buffer / 2), i & sizeof buffer / 2 - 1) < (i & sizeof buffer / 2 - 1)) return OUT_OF_MEMORY_DISK_FULL;
+	if ((i & sizeof buffer / 2 - 1) != 0
+	   && write(char_fd, buffer + (i & sizeof buffer / 2), i & sizeof buffer / 2 - 1) < (i & sizeof buffer / 2 - 1)) return OUT_OF_MEMORY_DISK_FULL;
 
 	b->num_lines++;
 	if (do_syntax) {
@@ -1394,7 +1395,7 @@ int load_fd_in_buffer(buffer *b, int fd) {
 
 		for(int64_t i = b->num_lines = 0; i < len; i++, p++)
 			if (!b->opt.binary && (*p == terminators[0] || *p == terminators[1]) || !*p) {
-				if (i < len - 1 && !b->opt.preserve_cr && p[0] == '\r' && p[1] == '\n') {
+				if (i < len - 1 && p[0] == '\r' && p[1] == '\n') {
 					b->is_CRLF = true;
 					p++, i++;
 					b->free_chars++;
@@ -1434,7 +1435,7 @@ int load_fd_in_buffer(buffer *b, int fd) {
 					ld->line_len = q - p;
 					ld->line = q - p ? p : NULL;
 
-					if (q - cp->pool < len - 1 && !b->opt.preserve_cr && q[0] == '\r' && q[1] == '\n') *q++ = 0;
+					if (q - cp->pool < len - 1 && q[0] == '\r' && q[1] == '\n') *q++ = 0;
 					*q++ = 0;
 
 					p = q;
