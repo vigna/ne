@@ -147,8 +147,6 @@ void resync_pos(buffer * const b) {
 	}
 
 	if (b->opt.free_form) {
-		b->win_x = max(0, x - ne_columns + 1);
-		b->win_x += b->opt.tab_size - b->win_x % b->opt.tab_size;
 		b->cur_pos = ld->line_len + x - width;
 		b->cur_char = i + x - width;
 		b->cur_x = x - b->win_x;
