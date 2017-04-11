@@ -460,6 +460,7 @@ int main(int argc, char **argv) {
 			print_error(do_action(cur_buffer, REFRESH_A, 0, NULL));
 			window_changed_size = false;
 			cur_buffer->automatch.shown = 0;
+			displaying_info = false;
 		}
 
 		if (c == INVALID_CHAR) continue; /* Window resizing. */
