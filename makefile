@@ -1,6 +1,6 @@
 # Makefile for ne's distribution archive.
 
-VERSION=3.0.1
+VERSION=3.1.0
 
 # If you change this prefix, you can invoke "make build docs install" and ne will be compiled
 # and installed under the $(PREFIX) hierarchy. You can even use "make install PREFIX=$HOME/<dir>"
@@ -28,6 +28,7 @@ source: version
 	ln -s . ne-$(VERSION)
 	tar cvf ne-$(VERSION).tar ne-$(VERSION)/version.pl ne-$(VERSION)/makefile ne-$(VERSION)/COPYING ne-$(VERSION)/INSTALL ne-$(VERSION)/README.md ne-$(VERSION)/NEWS ne-$(VERSION)/CHANGES \
 	ne-$(VERSION)/src/*.[hc] ne-$(VERSION)/src/*.c.in ne-$(VERSION)/src/*.pl \
+	ne-$(VERSION)/extensions \
 	ne-$(VERSION)/macros/* \
 	ne-$(VERSION)/syntax/*.jsf \
 	ne-$(VERSION)/src/makefile ne-$(VERSION)/src/ne.texinfo ne-$(VERSION)/doc/ne.1 \
@@ -54,6 +55,7 @@ install:
 	mkdir -p $(DESTDIR)$(PREFIX)/share/doc/ne
 	mkdir -p $(DESTDIR)$(PREFIX)/share/info
 	cp -pf src/ne$(CMDSUFFIX) $(DESTDIR)$(PREFIX)/bin
+	cp -p extensions $(DESTDIR)$(PREFIX)/share/ne
 	cp -p syntax/*.jsf $(DESTDIR)$(PREFIX)/share/ne/syntax
 	cp -p macros/*     $(DESTDIR)$(PREFIX)/share/ne/macros
 	cp -p doc/ne.1 $(DESTDIR)$(PREFIX)/share/man/man1

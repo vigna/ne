@@ -1,6 +1,6 @@
 Summary: ne, the nice editor
 Name: ne
-Version: 3.0.1
+Version: 3.1.0
 Release: 1
 License: GPLv3
 Group: Applications/Editors
@@ -41,6 +41,7 @@ mkdir -p $RPM_BUILD_ROOT/%{_infodir}
 mkdir -p $RPM_BUILD_ROOT/%{_mandir}/man1
 mkdir -p $RPM_BUILD_ROOT/%{_docdir}/ne-%{version}/html
 install -m 755 ./src/ne $RPM_BUILD_ROOT/usr/bin/ne
+install -m 644 ./extensions $RPM_BUILD_ROOT/usr/share/ne/extensions
 install -m 644 ./syntax/*.jsf $RPM_BUILD_ROOT/usr/share/ne/syntax
 install -m 644 ./macros/* $RPM_BUILD_ROOT/usr/share/ne/macros
 install -m 644 ./doc/ne.1 $RPM_BUILD_ROOT/%{_mandir}/man1
@@ -51,6 +52,7 @@ mv doc/html .
 %files
 %defattr(-,root,root)
 /usr/bin/ne
+/usr/share/ne/extensions
 /usr/share/ne/syntax/*.jsf
 /usr/share/ne/macros/*
 %{_mandir}/man1/ne.1*
