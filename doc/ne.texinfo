@@ -175,7 +175,7 @@ extended regular expression search and replace @`a la @code{emacs} and
 
 @item
 a very compact memory model---you can easily load and modify very large
-files: their size is limited only by the core memory available;
+files;
 
 @item
 editing of binary files.
@@ -237,7 +237,11 @@ edit files; it edits @dfn{documents}.
 
 A @dfn{document} is what @code{ne} calls one of the ``text thingies''
 that you can edit. It is a sequence of lines of text in the computer's
-memory---not on disk. Documents can be created, edited, saved in
+memory---not on disk.@footnote{Actually, it can be in a region of the disk
+used to simulate a larger memory. @code{ne} will switch to such a simulation whenever
+the computer's memory is not sufficient for editing a file. This means, in particular,
+that out-of-memory errors can be caused by insufficient disk space, too.}
+Documents can be created, edited, saved in
 files, loaded from files, discarded, @i{et cetera}. When a
 document is loaded from or saved to a file, it remains
 associated with that file by name until the document is
@@ -5871,7 +5875,7 @@ support ten thousand different versions and releases by using conditional
 compilation. Very few assumptions are made about the behaviour of the system
 calls. This has obvious advantages in terms of code testing, maintenance, and
 reliability. For the same reasons, the availability of an @sc{ansi} C
-(C90) compiler is assumed.
+(C99) compiler is assumed.
 
 If the system has a @code{terminfo} database and the related functions
 (which are usually contained in @code{curses} library), @code{ne} will
@@ -5922,11 +5926,7 @@ The macro capabilities of @code{ne} are rather limited. For instance, you
 cannot give an argument to a macro: macros are simply scripts that can be played
 back automatically. This makes them very useful for everyday use in a
 learn/play context, but rather inflexible for extending the capabilities of the
-editor. However, it is not reasonable to incorporate in an editor an
-interpreter for a custom language. Rather, a system-wide macro language should
-control the editor @i{via} interprocess communication. This is the way of the
-REXX language, and it is likely that future versions of @code{ne} will
-support optionally macros written in REXX.
+editor.
 
 @code{ne} has been written with sparing resource use as a basic goal.
 Every possible effort has been made to reduce the use of @sc{cpu} time and
@@ -5950,11 +5950,6 @@ gain some memory. However, the management of the text as a linked list
 requires much less @sc{cpu} time, and the tradeoff seems to be
 particularly favorable on virtual memory systems, where moving the
 insertion gap can require a lot of accesses to different pages.
-
-In practice, @code{ne} occupies less memory than any memory-based editor
-we are aware of. (Of course, this does not take into account some
-sophisticated features of @code{ne}, such as unlimited undo/redo, which
-can cause major memory consumption.)
 
 
 
