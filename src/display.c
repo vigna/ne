@@ -152,8 +152,8 @@ void update_syntax_states(buffer *b, int row, line_desc *ld, line_desc *end_ld) 
    the column position. from_col and num_cols are not constrained by the
    length of the string (the string is really considered as terminating
    with an infinite sequence of spaces). cleared_at_end has the same
-   meaning as in update_line() and update_partial_line(). If utf8 is true,
-   then the line content is considered to be UTF-8 encoded.
+   meaning as in update_line(). If utf8 is true, then the line content is
+   considered to be UTF-8 encoded.
 
    If attr is not NULL, it contains a the list of attributes for the line
    descriptor; if diff is not NULL, the update is differential: we assume
@@ -256,7 +256,7 @@ void output_line_desc(const int row, const int col, const line_desc *ld, const i
 */
 
 
-void update_partial_line(buffer * const b, line_desc * const ld, const int row, const int64_t from_col, const bool cleared_at_end) {
+void update_line(buffer * const b, line_desc * const ld, const int row, const int64_t from_col, const bool cleared_at_end) {
 	assert(ld);
 	assert(row < ne_lines - 1);
 
@@ -394,8 +394,7 @@ void update_deleted_char(buffer * const b, const int c, const int a, line_desc *
 	const int c_width = c == '\t' ? b->opt.tab_size - x % b->opt.tab_size : output_width(c);
 
 	if (!char_ins_del_ok) {
-		/* Argh! We can't insert or delete! Just update the rest of the line. */
-		update_partial_line(b, ld, line, x, false);
+		update_line(b, ld, line, x, false);
 		return;
 	}
 
@@ -422,7 +421,7 @@ void update_deleted_char(buffer * const b, const int c, const int a, line_desc *
 				move_cursor(line, i - c_width);
 				delete_chars(b->opt.tab_size - c_width);
 
-				update_partial_line(b, ld, line, ne_columns - b->opt.tab_size, true);
+				update_line(b, ld, line, ne_columns - b->opt.tab_size, true);
 			}
 			else {
 				/* In this case, instead, we just shift the piece of text between
@@ -439,7 +438,7 @@ void update_deleted_char(buffer * const b, const int c, const int a, line_desc *
 	/* No TAB was found. We just delete the character and fill the end of the line. */
 	if (!tab_found) {
 		delete_chars(c_width);
-		update_partial_line(b, ld, line, ne_columns - c_width, true);
+		update_line(b, ld, line, ne_columns - c_width, true);
 	}
 }
 
@@ -483,7 +482,7 @@ void update_inserted_char(buffer * const b, const int c, line_desc * const ld, c
 	}
 
 	if (!char_ins_del_ok) {
-		update_partial_line(b, ld, line, x, false);
+		update_line(b, ld, line, x, false);
 		return;
 	}
 
@@ -555,7 +554,7 @@ void update_overwritten_char(buffer * const b, const int old_char, const int new
 	}
 
 	if (!char_ins_del_ok) {
-		update_partial_line(b, ld, line, x, false);
+		update_line(b, ld, line, x, false);
 		return;
 	}
 
@@ -596,7 +595,7 @@ void update_overwritten_char(buffer * const b, const int old_char, const int new
 						delete_chars(b->opt.tab_size - width_delta);
 					}
 
-					update_partial_line(b, ld, line, ne_columns - b->opt.tab_size, true);
+					update_line(b, ld, line, ne_columns - b->opt.tab_size, true);
 				}
 				return;
 			}
@@ -605,7 +604,7 @@ void update_overwritten_char(buffer * const b, const int old_char, const int new
 		delete_chars(width_delta);
 		if (new_char == '\t') output_spaces(new_width, attr);
 		else output_char(new_char, attr ? *attr : -1, b->encoding == ENC_UTF8);
-		update_partial_line(b, ld, line, ne_columns - width_delta, true);
+		update_line(b, ld, line, ne_columns - width_delta, true);
 	}
 	else {
 		/* The character has been enlarged by width_delta. */
@@ -703,11 +702,11 @@ void scroll_window(buffer * const b, line_desc * const ld, const int line, const
 		return;
 	}
 
-	if (n > 0) update_partial_line(b, ld, line, 0, ins_del_lines(line, 1));
+	if (n > 0) update_line(b, ld, line, 0, ins_del_lines(line, 1));
 	else {
 		line_desc * last_line_ld = b->top_line_desc;
 		for(int i = ne_lines - 2; i-- != 0 && last_line_ld->ld_node.next;) last_line_ld = (line_desc *)last_line_ld->ld_node.next;
-		update_partial_line(b, last_line_ld, ne_lines - 2, 0, ins_del_lines(line, -1));
+		update_line(b, last_line_ld, ne_lines - 2, 0, ins_del_lines(line, -1));
 	}
 }
 

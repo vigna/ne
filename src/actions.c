@@ -478,7 +478,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		if (b->cur_pos > b->cur_line_desc->line_len) {
 			/* We insert spaces to reach the insertion position. */
 			insert_spaces(b, b->cur_line_desc, b->cur_line, b->cur_line_desc->line_len, b->cur_pos - b->cur_line_desc->line_len);
-			if (b->syn) update_partial_line(b, b->cur_line_desc, b->cur_y, 0, true);
+			if (b->syn) update_line(b, b->cur_line_desc, b->cur_y, 0, true);
 		}
 
 		insert_one_char(b, b->cur_line_desc, b->cur_line, b->cur_pos, c);
@@ -501,14 +501,14 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		if (error == ERROR) {
 			assert_buffer_content(b);
 			/* No word wrap. */
-			if (b->syn) update_partial_line(b, b->cur_line_desc, b->cur_y, 0, true);
+			if (b->syn) update_line(b, b->cur_line_desc, b->cur_y, 0, true);
 			assert_buffer_content(b);
 		}
 		else {
 			/* Fixes in case of word wrapping. */
 			const bool wont_scroll = b->win_x == 0;
 			int64_t a = 0;
-			update_partial_line(b, b->cur_line_desc, b->cur_y, calc_width(b->cur_line_desc, b->cur_line_desc->line_len, b->opt.tab_size, b->encoding) - b->win_x, false);
+			update_line(b, b->cur_line_desc, b->cur_y, calc_width(b->cur_line_desc, b->cur_line_desc->line_len, b->opt.tab_size, b->encoding) - b->win_x, false);
 
 			need_attr_update = false;
 			/* Poke the correct state into the next line. */
@@ -520,7 +520,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			goto_pos(b, error + a);
 
 			if (wont_scroll) {
-				if (b->cur_line == b->num_lines - 1) update_partial_line(b, b->cur_line_desc, b->cur_y, 0, false);
+				if (b->cur_line == b->num_lines - 1) update_line(b, b->cur_line_desc, b->cur_y, 0, false);
 				else scroll_window(b, b->cur_line_desc, b->cur_y, 1);
 			}
 
@@ -615,7 +615,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 				delete_one_char(b, b->cur_line_desc, b->cur_line, b->cur_pos);
 
 				update_deleted_char(b, old_char, old_attr, b->cur_line_desc, b->cur_pos, b->cur_char, b->cur_y, b->cur_x);
-				if (b->syn) update_partial_line(b, b->cur_line_desc, b->cur_y, 0, true);
+				if (b->syn) update_line(b, b->cur_line_desc, b->cur_y, 0, true);
 			}
 			else {
 				/* Here we handle the case in which two lines are joined. Note that if the first line is empty,
@@ -625,7 +625,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 				delete_one_char(b, b->cur_line_desc, b->cur_line, b->cur_pos);
 				if (b->syn && b->cur_pos == 0) b->cur_line_desc->highlight_state = next_line_state;
 
-				update_partial_line(b, b->cur_line_desc, b->cur_y, b->cur_x, true);
+				update_line(b, b->cur_line_desc, b->cur_y, b->cur_x, true);
 
 				if (b->cur_y < ne_lines - 2) scroll_window(b, (line_desc *)b->cur_line_desc->ld_node.next, b->cur_y + 1, -1);
 			}
@@ -671,7 +671,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 				}
 				else {
 					int64_t a = -1;
-					update_partial_line(b, b->cur_line_desc, b->cur_y, b->cur_x, false);
+					update_line(b, b->cur_line_desc, b->cur_y, b->cur_x, false);
 					/* We need to avoid updates until we fix the next line. */
 					need_attr_update = false;
 					/* We poke into the next line initial state the correct state. */
@@ -691,7 +691,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 					line_down(b);
 					if (a != -1) goto_pos(b, a);
 
-					if (b->cur_line == b->num_lines - 1) update_partial_line(b, b->cur_line_desc, b->cur_y, 0, false);
+					if (b->cur_line == b->num_lines - 1) update_line(b, b->cur_line_desc, b->cur_y, 0, false);
 					else scroll_window(b, b->cur_line_desc, b->cur_y, 1);
 
 				}
@@ -716,7 +716,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		end_undo_chain(b);
 		if (b->syn) {
 			b->attr_len = -1;
-			update_partial_line(b, b->cur_line_desc, b->cur_y, 0, false);
+			update_line(b, b->cur_line_desc, b->cur_y, 0, false);
 			need_attr_update = true;
 		}
 		goto_column(b, col);
@@ -742,10 +742,10 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 				if (b->syn) {
 					/* Now the only valid part of the local attribute buffer is before b->cur_char. */
 					if (b->cur_char < b->attr_len) b->attr_len = b->cur_char;
-					update_partial_line(b, b->cur_line_desc, b->cur_y, b->cur_x, false);
+					update_line(b, b->cur_line_desc, b->cur_y, b->cur_x, false);
 					next_line_state = b->next_state;
 				}
-				else update_partial_line(b, b->cur_line_desc, b->cur_y, b->cur_x, false);
+				else update_line(b, b->cur_line_desc, b->cur_y, b->cur_x, false);
 			}
 			/* For each undeletion, we must poke into the next line its correct initial state. */
 			if (b->syn) ((line_desc *)b->cur_line_desc->ld_node.next)->highlight_state = next_line_state;
@@ -765,7 +765,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 		ensure_attributes(b);
 		delete_to_eol(b, b->cur_line_desc, b->cur_line, b->cur_pos);
-		update_partial_line(b, b->cur_line_desc, b->cur_y, b->cur_x, false);
+		update_line(b, b->cur_line_desc, b->cur_y, b->cur_x, false);
 		need_attr_update = true;
 
 		return OK;
@@ -961,7 +961,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 						if (!error) {
 							if (cur_char < b->attr_len) b->attr_len = cur_char;
-							update_partial_line(b, b->cur_line_desc, b->cur_y, cur_x, false);
+							update_line(b, b->cur_line_desc, b->cur_y, cur_x, false);
 							if (b->syn) {
 								need_attr_update = true;
 								update_syntax_states(b, b->cur_y, b->cur_line_desc, NULL);
@@ -1028,11 +1028,15 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			for(int64_t i = 0; i < c; i++) {
 				if (!print_error((b->last_was_regexp ? find_regexp : find)(b, NULL, !b->last_was_replace))) {
 					if (b->last_was_replace) {
+						const int64_t cur_char = b->cur_char;
+						const int cur_x = b->cur_x;
+
 						if (b->last_was_regexp) error = replace_regexp(b, b->replace_string);
 						else error = replace(b, strlen(b->find_string), b->replace_string);
 
 						if (! error) {
-							update_partial_line(b, b->cur_line_desc, b->cur_y, 0, false);
+							if (cur_char < b->attr_len) b->attr_len = cur_char;
+							update_line(b, b->cur_line_desc, b->cur_y, cur_x, false);
 							if (b->syn) {
 								need_attr_update = true;
 								update_syntax_states(b, b->cur_y, b->cur_line_desc, NULL);
@@ -1553,7 +1557,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		for(int64_t i = 0; i < c && !(error = center(b)) && !stop; i++) {
 			need_attr_update = true;
 			b->attr_len = -1;
-			update_partial_line(b, b->cur_line_desc, b->cur_y, 0, false);
+			update_line(b, b->cur_line_desc, b->cur_y, 0, false);
 			move_to_sol(b);
 			if (line_down(b) != OK) break;
 		}
