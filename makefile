@@ -1,18 +1,25 @@
 # Makefile for ne's distribution archive.
 
+.PHONY: install
+
 VERSION=3.1.0
 
-# If you change this prefix, you can invoke "make build docs install" and ne will be compiled
+# If you change this prefix, you can invoke "make build install" and ne will be compiled
 # and installed under the $(PREFIX) hierarchy. You can even use "make install PREFIX=$HOME/<dir>"
 # to install ne locally into the directory <dir>.
-
-.PHONY: install
 
 PREFIX=/usr/local
 
 PROGRAM       = ne
 
-build:
+ifeq ($(OS), Window_NT)
+	OS := Windows
+else
+	OS := $(shell uname -s)
+endif
+
+
+build: docs
 	( cd src; make clean; make NE_GLOBAL_DIR=$(PREFIX)/share/ne; strip ne )
 
 docs:
@@ -26,7 +33,7 @@ source: version
 	( cd src; make clean; make )
 	-rm -f ne-$(VERSION)
 	ln -s . ne-$(VERSION)
-	tar cvf ne-$(VERSION).tar ne-$(VERSION)/version.pl ne-$(VERSION)/makefile ne-$(VERSION)/COPYING ne-$(VERSION)/INSTALL ne-$(VERSION)/README.md ne-$(VERSION)/NEWS ne-$(VERSION)/CHANGES \
+	tar cvf ne-$(VERSION).tar ne-$(VERSION)/version.pl ne-$(VERSION)/makefile ne-$(VERSION)/COPYING ne-$(VERSION)/INSTALL.md ne-$(VERSION)/README.md ne-$(VERSION)/NEWS ne-$(VERSION)/CHANGES \
 	ne-$(VERSION)/src/*.[hc] ne-$(VERSION)/src/*.c.in ne-$(VERSION)/src/*.pl \
 	ne-$(VERSION)/extensions \
 	ne-$(VERSION)/macros/* \
@@ -38,17 +45,6 @@ source: version
 	-rm -f ne-*.tar.gz
 	gzip ne-$(VERSION).tar
 	-rm -f ne-$(VERSION)
-
-cygwin:
-ifneq ($(OS), Windows)
-	$(error This target can only be run under Windows)
-endif
-	( cd src; make clean; make NE_GLOBAL_DIR=/usr/share/ne NE_TERMCAP=1 NE_ANSI=1 OPTS=-U__STRICT_ANSI__ )
-	make install PREFIX=/usr CMDSUFFIX=.exe
-	tar zcvf ne-cygwin-ansi-$(VERSION)-$(shell uname -m).tar.gz /usr/share/ne /usr/bin/ne.exe /usr/share/doc/ne /usr/share/info/ne.info.gz /usr/share/man/man1/ne.1
-	( cd src; make clean; make NE_GLOBAL_DIR=/usr/share/ne OPTS=-U__STRICT_ANSI__ )
-	make install PREFIX=/usr CMDSUFFIX=.exe
-	tar zcvf ne-cygwin-$(VERSION)-$(shell uname -m).tar.gz /usr/share/ne /usr/bin/ne.exe /usr/share/doc/ne /usr/share/info/ne.info.gz /usr/share/man/man1/ne.1
 
 install:
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
@@ -66,17 +62,29 @@ install:
 	cp -p doc/ne.info.gz $(DESTDIR)$(PREFIX)/share/info
 	-install-info --dir-file=$(DESTDIR)$(PREFIX)/share/info/dir $(DESTDIR)$(PREFIX)/share/info/ne.info.gz
 
+cygwin: docs
+ifneq ($(OS), Windows)
+	$(error This target can only be run under Windows)
+endif
+	( cd src; make clean; make NE_GLOBAL_DIR=/usr/share/ne NE_TERMCAP=1 NE_ANSI=1 OPTS=-U__STRICT_ANSI__ )
+	make install PREFIX=/usr CMDSUFFIX=.exe
+	tar zcvf ne-cygwin-ansi-$(VERSION)-$(shell uname -m).tar.gz /usr/share/ne /usr/bin/ne.exe /usr/share/doc/ne /usr/share/info/ne.info.gz /usr/share/man/man1/ne.1
+	( cd src; make clean; make NE_GLOBAL_DIR=/usr/share/ne OPTS=-U__STRICT_ANSI__ )
+	make install PREFIX=/usr CMDSUFFIX=.exe
+	tar zcvf ne-cygwin-$(VERSION)-$(shell uname -m).tar.gz /usr/share/ne /usr/bin/ne.exe /usr/share/doc/ne /usr/share/info/ne.info.gz /usr/share/man/man1/ne.1
 
-package: build
+DESTDIR := /tmp/package-ne-$(VERSION)
+
+macosx: build
 ifneq ($(OS), Darwin)
 	$(error This target can only be run under Mac OS X)
 endif
-	DESTDIR := /tmp/package-ne-$(VERSION)
 	-rm -fr $(DESTDIR)
-	make install DESTDIR= $(DESTDIR)
+	make install DESTDIR=$(DESTDIR)
 	pkgbuild --root $(DESTDIR) --install-location "/" --version $(VERSION) --identifier ne-$(VERSION) ne-$(VERSION).pkg
 	-rm -f ne-$(VERSION).dmg
 	hdiutil create -fs HFS+ -srcfolder ne-$(VERSION).pkg -volname ne-$(VERSION) ne-$(VERSION).dmg
+
 
 clean:
 	-rm -f ne-*.tar*

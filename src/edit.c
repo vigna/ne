@@ -45,6 +45,8 @@ static int to_something(buffer *b, int (to_first)(int), int (to_rest)(int)) {
 	bool changed = false;
 	int64_t new_len = 0;
 	pos = b->cur_pos;
+	const int64_t cur_char = b->cur_char;
+	const int cur_x = b->cur_x;
 	/* Then, we compute the word position extremes, length of the result (which
 		may change because of casing). */
 	while (pos < b->cur_line_desc->line_len && ne_isword(c = get_char(&b->cur_line_desc->line[pos], b->encoding), b->encoding)) {
@@ -89,13 +91,10 @@ static int to_something(buffer *b, int (to_first)(int), int (to_rest)(int)) {
 		free(word);
 
 		end_undo_chain(b);
-	}
 
-	b->attr_len = -1;
-	update_partial_line(b, b->cur_line_desc, b->cur_y, 0, false);
-	if (b->syn) {
+		if (cur_char < b->attr_len) b->attr_len = cur_char;
+		update_line(b, b->cur_line_desc, b->cur_y, cur_x, false);
 		need_attr_update = true;
-		update_syntax_states(b, b->cur_y, b->cur_line_desc, NULL);
 	}
 
 	return search_word(b, 1);
