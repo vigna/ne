@@ -332,6 +332,7 @@
    "unnumberedsec"                  keyword
    "unnumberedsubsec"               keyword
    "unnumberedsubsubsec"            keyword
+   "uref"                           keyword
    "url"                            keyword
    "value"                          keyword
    "var"                            keyword
