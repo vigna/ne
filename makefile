@@ -12,7 +12,7 @@ PREFIX=/usr/local
 
 PROGRAM       = ne
 
-ifeq ($(OS), Window_NT)
+ifeq ($(OS), Windows_NT)
 	OS := Windows
 else
 	OS := $(shell uname -s)
