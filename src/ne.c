@@ -151,6 +151,7 @@ int delete_buffer(void) {
 }
 
 void about(void) {
+	set_attr(0);
 	clear_entire_screen();
 	displaying_info = true;
 	int i;
@@ -442,10 +443,8 @@ int main(int argc, char **argv) {
 	}
 
 	while(true) {
-
 		/* If we are displaying the "NO WARRANTY" info, we should not refresh the
 		   window now */
-
 		if (!displaying_info) {
 			refresh_window(cur_buffer);
 			if (cur_buffer->opt.automatch) automatch_bracket(cur_buffer, true);
@@ -458,20 +457,19 @@ int main(int argc, char **argv) {
 
 		if (window_changed_size) {
 			print_error(do_action(cur_buffer, REFRESH_A, 0, NULL));
-			window_changed_size = false;
+			window_changed_size = displaying_info = false;
 			cur_buffer->automatch.shown = 0;
-			displaying_info = false;
 		}
 
 		if (c == INVALID_CHAR) continue; /* Window resizing. */
 		const input_class ic = CHAR_CLASS(c);
 
 		if (displaying_info) {
-			about();
+			refresh_window(cur_buffer);
 			displaying_info = false;
-			draw_status_bar();
 		}
-		else if (cur_buffer->automatch.shown) automatch_bracket(cur_buffer, false);
+
+		if (cur_buffer->automatch.shown) automatch_bracket(cur_buffer, false);
 
 		switch(ic) {
 		case INVALID:
