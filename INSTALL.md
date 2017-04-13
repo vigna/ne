@@ -1,5 +1,5 @@
 Build and install into `/usr/local`
-===================================
+-----------------------------------
 
     cd ne-x.y.z
     make build install
@@ -8,7 +8,7 @@ Note that you must have adequate privileges.
 
 
 Build and install into some alternative location
-================================================
+------------------------------------------------
 
 Set the PREFIX variable, for example:
 
@@ -17,7 +17,7 @@ Set the PREFIX variable, for example:
 
 
 Makefiles
-=========
+---------
 
 There are three makefiles provided with the distribution: a top-level
 makefile for easy build and installation, a low-level makefile in the
