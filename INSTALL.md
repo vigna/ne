@@ -25,9 +25,10 @@ src directory that just builds ne's executable and provides some more
 flexibility, and another low-level makefile in the doc directory.
 
 The top-level makefile provides targets "source" (builds the standard
-source distribution), "cygwin" (builds the cygwin distribution) and
-"install" (build and installs ne). The PREFIX make variable (see above)
-decides where ne will be installed and which will be its global directory.
+source distribution), "cygwin" (builds the cygwin distribution), "build"
+(builds ne) and "install" (installs ne). The PREFIX make variable (see
+above) decides where ne will be installed and which will be its global
+directory.
 
 For installation (i.e., "make install"), a POSIX compliant machine with a
 terminfo database should be sufficient. Note that terminfo might come
