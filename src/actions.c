@@ -953,12 +953,15 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 					if (c == 'A' || c == 'Y' || c == 'L' || a == REPLACEONCE_A || a == REPLACEALL_A) {
 						/* We delay buffer encoding promotion until it is really necessary. */
 						if (b->encoding == ENC_ASCII) b->encoding = replace_encoding;
+						const int64_t cur_char = b->cur_char;
+						const int cur_x = b->cur_x;
 
 						if (b->last_was_regexp) error = replace_regexp(b, p);
 						else error = replace(b, strlen(b->find_string), p);
 
 						if (!error) {
-							update_partial_line(b, b->cur_line_desc, b->cur_y, 0, false);
+							if (cur_char < b->attr_len) b->attr_len = cur_char;
+							update_partial_line(b, b->cur_line_desc, b->cur_y, cur_x, false);
 							if (b->syn) {
 								need_attr_update = true;
 								update_syntax_states(b, b->cur_y, b->cur_line_desc, NULL);
