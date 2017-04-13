@@ -32,11 +32,8 @@ $(INFODOCS): ne.texinfo version.texinfo
 	rm -f ne.info*gz
 	gzip -9 ne.info*
 
-ne.dvi: ne.texinfo version.texinfo
-	texi2dvi --clean ne.texinfo
-
-ne.pdf: ne.dvi
-	dvipdf ne.dvi
+ne.pdf: ne.texinfo version.texinfo
+	pdftex ne.texinfo
 
 html/index.html: ne.texinfo version.texinfo
 	-rm -fr html

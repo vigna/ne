@@ -149,8 +149,7 @@ syntax highlighting;
 full support for UTF-8 files, including multiple-column characters;
 
 @item
-the number of documents and clips, the dimensions of the display, and
-the file/line lengths are limited only by the integer size of the machine;
+64-bit file/line length;
 
 @item
 simple scripting language where scripts can be generated @i{via} an
@@ -161,7 +160,7 @@ unlimited undo/redo capability (can be disabled with a command);
 
 @item
 automatic preferences system based on the extension of the file name being
-edited;
+edited or regex content matching;
 
 @item
 automatic completion of prefixes using words in your documents as dictionary;
@@ -174,8 +173,8 @@ extended regular expression search and replace @`a la @code{emacs} and
 @code{vi};
 
 @item
-a very compact memory model---you can easily load and modify very large
-files;
+a very compact memory model---you can
+easily load and modify very large files, even if they do not fit your core memory;
 
 @item
 editing of binary files.
@@ -303,7 +302,7 @@ numbers, respectively, whereas the percentage indicates approximately
 your position in the file. The small letters represent user flags that
 you can turn on and off. In particular, @samp{i} tells you that insert
 mode is on, while @samp{p} tells that the automatic preferences system
-is activated. The @samp{*} means this buffer has no been saved. For a
+is activated. The @samp{*} means this buffer has not been saved. For a
 thorough explanation of the meaning of the flags on the status bar, see
 @ref{The Status Bar}.
 
@@ -739,8 +738,7 @@ a line with @samp{#}.
 @cindex Executing @sc{uni*x} commands
 
 @subsection UTF-8 support
-UTF-8 is a character encoding that can represent the whole ISO 10646
-character set---two billion characters! @code{ne} can load and
+@code{ne} can load and
 manipulate UTF-8 files transparently, in particular on systems that
 provide UTF-8 I/O. @xref{UTF-8 Support}.
 
@@ -2198,7 +2196,7 @@ that will make them unique.
 @section UTF-8 Support
 @cindex UTF-8 Support
 
-Since version 1.30, @code{ne} can manipulate UTF-8 files and supports
+@code{ne} can manipulate UTF-8 files and supports
 UTF-8 when communicating with the user. At startup, @code{ne} fetches
 the system locale description, and checks whether it contains the string
 @samp{utf8} or @samp{utf-8}. In this case, it starts communicating with
@@ -2228,7 +2226,7 @@ flawlessly, as @code{ne} merely reads bytes from the keyboard and
 displays bytes on the screen. On the contrary, in the case of UTF-8
 input/output @code{ne} must take a decision as to which encoding is used
 for non-UTF-8 documents, and presently this is hardwired to ISO-8859-1.
-Second, since version 1.34, 8-bit documents use localized casing and
+Second, 8-bit documents use localized casing and
 character type functions. This means that case-insensitive searches or
 case foldings will work with, say, Cyrillic characters, provided that
 your locale is set correctly.
@@ -5959,14 +5957,7 @@ insertion gap can require a lot of accesses to different pages.
 @cindex ISO-8859 family
 @cindex ISO-8859-1
 
-The original @code{ne} handled 8-bit text files, and assumed that every
-byte coming from the keyboard could be output to the terminal. No other
-assumption was made---for instance, the up/down casing functions did not
-assume a particular encoding for non-US-ASCII characters. This choice
-had a significant advantage: @code{ne} could handle easily several
-different encodings, with minor nuisances for the end user.
-
-Since version 1.30, @code{ne} supports UTF-8. It can use UTF-8 for its
+@code{ne} supports UTF-8. It can use UTF-8 for its
 input/output, and it can also interpret one or more documents as containing
 UTF-8 encoded text, acting accordingly. Note that the document content is
 actual UTF-8 text---@code{ne} does not use wide characters. As a
@@ -6126,7 +6117,7 @@ Comments, complaints, desiderata are welcome.
     I-20144 Milano MI
     Italia
 
-    vigna@@di.unimi.it
+    sebastiano.vigna@@unimi.it
 
 
     Todd M. Lewis
@@ -6135,10 +6126,12 @@ Comments, complaints, desiderata are welcome.
     Chapel Hill, NC 27599-1150
     USA
 
-    utoddl@@email.unc.edu
+    Todd_Lewis@@unc.edu
 
-    ne home page: http://ne.di.unimi.it/
-    Discuss ne at http://groups.google.com/group/niceeditor/
+
+    ne home page: @uref{http://ne.di.unimi.it/}
+    Discuss ne at @uref{http://groups.google.com/group/niceeditor/}
+    Github repo: @uref{https://github.com/vigna/ne/}
 
 @end example
 @page
