@@ -67,20 +67,21 @@ install:
 package:
 	# To create a Mac package, compile the editor, 
 	# give a "make install" as root (delete INSTALL to make it work) and run this target.
-	# Finally, create using /Developer/Applications/Utilities/PackageMaker a package whose only content is 
-	# /tmp/package, build it, and use Disk Utility to create a (properly named) small disk image 
-	# containing the package. Finally, use the right button and "Convert" to store the image in compressed form.
+	# Finally, use Disk Utility to create a (properly named) small disk image
+	# containing the package. Finally, use the right button and "Convert"
+	# to store the image in compressed form.
 
-	-rm -fr /tmp/package
-	mkdir -p /tmp/package/usr/local/bin
-	mkdir -p /tmp/package/usr/local/share/doc
-	mkdir -p /tmp/package/usr/local/share/info
-	mkdir -p /tmp/package/usr/local/share/man/man1
-	cp /usr/local/bin/ne /tmp/package/usr/local/bin
-	cp -pr /usr/local/share/doc/ne /tmp/package/usr/local/share/doc/
-	cp -pr /usr/local/share/ne /tmp/package/usr/local/share/
-	cp /usr/local/share/info/ne.info.gz /tmp/package/usr/local/share/info/
-	cp /usr/local/share/man/man1/ne.1 /tmp/package/usr/local/share/man/man1/
+	-rm -fr /tmp/package-ne-$(VERSION)
+	mkdir -p /tmp/package-ne-$(VERSION)/usr/local/bin
+	mkdir -p /tmp/package-ne-$(VERSION)/usr/local/share/doc
+	mkdir -p /tmp/package-ne-$(VERSION)/usr/local/share/info
+	mkdir -p /tmp/package-ne-$(VERSION)/usr/local/share/man/man1
+	cp /usr/local/bin/ne /tmp/package-ne-$(VERSION)/usr/local/bin
+	cp -pr /usr/local/share/doc/ne /tmp/package-ne-$(VERSION)/usr/local/share/doc/
+	cp -pr /usr/local/share/ne /tmp/package-ne-$(VERSION)/usr/local/share/
+	cp /usr/local/share/info/ne.info.gz /tmp/package-ne-$(VERSION)/usr/local/share/info/
+	cp /usr/local/share/man/man1/ne.1 /tmp/package-ne-$(VERSION)/usr/local/share/man/man1/
+	pkgbuild --root /tmp/package-ne-$(VERSION) --install-location "/" --version $(VERSION) --identifier ne-$(VERSION) ne-$(VERSION).pkg
 
 clean:
 	-rm -f ne-*.tar*
