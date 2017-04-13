@@ -40,6 +40,9 @@ source: version
 	-rm -f ne-$(VERSION)
 
 cygwin:
+ifneq ($(OS), Windows)
+	$(error This target can only be run under Windows)
+endif
 	( cd src; make clean; make NE_GLOBAL_DIR=/usr/share/ne NE_TERMCAP=1 NE_ANSI=1 OPTS=-U__STRICT_ANSI__ )
 	make install PREFIX=/usr CMDSUFFIX=.exe
 	tar zcvf ne-cygwin-ansi-$(VERSION)-$(shell uname -m).tar.gz /usr/share/ne /usr/bin/ne.exe /usr/share/doc/ne /usr/share/info/ne.info.gz /usr/share/man/man1/ne.1
@@ -64,24 +67,16 @@ install:
 	-install-info --dir-file=$(DESTDIR)$(PREFIX)/share/info/dir $(DESTDIR)$(PREFIX)/share/info/ne.info.gz
 
 
-package:
-	# To create a Mac package, compile the editor, 
-	# give a "make install" as root (delete INSTALL to make it work) and run this target.
-	# Finally, use Disk Utility to create a (properly named) small disk image
-	# containing the package. Finally, use the right button and "Convert"
-	# to store the image in compressed form.
-
-	-rm -fr /tmp/package-ne-$(VERSION)
-	mkdir -p /tmp/package-ne-$(VERSION)/usr/local/bin
-	mkdir -p /tmp/package-ne-$(VERSION)/usr/local/share/doc
-	mkdir -p /tmp/package-ne-$(VERSION)/usr/local/share/info
-	mkdir -p /tmp/package-ne-$(VERSION)/usr/local/share/man/man1
-	cp /usr/local/bin/ne /tmp/package-ne-$(VERSION)/usr/local/bin
-	cp -pr /usr/local/share/doc/ne /tmp/package-ne-$(VERSION)/usr/local/share/doc/
-	cp -pr /usr/local/share/ne /tmp/package-ne-$(VERSION)/usr/local/share/
-	cp /usr/local/share/info/ne.info.gz /tmp/package-ne-$(VERSION)/usr/local/share/info/
-	cp /usr/local/share/man/man1/ne.1 /tmp/package-ne-$(VERSION)/usr/local/share/man/man1/
-	pkgbuild --root /tmp/package-ne-$(VERSION) --install-location "/" --version $(VERSION) --identifier ne-$(VERSION) ne-$(VERSION).pkg
+package: build
+ifneq ($(OS), Darwin)
+	$(error This target can only be run under Mac OS X)
+endif
+	DESTDIR := /tmp/package-ne-$(VERSION)
+	-rm -fr $(DESTDIR)
+	make install DESTDIR= $(DESTDIR)
+	pkgbuild --root $(DESTDIR) --install-location "/" --version $(VERSION) --identifier ne-$(VERSION) ne-$(VERSION).pkg
+	-rm -f ne-$(VERSION).dmg
+	hdiutil create -fs HFS+ -srcfolder ne-$(VERSION).pkg -volname ne-$(VERSION) ne-$(VERSION).dmg
 
 clean:
 	-rm -f ne-*.tar*
