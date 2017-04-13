@@ -996,9 +996,10 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 					snprintf(msg, MAX_MESSAGE_SIZE, "%" PRId64 " replacement%s made.", num_replace, num_replace > 1 ? "s" : "");
 					print_message(msg);
 				}
-				if (stop) return STOPPED;
+				if (stop) error = STOPPED;
+				if (error == STOPPED) reset_window();
 
-				if (error && ((c != 'A' && a != REPLACEALL_A || first_search) || error != NOT_FOUND )) {
+				if (error && ((c != 'A' && a != REPLACEALL_A || first_search) || error != NOT_FOUND)) {
 					print_error(error);
 					return ERROR;
 				}
@@ -1010,58 +1011,56 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 	case REPEATLAST_A:
 		if (b->opt.read_only && b->last_was_replace) return DOCUMENT_IS_READ_ONLY;
 		if (!b->find_string) return NO_SEARCH_STRING;
-		else if ((b->last_was_replace) && !b->replace_string) return NO_REPLACE_STRING;
-		else {
-			int return_code = 0;
+		if ((b->last_was_replace) && !b->replace_string) return NO_REPLACE_STRING;
 
-			const encoding_type search_encoding = detect_encoding(b->find_string, strlen(b->find_string));
-			if (search_encoding != ENC_ASCII && b->encoding != ENC_ASCII && search_encoding != b->encoding) return INCOMPATIBLE_SEARCH_STRING_ENCODING;
-			if (b->last_was_replace) {
-				const encoding_type replace_encoding = detect_encoding(b->replace_string, strlen(b->replace_string));
-				if (replace_encoding != ENC_ASCII && b->encoding != ENC_ASCII && replace_encoding != b->encoding ||
-					 search_encoding != ENC_ASCII && replace_encoding != ENC_ASCII && search_encoding != replace_encoding)
-					return INCOMPATIBLE_REPLACE_STRING_ENCODING;
-			}
-
-			NORMALIZE(c);
-
-			for(int64_t i = 0; i < c; i++) {
-				if (!print_error((b->last_was_regexp ? find_regexp : find)(b, NULL, !b->last_was_replace))) {
-					if (b->last_was_replace) {
-						const int64_t cur_char = b->cur_char;
-						const int cur_x = b->cur_x;
-
-						if (b->last_was_regexp) error = replace_regexp(b, b->replace_string);
-						else error = replace(b, strlen(b->find_string), b->replace_string);
-
-						if (! error) {
-							if (cur_char < b->attr_len) b->attr_len = cur_char;
-							update_line(b, b->cur_line_desc, b->cur_y, cur_x, false);
-							if (b->syn) {
-								need_attr_update = true;
-								update_syntax_states(b, b->cur_y, b->cur_line_desc, NULL);
-							}
-
-							if (last_replace_empty_match)
-								if (b->opt.search_back) error = char_left(cur_buffer);
-								else error = char_right(cur_buffer);
-						}
-
-						if (print_error(error)) {
-							return_code = ERROR;
-							break;
-						}
-					}
-				}
-				else {
-					return_code = ERROR;
-					break;
-				}
-			}
-
-			return return_code;
+		const encoding_type search_encoding = detect_encoding(b->find_string, strlen(b->find_string));
+		if (search_encoding != ENC_ASCII && b->encoding != ENC_ASCII && search_encoding != b->encoding) return INCOMPATIBLE_SEARCH_STRING_ENCODING;
+		if (b->last_was_replace) {
+			const encoding_type replace_encoding = detect_encoding(b->replace_string, strlen(b->replace_string));
+			if (replace_encoding != ENC_ASCII && b->encoding != ENC_ASCII && replace_encoding != b->encoding ||
+				 search_encoding != ENC_ASCII && replace_encoding != ENC_ASCII && search_encoding != replace_encoding)
+				return INCOMPATIBLE_REPLACE_STRING_ENCODING;
 		}
-		return ERROR;
+
+		NORMALIZE(c);
+
+		error = OK;
+		int64_t num_replace = 0;
+		start_undo_chain(b);
+		for(int64_t i = 0; i < c && ! stop && ! (error = (b->last_was_regexp ? find_regexp : find)(b, NULL, !b->last_was_replace)); i++)
+			if (b->last_was_replace) {
+				const int64_t cur_char = b->cur_char;
+				const int cur_x = b->cur_x;
+
+				if (b->last_was_regexp) error = replace_regexp(b, b->replace_string);
+				else error = replace(b, strlen(b->find_string), b->replace_string);
+
+				if (! error) {
+					if (cur_char < b->attr_len) b->attr_len = cur_char;
+					update_line(b, b->cur_line_desc, b->cur_y, cur_x, false);
+					if (b->syn) {
+						need_attr_update = true;
+						update_syntax_states(b, b->cur_y, b->cur_line_desc, NULL);
+					}
+
+					num_replace++;
+
+					if (last_replace_empty_match)
+						if (b->opt.search_back) error = char_left(cur_buffer);
+						else error = char_right(cur_buffer);
+				}
+
+				if (error) break;
+			}
+
+		end_undo_chain(b);
+		if (num_replace) {
+			snprintf(msg, MAX_MESSAGE_SIZE, "%" PRId64 " replacement%s made.", num_replace, num_replace > 1 ? "s" : "");
+			print_message(msg);
+		}
+		if (stop) error = STOPPED;
+		if (error == STOPPED) reset_window();
+		return error != NOT_FOUND ? error : 0;
 
 	case MATCHBRACKET_A:
 		return print_error(match_bracket(b)) ? ERROR : 0;
@@ -1571,6 +1570,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		NORMALIZE(c);
 		for(int64_t i = 0; i < c && !(error = paragraph(b)) && !stop; i++);
 		if (stop) error = STOPPED;
+		if (error == STOPPED) reset_window();
 		return print_error(error) ? ERROR : 0;
 
 	case SHIFT_A:
