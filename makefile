@@ -1,12 +1,12 @@
 # Makefile for ne's distribution archive.
 
+.PHONY: install
+
 VERSION=3.1.0
 
-# If you change this prefix, you can invoke "make build docs install" and ne will be compiled
+# If you change this prefix, you can invoke "make build install" and ne will be compiled
 # and installed under the $(PREFIX) hierarchy. You can even use "make install PREFIX=$HOME/<dir>"
 # to install ne locally into the directory <dir>.
-
-.PHONY: install
 
 PREFIX=/usr/local
 
