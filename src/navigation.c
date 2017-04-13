@@ -668,10 +668,18 @@ int adjust_view(buffer * const b, const char *p) {
 }
 
 
+/* Moves to a given line. The comments to goto_line_pos() apply. */
+
 void goto_line(buffer * const b, const int64_t n) {
 	goto_line_pos(b, n, -1);
 }
 
+
+/* Moves to a given line and byte position, unless the byte position is -1,
+in which case moves to a given line and calls resync_pos().
+
+Note that this function will call update_syntax_states(), but with row
+parameter -1. */
 
 void goto_line_pos(buffer * const b, const int64_t n, const int64_t pos) {
 	b->y_wanted = 0;
@@ -681,7 +689,7 @@ void goto_line_pos(buffer * const b, const int64_t n, const int64_t pos) {
 	line_desc *ld;
 
 	if (n >= b->win_y && n < b->win_y + ne_lines - 1) {
-		update_syntax_states(b, -1, b->cur_line_desc, NULL);
+		if (n != b->win_y + b->cur_y) update_syntax_states(b, -1, b->cur_line_desc, NULL);
 		b->attr_len = -1;
 		b->cur_y = n - b->win_y;
 		b->cur_line = n;

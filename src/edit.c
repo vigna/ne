@@ -94,10 +94,7 @@ static int to_something(buffer *b, int (to_first)(int), int (to_rest)(int)) {
 
 		if (cur_char < b->attr_len) b->attr_len = cur_char;
 		update_line(b, b->cur_line_desc, b->cur_y, cur_x, false);
-		if (b->syn) {
-			need_attr_update = true;
-			update_syntax_states(b, b->cur_y, b->cur_line_desc, NULL);
-		}
+		need_attr_update = true;
 	}
 
 	return search_word(b, 1);
