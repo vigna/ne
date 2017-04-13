@@ -12,7 +12,7 @@ PREFIX=/usr/local
 
 PROGRAM       = ne
 
-build:
+build: docs
 	( cd src; make clean; make NE_GLOBAL_DIR=$(PREFIX)/share/ne; strip ne )
 
 docs:
@@ -65,11 +65,10 @@ install:
 
 
 package:
-	# To create a Mac package, compile the editor, 
-	# give a "make install" as root (delete INSTALL to make it work) and run this target.
-	# Finally, use Disk Utility to create a (properly named) small disk image
-	# containing the package. Finally, use the right button and "Convert"
-	# to store the image in compressed form.
+	# To create a Mac package, first "make", then give a "make install" as
+	# root and run this target. Then, use Disk Utility to create a (properly
+	# named) small disk image containing the package. Finally, use the right
+	# button and "Convert" to store the image in compressed form.
 
 	-rm -fr /tmp/package-ne-$(VERSION)
 	mkdir -p /tmp/package-ne-$(VERSION)/usr/local/bin

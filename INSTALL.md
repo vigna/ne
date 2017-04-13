@@ -1,16 +1,23 @@
-1. To build and install into /usr/local:
+Build and install into `/usr/local`
+===================================
 
-    # unpack distribution
     cd ne-x.y.z
     make install
 
 Note that you must have adequate privileges.
 
-2. To build and install into some alternative location (for example,
-into your own `~/opt`), you must set the PREFIX variable:
 
+Build and install into some alternative location
+================================================
+
+Set the PREFIX variable, for example:
+
+    cd ne-x.y.z
     make PREFIX=/home/<you>/opt install
 
+
+Makefiles
+=========
 
 There are three makefiles provided with the distribution: a top-level
 makefile for easy build and installation, a low-level makefile in the
@@ -43,10 +50,12 @@ specify "NE_TERMCAP=1" (i.e., type "make NE_TERMCAP=1"). It uses the GNU
 version of termcap, whose sources are included (no library is needed). In
 general, if a compilation via a simple "make" fails you should try these
 variations in order until one of them succeeds:
+
     make
     make NE_POSIX=1
     make NE_TERMCAP=1
     make NE_POSIX=1 NE_TERMCAP=1
+
 They use slightly different #define's to overcome the slight differences
 among systems. If you have a problem with the local compiler and you have the
 GNU C compiler installed, try "CC=gcc", and possibly also "OPTS=-ansi".
@@ -64,7 +73,7 @@ requires some support from the system: you can disable wide-character,
 multiple-column support with "NE_NOWCHAR=1".
 
 If you cannot install ne as root, you can change the position of the
-global preferences directory with "NE_GLOBAL_DIR=<directory>" (this is
+global preferences directory with "NE_GLOBAL_DIR=directory" (this is
 done automatically by the top-level makefile on the basis of the PREFIX
 variable). The global directory should contain automatic preferences files
 for common extensions, and must contain the syntax directory provided with
@@ -78,5 +87,6 @@ alarmed if you get a lot of warnings about signed vs. unsigned values.
 If something does not work, please feel free to email us.
 
 
-					seba (vigna@di.unimi.it)
-					Todd (Todd_Lewis@unc.edu)
+* seba (<mailto:sebastiano.vigna@unimi.it>)
+* Todd (<mailto:Todd_Lewis@unc.edu>)
+* <mailto:niceeditor@googlegroups.com>
