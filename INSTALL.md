@@ -2,7 +2,7 @@ Build and install into `/usr/local`
 ===================================
 
     cd ne-x.y.z
-    make install
+    make build install
 
 Note that you must have adequate privileges.
 
@@ -13,7 +13,7 @@ Build and install into some alternative location
 Set the PREFIX variable, for example:
 
     cd ne-x.y.z
-    make PREFIX=/home/<you>/opt install
+    make PREFIX=/home/<you>/opt build install
 
 
 Makefiles
