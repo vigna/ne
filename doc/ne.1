@@ -9,12 +9,14 @@ Options:
 [\-\-]
 [+[N[,M]]]
 [\-\-binary]
+[\-\-read-only]
 [\-\-utf8]
 [\-\-no\-utf8]
 [\-\-ansi]
 [\-\-no\-ansi]
 [\-\-no\-config]
 [\-\-no\-syntax]
+[\-\-prefs ext]
 [\-\-keys key\-configuration\-file]
 [\-\-menus menu\-configuration\-file]
 [\-\-macro macro\-file]
@@ -44,6 +46,10 @@ May appear more than once.
 Load the next named file in binary mode.
 May appear more than once.
 .TP
+.I "--read-only"
+Load the next file in read-only mode.
+May appear more than once.
+.TP
 .I "--utf8"
 Use UTF-8 I/O.
 .TP
@@ -61,6 +67,9 @@ Skip reading the menu and keyboard configuration files.
 .TP
 .I "--no-syntax"
 Disable syntax-highlighting support.
+.TP
+.I "--prefs ext"
+Set autoprefs for the provided extension before loading the first file.
 .TP
 .I "--keys key-configuration-file"
 Use the specified keyboard configuration file.
