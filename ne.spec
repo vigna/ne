@@ -17,12 +17,7 @@ BuildRequires: ncurses-devel, make, bash, perl, texinfo, sed
 ne is a free (GPL'd) text editor based on the POSIX standard that runs (we
 hope) on almost any UN*X machine. ne is easy to use for the beginner, but
 powerful and fully configurable for the wizard, and most sparing in its
-resource usage. If you have the resources and the patience to use emacs or the
-right mental twist to use vi then probably ne is not for you. However, being
-fast, small, powerful and simple to use, ne is ideal for email, editing through
-phone line (or slow GSM/GPRS) connections and so on. Moreover, the internal
-text representation is very compact--you can easily load and modify very large
-files.
+resource usage.
 
 %prep
 
