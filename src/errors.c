@@ -99,7 +99,7 @@ char *info_msg[INFO_COUNT] = {
 	"Saving...",
 	"Saved.",
 	"All modified documents saved.",
-	"Select file or press F1, Escape or Escape-Escape to enter a file name.",
+	"SELECT cursor/Enter FILTER chars/BS MODE Ins/Del EDIT Tab FILENAME F1/Esc-Esc/Esc",
 	"Start of block marked. Move to the end of block and request actions.",
 	"Start of vertical block marked. Move to the end of block and request actions.",
 	"Starting macro recording...",
@@ -112,7 +112,7 @@ char *info_msg[INFO_COUNT] = {
 	"Completed.",
 	"Partially completed.",
 	"Cancelled.",
-	"SELECT: cursor, enter. FILTER: chars, backspace. REORDER: F2/F3. ABORT: Esc",
+	"SELECT cursor/Enter FILTER chars/BS MODE Ins/Del REORDER F2/F3 QUIT F1/Esc-Esc/Esc",
 	"File has been modified since buffer was loaded or saved; are you sure?",
 	"A file with that name already exists; are you sure?"
 };
