@@ -6034,7 +6034,7 @@ standpoint of @sc{mvs} users who were not too excited about having to move
 their projects to another platform while learning an entirely new suite
 of tools. @code{ne} offered an easily understood interface with enough
 capabilities to keep these new @sc{unix} users productive. Todd installed and
-has maintained @sc{ne} at UNC since then, making several improvements to the
+has maintained @code{ne} at UNC since then, making several improvements to the
 code to meet his users' needs. In early 1999 his code base and
 mine were merged to become version 1.17.
 
