@@ -699,7 +699,7 @@ void help(char *p) {
 	D(fprintf(stderr,"Help Called with parm %p.\n",p);)
 	int r = 0;
 	do {
-		print_message("Help: select Command and press Enter, or F1 or Escape or Escape-Escape");
+		print_message(info_msg[HELP_KEYS]);
 		rl.cur_entries = ACTION_COUNT;
 		rl.alloc_entries = 0;
 		rl.max_entry_len = MAX_COMMAND_WIDTH;
@@ -733,7 +733,7 @@ void help(char *p) {
 
 			assert(r >= 0 && r < ACTION_COUNT);
 
-			print_message("Help: press Enter, or F1 or Escape or Escape-Escape");
+			print_message(info_msg[HELP_COMMAND_KEYS]);
 			char *key_strokes, **tmphelp;
 			if ((key_strokes = find_key_strokes(r)) && (tmphelp = calloc(commands[r].help_len+1, sizeof(char *)))) {
 				tmphelp[0] = (char *)commands[r].help[0];

@@ -114,5 +114,7 @@ char *info_msg[INFO_COUNT] = {
 	"Cancelled.",
 	"SELECT cursor/Enter FILTER chars/BS MODE Ins/Del REORDER F2/F3 QUIT F1/Esc-Esc/Esc",
 	"File has been modified since buffer was loaded or saved; are you sure?",
-	"A file with that name already exists; are you sure?"
+	"A file with that name already exists; are you sure?",
+	"HELP cursor/Enter QUIT F1/Esc-Esc/Esc",
+	"BACK Enter QUIT F1/Esc-Esc/Esc"
 };
