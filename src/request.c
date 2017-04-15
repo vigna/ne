@@ -243,7 +243,7 @@ static void request_move_previous(void) {
 
 static void request_move_right(void) {
 	if (y < NAMES_PER_COL(page) - 1 && PXY2N(page,0,y+1) < rl.cur_entries &&
-		 (x == NAMES_PER_LINE(page) - 1 || PXY2N(page,x+1,y) > rl.cur_entries -1)  ) {
+	    (x == NAMES_PER_LINE(page) - 1 || PXY2N(page,x+1,y) > rl.cur_entries -1)  ) {
 		request_move_to_sol();
 		request_move_down();
 	}
@@ -289,6 +289,55 @@ static bool request_reorder(const int dir) {
 	return true;
 }
 
+/* rebuild rl.entries[] from rl0.entries[].
+   If prune is true, include only those entries from rl0 which match the currently
+   highlighted rl entry up through fuzz_len characters.
+   If prune is false, include all entries from rl0.
+   In any case, return the (possibly new) index of the highlighted entry in rl. */
+
+static int reset_rl_entries() {
+	const int n0 = PXY2N(page,x,y);
+	const char * const p0 = rl.entries[PXY2N(page,x,y)];
+	int n1 = n0;
+	int i;
+	for (int j = n1 = i = 0; j < rl0->cur_entries; j++) {
+		char * const p1 = rl0->entries[j];
+		if ( ! prune || ! strncasecmp(p0, p1, fuzz_len) ) {
+			if (p1 == p0) n1 = i;
+			rl.entries[i++] = p1;
+		}
+	}
+	rl.cur_entries = i;
+	return n1;
+}
+
+/* Count how many entries match our highlighted entry up through len characters. */
+
+static int count_fuzz_matches(const int len) {
+	const int n0 = PXY2N(page,x,y);
+	const char * const p0 = rl.entries[n0];
+	if (len <= 0) return rl.cur_entries;
+	if (len > strlen(p0)) return 1;
+	int c;
+	for (int i = c = 0; i < rl.cur_entries; i++) {
+		if ( ! strncasecmp(p0, rl.entries[i], len)) c++;
+	}
+	return c;
+}
+
+/* Shift fuzz_len by +1 or -1 until the matching count changes or we run out of string. */
+
+static void shift_fuzz(const int d) {
+	int c0 = count_fuzz_matches(fuzz_len);
+	const char * const p0 = rl.entries[PXY2N(page,x,y)];
+	assert(d==1||d==-1);
+	if (d==-1) {
+		while(fuzz_len > 0 && count_fuzz_matches(fuzz_len+1) == count_fuzz_matches(fuzz_len)) fuzz_len--;
+	} else {
+		while (fuzz_len < strlen(p0) && count_fuzz_matches(fuzz_len) == count_fuzz_matches(fuzz_len+1)) fuzz_len++;
+	}
+}
+
 /* Back up one or more chars from fuzz_len, possibly pulling in
    matching entries from the original req_list *rl0 in such a way as
    to preserve original order. This can behave quite differently
@@ -302,21 +351,11 @@ static void fuzz_back() {
 	const int n0 = PXY2N(page,x,y);
 	const char * const p0 = rl.entries[PXY2N(page,x,y)];
 	int n1 = n0;
-
 	if (fuzz_len == 0) return;
 	if (prune) {
-		if (orig_entries == rl0->cur_entries) return;
-		while (rl.cur_entries == orig_entries) {
+		while (rl.cur_entries == orig_entries && fuzz_len > 0) {
 			fuzz_len = max(0,fuzz_len-1);
-			int i;
-			for (int j = n1 = i = 0; j < rl0->cur_entries; j++) {
-				char * const p1 = rl0->entries[j];
-				if ( ! strncasecmp(p0, p1, fuzz_len) ) {
-					if (p1 == p0) n1 = i;
-					rl.entries[i++] = p1;
-				}
-			}
-			rl.cur_entries = i;
+			n1 = reset_rl_entries();
 		}
 	} else {
 		fuzz_len--;
@@ -343,6 +382,7 @@ static void fuzz_back() {
 			}
 			rl.cur_entries = rldest;
 		}
+		shift_fuzz(-1);
 	}
 	page = -1; /* causes normalize() to call print_strings() */
 	normalize(n1);
@@ -391,6 +431,7 @@ static void fuzz_forward(const int c) {
 				break;
 			}
 		}
+		shift_fuzz(1);
 	}
 }
 
@@ -405,7 +446,7 @@ static int request_strings_init(req_list *rlp0) {
 	rl.cur_entries = rlp0->cur_entries;
 	rl.max_entry_len = rlp0->max_entry_len;
 	rl.suffix = rlp0->suffix;
-	if (!(rl.entries = calloc(rlp0->cur_entries, sizeof(char *))))	return 0;
+	if (!(rl.entries = calloc(rlp0->cur_entries, sizeof(char *)))) return 0;
 	rl.alloc_entries = rlp0->cur_entries;
 	memcpy(rl.entries, rlp0->entries, rl.cur_entries * sizeof(char *));
 	rl0 = rlp0;
@@ -613,6 +654,9 @@ int request_strings(req_list *rlp0, int n) {
 					case INSERT_A:
 					case DELETECHAR_A:
 						prune = !prune;
+						int n1 = reset_rl_entries();
+						page = -1;
+						normalize(n1);
 						break;
 
 					case CLOSEDOC_A:
