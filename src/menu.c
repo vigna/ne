@@ -174,8 +174,6 @@ static const menu_item extras_item[] =
 		{ "Shift Right    ", SHIFT_ABBREV },
 		{ "Shift Left     ", SHIFTLEFT_ABBREV },
 		{ "Paragraph    [P", PARAGRAPH_ABBREV },
-		{ "Adjust View  ^^", ADJUSTVIEW_ABBREV },
-		{ "Middle View  [C", MIDDLEVIEW_ABBREV },
 		{ "Name Convert   ", NAMECONVERT_ABBREV },
 		{ "ToUpper      [V", TOUPPER_ABBREV },
 		{ "ToLower      [L", TOLOWER_ABBREV },
@@ -202,6 +200,8 @@ PICK(   "Page Down       ", PAGEDOWN_ABBREV    , "Page Down     ^N", PAGEDOWN_AB
 		{ "End Of Line   ^E", MOVEEOL_ABBREV },
 		{ "Top Of Screen   ", MOVETOS_ABBREV },
 		{ "Bottom Of Screen", MOVEBOS_ABBREV },
+		{ "Adjust View   ^^", ADJUSTVIEW_ABBREV },
+		{ "Middle View   [C", MIDDLEVIEW_ABBREV },
 PICK(   "Incr Up     Home", MOVEINCUP_ABBREV   , "Incr Up         ", MOVEINCUP_ABBREV)
 PICK(   "Incr Down    End", MOVEINCDOWN_ABBREV , "Incr Down       ", MOVEINCDOWN_ABBREV)
 		{ "Prev Word  f7/[B", PREVWORD_ABBREV },

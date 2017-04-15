@@ -70,8 +70,6 @@ ITEM "Center         " Center
 ITEM "Shift Right    " Shift
 ITEM "Shift Left     " Shift <
 ITEM "Paragraph    [P" Paragraph
-ITEM "Adjust View  ^^" AdjustView
-ITEM "Middle View  [C" AdjustView M
 ITEM "ToUpper      [V" ToUpper
 ITEM "ToLower      [L" ToLower
 ITEM "Capitalize     " Capitalize
@@ -93,6 +91,8 @@ ITEM "Start Of Line ^A" MoveSOL
 ITEM "End Of Line   ^E" MoveEOL
 ITEM "Top Of Screen   " MoveTOS
 ITEM "Bottom Of Screen" MoveBOS
+ITEM "Adjust View   ^^" AdjustView
+ITEM "Middle View   [C" AdjustView M
 ITEM "Incr Up     Home" MoveIncUp 
 ITEM "Incr Down    End" MoveIncDown
 ITEM "Prev Word  f7/[B" PrevWord
