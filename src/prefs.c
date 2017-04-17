@@ -277,7 +277,7 @@ static char *determine_virtual_extension( buffer * const b, char *vname, buffer 
 			vb->find_string_changed = 1;
 
 			int64_t line_limit = 0, pos_limit = -1, len = 0;
-			for(line desc *ld = b->top_line_desc; ld->ld_node.next; ld = (line_desc *)ld->ld_node.next, line_limit++)
+			for(line_desc *ld = b->top_line_desc; ld->ld_node.next; ld = (line_desc *)ld->ld_node.next, line_limit++)
 				if ((len += ld->line_len + 1) > REGEX_SCAN_LIMIT) {
 					pos_limit = REGEX_SCAN_LIMIT - (len - ld->line_len - 1);
 					break;
