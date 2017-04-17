@@ -280,22 +280,27 @@ static char *determine_virtual_extension( buffer * const b, char *vname, buffer 
 					char *endptr;
 					int64_t maxline = strtoll(maxline_str, &endptr, 0);
 					if (maxline < 1 || errno) maxline = UINT64_MAX;
-					maxline--; /* users are 1-based, but internal line numbers are 0-based. */
-					/* Search in b for the first occurance of regex. */
+					int minline = -1; /* maxline is 1-based, but internal line numbers (minline) are 0-based. */
+					/* Search backwards in b from maxline[0] for the first occurance of regex. */
 					int64_t b_cur_line    = b->cur_line;
 					int64_t b_cur_pos     = b->cur_pos;
 					int     b_search_back = b->opt.search_back;
-					b->opt.search_back = false;
-					goto_line_pos(b, 0, 0);
+					b->opt.search_back = true;
+					goto_line(b, max(0,min(b->num_lines-1,maxline-1)));
+					goto_pos(b, b->cur_line_desc->line_len);
 					free(b->find_string);
 					b->find_string_changed = 1;
 					b->find_string = regex;
 					regex = NULL;
-					if ( find_regexp(b, NULL, false) == OK ) {
-						D(fprintf(stderr,"[%d] --- found on line <%d>\n",__LINE__, b->cur_line);)
-						if (b->cur_line <= maxline && b->cur_line < earliest_found_line) {
+					while (find_regexp(b, NULL, true) == OK) {
+						minline = b->cur_line;
+						D(fprintf(stderr,"[%d] --- found match for '%s' on line <%d>\n",__LINE__, ext, minline);)
+						if (minline == 0) break;
+					}
+					if (minline > -1) {
+						if (minline < earliest_found_line) {
 							found++;
-							earliest_found_line = b->cur_line;
+							earliest_found_line = minline;
 							if (virt_ext) free(virt_ext);
 							virt_ext = ext;
 							ext = NULL;

@@ -1,15 +1,15 @@
 # Comments and blank lines are allowed, or any line that doesn't match:
-#  ^[ \t]*(\w+)[ \t]*([0-9]*)[ \t]*(.+)
+#  ^\s*(\w+)\s*([0-9]*)\s*(.+)
 # Canonical format: <file> <n> <regex>
 # (space delimited; when <regex> matches the first <n> lines, <file>.jsf applies
 
 # These patterns match some common command interpreters:
-#sh 1 ˆ#![\t ]*/.*/(bash|sh|ksh|zsh)\s*
-sh 1 ^#![\t ]*/.*sh\s*
-csh 1 ^#![\t ]*/.*(csh|tcsh)\s*
-pl 1 ^#![\t ]*/.*perl\b
-py 1 ^#![\t ]*/.*python[0-9]*\s*
-rb 1 ^#![\t ]*/.*ruby\s*
-# These must match in the first 30 and 10 lines respectively to work.
-yaml 30 ^\+\+\+$
-ini 10 ^\[\w+\]$
+sh    1   ^#!\s*/.*sh\b\s*
+csh   1   ^#!\s*/.*(csh|tcsh)\b\s*
+pl    1   ^#!\s*/.*perl\b\s*
+py    1   ^#!\s*/.*python[0-9]*\b\s*
+rb    1   ^#!\s*/.*ruby\b\s*
+xml   1   ^\s*<\?xml\b
+# These must match in the first 30 and 20 lines respectively to work.
+yaml 30   ^\+\+\+$
+ini  20   ^\[\s*\w+\s*\]$
