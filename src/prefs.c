@@ -257,6 +257,7 @@ static char *determine_virtual_extension( buffer * const b, char *vname, buffer 
 		clear_buffer(vb);
 		vb->opt.do_undo = 0;
 		vb->opt.auto_prefs = 0;
+		vb->opt.case_search = 0;
 	}
 	if (vb) {
 		if (! buffer_file_modified(vb, vname) || load_file_in_buffer(vb, vname) == OK ) {
@@ -267,7 +268,7 @@ static char *determine_virtual_extension( buffer * const b, char *vname, buffer 
 			   the buffer we're navigating through, but we don't want to show this buffer! */
 			int64_t earliest_found_line = INT64_MAX;
 			int skip_first = false;
-			vb->find_string = str_dup( "^\\s*(\\w+)\\s+([0-9]+)\\s+(.+[^ \\t])\\s*$" );
+			vb->find_string = str_dup( "^\\s*(\\w+)\\s+([0-9]+i?)\\s+(.+[^ \\t])\\s*$" );
 			vb->find_string_changed = 1;
 			while ( earliest_found_line > 0 && find_regexp(vb,NULL,skip_first) == OK && !stop) {
 				skip_first = true;
@@ -280,22 +281,29 @@ static char *determine_virtual_extension( buffer * const b, char *vname, buffer 
 					char *endptr;
 					int64_t maxline = strtoll(maxline_str, &endptr, 0);
 					if (maxline < 1 || errno) maxline = UINT64_MAX;
-					maxline--; /* users are 1-based, but internal line numbers are 0-based. */
-					/* Search in b for the first occurance of regex. */
+					int minline = -1; /* maxline is 1-based, but internal line numbers (minline) are 0-based. */
+					/* Search backwards in b from maxline[0] for the first occurance of regex. */
 					int64_t b_cur_line    = b->cur_line;
 					int64_t b_cur_pos     = b->cur_pos;
 					int     b_search_back = b->opt.search_back;
-					b->opt.search_back = false;
-					goto_line_pos(b, 0, 0);
+					int     b_case_search = b->opt.case_search;
+					b->opt.search_back = true;
+					b->opt.case_search = (*endptr == 'i') ? 0 : 1;
+					goto_line(b, max(0,min(b->num_lines-1,maxline-1)));
+					goto_pos(b, b->cur_line_desc->line_len);
 					free(b->find_string);
 					b->find_string_changed = 1;
 					b->find_string = regex;
 					regex = NULL;
-					if ( find_regexp(b, NULL, false) == OK ) {
-						D(fprintf(stderr,"[%d] --- found on line <%d>\n",__LINE__, b->cur_line);)
-						if (b->cur_line <= maxline && b->cur_line < earliest_found_line) {
+					while (find_regexp(b, NULL, true) == OK) {
+						minline = b->cur_line;
+						D(fprintf(stderr,"[%d] --- found match for '%s' on line <%d>\n",__LINE__, ext, minline);)
+						if (minline == 0) break;
+					}
+					if (minline > -1) {
+						if (minline < earliest_found_line) {
 							found++;
-							earliest_found_line = b->cur_line;
+							earliest_found_line = minline;
 							if (virt_ext) free(virt_ext);
 							virt_ext = ext;
 							ext = NULL;
@@ -303,6 +311,7 @@ static char *determine_virtual_extension( buffer * const b, char *vname, buffer 
 					}
 					goto_line_pos(b, b_cur_line, b_cur_pos);
 					b->opt.search_back = b_search_back;
+					b->opt.case_search = b_case_search;
 				}
 				if (maxline_str) free(maxline_str);
 				if (ext) free(ext);
