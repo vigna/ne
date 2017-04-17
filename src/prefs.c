@@ -260,7 +260,7 @@ static char *determine_virtual_extension( buffer * const b, char *vname, buffer 
 		vb->opt.case_search = 0;
 	}
 	if (vb) {
-		if (! buffer_file_modified(vb, vname) || load_file_in_buffer(vb, vname) == OK) {
+		if ((! buffer_file_modified(vb, vname) || load_file_in_buffer(vb, vname) == OK) && vb->allocated_chars) {
 			goto_line_pos(vb, 0, 0);
 			int found = 0;
 			int stop = false;
