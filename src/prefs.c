@@ -40,7 +40,7 @@ be enough strange to avoid clashes with macros. */
 /* The maximum number of characters scanned during a regex search for
 virtual extensions. */
 
-#define REGEX_SCAN_LIMIT (1000000)
+#define REGEX_SCAN_LIMIT (100000)
 
 /* We suppose a configuration file won't be bigger than this. Having it
 bigger just causes a reallocation. */
@@ -267,24 +267,41 @@ static char *determine_virtual_extension( buffer * const b, char *vname, buffer 
 	if (vb) {
 		if ((! buffer_file_modified(vb, vname) || load_file_in_buffer(vb, vname) == OK) && vb->allocated_chars) {
 			goto_line_pos(vb, 0, 0);
-			int found = 0;
-			int stop = false;
-			/* Examine each line in vb. Most functions in navigation.c expect to display
-			   the buffer we're navigating through, but we don't want to show this buffer! */
-			int64_t earliest_found_line = INT64_MAX;
-			int skip_first = false;
+			bool skip_first = false;
 			vb->find_string = str_dup( "^\\s*(\\w+)\\s+([0-9]+i?)\\s+(.+[^ \\t])\\s*$" );
 			vb->find_string_changed = 1;
 
+			/* Find maximum number of lines to scan by spec. */
+			int64_t spec_limit = 0;
+			while (find_regexp(vb, NULL, skip_first) == OK) {
+				skip_first = true;
+				char * const max_line_str = nth_regex_substring(vb->cur_line_desc, 2);
+				if (max_line_str) {
+					const int64_t line = strtoll(max_line_str, NULL, 0);
+					if (line == 0) spec_limit = INT64_MAX;
+					else spec_limit = max(spec_limit, line);
+				}
+			}
+
+			/* Reduce the maximum number of lines to scan so that no more
+			than REGEX_SCAN_LIMIT characters are regex'd. */
 			int64_t line_limit = 0, pos_limit = -1, len = 0;
-			for(line_desc *ld = (line_desc *)b->line_desc_list.head; ld->ld_node.next; ld = (line_desc *)ld->ld_node.next, line_limit++)
+			for(line_desc *ld = (line_desc *)b->line_desc_list.head; ld->ld_node.next && line_limit < spec_limit;
+					ld = (line_desc *)ld->ld_node.next, line_limit++)
 				if ((len += ld->line_len + 1) > REGEX_SCAN_LIMIT) {
 					line_limit++;
 					pos_limit = REGEX_SCAN_LIMIT - (len - ld->line_len - 1);
 					break;
 				}
 
-			while (earliest_found_line > 0 && find_regexp(vb,NULL,skip_first) == OK && !stop) {
+			/* Examine each line in vb. Most functions in navigation.c expect to display
+			   the buffer we're navigating through, but we don't want to show this buffer! */
+			int64_t earliest_found_line = INT64_MAX;
+			goto_line_pos(vb, 0, 0);
+			int found = 0;
+			skip_first = false;
+
+			while (earliest_found_line > 0 && find_regexp(vb, NULL, skip_first) == OK && !stop) {
 				skip_first = true;
 				char *ext         = nth_regex_substring(vb->cur_line_desc, 1);
 				char *max_line_str = nth_regex_substring(vb->cur_line_desc, 2);
