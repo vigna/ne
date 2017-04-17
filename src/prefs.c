@@ -37,10 +37,15 @@ be enough strange to avoid clashes with macros. */
 #define VIRTUAL_EXT_NAME    ".extensions"
 #define VIRTUAL_EXT_NAME_G   "extensions"
 
+/* The maximum number of characters scanned during a regex search for
+virtual extensions. */
+
+#define REGEX_SCAN_LIMIT (1000000)
+
 /* We suppose a configuration file won't be bigger than this. Having it
 bigger just causes a reallocation. */
 
-#define PREF_FILE_SIZE_GUESS 256
+#define PREF_FILE_SIZE_GUESS (256)
 
 /* If we're saving default prefs, we include global prefs
    that are not buffer specific. Likewise, if we're saving
@@ -271,33 +276,37 @@ static char *determine_virtual_extension( buffer * const b, char *vname, buffer 
 			vb->find_string = str_dup( "^\\s*(\\w+)\\s+([0-9]+i?)\\s+(.+[^ \\t])\\s*$" );
 			vb->find_string_changed = 1;
 
-			int64_t line_limit = 0, len = 0;
-			for(line_desc *ld = b->top_line_desc; ld->ld_node.next; ld = (line_desc *)ld->ld_node.next, line_limit++)
-				if ((len += ld->line_len + 1) > 1000000) break;
+			int64_t line_limit = 0, pos_limit = -1, len = 0;
+			for(line desc *ld = b->top_line_desc; ld->ld_node.next; ld = (line_desc *)ld->ld_node.next, line_limit++)
+				if ((len += ld->line_len + 1) > REGEX_SCAN_LIMIT) {
+					pos_limit = REGEX_SCAN_LIMIT - (len - ld->line_len - 1);
+					break;
+				}
+				else pos_limit = ld->line_len;
 
 			if (line_limit) {
 				while ( earliest_found_line > 0 && find_regexp(vb,NULL,skip_first) == OK && !stop) {
 					skip_first = true;
 					char *ext         = nth_regex_substring(vb->cur_line_desc, 1);
-					char *maxline_str = nth_regex_substring(vb->cur_line_desc, 2);
+					char *max_line_str = nth_regex_substring(vb->cur_line_desc, 2);
 					char *regex       = nth_regex_substring(vb->cur_line_desc, 3);
-					D(fprintf(stderr,"[%d] Checking for <%s> <%s> <%s>\n",__LINE__, ext, maxline_str, regex);)
-					if (ext && maxline_str && regex ) {
+					D(fprintf(stderr,"[%d] Checking for <%s> <%s> <%s>\n",__LINE__, ext, max_line_str, regex);)
+					if (ext && max_line_str && regex ) {
 						errno = 0;
 						char *endptr;
-						int64_t maxline = strtoll(maxline_str, &endptr, 0);
-						if (maxline < 1 || errno) maxline = UINT64_MAX;
-						maxline = min(line_limit, maxline);
-						int minline = -1; /* maxline is 1-based, but internal line numbers (minline) are 0-based. */
-						/* Search backwards in b from maxline[0] for the first occurance of regex. */
+						int64_t max_line = strtoll(max_line_str, &endptr, 0);
+						if (max_line < 1 || errno) max_line = INT64_MAX;
+						max_line = min(line_limit, max_line);
+						int minline = -1; /* max_line is 1-based, but internal line numbers (minline) are 0-based. */
+						/* Search backwards in b from max_line for the first occurance of regex. */
 						int64_t b_cur_line    = b->cur_line;
 						int64_t b_cur_pos     = b->cur_pos;
 						int     b_search_back = b->opt.search_back;
 						int     b_case_search = b->opt.case_search;
 						b->opt.search_back = true;
 						b->opt.case_search = (*endptr == 'i') ? 0 : 1;
-						goto_line(b, max(0,min(b->num_lines-1,maxline-1)));
-						goto_pos(b, b->cur_line_desc->line_len);
+						goto_line(b, max_line - 1);
+						goto_pos(b, max_line == line_limit ? pos_limit : b->cur_line_desc->line_len);
 						free(b->find_string);
 						b->find_string_changed = 1;
 						b->find_string = regex;
@@ -320,7 +329,7 @@ static char *determine_virtual_extension( buffer * const b, char *vname, buffer 
 						b->opt.search_back = b_search_back;
 						b->opt.case_search = b_case_search;
 					}
-					if (maxline_str) free(maxline_str);
+					if (max_line_str) free(max_line_str);
 					if (ext) free(ext);
 					if (regex) free(regex);
 				}
