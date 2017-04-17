@@ -260,7 +260,7 @@ static char *determine_virtual_extension( buffer * const b, char *vname, buffer 
 		vb->opt.case_search = 0;
 	}
 	if (vb) {
-		if (! buffer_file_modified(vb, vname) || load_file_in_buffer(vb, vname) == OK ) {
+		if (! buffer_file_modified(vb, vname) || load_file_in_buffer(vb, vname) == OK) {
 			goto_line_pos(vb, 0, 0);
 			int found = 0;
 			int stop = false;
@@ -270,52 +270,60 @@ static char *determine_virtual_extension( buffer * const b, char *vname, buffer 
 			int skip_first = false;
 			vb->find_string = str_dup( "^\\s*(\\w+)\\s+([0-9]+i?)\\s+(.+[^ \\t])\\s*$" );
 			vb->find_string_changed = 1;
-			while ( earliest_found_line > 0 && find_regexp(vb,NULL,skip_first) == OK && !stop) {
-				skip_first = true;
-				char *ext         = nth_regex_substring(vb->cur_line_desc, 1);
-				char *maxline_str = nth_regex_substring(vb->cur_line_desc, 2);
-				char *regex       = nth_regex_substring(vb->cur_line_desc, 3);
-				D(fprintf(stderr,"[%d] Checking for <%s> <%s> <%s>\n",__LINE__, ext, maxline_str, regex);)
-				if (ext && maxline_str && regex ) {
-					errno = 0;
-					char *endptr;
-					int64_t maxline = strtoll(maxline_str, &endptr, 0);
-					if (maxline < 1 || errno) maxline = UINT64_MAX;
-					int minline = -1; /* maxline is 1-based, but internal line numbers (minline) are 0-based. */
-					/* Search backwards in b from maxline[0] for the first occurance of regex. */
-					int64_t b_cur_line    = b->cur_line;
-					int64_t b_cur_pos     = b->cur_pos;
-					int     b_search_back = b->opt.search_back;
-					int     b_case_search = b->opt.case_search;
-					b->opt.search_back = true;
-					b->opt.case_search = (*endptr == 'i') ? 0 : 1;
-					goto_line(b, max(0,min(b->num_lines-1,maxline-1)));
-					goto_pos(b, b->cur_line_desc->line_len);
-					free(b->find_string);
-					b->find_string_changed = 1;
-					b->find_string = regex;
-					regex = NULL;
-					while (find_regexp(b, NULL, true) == OK) {
-						minline = b->cur_line;
-						D(fprintf(stderr,"[%d] --- found match for '%s' on line <%d>\n",__LINE__, ext, minline);)
-						if (minline == 0) break;
-					}
-					if (minline > -1) {
-						if (minline < earliest_found_line) {
-							found++;
-							earliest_found_line = minline;
-							if (virt_ext) free(virt_ext);
-							virt_ext = ext;
-							ext = NULL;
+
+			int64_t line_limit = 0, len = 0;
+			for(line_desc *ld = b->top_line_desc; ld->ld_node.next; ld = (line_desc *)ld->ld_node.next, line_limit++)
+				if ((len += ld->line_len + 1) > 1000000) break;
+
+			if (line_limit) {
+				while ( earliest_found_line > 0 && find_regexp(vb,NULL,skip_first) == OK && !stop) {
+					skip_first = true;
+					char *ext         = nth_regex_substring(vb->cur_line_desc, 1);
+					char *maxline_str = nth_regex_substring(vb->cur_line_desc, 2);
+					char *regex       = nth_regex_substring(vb->cur_line_desc, 3);
+					D(fprintf(stderr,"[%d] Checking for <%s> <%s> <%s>\n",__LINE__, ext, maxline_str, regex);)
+					if (ext && maxline_str && regex ) {
+						errno = 0;
+						char *endptr;
+						int64_t maxline = strtoll(maxline_str, &endptr, 0);
+						if (maxline < 1 || errno) maxline = UINT64_MAX;
+						maxline = min(line_limit, maxline);
+						int minline = -1; /* maxline is 1-based, but internal line numbers (minline) are 0-based. */
+						/* Search backwards in b from maxline[0] for the first occurance of regex. */
+						int64_t b_cur_line    = b->cur_line;
+						int64_t b_cur_pos     = b->cur_pos;
+						int     b_search_back = b->opt.search_back;
+						int     b_case_search = b->opt.case_search;
+						b->opt.search_back = true;
+						b->opt.case_search = (*endptr == 'i') ? 0 : 1;
+						goto_line(b, max(0,min(b->num_lines-1,maxline-1)));
+						goto_pos(b, b->cur_line_desc->line_len);
+						free(b->find_string);
+						b->find_string_changed = 1;
+						b->find_string = regex;
+						regex = NULL;
+						while (find_regexp(b, NULL, true) == OK) {
+							minline = b->cur_line;
+							D(fprintf(stderr,"[%d] --- found match for '%s' on line <%d>\n",__LINE__, ext, minline);)
+							if (minline == 0) break;
 						}
+						if (minline > -1) {
+							if (minline < earliest_found_line) {
+								found++;
+								earliest_found_line = minline;
+								if (virt_ext) free(virt_ext);
+								virt_ext = ext;
+								ext = NULL;
+							}
+						}
+						goto_line_pos(b, b_cur_line, b_cur_pos);
+						b->opt.search_back = b_search_back;
+						b->opt.case_search = b_case_search;
 					}
-					goto_line_pos(b, b_cur_line, b_cur_pos);
-					b->opt.search_back = b_search_back;
-					b->opt.case_search = b_case_search;
+					if (maxline_str) free(maxline_str);
+					if (ext) free(ext);
+					if (regex) free(regex);
 				}
-				if (maxline_str) free(maxline_str);
-				if (ext) free(ext);
-				if (regex) free(regex);
 			}
 		}
 		/* free_buffer(vb); Not any more, because we're caching in *vbp. */
@@ -334,7 +342,7 @@ static char *virtual_extension(buffer * const b) {
 	char *virt_ext = NULL;
 	char *virt_name, *prefs_dir;
 
-	/* Try the user's ~/.ne/.extenstion first. We only check the global config if the
+	/* Try the user's ~/.ne/.extensions first. We only check the global config if the
 	   users local one doesn't determine an extension. */
 	if (prefs_dir = exists_prefs_dir()) {
 		if (virt_name = malloc(strlen(VIRTUAL_EXT_NAME) + strlen(prefs_dir) + 2)) {
