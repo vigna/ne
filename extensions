@@ -1,11 +1,13 @@
 # Comments and blank lines are allowed, or any line that doesn't match:
 #  ^\s*(\w+)\s*([0-9]*)\s*(.+)
-# Canonical format: <file> <n> <regex>
-# (space delimited; when <regex> matches the first <n> lines, <file>.jsf applies
+#  ^\s*(\w+)\s+([0-9]+i?)\s+(.+[^ \t])\s*$
+# Canonical format: <file> <n>[i] <regex>
+# Space delimited; when <regex> matches the first <n> lines, <file>.jsf applies.
+# "i" suffix on <n> makes search case-insensitive.
 
-# These patterns match some common command interpreters:
-sh    1   ^#!\s*/.*sh\b\s*
+# These patterns match some common command interpreters in the first line:
 csh   1   ^#!\s*/.*(csh|tcsh)\b\s*
+sh    1   ^#!\s*/.*sh\b\s*
 pl    1   ^#!\s*/.*perl\b\s*
 py    1   ^#!\s*/.*python[0-9]*\b\s*
 rb    1   ^#!\s*/.*ruby\b\s*
