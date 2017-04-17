@@ -5643,8 +5643,9 @@ the document's name had the corresponding extension.
 @noindent Anything else is treated as a comment. The number must be a positive integer
 indicating the maximum line number of the document in which the corresponding
 regular expression must match. The exception is zero, which allows a match on
-any line in the document. Trailing spaces are not included as part of the
-regular_expression.
+any line in the document. If the number has a lower-case @samp{i} suffix the
+corresponding regular expression is not case sensitive. Trailing spaces are not
+included as part of the regular_expression.
 
 If two different patterns match, the one matching the document's lower line number
 will take precedence. If they match on the same line, then the first one listed
