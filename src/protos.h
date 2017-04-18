@@ -214,6 +214,7 @@ int   load_prefs(buffer *b, const char *name);
 int   load_syntax_by_name(buffer *b, const char *name);
 int   load_auto_prefs(buffer *b, const char *name);
 int   save_auto_prefs(buffer *b, const char *name);
+void  load_virtual_extensions();
 int   pop_prefs(buffer *b);
 int   push_prefs(buffer *b);
 
