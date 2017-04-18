@@ -274,7 +274,7 @@ static void load_virt_ext(char *vname) {
 	vb->opt.case_search = 0;
 
 	bool skip_first = false;
-	vb->find_string = "^\\s*(\\w+)\\s+([0-9]+i?)\\s+(.+[^ \\t])\\s*$|^\\.(\\w+\\*?)\\s*$";
+	vb->find_string = "^\\s*(\\w+)\\s+([0-9]+i?)\\s+(.+[^ \\t])\\s*$|^\\.(\\w+\\*?|\\*)\\s*$";
 	vb->find_string_changed = 1;
 
 	if ((virt_ext = realloc(virt_ext, (num_virt_ext + vb->num_lines) * sizeof *virt_ext))
