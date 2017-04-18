@@ -293,7 +293,7 @@ static void load_virt_ext(char *vname) {
 				if (max_line < 1 || errno) max_line = INT64_MAX;
 
 				int i;
-				for(i = 0; i <num_virt_ext; i++)
+				for(i = 0; i < num_virt_ext; i++)
 					if (strcmp(virt_ext[i].ext, ext) == 0) {
 						free(virt_ext[i].ext);
 						free(virt_ext[i].regex);
@@ -310,7 +310,7 @@ static void load_virt_ext(char *vname) {
 			else {
 				char * const ext = nth_regex_substring(vb->cur_line_desc, 4);
 				int i;
-				for(i = 0; i <num_extra_exts; i++)
+				for(i = 0; i < num_extra_exts; i++)
 					if (strcmp(extra_ext[i], ext) == 0) break;
 				if (i == num_extra_exts) extra_ext[num_extra_exts++] = ext;
 				else free(ext);
@@ -354,6 +354,7 @@ void load_virtual_extensions() {
 	The returned string need not be free()'d. */
 
 static char *virtual_extension(buffer * const b) {
+	if (virt_ext == NULL) return NULL;
 	/* If the buffer filename has an extension, check that it's in extra_ext. */
 	const char * const filename_ext = extension(b->filename);
 	if (filename_ext != NULL) {
@@ -386,7 +387,7 @@ static char *virtual_extension(buffer * const b) {
 	b->opt.search_back = true;
 
 	for(int i = 0; earliest_found_line > 0 && i < num_virt_ext && !stop; i++) {
-		int min_line = -1; /* max_line is 1-based, but internal line numbers (min_line) are 0-based. */
+		int64_t min_line = -1; /* max_line is 1-based, but internal line numbers (min_line) are 0-based. */
 		/* Search backwards in b from max_line for the first occurance of regex. */
 		b->opt.case_search = virt_ext[i].case_sensitive;
 		const int64_t max_line = min(virt_ext[i].max_line, line_limit);
@@ -411,6 +412,7 @@ static char *virtual_extension(buffer * const b) {
 	b->opt.search_back = b_search_back;
 	b->opt.case_search = b_case_search;
 	b->find_string = find_string;
+	b->find_string_changed = 1;
 
 	return ext;
 }
