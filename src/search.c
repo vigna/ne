@@ -491,6 +491,15 @@ char *nth_regex_substring(const line_desc *ld, int i0) {
 }
 
 
+/* This allows regexp users to check whether matched substrings are nonempty. */
+bool nth_regex_substring_nonempty(const line_desc *ld, int i0) {
+	int i;
+	if ((i = use_map_group ? map_group[i0] : i0) >= RE_NREGS) return false;
+	if (i > 0 && i < re_reg.num_regs) return re_reg.start[i] != re_reg.end[i];
+	return false;
+}
+
+
 /* Replaces a regular expression. The given string can contain \0, \1 etc. for
    the pattern matched by the i-th pair of brackets (\0 is the whole
    string). */

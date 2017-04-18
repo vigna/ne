@@ -259,6 +259,9 @@ static struct {
 static int num_virt_ext;
 static int64_t max_max_line;
 
+static char **extra_ext;
+static int64_t num_extra_exts;
+
 static void load_virt_ext(char *vname) {
 	/* Our find_regexp() is geared to work on buffers rather than streams, so we'll create a
 	   stand-alone buffer. This also buys us proper handling of encodings. */
@@ -271,36 +274,47 @@ static void load_virt_ext(char *vname) {
 	vb->opt.case_search = 0;
 
 	bool skip_first = false;
-	vb->find_string = "^\\s*(\\w+)\\s+([0-9]+i?)\\s+(.+[^ \\t])\\s*$";
+	vb->find_string = "^\\s*(\\w+)\\s+([0-9]+i?)\\s+(.+[^ \\t])\\s*$|^\\.(\\w+)\\s*$";
 	vb->find_string_changed = 1;
 
-	if (virt_ext = realloc(virt_ext, (num_virt_ext + vb->num_lines) * sizeof *virt_ext)) {
+	if ((virt_ext = realloc(virt_ext, (num_virt_ext + vb->num_lines) * sizeof *virt_ext))
+			&& (extra_ext = realloc(extra_ext, (num_extra_exts + vb->num_lines) * sizeof *extra_ext))) {
 		while (find_regexp(vb, NULL, skip_first) == OK) {
 			skip_first = true;
-			char *ext          = nth_regex_substring(vb->cur_line_desc, 1);
-			char *max_line_str = nth_regex_substring(vb->cur_line_desc, 2);
-			char *regex        = nth_regex_substring(vb->cur_line_desc, 3);
-			if (!ext || !max_line_str || !regex) break;
+			if (nth_regex_substring_nonempty(vb->cur_line_desc, 1)) {
+				char * const ext          = nth_regex_substring(vb->cur_line_desc, 1);
+				char * const max_line_str = nth_regex_substring(vb->cur_line_desc, 2);
+				char * const regex        = nth_regex_substring(vb->cur_line_desc, 3);
+				if (!ext || !max_line_str || !regex) break;
 
-			errno = 0;
-			char *endptr;
-			int64_t max_line = strtoll(max_line_str, &endptr, 0);
-			if (max_line < 1 || errno) max_line = INT64_MAX;
+				errno = 0;
+				char *endptr;
+				int64_t max_line = strtoll(max_line_str, &endptr, 0);
+				if (max_line < 1 || errno) max_line = INT64_MAX;
 
-			int i;
-			for(i = 0; i <num_virt_ext; i++)
-				if (strcmp(virt_ext[i].ext, ext) == 0) {
-					free(virt_ext[i].ext);
-					free(virt_ext[i].regex);
-					break;
-				}
+				int i;
+				for(i = 0; i <num_virt_ext; i++)
+					if (strcmp(virt_ext[i].ext, ext) == 0) {
+						free(virt_ext[i].ext);
+						free(virt_ext[i].regex);
+						break;
+					}
 
-			virt_ext[i].ext = ext;
-			virt_ext[i].max_line = max_line;
-			virt_ext[i].regex = regex;
-			virt_ext[i].case_sensitive = *endptr != 'i';
-			free(max_line_str);
-			if (i == num_virt_ext) num_virt_ext++;
+				virt_ext[i].ext = ext;
+				virt_ext[i].max_line = max_line;
+				virt_ext[i].regex = regex;
+				virt_ext[i].case_sensitive = *endptr != 'i';
+				free(max_line_str);
+				if (i == num_virt_ext) num_virt_ext++;
+			}
+			else {
+				char * const ext = nth_regex_substring(vb->cur_line_desc, 4);
+				int i;
+				for(i = 0; i <num_extra_exts; i++)
+					if (strcmp(extra_ext[i], ext) == 0) break;
+				if (i == num_extra_exts) extra_ext[num_extra_exts++] = ext;
+				else free(ext);
+			}
 		}
 	}
 
@@ -340,6 +354,15 @@ void load_virtual_extensions() {
 	The returned string need not be free()'d. */
 
 static char *virtual_extension(buffer * const b) {
+	/* If the buffer filename has an extension, check that it's in extra_ext. */
+	const char * const filename_ext = extension(b->filename);
+	if (filename_ext != NULL) {
+		int i;
+		for(i = 0; i < num_extra_exts; i++)
+			if (strcmp(filename_ext, extra_ext[i]) == 0) break;
+		if (i == num_extra_exts) return NULL;
+	}
+
 	/* Reduce the maximum number of lines to scan so that no more
 	than REGEX_SCAN_LIMIT characters are regex'd. */
 	int64_t line_limit = 0, pos_limit = -1, len = 0;
