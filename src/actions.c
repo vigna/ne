@@ -896,7 +896,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 			/* if we couldn't find the string, ask user if they want to wrap */
 			if (error == NOT_FOUND) {
-				c = request_char(b, b->opt.search_back ? "Not found. Wrap search from bottom of file? (Yes/No)"
+                                c = request_char(b, b->opt.search_back ? "Not found. Wrap search from bottom of file? (Yes/No)"
 								       : "Not found. Wrap search to top of file? (Yes/No)",
 							 'y');
 				if (c == 'Y') {
@@ -1052,10 +1052,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		/* begin search-wrapping */
 		/* if we're not replacing text, we are trying to 'find next' */
 		if (! b->last_was_replace) {
-			/* We need to move one char to the right  (or left) to trigger the find next behavior */
-			b->opt.search_back ? char_left(b) : char_right(b);
-
-			error = (a == FIND_A ? find : find_regexp)(b, NULL, false);
+			error = (a == FIND_A ? find : find_regexp)(b, NULL, true);
 
 			/* if we couldn't find the string, ask user if they want to wrap */
 			if (error == NOT_FOUND) {
