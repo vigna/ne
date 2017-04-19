@@ -309,6 +309,7 @@ static void load_virt_ext(char *vname) {
 			}
 			else {
 				char * const ext = nth_regex_substring(vb->cur_line_desc, 4);
+				if (! ext) break;
 				int i;
 				for(i = 0; i < num_extra_exts; i++)
 					if (strcmp(extra_ext[i], ext) == 0) break;
@@ -328,7 +329,7 @@ static void load_virt_ext(char *vname) {
 
 void load_virtual_extensions() {
 	assert(virt_ext == NULL);
-	char *prefs_dir, *virt_name;
+	char *prefs_dir;
 
 	/* Try global directory first. */
 	if (prefs_dir = exists_gprefs_dir()) {
