@@ -21,7 +21,7 @@
 
 #include "ne.h"
 #include "support.h"
-
+#include <fnmatch.h>
 
 /* These are the names of ne's autoprefs directory. */
 
@@ -274,7 +274,7 @@ static void load_virt_ext(char *vname) {
 	vb->opt.case_search = 0;
 
 	bool skip_first = false;
-	vb->find_string = "^\\s*(\\w+)\\s+([0-9]+i?)\\s+(.+[^ \\t])\\s*$|^\\.(\\w+\\*?|\\*)\\s*$";
+	vb->find_string = "^\\s*(\\w+)\\s+([0-9]+i?)\\s+(.+[^ \\t])\\s*$|^\\.([^ \\t/]+)\\s*$";
 	vb->find_string_changed = 1;
 
 	if ((virt_ext = realloc(virt_ext, (num_virt_ext + vb->num_lines) * sizeof *virt_ext))
@@ -359,13 +359,8 @@ static char *virtual_extension(buffer * const b) {
 	const char * const filename_ext = extension(b->filename);
 	if (filename_ext != NULL) {
 		int i;
-		for(i = 0; i < num_extra_exts; i++) {
-			const int length = strlen(extra_ext[i]);
-			if (extra_ext[i][length-1] == '*') {
-				if (strncmp(filename_ext, extra_ext[i], length -1) == 0) break;
-			}
-			else if (strcmp(filename_ext, extra_ext[i]) == 0) break;
-		}
+		for(i = 0; i < num_extra_exts; i++)
+			if (fnmatch(extra_ext[i], filename_ext, 0) == 0) break;
 		if (i == num_extra_exts) return NULL;
 	}
 
