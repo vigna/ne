@@ -889,33 +889,10 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			free(b->find_string);
 			b->find_string = p;
 			b->find_string_changed = 1;
-
-			/* begin search-wrapping */
-                        /* We will replace the "Not found." message with the wrapping functionality. */
-                        error = (a == FIND_A ? find : find_regexp)(b, NULL, false);
-
-			/* if we couldn't find the string, ask user if they want to wrap */
-			if (error == NOT_FOUND) {
-                                c = request_char(b, b->opt.search_back ? "Not found. Wrap search from bottom of file? (Yes/No)"
-								       : "Not found. Wrap search to top of file? (Yes/No)",
-							 'y');
-				if (c == 'Y') {
-					if (! b->opt.search_back) 	/* if we're searching forward, move the cursor to the top of the file */
-						move_to_sof(b);
-                                        else 					/* if we're searching backward, move the cursor to the bottom of the file */
-                                                move_to_bof(b);
-
-					/* search again and maybe it'll really be "not found" this time */
-                                        print_error(error = (a == FIND_A ? find : find_regexp)(b, NULL, false));
-                                }
-			}
-                        else
-                                print_error(error);
-			/* end search-wrapping */
+			print_error(error = (a == FIND_A ? find : find_regexp)(b, NULL, false));
 			b->last_was_replace = 0;
 			b->last_was_regexp = (a == FINDREGEXP_A);
 		}
-
 		return error ? ERROR : 0;
 
 	case REPLACE_A:
@@ -1048,79 +1025,49 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 		error = OK;
 		int64_t num_replace = 0;
+		start_undo_chain(b);
+		for (int64_t i = 0; i < c && !stop &&
+				    !(error = (b->last_was_regexp ? find_regexp : find)(b, NULL,
+											!b->last_was_replace)); i++)
+			if (b->last_was_replace)
+			{
+				const int64_t cur_char = b->cur_char;
+				const int cur_x = b->cur_x;
 
-		/* begin search-wrapping */
-		/* if we're not replacing text, we are trying to 'find next' */
-		if (! b->last_was_replace) {
-			error = (a == FIND_A ? find : find_regexp)(b, NULL, true);
+				if (b->last_was_regexp) error = replace_regexp(b, b->replace_string);
+				else error = replace(b, strlen(b->find_string), b->replace_string);
 
-			/* if we couldn't find the string, ask user if they want to wrap */
-			if (error == NOT_FOUND) {
-				c = request_char(b, b->opt.search_back
-						    ? "Not found. Wrap search from bottom of file? (Yes/No)"
-						    : "Not found. Wrap search to top of file? (Yes/No)",
-						 'Y');
-				if (c == 'Y') {
-					if (!b->opt.search_back) 	/* if we're searching forward, move the cursor to the top of the file */
-						move_to_sof(b);
-					else					/* if we're searching backward, move the cursor to the bottom of the file */
-						move_to_bof(b);
-
-					/* search again and maybe it'll really be "not found" this time */
-					print_error(error = (a == FIND_A ? find : find_regexp)(b, NULL, false));
-				}
-			}
-			else
-				print_error(error);
-			b->last_was_replace = 0;
-			b->last_was_regexp = (a == FINDREGEXP_A);
-		}
-		else {
-		/* end search-wrapping */
-
-			start_undo_chain(b);
-			for (int64_t i = 0; i < c && !stop &&
-					    !(error = (b->last_was_regexp ? find_regexp : find)(b, NULL,
-												!b->last_was_replace)); i++)
-				if (b->last_was_replace)
+				if (!error)
 				{
-					const int64_t cur_char = b->cur_char;
-					const int cur_x = b->cur_x;
-
-					if (b->last_was_regexp) error = replace_regexp(b, b->replace_string);
-					else error = replace(b, strlen(b->find_string), b->replace_string);
-
-					if (!error)
+					if (cur_char < b->attr_len) b->attr_len = cur_char;
+					update_line(b, b->cur_line_desc, b->cur_y, cur_x, false);
+					if (b->syn)
 					{
-						if (cur_char < b->attr_len) b->attr_len = cur_char;
-						update_line(b, b->cur_line_desc, b->cur_y, cur_x, false);
-						if (b->syn)
-						{
-							need_attr_update = true;
-							update_syntax_states(b, b->cur_y, b->cur_line_desc, NULL);
-						}
-
-						num_replace++;
-
-						if (last_replace_empty_match)
-							if (b->opt.search_back) error = char_left(cur_buffer);
-							else error = char_right(cur_buffer);
+						need_attr_update = true;
+						update_syntax_states(b, b->cur_y, b->cur_line_desc, NULL);
 					}
 
-					if (error) break;
+					num_replace++;
+
+					if (last_replace_empty_match)
+						if (b->opt.search_back) error = char_left(cur_buffer);
+						else error = char_right(cur_buffer);
 				}
 
-			end_undo_chain(b);
-			if (num_replace)
-			{
-				snprintf(msg, MAX_MESSAGE_SIZE, "%"
-				PRId64
-				" replacement%s made.", num_replace, num_replace > 1 ? "s" : "");
-				print_message(msg);
+				if (error) break;
 			}
-			if (stop) error = STOPPED;
-			if (error == STOPPED) reset_window();
+
+		end_undo_chain(b);
+		if (num_replace)
+		{
+			snprintf(msg, MAX_MESSAGE_SIZE, "%"
+			PRId64
+			" replacement%s made.", num_replace, num_replace > 1 ? "s" : "");
+			print_message(msg);
 		}
+		if (stop) error = STOPPED;
+		if (error == STOPPED) reset_window();
+
 		return error != NOT_FOUND ? error : 0;
 
 	case MATCHBRACKET_A:

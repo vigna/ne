@@ -81,7 +81,10 @@ const unsigned char ascii_up_case[256] = {
 	0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6, 0xF7, 0xF8, 0xF9, 0xFA, 0xFB, 0xFC, 0xFD, 0xFE, 0xFF
 };
 
-
+/* A boolean to indicate if we are in a wrapped-search scenario. The idea
+  is that we need guarantee we only wrap one time to the beginning  (or end) of a file
+  when we wrap-search */
+bool search_wrapped = false;
 
 /* Performs a search for the given pattern with a simplified Boyer-Moore
    algorithm starting at the given position, in the given direction, skipping a
@@ -199,7 +202,43 @@ int find(buffer * const b, const char *pattern, const bool skip_first) {
 		}
 	}
 
-	return stop ? STOPPED : NOT_FOUND;
+	/* begin wrapping functionality */
+	if (stop) return STOPPED;
+
+	/* We're in the NOT_FOUND scenario. Have we already wrapped? If so, return to caller. */
+	if (search_wrapped)
+	{
+		search_wrapped = false;
+		return NOT_FOUND;
+	}
+	else
+	{
+		/* We are in the first pass through the file. Ask the user if they want to wrap */
+		char req_char = request_char(b, b->opt.search_back
+						? "Not found. Wrap search from bottom of file? (Wrap/No)"
+						: "Not found. Wrap search to top of file? (Wrap/No)",
+					     'W');
+		if (req_char == 'W')
+		{
+			if (!b->opt.search_back) 	/* if we're searching forward, move the cursor to the top of the file */
+				move_to_sof(b);
+			else					/* if we're searching backward, move the cursor to the bottom of the file */
+				move_to_bof(b);
+		}
+		else
+		{
+			/* user does not want to wrap */
+			return NOT_FOUND;
+		}
+		/* search again and maybe it'll really be "not found" this time */
+		search_wrapped = true;
+		int find_result = find(b, pattern, skip_first);
+
+		/* can't return just yet b/c we need to set search_wrapped. */
+		search_wrapped = false;
+		return find_result;
+	}
+	/* end wrapping functionality */
 }
 
 
