@@ -889,7 +889,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			free(b->find_string);
 			b->find_string = p;
 			b->find_string_changed = 1;
-			print_error(error = (a == FIND_A ? find : find_regexp)(b, NULL, false));
+			print_error(error = (a == FIND_A ? find : find_regexp)(b, NULL, false, a));
 			b->last_was_replace = 0;
 			b->last_was_regexp = (a == FINDREGEXP_A);
 		}
@@ -940,7 +940,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 				if (a == REPLACEALL_A) start_undo_chain(b);
 
 				while(!stop &&
-						!(error = (b->last_was_regexp ? find_regexp : find)(b, NULL, !first_search && a != REPLACEALL_A && c != 'A' && c != 'Y'))) {
+						!(error = (b->last_was_regexp ? find_regexp : find)(b, NULL, !first_search && a != REPLACEALL_A && c != 'A' && c != 'Y', a))) {
 
 					if (c != 'A' && a != REPLACEALL_A && a != REPLACEONCE_A) {
 						refresh_window(b);
@@ -1028,7 +1028,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		start_undo_chain(b);
 		for (int64_t i = 0; i < c && !stop &&
 				    !(error = (b->last_was_regexp ? find_regexp : find)(b, NULL,
-											!b->last_was_replace)); i++)
+											!b->last_was_replace, a)); i++)
 			if (b->last_was_replace)
 			{
 				const int64_t cur_char = b->cur_char;

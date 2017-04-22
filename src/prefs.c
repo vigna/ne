@@ -270,7 +270,7 @@ static char *determine_virtual_extension( buffer * const b, char *vname, buffer 
 			int skip_first = false;
 			vb->find_string = str_dup( "^\\s*(\\w+)\\s+([0-9]+i?)\\s+(.+[^ \\t])\\s*$" );
 			vb->find_string_changed = 1;
-			while ( earliest_found_line > 0 && find_regexp(vb,NULL,skip_first) == OK && !stop) {
+			while ( earliest_found_line > 0 && find_regexp(vb,NULL,skip_first, FIND_A) == OK && !stop) {
 				skip_first = true;
 				char *ext         = nth_regex_substring(vb->cur_line_desc, 1);
 				char *maxline_str = nth_regex_substring(vb->cur_line_desc, 2);
@@ -295,7 +295,7 @@ static char *determine_virtual_extension( buffer * const b, char *vname, buffer 
 					b->find_string_changed = 1;
 					b->find_string = regex;
 					regex = NULL;
-					while (find_regexp(b, NULL, true) == OK) {
+					while (find_regexp(b, NULL, true, FIND_A) == OK) {
 						minline = b->cur_line;
 						D(fprintf(stderr,"[%d] --- found match for '%s' on line <%d>\n",__LINE__, ext, minline);)
 						if (minline == 0) break;

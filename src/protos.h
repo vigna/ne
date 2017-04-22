@@ -241,9 +241,9 @@ void  req_list_finalize(req_list * const rl);
 
 
 /* search.c */
-int  find(buffer *b, const char *pattern, const bool skip_first);
+int  find(buffer *b, const char *pattern, const bool skip_first, action a);
 int  replace(buffer *b, int n, const char *string);
-int  find_regexp(buffer *b, const char *regex, const bool skip_first);
+int  find_regexp(buffer *b, const char *regex, const bool skip_first, action a);
 int  replace_regexp(buffer *b, const char *string);
 char *nth_regex_substring( const line_desc *ld, int i);
 
