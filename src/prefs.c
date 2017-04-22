@@ -37,10 +37,15 @@ be enough strange to avoid clashes with macros. */
 #define VIRTUAL_EXT_NAME    ".extensions"
 #define VIRTUAL_EXT_NAME_G   "extensions"
 
+/* The maximum number of characters scanned during a regex search for
+virtual extensions. */
+
+#define REGEX_SCAN_LIMIT (100000)
+
 /* We suppose a configuration file won't be bigger than this. Having it
 bigger just causes a reallocation. */
 
-#define PREF_FILE_SIZE_GUESS 256
+#define PREF_FILE_SIZE_GUESS (256)
 
 /* If we're saving default prefs, we include global prefs
    that are not buffer specific. Likewise, if we're saving
@@ -260,37 +265,64 @@ static char *determine_virtual_extension( buffer * const b, char *vname, buffer 
 		vb->opt.case_search = 0;
 	}
 	if (vb) {
-		if (! buffer_file_modified(vb, vname) || load_file_in_buffer(vb, vname) == OK ) {
+		if ((! buffer_file_modified(vb, vname) || load_file_in_buffer(vb, vname) == OK) && vb->allocated_chars) {
 			goto_line_pos(vb, 0, 0);
-			int found = 0;
-			int stop = false;
+			bool skip_first = false;
+			vb->find_string = str_dup( "^\\s*(\\w+)\\s+([0-9]+i?)\\s+(.+[^ \\t])\\s*$" );
+			vb->find_string_changed = 1;
+
+			/* Find maximum number of lines to scan by spec. */
+			int64_t spec_limit = 0;
+			while (find_regexp(vb, NULL, skip_first) == OK) {
+				skip_first = true;
+				char * const max_line_str = nth_regex_substring(vb->cur_line_desc, 2);
+				if (max_line_str) {
+					const int64_t line = strtoll(max_line_str, NULL, 0);
+					if (line == 0) spec_limit = INT64_MAX;
+					else spec_limit = max(spec_limit, line);
+				}
+			}
+
+			/* Reduce the maximum number of lines to scan so that no more
+			than REGEX_SCAN_LIMIT characters are regex'd. */
+			int64_t line_limit = 0, pos_limit = -1, len = 0;
+			for(line_desc *ld = (line_desc *)b->line_desc_list.head; ld->ld_node.next && line_limit < spec_limit;
+					ld = (line_desc *)ld->ld_node.next, line_limit++)
+				if ((len += ld->line_len + 1) > REGEX_SCAN_LIMIT) {
+					line_limit++;
+					pos_limit = REGEX_SCAN_LIMIT - (len - ld->line_len - 1);
+					break;
+				}
+
 			/* Examine each line in vb. Most functions in navigation.c expect to display
 			   the buffer we're navigating through, but we don't want to show this buffer! */
 			int64_t earliest_found_line = INT64_MAX;
-			int skip_first = false;
-			vb->find_string = str_dup( "^\\s*(\\w+)\\s+([0-9]+i?)\\s+(.+[^ \\t])\\s*$" );
-			vb->find_string_changed = 1;
-			while ( earliest_found_line > 0 && find_regexp(vb,NULL,skip_first, FIND_A) == OK && !stop) {
+			goto_line_pos(vb, 0, 0);
+			int found = 0;
+			skip_first = false;
+
+			while (earliest_found_line > 0 && find_regexp(vb,NULL,skip_first,FIND_A) == OK && !stop) {
 				skip_first = true;
 				char *ext         = nth_regex_substring(vb->cur_line_desc, 1);
-				char *maxline_str = nth_regex_substring(vb->cur_line_desc, 2);
+				char *max_line_str = nth_regex_substring(vb->cur_line_desc, 2);
 				char *regex       = nth_regex_substring(vb->cur_line_desc, 3);
-				D(fprintf(stderr,"[%d] Checking for <%s> <%s> <%s>\n",__LINE__, ext, maxline_str, regex);)
-				if (ext && maxline_str && regex ) {
+				D(fprintf(stderr,"[%d] Checking for <%s> <%s> <%s>\n",__LINE__, ext, max_line_str, regex);)
+				if (ext && max_line_str && regex ) {
 					errno = 0;
 					char *endptr;
-					int64_t maxline = strtoll(maxline_str, &endptr, 0);
-					if (maxline < 1 || errno) maxline = UINT64_MAX;
-					int minline = -1; /* maxline is 1-based, but internal line numbers (minline) are 0-based. */
-					/* Search backwards in b from maxline[0] for the first occurance of regex. */
+					int64_t max_line = strtoll(max_line_str, &endptr, 0);
+					if (max_line < 1 || errno) max_line = INT64_MAX;
+					max_line = min(line_limit, max_line);
+					int minline = -1; /* max_line is 1-based, but internal line numbers (minline) are 0-based. */
+					/* Search backwards in b from max_line for the first occurance of regex. */
 					int64_t b_cur_line    = b->cur_line;
 					int64_t b_cur_pos     = b->cur_pos;
 					int     b_search_back = b->opt.search_back;
 					int     b_case_search = b->opt.case_search;
 					b->opt.search_back = true;
 					b->opt.case_search = (*endptr == 'i') ? 0 : 1;
-					goto_line(b, max(0,min(b->num_lines-1,maxline-1)));
-					goto_pos(b, b->cur_line_desc->line_len);
+					goto_line(b, max_line - 1);
+					goto_pos(b, max_line == line_limit && pos_limit != -1 ? pos_limit : b->cur_line_desc->line_len);
 					free(b->find_string);
 					b->find_string_changed = 1;
 					b->find_string = regex;
@@ -313,12 +345,11 @@ static char *determine_virtual_extension( buffer * const b, char *vname, buffer 
 					b->opt.search_back = b_search_back;
 					b->opt.case_search = b_case_search;
 				}
-				if (maxline_str) free(maxline_str);
+				if (max_line_str) free(max_line_str);
 				if (ext) free(ext);
 				if (regex) free(regex);
 			}
 		}
-		/* free_buffer(vb); Not any more, because we're caching in *vbp. */
 	}
 	return virt_ext;
 }
@@ -334,7 +365,7 @@ static char *virtual_extension(buffer * const b) {
 	char *virt_ext = NULL;
 	char *virt_name, *prefs_dir;
 
-	/* Try the user's ~/.ne/.extenstion first. We only check the global config if the
+	/* Try the user's ~/.ne/.extensions first. We only check the global config if the
 	   users local one doesn't determine an extension. */
 	if (prefs_dir = exists_prefs_dir()) {
 		if (virt_name = malloc(strlen(VIRTUAL_EXT_NAME) + strlen(prefs_dir) + 2)) {
