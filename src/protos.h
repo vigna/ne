@@ -214,6 +214,7 @@ int   load_prefs(buffer *b, const char *name);
 int   load_syntax_by_name(buffer *b, const char *name);
 int   load_auto_prefs(buffer *b, const char *name);
 int   save_auto_prefs(buffer *b, const char *name);
+void  load_virtual_extensions();
 int   pop_prefs(buffer *b);
 int   push_prefs(buffer *b);
 
@@ -245,7 +246,8 @@ int  find(buffer *b, const char *pattern, const bool skip_first, bool wrap_once)
 int  replace(buffer *b, int n, const char *string);
 int  find_regexp(buffer *b, const char *regex, const bool skip_first, bool wrap_once);
 int  replace_regexp(buffer *b, const char *string);
-char *nth_regex_substring( const line_desc *ld, int i);
+char *nth_regex_substring(const line_desc *ld, int i);
+bool nth_regex_substring_nonempty(const line_desc *ld, int i);
 
 /* signals.c */
 void stop_ne(void);

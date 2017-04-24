@@ -322,6 +322,7 @@ int main(int argc, char **argv) {
 
 	bool first_file = true;
 
+	load_virtual_extensions();
 	load_auto_prefs(cur_buffer, startup_prefs_name);
 
 	buffer *stdin_buffer = NULL;

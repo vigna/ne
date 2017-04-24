@@ -813,7 +813,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		if (c >= NUM_KEYS) c = -1;
 		if (c < 0 ) {
 			print_message(info_msg[PRESS_A_KEY]);
-			c = get_key_code();
+			do c = get_key_code(); while(c == INVALID_CHAR || c > 0xFF || CHAR_CLASS(c) == IGNORE);
 		}
 		col = (c < 0) ? -c-1 : c;
 		snprintf(msg, MAX_MESSAGE_SIZE, "Key Code: 0x%02x,  Input Class: %s,  Assigned Command: %s", (int)col, input_class_names[CHAR_CLASS(c)],

@@ -21,7 +21,7 @@
 
 #include "ne.h"
 #include "support.h"
-
+#include <fnmatch.h>
 
 /* These are the names of ne's autoprefs directory. */
 
@@ -247,142 +247,177 @@ int load_syntax_by_name(buffer * const b, const char * const name) {
 	return NO_SYNTAX_FOR_EXT;
 }
 
+/* This data structure holds information about virtual extensions. */
 
-/* "virtual extension" is all about preferences and syntax for files which
-   have no extension. We use a "virtual extensions" file VIRTUAL_EXT_NAME
-   (first local, then maybe global) to determine what auto_prefs and
-   syntax to load based on a buffer's contents. */
+static struct {
+	int max_line;
+	char *ext;
+	char *regex;
+	bool case_sensitive;
+} *virt_ext;
 
-static char *determine_virtual_extension( buffer * const b, char *vname, buffer **vbp) {
-	char *virt_ext = NULL;
-	buffer * vb = *vbp;
+static int num_virt_ext;
+static int64_t max_max_line;
+
+static char **extra_ext;
+static int64_t num_extra_exts;
+
+static void load_virt_ext(char *vname) {
 	/* Our find_regexp() is geared to work on buffers rather than streams, so we'll create a
 	   stand-alone buffer. This also buys us proper handling of encodings. */
-	if (vb == NULL && (*vbp = vb = alloc_buffer(NULL))) {
-		clear_buffer(vb);
-		vb->opt.do_undo = 0;
-		vb->opt.auto_prefs = 0;
-		vb->opt.case_search = 0;
-	}
-	if (vb) {
-		if ((! buffer_file_modified(vb, vname) || load_file_in_buffer(vb, vname) == OK) && vb->allocated_chars) {
-			goto_line_pos(vb, 0, 0);
-			bool skip_first = false;
-			vb->find_string = str_dup( "^\\s*(\\w+)\\s+([0-9]+i?)\\s+(.+[^ \\t])\\s*$" );
-			vb->find_string_changed = 1;
+	buffer * vb = alloc_buffer(NULL);
+	if (vb == NULL) return;
+	clear_buffer(vb);
+	if (load_file_in_buffer(vb, vname) != OK) return;
+	vb->opt.do_undo = 0;
+	vb->opt.auto_prefs = 0;
+	vb->opt.case_search = 0;
 
-			/* Find maximum number of lines to scan by spec. */
-			int64_t spec_limit = 0;
-			while (find_regexp(vb, NULL, skip_first, false) == OK) {
-				skip_first = true;
+	bool skip_first = false;
+	vb->find_string = "^\\s*(\\w+)\\s+([0-9]+i?)\\s+(.+[^ \\t])\\s*$|^\\.([^ \\t/]+)\\s*$";
+	vb->find_string_changed = 1;
+
+	if ((virt_ext = realloc(virt_ext, (num_virt_ext + vb->num_lines) * sizeof *virt_ext))
+			&& (extra_ext = realloc(extra_ext, (num_extra_exts + vb->num_lines) * sizeof *extra_ext))) {
+		while (find_regexp(vb, NULL, skip_first, false) == OK) {
+			skip_first = true;
+			if (nth_regex_substring_nonempty(vb->cur_line_desc, 1)) {
+				char * const ext          = nth_regex_substring(vb->cur_line_desc, 1);
 				char * const max_line_str = nth_regex_substring(vb->cur_line_desc, 2);
-				if (max_line_str) {
-					const int64_t line = strtoll(max_line_str, NULL, 0);
-					if (line == 0) spec_limit = INT64_MAX;
-					else spec_limit = max(spec_limit, line);
-				}
+				char * const regex        = nth_regex_substring(vb->cur_line_desc, 3);
+				if (!ext || !max_line_str || !regex) break;
+
+				errno = 0;
+				char *endptr;
+				int64_t max_line = strtoll(max_line_str, &endptr, 0);
+				if (max_line < 1 || errno) max_line = INT64_MAX;
+
+				int i;
+				for(i = 0; i < num_virt_ext; i++)
+					if (strcmp(virt_ext[i].ext, ext) == 0) {
+						free(virt_ext[i].ext);
+						free(virt_ext[i].regex);
+						break;
+					}
+
+				virt_ext[i].ext = ext;
+				virt_ext[i].max_line = max_line;
+				virt_ext[i].regex = regex;
+				virt_ext[i].case_sensitive = *endptr != 'i';
+				free(max_line_str);
+				if (i == num_virt_ext) num_virt_ext++;
 			}
-
-			/* Reduce the maximum number of lines to scan so that no more
-			than REGEX_SCAN_LIMIT characters are regex'd. */
-			int64_t line_limit = 0, pos_limit = -1, len = 0;
-			for(line_desc *ld = (line_desc *)b->line_desc_list.head; ld->ld_node.next && line_limit < spec_limit;
-					ld = (line_desc *)ld->ld_node.next, line_limit++)
-				if ((len += ld->line_len + 1) > REGEX_SCAN_LIMIT) {
-					line_limit++;
-					pos_limit = REGEX_SCAN_LIMIT - (len - ld->line_len - 1);
-					break;
-				}
-
-			/* Examine each line in vb. Most functions in navigation.c expect to display
-			   the buffer we're navigating through, but we don't want to show this buffer! */
-			int64_t earliest_found_line = INT64_MAX;
-			goto_line_pos(vb, 0, 0);
-			int found = 0;
-			skip_first = false;
-
-			while (earliest_found_line > 0 && find_regexp(vb,NULL,skip_first,false) == OK && !stop) {
-				skip_first = true;
-				char *ext         = nth_regex_substring(vb->cur_line_desc, 1);
-				char *max_line_str = nth_regex_substring(vb->cur_line_desc, 2);
-				char *regex       = nth_regex_substring(vb->cur_line_desc, 3);
-				D(fprintf(stderr,"[%d] Checking for <%s> <%s> <%s>\n",__LINE__, ext, max_line_str, regex);)
-				if (ext && max_line_str && regex ) {
-					errno = 0;
-					char *endptr;
-					int64_t max_line = strtoll(max_line_str, &endptr, 0);
-					if (max_line < 1 || errno) max_line = INT64_MAX;
-					max_line = min(line_limit, max_line);
-					int minline = -1; /* max_line is 1-based, but internal line numbers (minline) are 0-based. */
-					/* Search backwards in b from max_line for the first occurance of regex. */
-					int64_t b_cur_line    = b->cur_line;
-					int64_t b_cur_pos     = b->cur_pos;
-					int     b_search_back = b->opt.search_back;
-					int     b_case_search = b->opt.case_search;
-					b->opt.search_back = true;
-					b->opt.case_search = (*endptr == 'i') ? 0 : 1;
-					goto_line(b, max_line - 1);
-					goto_pos(b, max_line == line_limit && pos_limit != -1 ? pos_limit : b->cur_line_desc->line_len);
-					free(b->find_string);
-					b->find_string_changed = 1;
-					b->find_string = regex;
-					regex = NULL;
-					while (find_regexp(b, NULL, true, false) == OK) {
-						minline = b->cur_line;
-						D(fprintf(stderr,"[%d] --- found match for '%s' on line <%d>\n",__LINE__, ext, minline);)
-						if (minline == 0) break;
-					}
-					if (minline > -1) {
-						if (minline < earliest_found_line) {
-							found++;
-							earliest_found_line = minline;
-							if (virt_ext) free(virt_ext);
-							virt_ext = ext;
-							ext = NULL;
-						}
-					}
-					goto_line_pos(b, b_cur_line, b_cur_pos);
-					b->opt.search_back = b_search_back;
-					b->opt.case_search = b_case_search;
-				}
-				if (max_line_str) free(max_line_str);
-				if (ext) free(ext);
-				if (regex) free(regex);
+			else {
+				char * const ext = nth_regex_substring(vb->cur_line_desc, 4);
+				if (! ext) break;
+				int i;
+				for(i = 0; i < num_extra_exts; i++)
+					if (strcmp(extra_ext[i], ext) == 0) break;
+				if (i == num_extra_exts) extra_ext[num_extra_exts++] = ext;
+				else free(ext);
 			}
 		}
 	}
-	return virt_ext;
+
+	vb->find_string = NULL; /* Or free_buffer() would free() it. */
+	free_buffer(vb);
 }
+
+/* Loads and stores internally the virtual extensions. First we source the
+   global extensions file, and then the local one. Local specifications
+   override global ones. */
+
+void load_virtual_extensions() {
+	assert(virt_ext == NULL);
+	char *prefs_dir;
+
+	/* Try global directory first. */
+	if (prefs_dir = exists_gprefs_dir()) {
+		char virt_name[strlen(VIRTUAL_EXT_NAME_G) + strlen(prefs_dir) + 1];
+		strcat(strcpy(virt_name, prefs_dir), VIRTUAL_EXT_NAME_G);
+		load_virt_ext(virt_name);
+	}
+
+	/* Then try the user's ~/.ne/.extensions, possibly overriding global settings. */
+	if (prefs_dir = exists_prefs_dir()) {
+		char virt_name[strlen(VIRTUAL_EXT_NAME) + strlen(prefs_dir) + 1];
+		strcat(strcpy(virt_name, prefs_dir), VIRTUAL_EXT_NAME);
+		load_virt_ext(virt_name);
+	}
+
+	for(int i = 0; i < num_virt_ext; i++)
+		max_max_line = max(max_max_line, virt_ext[i].max_line);
+}
+
 
 /* virtual_extension() returns an extension determined by a buffers contents and
    the user's VIRTUAL_EXT_NAME file or possibly the global VIRTUAL_EXT_NAME file.
-   It's a pointer to a string that the caller must eventually free(). */
+	The returned string need not be free()'d. */
 
 static char *virtual_extension(buffer * const b) {
+	if (virt_ext == NULL) return NULL;
+	/* If the buffer filename has an extension, check that it's in extra_ext. */
+	const char * const filename_ext = extension(b->filename);
+	if (filename_ext != NULL) {
+		int i;
+		for(i = 0; i < num_extra_exts; i++)
+			if (fnmatch(extra_ext[i], filename_ext, 0) == 0) break;
+		if (i == num_extra_exts) return NULL;
+	}
 
-	static buffer *g_extensions_buf, *u_extensions_buf;
-	int error = OK;
-	char *virt_ext = NULL;
-	char *virt_name, *prefs_dir;
+	/* Reduce the maximum number of lines to scan so that no more
+	than REGEX_SCAN_LIMIT characters are regex'd. */
+	int64_t line_limit = 0, pos_limit = -1, len = 0;
+	for(line_desc *ld = (line_desc *)b->line_desc_list.head; ld->ld_node.next && line_limit < max_max_line;
+		ld = (line_desc *)ld->ld_node.next, line_limit++)
+		if ((len += ld->line_len + 1) > REGEX_SCAN_LIMIT) {
+			line_limit++;
+			pos_limit = REGEX_SCAN_LIMIT - (len - ld->line_len - 1);
+			break;
+		}
 
-	/* Try the user's ~/.ne/.extensions first. We only check the global config if the
-	   users local one doesn't determine an extension. */
-	if (prefs_dir = exists_prefs_dir()) {
-		if (virt_name = malloc(strlen(VIRTUAL_EXT_NAME) + strlen(prefs_dir) + 2)) {
-			strcat(strcpy(virt_name, prefs_dir), VIRTUAL_EXT_NAME);
-			virt_ext = determine_virtual_extension(b, virt_name, &u_extensions_buf);
-			free(virt_name);
+	int64_t earliest_found_line = INT64_MAX;
+	char *ext = NULL;
+
+	const int64_t b_cur_line    = b->cur_line;
+	const int64_t b_cur_pos     = b->cur_pos;
+	const int     b_search_back = b->opt.search_back;
+	const int     b_case_search = b->opt.case_search;
+	char * const find_string    = b->find_string;
+
+	b->opt.search_back = true;
+
+	for(int i = 0; earliest_found_line > 0 && i < num_virt_ext && !stop; i++) {
+		int64_t min_line = -1; /* max_line is 1-based, but internal line numbers (min_line) are 0-based. */
+		/* Search backwards in b from max_line for the first occurance of regex. */
+		b->opt.case_search = virt_ext[i].case_sensitive;
+		const int64_t max_line = min(virt_ext[i].max_line, line_limit);
+		goto_line(b, max_line - 1);
+		goto_pos(b, max_line == line_limit && pos_limit != -1 ? pos_limit : b->cur_line_desc->line_len);
+		b->find_string = virt_ext[i].regex;
+		b->find_string_changed = 1;
+		while (find_regexp(b, NULL, true, false) == OK) {
+			min_line = b->cur_line;
+			D(fprintf(stderr,"[%d] --- found match for '%s' on line <%d>\n",__LINE__, ext, min_line);)
+			if (min_line == 0) break;
+		}
+		if (min_line > -1) {
+			if (min_line < earliest_found_line) {
+				earliest_found_line = min_line;
+				ext = virt_ext[i].ext;
+			}
 		}
 	}
-	if (virt_ext == NULL && (prefs_dir = exists_gprefs_dir())) {
-		if (virt_name = malloc(strlen(VIRTUAL_EXT_NAME_G) + strlen(prefs_dir) + 2)) {
-			strcat(strcpy(virt_name, prefs_dir), VIRTUAL_EXT_NAME_G);
-			virt_ext = determine_virtual_extension(b, virt_name, &g_extensions_buf);
-			free(virt_name);
-		}
-	}
-	return virt_ext;
+
+	goto_line_pos(b, b_cur_line, b_cur_pos);
+	b->opt.search_back = b_search_back;
+	b->opt.case_search = b_case_search;
+	b->find_string = find_string;
+	b->find_string_changed = 1;
+
+	return ext;
 }
+
 
 
 /* Performs an automatic preferences operation, which can be loading or saving,
@@ -392,13 +427,9 @@ static char *virtual_extension(buffer * const b) {
    returned.  */
 
 static int do_auto_prefs(buffer *b, const char * ext, int (prefs_func)(buffer *, const char *)) {
-	/* Track virtual_extension vext separate from ext b/c vext must be free()'d. */
-	char *vext = NULL;
 	if (!b) return ERROR;
-
 	assert_buffer(b);
-
-	if (!ext && !(ext = vext = virtual_extension(b)) && !(ext = extension(b->filename))) return HAS_NO_EXTENSION;
+	if (!ext && !(ext = virtual_extension(b)) && !(ext = extension(b->filename))) return HAS_NO_EXTENSION;
 
 	/* Try global autoprefs -- We always load these before ~/.ne autoprefs.
 	   That way the user can override whatever he wants, but anything he
@@ -428,8 +459,6 @@ static int do_auto_prefs(buffer *b, const char * ext, int (prefs_func)(buffer *,
 	else error = CANT_FIND_PREFS_DIR;
 
 	if (do_syntax && !b->syn) load_syntax_by_name(b, ext);
-
-	if (vext) free(vext);
 
 	return error;
 }
