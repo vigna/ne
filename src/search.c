@@ -81,11 +81,6 @@ const unsigned char ascii_up_case[256] = {
 	0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6, 0xF7, 0xF8, 0xF9, 0xFA, 0xFB, 0xFC, 0xFD, 0xFE, 0xFF
 };
 
-/* A boolean to indicate if we previously did not find what we were looking for. The idea
-  is that we need guarantee we only wrap one time to the beginning  (or end) of a file
-  when we wrap-search */
-static bool previously_not_found = false;
-
 /* Performs a search for the given pattern with a simplified Boyer-Moore
    algorithm starting at the given position, in the given direction, skipping a
    possible match at the current cursor position if skip_first is true. The
@@ -96,21 +91,7 @@ static bool previously_not_found = false;
    b->find_string. The cursor is moved on the occurrence position if a match is
    found. */
 
-int find(buffer * const b, const char *pattern, const bool skip_first, action a) {
-
-        /* Check for need to wrap: have we previously NOT_FOUND and are we in REPEATLAST mode? If so, wrap! */
-        int orig_pos, orig_line;
-        if (previously_not_found && REPEATLAST_A == a)
-        {
-                /* for wrapping, push this cursor location, then pop if not found */
-                orig_pos = b->cur_pos;
-                orig_line = b->cur_line;
-
-                if (!b->opt.search_back) 	/* if we're searching forward, move the cursor to the top of the file */
-                        move_to_sof(b);
-                else					/* if we're searching backward, move the cursor to the bottom of the file */
-                        move_to_bof(b);
-        }
+int find(buffer * const b, const char *pattern, const bool skip_first, bool wrap_once) {
 
 	bool recompile_string;
 
@@ -135,7 +116,6 @@ int find(buffer * const b, const char *pattern, const bool skip_first, action a)
 	line_desc *ld = b->cur_line_desc;
 	int64_t y = b->cur_line;
 	stop = false;
-
 
 	if (! b->opt.search_back) {
 
@@ -165,7 +145,6 @@ int find(buffer * const b, const char *pattern, const bool skip_first, action a)
 							}
 						if (i == m) {
 							goto_line_pos(b, y, (p - ld->line) - m + 1);
-							previously_not_found = false;
                                                         return OK;
 						}
 					}
@@ -206,7 +185,6 @@ int find(buffer * const b, const char *pattern, const bool skip_first, action a)
 							}
 						if (i == m) {
 							goto_line_pos(b, y, p - ld->line);
-                                                        previously_not_found = false;
 							return OK;
 						}
 					}
@@ -219,27 +197,34 @@ int find(buffer * const b, const char *pattern, const bool skip_first, action a)
 		}
 	}
 
-        if (stop) return STOPPED;
+	if (stop) return STOPPED;
 
-	/* Deal with wrapping states. We're in the NOT_FOUND scenario. Have we previously NOT_FOUND? */
-	if (previously_not_found)
+	/* We're in the NOT_FOUND scenario. Check for need to wrap: are we told to wrap? If so, wrap! */
+	if (wrap_once)
 	{
-                if (REPEATLAST_A == a)
-                {
-                        previously_not_found = false;
-                        /* if we didn't find the string on this second "pass", pop the cursor location */
-                        goto_line_pos(b, orig_line, orig_pos);
-                }
-                return NOT_FOUND;
+		/* Before we wrap, push this cursor location, then pop if search string not found. If we didn't do this
+		    push/pop we'd have to replicate the search functionality here.*/
+		int orig_pos, orig_line;
+		orig_pos = b->cur_pos;
+		orig_line = b->cur_line;
+
+		if (!b->opt.search_back)
+			move_to_sof(b);  /* if we're searching forward, move the cursor to the top of the file */
+		else
+			move_to_bof(b); /* if we're searching backward, move the cursor to the bottom of the file */
+
+		// perform the find again, but don't wrap again!
+		int find_result = find(b, pattern, false, false);
+
+		/* if we didn't find the string on this second "pass", pop the cursor location */
+		if (NOT_FOUND == find_result)
+			goto_line_pos(b, orig_line, orig_pos);
+
+		return  find_result;
 	}
-	else
-	{
-		/* We are in the first "pass" through the file. Mention to the user how to wrap-search. */
-                previously_not_found = true;
-                return NOT_FOUND_WRAP_INSTRUCTIONS;
-	}
+
+	return NOT_FOUND;
 }
-
 
 
 /* Replaces n characters with the given string at the current cursor position,
@@ -305,21 +290,7 @@ static int use_map_group;
 
 /* Works exactly like find(), but uses the regex library instead. */
 
-int find_regexp(buffer * const b, const char *regex, const bool skip_first, action a) {
-
-	/* Check for need to wrap: have we previously NOT_FOUND and are we in REPEATLAST mode? If so, wrap! */
-	int orig_pos, orig_line;
-	if (previously_not_found && REPEATLAST_A == a)
-	{
-		/* for wrapping, push this cursor location, then pop if not found */
-		orig_pos = b->cur_pos;
-		orig_line = b->cur_line;
-
-		if (!b->opt.search_back) 	/* if we're searching forward, move the cursor to the top of the file */
-			move_to_sof(b);
-		else					/* if we're searching backward, move the cursor to the bottom of the file */
-			move_to_bof(b);
-	}
+int find_regexp(buffer * const b, const char *regex, const bool skip_first, bool wrap_once) {
 
 	const unsigned char * const up_case = b->encoding == ENC_UTF8 ? ascii_up_case : localised_up_case;
 	bool recompile_string;
@@ -490,7 +461,6 @@ int find_regexp(buffer * const b, const char *regex, const bool skip_first, acti
 			if (start_pos <= ld->line_len &&
 				 (pos = re_search(&re_pb, ld->line ? ld->line : "", ld->line_len, start_pos, ld->line_len - start_pos, &re_reg)) >= 0) {
 				goto_line_pos(b, y, pos);
-				previously_not_found = false;
 				return OK;
 			}
 
@@ -511,7 +481,6 @@ int find_regexp(buffer * const b, const char *regex, const bool skip_first, acti
 			if (start_pos >= 0 &&
 				 (pos = re_search(&re_pb, ld->line ? ld->line : "", ld->line_len, start_pos, -start_pos - 1, &re_reg)) >= 0) {
 				goto_line_pos(b, y, pos);
-				previously_not_found = false;
 				return OK;
 			}
 
@@ -523,23 +492,31 @@ int find_regexp(buffer * const b, const char *regex, const bool skip_first, acti
 
 	if (stop) return STOPPED;
 
-	/* Deal with wrapping states. We're in the NOT_FOUND scenario. Have we previously NOT_FOUND? */
-	if (previously_not_found)
+	/* We're in the NOT_FOUND scenario. Check for need to wrap: are we told to wrap? If so, wrap! */
+	if (wrap_once)
 	{
-		if (REPEATLAST_A == a)
-		{
-			previously_not_found = false;
-			/* if we didn't find the string on this second "pass", pop the cursor location */
+		/* Before we wrap, push this cursor location, then pop if search string not found. If we didn't do this
+		    push/pop we'd have to replicate the search functionality here.*/
+		int orig_pos, orig_line;
+		orig_pos = b->cur_pos;
+		orig_line = b->cur_line;
+
+		if (!b->opt.search_back)
+			move_to_sof(b);  /* if we're searching forward, move the cursor to the top of the file */
+		else
+			move_to_bof(b); /* if we're searching backward, move the cursor to the bottom of the file */
+
+		// perform the find again, but don't wrap again!
+		int find_result = find_regexp(b, regex, false, false);
+
+		/* if we didn't find the string on this second "pass", pop the cursor location */
+		if (NOT_FOUND == find_result)
 			goto_line_pos(b, orig_line, orig_pos);
-		}
-		return NOT_FOUND;
+
+		return  find_result;
 	}
-	else
-	{
-		/* We are in the first "pass" through the file. Mention to the user how to wrap-search. */
-		previously_not_found = true;
-		return NOT_FOUND_WRAP_INSTRUCTIONS;
-	}
+
+	return NOT_FOUND;
 }
 
 

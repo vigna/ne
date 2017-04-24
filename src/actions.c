@@ -61,6 +61,10 @@ is what most commands require. */
 #define NUMERIC_ERROR(c) ((c) == ABORT ? OK : NOT_A_NUMBER)
 
 
+/* Do we want to wrap the next search? The logic to determine this needs to be
+   outside search.c */
+
+static int perform_wrap = 2;  /* counter to be decremented by do_action and set when NOT_FOUND */
 
 
 /* This is the dispatcher of all actions that have some effect on the text.
@@ -103,6 +107,9 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 	stop = false;
 
 	if (b->recording) record_action(b->cur_macro, a, c, p, verbose_macros);
+
+	/* decrement the wrap counter */
+	if (perform_wrap > 0) perform_wrap--;
 
 	switch(a) {
 
@@ -889,7 +896,13 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			free(b->find_string);
 			b->find_string = p;
 			b->find_string_changed = 1;
-			print_error(error = (a == FIND_A ? find : find_regexp)(b, NULL, false, a));
+			error = (a == FIND_A ? find : find_regexp)(b, NULL, false, false);
+			if (error == NOT_FOUND) {
+				perform_wrap = 2;
+				error = NOT_FOUND_WRAP_INSTRUCTIONS; /* we know that we didn't wrap, so put up the instructions */
+			}
+			print_error(error);
+
 			b->last_was_replace = 0;
 			b->last_was_regexp = (a == FINDREGEXP_A);
 		}
@@ -940,7 +953,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 				if (a == REPLACEALL_A) start_undo_chain(b);
 
 				while(!stop &&
-						!(error = (b->last_was_regexp ? find_regexp : find)(b, NULL, !first_search && a != REPLACEALL_A && c != 'A' && c != 'Y', a))) {
+						!(error = (b->last_was_regexp ? find_regexp : find)(b, NULL, !first_search && a != REPLACEALL_A && c != 'A' && c != 'Y', false))) {
 
 					if (c != 'A' && a != REPLACEALL_A && a != REPLACEONCE_A) {
 						refresh_window(b);
@@ -997,11 +1010,12 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 				}
 				if (stop) error = STOPPED;
 				if (error == STOPPED) reset_window();
-
-				if (error && ((c != 'A' && a != REPLACEALL_A || first_search) || error != NOT_FOUND)) {
+				if (error == NOT_FOUND) perform_wrap = 2;
+				if (error && ((c != 'A' && a != REPLACEALL_A || first_search) || error != NOT_FOUND )) {
 					print_error(error);
 					return ERROR;
 				}
+
 				return OK;
 			}
 		}
@@ -1026,9 +1040,9 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		error = OK;
 		int64_t num_replace = 0;
 		start_undo_chain(b);
+
 		for (int64_t i = 0; i < c && !stop &&
-				    !(error = (b->last_was_regexp ? find_regexp : find)(b, NULL,
-											!b->last_was_replace, a)); i++)
+			!(error = (b->last_was_regexp ? find_regexp : find)(b, NULL, !b->last_was_replace, perform_wrap > 0)); i++)
 			if (b->last_was_replace)
 			{
 				const int64_t cur_char = b->cur_char;
@@ -1067,9 +1081,13 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		}
 		if (stop) error = STOPPED;
 		if (error == STOPPED) reset_window();
+		if (error == NOT_FOUND && perform_wrap == 0)
+		{
+			perform_wrap = 2;
+			error = NOT_FOUND_WRAP_INSTRUCTIONS; /* we know that we didn't wrap, so put up the instructions */
+		}
 
-		/* to make search-wrapping more complete, unbrand changed the line below from 'return error != NOT_FOUND ? error : 0;' */
-                return error;
+		return error;
 
 	case MATCHBRACKET_A:
 		return print_error(match_bracket(b)) ? ERROR : 0;

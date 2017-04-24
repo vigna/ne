@@ -273,7 +273,7 @@ static char *determine_virtual_extension( buffer * const b, char *vname, buffer 
 
 			/* Find maximum number of lines to scan by spec. */
 			int64_t spec_limit = 0;
-			while (find_regexp(vb, NULL, skip_first) == OK) {
+			while (find_regexp(vb, NULL, skip_first, false) == OK) {
 				skip_first = true;
 				char * const max_line_str = nth_regex_substring(vb->cur_line_desc, 2);
 				if (max_line_str) {
