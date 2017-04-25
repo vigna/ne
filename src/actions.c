@@ -1060,7 +1060,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		}
 		if (stop) error = STOPPED;
 		if (error == STOPPED) reset_window();
-		return error != NOT_FOUND ? error : 0;
+		return ! b->last_was_replace || error != NOT_FOUND ? error : 0;
 
 	case MATCHBRACKET_A:
 		return print_error(match_bracket(b)) ? ERROR : 0;
