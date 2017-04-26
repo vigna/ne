@@ -279,7 +279,7 @@ static void load_virt_ext(char *vname) {
 
 	if ((virt_ext = realloc(virt_ext, (num_virt_ext + vb->num_lines) * sizeof *virt_ext))
 			&& (extra_ext = realloc(extra_ext, (num_extra_exts + vb->num_lines) * sizeof *extra_ext))) {
-		while (find_regexp(vb, NULL, skip_first) == OK) {
+		while (find_regexp(vb, NULL, skip_first, false) == OK) {
 			skip_first = true;
 			if (nth_regex_substring_nonempty(vb->cur_line_desc, 1)) {
 				char * const ext          = nth_regex_substring(vb->cur_line_desc, 1);
@@ -396,7 +396,7 @@ static char *virtual_extension(buffer * const b) {
 		goto_pos(b, max_line == line_limit && pos_limit != -1 ? pos_limit : b->cur_line_desc->line_len);
 		b->find_string = virt_ext[i].regex;
 		b->find_string_changed = 1;
-		while (find_regexp(b, NULL, true) == OK) {
+		while (find_regexp(b, NULL, true, false) == OK) {
 			min_line = b->cur_line;
 			D(fprintf(stderr,"[%d] --- found match for '%s' on line <%d>\n",__LINE__, ext, min_line);)
 			if (min_line == 0) break;
