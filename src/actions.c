@@ -1081,7 +1081,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			error = NOT_FOUND_WRAP_INSTRUCTIONS; /* we know that we didn't wrap, so put up the instructions */
 		}
 
-		return error;
+		return ! b->last_was_replace || error != NOT_FOUND ? error : 0;
 
 	case MATCHBRACKET_A:
 		return print_error(match_bracket(b)) ? ERROR : 0;
