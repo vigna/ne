@@ -36,6 +36,8 @@
 
   * "KeyCode" now takes optional parameter.
 
+  * After "Not Found", RepeatLast wraps around to the other end of the document.
+
 3.0  2015-06-18
 
   * ne is now fully 64-bit, and needs to be compiled by a C99-compliant

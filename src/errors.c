@@ -27,7 +27,7 @@
 char *error_msg[ERROR_COUNT] = {
 	/*  0 */ "",
 	/*  1 */ "Syntax error.",
-	/*  2 */ "Not found.",
+	/*  2 */ "Not found. (RepeatLast to wrap)",
 	/*  3 */ "Can't save a document. Exit suspended.",
 	/*  4 */ "Can't save all modified documents.",
 	/*  5 */ "You are not positioned over {}, (), [] or <>.",
@@ -92,8 +92,7 @@ char *error_msg[ERROR_COUNT] = {
 	/* 64 */ "Document not saved.",
 	/* 65*/	"File is too large--syntax highlighting disabled (use SYNTAX to reactivate).",
 	/* 66*/	"Cannot save: disk full.",
-	/* 67*/	"Out of memory (insufficient disk space?). DANGER!",
-	/* 68*/	"Not found. RepeatLast to wrap."
+	/* 67*/	"Out of memory (insufficient disk space?). DANGER!"
 };
 
 char *info_msg[INFO_COUNT] = {
