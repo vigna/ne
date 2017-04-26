@@ -1049,7 +1049,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 				if (b->last_was_regexp) error = replace_regexp(b, b->replace_string);
 				else error = replace(b, strlen(b->find_string), b->replace_string);
 
-				if (!error) {
+				if (! error) {
 					if (cur_char < b->attr_len) b->attr_len = cur_char;
 					update_line(b, b->cur_line_desc, b->cur_y, cur_x, false);
 					if (b->syn) {
@@ -1069,9 +1069,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 		end_undo_chain(b);
 		if (num_replace) {
-			snprintf(msg, MAX_MESSAGE_SIZE, "%"
-			PRId64
-			" replacement%s made.", num_replace, num_replace > 1 ? "s" : "");
+			snprintf(msg, MAX_MESSAGE_SIZE, "%" PRId64 " replacement%s made.", num_replace, num_replace > 1 ? "s" : "");
 			print_message(msg);
 		}
 		if (stop) error = STOPPED;
