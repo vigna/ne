@@ -145,7 +145,7 @@ int find(buffer * const b, const char *pattern, const bool skip_first, bool wrap
 							}
 						if (i == m) {
 							goto_line_pos(b, y, (p - ld->line) - m + 1);
-                                                        return OK;
+							return OK;
 						}
 					}
 				}
@@ -200,8 +200,7 @@ int find(buffer * const b, const char *pattern, const bool skip_first, bool wrap
 	if (stop) return STOPPED;
 
 	/* We're in the NOT_FOUND scenario. Check for need to wrap: are we told to wrap? If so, wrap! */
-	if (wrap_once)
-	{
+	if (wrap_once) {
 		/* Before we wrap, push this cursor location, then pop if search string not found. If we didn't do this
 		    push/pop we'd have to replicate the search functionality here.*/
 		int orig_pos, orig_line;
@@ -493,8 +492,7 @@ int find_regexp(buffer * const b, const char *regex, const bool skip_first, bool
 	if (stop) return STOPPED;
 
 	/* We're in the NOT_FOUND scenario. Check for need to wrap: are we told to wrap? If so, wrap! */
-	if (wrap_once)
-	{
+	if (wrap_once) {
 		/* Before we wrap, push this cursor location, then pop if search string not found. If we didn't do this
 		    push/pop we'd have to replicate the search functionality here.*/
 		int orig_pos, orig_line;

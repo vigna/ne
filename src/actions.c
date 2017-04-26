@@ -1011,7 +1011,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 				if (stop) error = STOPPED;
 				if (error == STOPPED) reset_window();
 				if (error == NOT_FOUND) perform_wrap = 2;
-				if (error && ((c != 'A' && a != REPLACEALL_A || first_search) || error != NOT_FOUND )) {
+				if (error && ((c != 'A' && a != REPLACEALL_A || first_search) || error != NOT_FOUND)) {
 					print_error(error);
 					return ERROR;
 				}
@@ -1041,22 +1041,18 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		int64_t num_replace = 0;
 		start_undo_chain(b);
 
-		for (int64_t i = 0; i < c && !stop &&
-			!(error = (b->last_was_regexp ? find_regexp : find)(b, NULL, !b->last_was_replace, perform_wrap > 0)); i++)
-			if (b->last_was_replace)
-			{
+		for (int64_t i = 0; i < c && !stop && !(error = (b->last_was_regexp ? find_regexp : find)(b, NULL, !b->last_was_replace, perform_wrap > 0)); i++)
+			if (b->last_was_replace) {
 				const int64_t cur_char = b->cur_char;
 				const int cur_x = b->cur_x;
 
 				if (b->last_was_regexp) error = replace_regexp(b, b->replace_string);
 				else error = replace(b, strlen(b->find_string), b->replace_string);
 
-				if (!error)
-				{
+				if (!error) {
 					if (cur_char < b->attr_len) b->attr_len = cur_char;
 					update_line(b, b->cur_line_desc, b->cur_y, cur_x, false);
-					if (b->syn)
-					{
+					if (b->syn) {
 						need_attr_update = true;
 						update_syntax_states(b, b->cur_y, b->cur_line_desc, NULL);
 					}
@@ -1072,8 +1068,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			}
 
 		end_undo_chain(b);
-		if (num_replace)
-		{
+		if (num_replace) {
 			snprintf(msg, MAX_MESSAGE_SIZE, "%"
 			PRId64
 			" replacement%s made.", num_replace, num_replace > 1 ? "s" : "");
@@ -1081,8 +1076,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		}
 		if (stop) error = STOPPED;
 		if (error == STOPPED) reset_window();
-		if (error == NOT_FOUND && perform_wrap == 0)
-		{
+		if (error == NOT_FOUND && perform_wrap == 0) {
 			perform_wrap = 2;
 			error = NOT_FOUND_WRAP_INSTRUCTIONS; /* we know that we didn't wrap, so put up the instructions */
 		}
