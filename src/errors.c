@@ -93,7 +93,7 @@ char *error_msg[ERROR_COUNT] = {
 	/* 65*/	"File is too large--syntax highlighting disabled (use SYNTAX to reactivate).",
 	/* 66*/	"Cannot save: disk full.",
 	/* 67*/	"Out of memory (insufficient disk space?). DANGER!",
-	/* 68*/ "Not found. RepeatLast to wrap."
+	/* 68*/	"Not found. RepeatLast to wrap."
 };
 
 char *info_msg[INFO_COUNT] = {
