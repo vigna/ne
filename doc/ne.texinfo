@@ -5665,7 +5665,7 @@ override any specifications from the global @file{extensions} file. If you reall
 two different patterns, join them into one by concatenating them with a @samp{|} like so:
 @verbatim
   foo  1000i  (pattern_A)|(pattern_B)
-@end
+@end verbatim
 
 
 @node Hints and Tricks
