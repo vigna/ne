@@ -5617,14 +5617,15 @@ broken file), just give @code{ne} the @code{--no-config} argument.
 @cindex Virtual Extensions
 @cindex Extension by Content
 
-When a document is loaded or saved under a different name, @code{ne} will
+When a document is loaded or saved under a different name, @code{ne} may
 examine the contents of the document to determine whether to ignore the
-corresponding file's real extension and use instead a @dfn{virtual
+corresponding file's actual or missing extension and use instead a @dfn{virtual
 extension}. This affects which AutoPrefs and Syntax settings @code{ne}
 applies to the document. The document's contents are matched against the regular
 expressions (see @pxref{Regular Expressions}) you include in your
-@file{~/.ne/.extensions} file. If @code{ne} finds a match it will act as if
-the document's name had the corresponding extension.
+@file{~/.ne/.extensions} file. (There may also be an @file{extensions} file (no leading
+@samp{.}) in the global directory.) If @code{ne} finds a match it will act as if the
+document's name had the corresponding extension.
 
 @noindent Here's an example @file{~/.ne/.extensions} file:
 
@@ -5638,30 +5639,33 @@ the document's name had the corresponding extension.
  rb   1  ^#!\s*/.*\bruby\s*
  xml  1  ^<\?xml
 # These must match in the first 30 and 1000 lines, respectively.
- yaml   30 ^\+\+\+$
- ini  1000 ^\[\s*(\w|[.-])+\s*\]\s*$
+ yaml   30  ^\+\+\+$
+ ini  1000i ^\[\s*(\w|[.-])+\s*\]\s*$
+# You must list the existing extensions you wish to override, one
+# per line. Shell glob patterns are allowed. Note that ".*" would
+# allow overriding any extension. (Think before you do that!)
+.conf
+.tx[0-9]
 @end example
 
-@noindent The only lines which are considered consist of a space-delimited set of
+@noindent The only lines which matter consist of a space-delimited set of
 @verbatim
   extension   number   regular_expression
 @end verbatim
-@noindent Anything else is treated as a comment. The number must be a positive integer
-indicating the maximum line number of the document in which the corresponding
-regular expression must match. The exception is zero, which allows a match on
-any line in the document. If the number has a lower-case @samp{i} suffix the
-corresponding regular expression is not case sensitive. Trailing spaces are not
-included as part of the regular_expression.
+@noindent or a single @samp{.} followed by a glob pattern. Anything else is treated as a
+comment. The number must be a positive integer indicating the maximum line number of the
+document in which the corresponding regular expression must match. The exception is zero,
+which allows a match on any line in the document. (Actually, ne restricts the examined
+portion of the document to the first 1,000,000 bytes.) If the number has a lower-case
+@samp{i} suffix (see the @file{ini} example above), the corresponding regular expression
+is not case sensitive. Trailing spaces are not included as part of the regular_expression.
 
-If two different patterns match, the one matching the document's lower line number
-will take precedence. If they match on the same line, then the first one listed
-in the @file{~/.ne/.extensions} file wins. Note that once a match is found on
-the document's first line, there's no point in checking the remaining patterns.
-
-There may also be an @file{extensions} file (no leading `.') in the global directory.
-If so, and your @file{~/.ne/.extensions} file fails to map a virtual extension,
-then the one in the global directory will be consulted.
-
+Only the last instance of any extension specification is considered. This allows you to
+override any specifications from the global @file{extensions} file. If you really need
+two different patterns, join them into one by concatenating them with a @samp{|} like so:
+@verbatim
+  foo  1000i  (pattern_A)|(pattern_B)
+@end
 
 
 @node Hints and Tricks
