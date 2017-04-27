@@ -78,16 +78,14 @@ endif
 
 # Creates Mac OS X .dmg from source tar.
 
-DESTDIR := /tmp/package-ne-$(VERSION)
-
 macosx:
 ifneq ($(OS), Darwin)
 	$(error This target can only be run under Mac OS X)
 endif
 	( cd src; make clean; make NE_GLOBAL_DIR=/usr/share/ne; strip ne )
-	-rm -fr $(DESTDIR)
-	make install DESTDIR=$(DESTDIR)
-	pkgbuild --root $(DESTDIR) --install-location "/" --version $(VERSION) --identifier ne-$(VERSION) ne-$(VERSION).pkg
+	-rm -fr /tmp/package-ne-$(VERSION)
+	make install DESTDIR=/tmp/package-ne-$(VERSION)
+	pkgbuild --root /tmp/package-ne-$(VERSION) --install-location "/" --version $(VERSION) --identifier ne-$(VERSION) ne-$(VERSION).pkg
 	-rm -f ne-$(VERSION).dmg
 	hdiutil create -fs HFS+ -srcfolder ne-$(VERSION).pkg -volname ne-$(VERSION) ne-$(VERSION).dmg
 
