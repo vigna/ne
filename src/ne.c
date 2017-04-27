@@ -289,6 +289,18 @@ int main(int argc, char **argv) {
 
 	if (!new_buffer()) exit(1);
 
+	/* Now that key_bindings are loaded, try to fix up the message for NOT_FOUND. */
+	{
+		char *repeat_last_keystroke, *new_not_found;
+		if ((repeat_last_keystroke = find_key_strokes(REPEATLAST_A,1))) {
+			if ((new_not_found = malloc(39+strlen(repeat_last_keystroke)))) {
+				strcat(strcat(strcpy(new_not_found,"Not Found. (RepeatLast with "),repeat_last_keystroke)," to wrap.)");
+				error_msg[NOT_FOUND] = new_not_found;
+			}
+			free(repeat_last_keystroke);
+		}
+	}
+
 	clear_buffer(cur_buffer);
 
 	/* The INT_MAX clip always exists, and it is used by the Through command. */

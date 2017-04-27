@@ -94,7 +94,7 @@ int execute_macro(buffer *b, const char *name);
 void help(char *p);
 int cmdcmp(const char *c, const char *m);
 void unload_macros(void);
-
+char *find_key_strokes(int c, int n);
 void optimize_macro(char_stream *cs, bool verbose);
 
 /* display.c */

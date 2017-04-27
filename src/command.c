@@ -653,12 +653,12 @@ void unload_macros(void) {
 	}
 }
 
-/* Find any key strokes that currently map to commands[i].name or commands[i].short_name.
+/* Find first n key strokes that currently map to commands[i].name or commands[i].short_name.
    Returns either NULL or a char string that must be freed by the caller. */
-char *find_key_strokes(int c) {
+char *find_key_strokes(int c, int n) {
 	char *str=NULL, *p;
 
-	for(int i = 0; i < NUM_KEYS; i++) {
+	for(int i = 0; i < NUM_KEYS && n; i++) {
 		if (key_binding[i]) {
 			if (((!strncasecmp(commands[c].short_name,key_binding[i],strlen(commands[c].short_name))) &&
 				  ((!key_binding[i][strlen(commands[c].short_name)]		) || 
@@ -671,12 +671,13 @@ char *find_key_strokes(int c) {
 				  )
 				 )
 				) {
+				n--;
 				if (!str) {
-					if (!(str = malloc(14))) return NULL;
-					strcpy(str,"Bound key(s):");
+					if (!(str = malloc(1))) return NULL;
+					str[0] = '\0';
 				}
 				if (p = realloc(str,strlen(str) + strlen(key_stroke[i]) + 2)) {
-					str = strcat(strcat(p," "),key_stroke[i]);
+					str = strcat(strcat(p,*p?" ":""),key_stroke[i]);
 				} else {
 					free(str);
 					return NULL;
@@ -687,6 +688,18 @@ char *find_key_strokes(int c) {
 	return str;
 }
 
+char *bound_keys_string(int c) {
+	char *key_strokes = find_key_strokes(c, 9);
+	char *str=NULL, *p;
+	if (key_strokes) {
+		if ((str = malloc(strlen(key_strokes) + 16)))
+			strcat(strcpy(str,"Bound keys(s): "),key_strokes);
+		free(key_strokes);
+	}
+	return str;
+}
+	
+	
 /* This function helps. The help text relative to the command name pointed to
    by p is displayed (p can also contain arguments). The string *p is not
    free'd by help(). If p is NULL, the
@@ -735,7 +748,7 @@ void help(char *p) {
 
 			print_message(info_msg[HELP_COMMAND_KEYS]);
 			char *key_strokes, **tmphelp;
-			if ((key_strokes = find_key_strokes(r)) && (tmphelp = calloc(commands[r].help_len+1, sizeof(char *)))) {
+			if ((key_strokes = bound_keys_string(r)) && (tmphelp = calloc(commands[r].help_len+1, sizeof(char *)))) {
 				tmphelp[0] = (char *)commands[r].help[0];
 				tmphelp[1] = (char *)commands[r].help[1];
 				tmphelp[2] = key_strokes;

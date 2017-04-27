@@ -3045,13 +3045,14 @@ the input line, the default being the last string used.
 @noindent Abbreviation: @code{RA}
 
 @noindent is similar to @code{ReplaceOnce}, but replaces @emph{all}
-occurrences of the last search pattern with the given replacement
-string.
+occurrences of the last search pattern between the cursor position and the
+end of the document (in the direction indicated by the @code{SearchBack} flag)
+with the given replacement string.
 
 If the optional argument @var{string} is not specified, you can enter it on
 the input line, the default being the last string used.
 
-Note that @code{Undo} will restore @emph{all} the occurrences of the search
+Note that a slingle @code{Undo} will restore @emph{all} the occurrences of the search
 pattern replaced by @code{ReplaceAll}. See @ref{Undo}.
 
 
@@ -3066,6 +3067,11 @@ pattern replaced by @code{ReplaceAll}. See @ref{Undo}.
 @noindent repeats for the given number of times the last find or replace operation
 (with replace we mean here a single replace, even if the last @code{Replace}
 operation ended with a global substitution).
+
+If any find or replace operation runs into the end of the document (in the direction
+indicated by the @code{SearchBack} flag) and stops, then and only then will a
+@code{RepeatLast} command ``wrap around'' to the other end of the document to
+continue the find or replace operation.
 
 @code{RepeatLast} is especially useful for researching a given number of times, or
 replacing something a given number of times. The standard technique for
