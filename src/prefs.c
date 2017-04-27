@@ -383,6 +383,7 @@ static char *virtual_extension(buffer * const b) {
 	const int64_t b_cur_pos     = b->cur_pos;
 	const int     b_search_back = b->opt.search_back;
 	const int     b_case_search = b->opt.case_search;
+	const int     b_last_was_regexp = b->last_was_regexp;
 	char * const find_string    = b->find_string;
 
 	b->opt.search_back = true;
@@ -412,6 +413,7 @@ static char *virtual_extension(buffer * const b) {
 	goto_line_pos(b, b_cur_line, b_cur_pos);
 	b->opt.search_back = b_search_back;
 	b->opt.case_search = b_case_search;
+	b->last_was_regexp = b_last_was_regexp;
 	b->find_string = find_string;
 	b->find_string_changed = 1;
 
