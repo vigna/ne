@@ -158,7 +158,7 @@ int find(buffer * const b, const char *pattern, const bool skip_first, bool wrap
 			if (ld->ld_node.next) p = ld->line + m-1;
 			else if (wrap_once) {
 				wrap_once = false;
-				ld = b->top_line_desc;
+				ld = (line_desc *)b->line_desc_list.head;
 				p = ld->line + m-1;
 				y = -1;
 			}
@@ -461,7 +461,7 @@ int find_regexp(buffer * const b, const char *regex, const bool skip_first, bool
 			y++;
 			if (wrap_once && y == b->num_lines) {
 				wrap_once = false;
-				ld = b->top_line_desc;
+				ld = (line_desc *)b->line_desc_list.head;
 				y = 0;
 			}
 		}
