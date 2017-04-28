@@ -5621,11 +5621,20 @@ When a document is loaded or saved under a different name, @code{ne} may
 examine the contents of the document to determine whether to ignore the
 corresponding file's actual or missing extension and use instead a @dfn{virtual
 extension}. This affects which AutoPrefs and Syntax settings @code{ne}
-applies to the document. The document's contents are matched against the regular
-expressions (see @pxref{Regular Expressions}) you include in your
-@file{~/.ne/.extensions} file. (There may also be an @file{extensions} file (no leading
-@samp{.}) in the global directory.) If @code{ne} finds a match it will act as if the
+applies to the document.
+
+The document's contents are matched against the regular expressions (see
+@pxref{Regular Expressions}) you include in your @file{~/.ne/.extensions}
+file. (There may also be an @file{extensions} file (no leading @samp{.})
+in the global directory.) If @code{ne} finds a match it will act as if the
 document's name had the corresponding extension.
+
+Note that by default @code{ne} does not override a file's
+given extension. However, you can specify any number of extensions that
+you would like to allow to be overridden by including lines in your
+ @file{~/.ne/extensions} containing only a dot followed by a single extension or
+shell ``glob pattern''. In particular, @code{.*"} would
+allow overriding all extensions.
 
 @noindent Here's an example @file{~/.ne/.extensions} file:
 
