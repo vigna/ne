@@ -399,7 +399,7 @@ static char *virtual_extension(buffer * const b) {
 		b->find_string_changed = 1;
 		while (find_regexp(b, NULL, true, false) == OK) {
 			min_line = b->cur_line;
-			D(fprintf(stderr,"[%d] --- found match for '%s' on line <%d>\n",__LINE__, ext, min_line);)
+			D(fprintf(stderr, "[%d] --- found match for '%s' on line <%d>\n", __LINE__, ext, min_line);)
 			if (min_line == 0) break;
 		}
 		if (min_line > -1) {
@@ -499,13 +499,13 @@ static pref_stack_t pstack = { 0, MAX_PREF_STACK_SIZE };
 int push_prefs(buffer * const b) {
 	char msg[120];
 	if (pstack.pcount >= MAX_PREF_STACK_SIZE) {
-		sprintf(msg,"PushPrefs failed, stack is full. %d prefs now on stack.", pstack.pcount);
+		sprintf(msg, "PushPrefs failed, stack is full. %d prefs now on stack.", pstack.pcount);
 		print_message(msg);
 		return PREFS_STACK_FULL;
 	}
 
 	pstack.pref[pstack.pcount++] = b->opt;
-	sprintf(msg,"User Prefs Pushed, %d Prefs now on stack.", pstack.pcount);
+	sprintf(msg, "User Prefs Pushed, %d Prefs now on stack.", pstack.pcount);
 	print_message(msg);
 	return OK;
 }
@@ -513,13 +513,13 @@ int push_prefs(buffer * const b) {
 int pop_prefs(buffer * const b) {
 	char msg[120];
 	if (pstack.pcount <= 0) {
-		sprintf(msg,"PopPrefs failed, stack is empty.");
+		sprintf(msg, "PopPrefs failed, stack is empty.");
 		print_message(msg);
 		return PREFS_STACK_EMPTY;
 	}
 	else {
 		b->opt = pstack.pref[--pstack.pcount];
-		sprintf(msg,"User Prefs Popped, %d Prefs remain on stack.", pstack.pcount);
+		sprintf(msg, "User Prefs Popped, %d Prefs remain on stack.", pstack.pcount);
 		print_message(msg);
 		return OK;
 	}

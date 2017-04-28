@@ -315,16 +315,16 @@ int parse_command_line(const char * command_line, int64_t * const num_arg, char 
 					}
 					return a;
 				}
-				D(fprintf(stderr,"parse_command error: Can execute only options.\n");)
+				D(fprintf(stderr, "parse_command error: Can execute only options.\n");)
 				return -CAN_EXECUTE_ONLY_OPTIONS;
 			}
-			D(fprintf(stderr,"parse_command error: Has numeric argument.\n");)
+			D(fprintf(stderr, "parse_command error: Has numeric argument.\n");)
 			return -HAS_NUMERIC_ARGUMENT;
 		}
-		D(fprintf(stderr,"parse_command error: Has no argument.\n");)
+		D(fprintf(stderr, "parse_command error: Has no argument.\n");)
 		return -HAS_NO_ARGUMENT;
 	}
-	D(fprintf(stderr,"parse_command error: No such command.\n");)
+	D(fprintf(stderr, "parse_command error: No such command.\n");)
 	return -NO_SUCH_COMMAND;
 }
 
@@ -475,7 +475,7 @@ void optimize_macro(char_stream *cs, bool verbose) {
 	for (int64_t pos = 0; pos < cs->len; pos += strlen(&cs->stream[pos]) + 1) {
 		char * const cmd = &cs->stream[pos];
 		const int chr = insertchar_val(cmd);
-		if (chr < 0x80 && isprint(chr) && (safe_to_optimize = vet_optimize_macro_stream(cs,pos))) {
+		if (chr < 0x80 && isprint(chr) && (safe_to_optimize = vet_optimize_macro_stream(cs, pos))) {
 			delete_from_stream(cs, pos, strlen(cmd) + 1);
 			const char two[2] = { chr };
 			if (building) {
@@ -660,12 +660,12 @@ char *find_key_strokes(int c, int n) {
 
 	for(int i = 0; i < NUM_KEYS && n; i++) {
 		if (key_binding[i]) {
-			if (((!strncasecmp(commands[c].short_name,key_binding[i],strlen(commands[c].short_name))) &&
+			if (((!strncasecmp(commands[c].short_name, key_binding[i], strlen(commands[c].short_name))) &&
 				  ((!key_binding[i][strlen(commands[c].short_name)]		) || 
 					(key_binding[i][strlen(commands[c].short_name)] == ' ')
 				  )
 				 ) || 
-				 ((!strncasecmp(commands[c].name,key_binding[i],strlen(commands[c].name))) &&
+				 ((!strncasecmp(commands[c].name, key_binding[i], strlen(commands[c].name))) &&
 				  ((!key_binding[i][strlen(commands[c].name)]		) ||
 					(key_binding[i][strlen(commands[c].name)] == ' ')
 				  )
@@ -676,8 +676,8 @@ char *find_key_strokes(int c, int n) {
 					if (!(str = malloc(1))) return NULL;
 					str[0] = '\0';
 				}
-				if (p = realloc(str,strlen(str) + strlen(key_stroke[i]) + 2)) {
-					str = strcat(strcat(p,*p?" ":""),key_stroke[i]);
+				if (p = realloc(str, strlen(str) + strlen(key_stroke[i]) + 2)) {
+					str = strcat(strcat(p, *p ? " " : ""), key_stroke[i]);
 				} else {
 					free(str);
 					return NULL;
@@ -693,7 +693,7 @@ char *bound_keys_string(int c) {
 	char *str=NULL, *p;
 	if (key_strokes) {
 		if ((str = malloc(strlen(key_strokes) + 16)))
-			strcat(strcpy(str,"Bound keys(s): "),key_strokes);
+			strcat(strcpy(str, "Bound keys(s): "), key_strokes);
 		free(key_strokes);
 	}
 	return str;
@@ -709,7 +709,7 @@ char *bound_keys_string(int c) {
 void help(char *p) {
 	req_list rl = { .ignore_tab=true };
 
-	D(fprintf(stderr,"Help Called with parm %p.\n",p);)
+	D(fprintf(stderr, "Help Called with parm %p.\n", p);)
 	int r = 0;
 	do {
 		print_message(info_msg[HELP_KEYS]);
@@ -718,25 +718,25 @@ void help(char *p) {
 		rl.max_entry_len = MAX_COMMAND_WIDTH;
 		rl.entries = (char **)command_names;
 		if (p || (r = request_strings(&rl, r)) >= 0) {
-			D(fprintf(stderr,"Help check #2: p=%p, r=%d\n",p,r);)
+			D(fprintf(stderr, "Help check #2: p=%p, r=%d\n", p, r);)
 			if (p) {
 				for(r = 0; r < strlen(p); r++) if (isasciispace((unsigned char)p[r])) break;
 
 				r = hash_cmd(p, r);
-				D(fprintf(stderr,"Help check #3: p=%p, *p=%s, r=%d\n",p,p,r);)
+				D(fprintf(stderr, "Help check #3: p=%p, *p=%s, r=%d\n", p, p, r);)
 
 				action a;
 				if ((a = hash_table[r]) && !cmdcmp(commands[--a].name, p)
 				|| (a = short_hash_table[r]) && !cmdcmp(commands[--a].short_name, p)) r = a;
 				else r = -1;
-				D(fprintf(stderr,"Help check #4: r=%d\n",r);)
+				D(fprintf(stderr, "Help check #4: r=%d\n", r);)
 
 				p = NULL;
 			}
 			else {
-				D(fprintf(stderr,"Gonna parse_command_line(\"%s\",NULL,NULL,false);\n",command_names[r]);)
+				D(fprintf(stderr, "Gonna parse_command_line(\"%s\",NULL,NULL,false);\n", command_names[r]);)
 				r = parse_command_line(command_names[r], NULL, NULL, false);
-				D(fprintf(stderr,"...and got r=%d\n",r);)
+				D(fprintf(stderr, "...and got r=%d\n", r);)
 			}
 
 			if (r < 0) {

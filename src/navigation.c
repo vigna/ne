@@ -225,7 +225,7 @@ int line_down(buffer * const b) {
  */
 
 void keep_cursor_on_screen(buffer * const b) {
-	b->opt.tab_size = min(b->opt.tab_size, max(ne_columns / 2 - 1,1));
+	b->opt.tab_size = min(b->opt.tab_size, max(ne_columns / 2 - 1, 1));
 	const int shift_right = b->win_x % b->opt.tab_size;
 	if (shift_right) {
 		b->win_x -= shift_right;
@@ -580,12 +580,12 @@ int adjust_view(buffer * const b, const char *p) {
 	while(*p) {
 		int disp = 0;
 		char *q;
-		int mag = max(0,strtol(p+1, &q, 0));
+		int mag = max(0, strtol(p+1, &q, 0));
 		switch (*p) {
 			case 't' :
 			case 'T' :
 				/* Shift the view so that the current line is displayed at the top. */
-				disp = mag ? -min(mag,b->cur_y) : -b->cur_y;
+				disp = mag ? -min(mag, b->cur_y) : -b->cur_y;
 				break;
 
 			case 'm' :
@@ -597,7 +597,7 @@ int adjust_view(buffer * const b, const char *p) {
 			case 'b' :
 			case 'B' :
 				/* Shift the view so that the current line is displayed at the bottom. */
-				disp = mag ? min(mag,(ne_lines -2) - b->cur_y) : (ne_lines - 2) - b->cur_y;
+				disp = mag ? min(mag, (ne_lines -2) - b->cur_y) : (ne_lines - 2) - b->cur_y;
 				break;
 
 			case 'l' :

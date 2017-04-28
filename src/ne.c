@@ -292,9 +292,9 @@ int main(int argc, char **argv) {
 	/* Now that key_bindings are loaded, try to fix up the message for NOT_FOUND. */
 	{
 		char *repeat_last_keystroke, *new_not_found;
-		if ((repeat_last_keystroke = find_key_strokes(REPEATLAST_A,1))) {
+		if ((repeat_last_keystroke = find_key_strokes(REPEATLAST_A, 1))) {
 			if ((new_not_found = malloc(39+strlen(repeat_last_keystroke)))) {
-				strcat(strcat(strcpy(new_not_found,"Not Found. (RepeatLast with "),repeat_last_keystroke)," to wrap.)");
+				strcat(strcat(strcpy(new_not_found, "Not Found. (RepeatLast with "), repeat_last_keystroke), " to wrap.)");
 				error_msg[NOT_FOUND] = new_not_found;
 			}
 			free(repeat_last_keystroke);
@@ -401,14 +401,14 @@ int main(int argc, char **argv) {
 						i--;
 					}
 				}
-				else if (!strcmp(argv[i],"--binary")) {
+				else if (!strcmp(argv[i], "--binary")) {
 					binary = true;
 				}
-				else if (!strcmp(argv[i],"--read-only") || !strcmp(argv[i],"--readonly") || !strcmp(argv[i],"--ro")) {
+				else if (!strcmp(argv[i], "--read-only") || !strcmp(argv[i], "--readonly") || !strcmp(argv[i], "--ro")) {
 					read_only = true;
 				}
 				else {
-					if (!strcmp(argv[i],"-") && stdin_buffer) {
+					if (!strcmp(argv[i], "-") && stdin_buffer) {
 						stdin_buffer->opt.binary = binary;
 						if (read_only) stdin_buffer->opt.read_only = read_only;
 						if (first_line) do_action(stdin_buffer, GOTOLINE_A, first_line, NULL);
@@ -416,7 +416,7 @@ int main(int argc, char **argv) {
 						stdin_buffer = NULL;
 					}
 					else {
-						if (!strcmp(argv[i],"--")) i++;
+						if (!strcmp(argv[i], "--")) i++;
 						if (!first_file) do_action(cur_buffer, NEWDOC_A, -1, NULL);
 						else first_file = false;
 						cur_buffer->opt.binary = binary;

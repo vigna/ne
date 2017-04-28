@@ -265,7 +265,7 @@ void close_history(void) {
 				delete_one_line(history_buff, history_buff->cur_line_desc, history_buff->cur_line);
 				assert_buffer(history_buff);
 			}
-			save_buffer_to_file(history_buff,NULL);
+			save_buffer_to_file(history_buff, NULL);
 		}
 		free_buffer(history_buff);
 		history_buff = NULL;
@@ -356,7 +356,7 @@ static void input_autocomplete(void) {
 			memmove(&input_buffer[pos], p, ac_len);
 			len += ac_len;
 			while (ac_len > 0) {
-				const int cw = get_char_width(&input_buffer[pos],encoding);
+				const int cw = get_char_width(&input_buffer[pos], encoding);
 				pos = next_pos(input_buffer, pos, encoding);
 				ac_len -= cw;
 				dx++;
@@ -733,8 +733,8 @@ char *request(const buffer * const b, const char *prompt, const char * const def
 						if (history_buff->cur_line_desc->line) {
 							strncpy(input_buffer,
 									  history_buff->cur_line_desc->line,
-									  min(history_buff->cur_line_desc->line_len,MAX_INPUT_LINE_LEN));
-							input_buffer[min(history_buff->cur_line_desc->line_len,MAX_INPUT_LINE_LEN)] = 0;
+									  min(history_buff->cur_line_desc->line_len, MAX_INPUT_LINE_LEN));
+							input_buffer[min(history_buff->cur_line_desc->line_len, MAX_INPUT_LINE_LEN)] = 0;
 							len = strlen(input_buffer);
 							encoding = detect_encoding(input_buffer, len);
 						}

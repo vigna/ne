@@ -249,7 +249,7 @@ void output_line_desc(const int row, const int col, const line_desc *ld, const i
    the content of b->attr_buf. The caller is thus responsible to guarantee
    that b->attr_buf contents reflect the currently displayed attributes.
 
-   After a call to this function with argument b->cur_line_desc,,
+   After a call to this function with argument b->cur_line_desc,
    b->attr_buf will be updated so to contain again the currently displayed
    attributes, unless no refresh has been performed, in which base
    b->attr_len will be set to -1.
@@ -453,7 +453,7 @@ void update_inserted_char(buffer * const b, const int c, line_desc * const ld, c
 
 	if (b->syn) {
 		assert(b->attr_len >= 0);
-		/*fprintf(stderr, "+b->attr_len: %d calc_char_len: %d pos: %d ld->line_len %d attr_pos: %d\n", b->attr_len,calc_char_len(ld, ld->line_len, b->encoding), pos, ld->line_len, attr_pos);*/
+		/*fprintf(stderr, "+b->attr_len: %d calc_char_len: %d pos: %d ld->line_len %d attr_pos: %d\n", b->attr_len, calc_char_len(ld, ld->line_len, b->encoding), pos, ld->line_len, attr_pos);*/
 		assert(b->attr_len + 1 == calc_char_len(ld, ld->line_len, b->encoding));
 		/* We update the stored attribute vector. */
 		ensure_attr_buf(b, b->attr_len + 1);
@@ -524,7 +524,7 @@ void update_overwritten_char(buffer * const b, const int old_char, const int new
 	const uint32_t * const attr = b->syn ? &attr_buf[attr_pos] : NULL;
 
 	if (b->syn) {
-		/* fprintf(stderr, "-b->attr_len: %d calc_char_len: %d pos: %d ld->line_len %d attr_pos: %d\n", b->attr_len,calc_char_len(ld, ld->line_len, b->encoding), pos, ld->line_len, attr_pos);*/
+		/* fprintf(stderr, "-b->attr_len: %d calc_char_len: %d pos: %d ld->line_len %d attr_pos: %d\n", b->attr_len, calc_char_len(ld, ld->line_len, b->encoding), pos, ld->line_len, attr_pos);*/
 		assert(b->attr_len + 1 == calc_char_len(ld, ld->line_len, b->encoding) || b->attr_len == calc_char_len(ld, ld->line_len, b->encoding));
 		assert(attr_pos <= b->attr_len);
 		if (attr_pos == b->attr_len) ensure_attr_buf(b, ++b->attr_len);

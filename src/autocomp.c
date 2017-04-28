@@ -189,6 +189,6 @@ char *autocomplete(char *p, char *req_msg, const int ext, int * const error) {
 	else *error = AUTOCOMPLETE_NO_MATCH;
 
 	req_list_free(&rl);
-	D(fprintf(stderr,"autocomp returning '%s', entries: %d\n", p, rl.cur_entries);)
+	D(fprintf(stderr, "autocomp returning '%s', entries: %d\n", p, rl.cur_entries);)
 	return p;
 }

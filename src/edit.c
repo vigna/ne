@@ -281,7 +281,7 @@ int word_wrap2(buffer * const b) {
 	b->bookmark[WORDWRAP_BOOKMARK].cur_y += b->bookmark[WORDWRAP_BOOKMARK].line - original_line;
 	if (avshift = b->cur_y - b->bookmark[WORDWRAP_BOOKMARK].cur_y) {
 		snprintf(avcmd, 16, "%c%d", avshift > 0 ? 'T' :'B', avshift > 0 ? avshift : -avshift);
-		adjust_view(b,avcmd);
+		adjust_view(b, avcmd);
 	}
 	b->bookmark_mask &= ~(1 << WORDWRAP_BOOKMARK);
 	if (non_blank_added) {
@@ -826,7 +826,7 @@ int shift(buffer * const b, char *p, char *msg, int msg_size) {
 	const int64_t avshift = b->cur_y - init_y;
 	if (avshift) {
 		snprintf(msg, msg_size, "%c%" PRId64, avshift > 0 ? 'T' :'B', avshift > 0 ? avshift : -avshift);
-		adjust_view(b,msg);
+		adjust_view(b, msg);
 	}
 
 	return rc;

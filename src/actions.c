@@ -216,7 +216,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 	case ADJUSTVIEW_A:
 		NORMALIZE(c);
-		error = adjust_view(b,p);
+		error = adjust_view(b, p);
 		if (p) free(p);
 		return error;
 
@@ -783,7 +783,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		if (p || (q = p = request_file(b, "Filename", b->filename))) {
 			print_info(SAVING);
 
-			if (buffer_file_modified(b,p) && !request_response(b, info_msg[a==SAVE_A ? FILE_HAS_BEEN_MODIFIED : FILE_ALREADY_EXISTS], false)) {
+			if (buffer_file_modified(b, p) && !request_response(b, info_msg[a==SAVE_A ? FILE_HAS_BEEN_MODIFIED : FILE_ALREADY_EXISTS], false)) {
 				free(p);
 				return DOCUMENT_NOT_SAVED;
 			}
@@ -794,7 +794,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 				change_filename(b, p);
 				if (load_syntax) {
 					b->syn = NULL; /* So that autoprefs will load the right syntax. */
-					load_auto_prefs(b,NULL); /* Will get extension from the name, or virtual extension. */
+					load_auto_prefs(b, NULL); /* Will get extension from the name, or virtual extension. */
 					reset_syntax_states(b);
 					reset_window();
 				}
@@ -1000,7 +1000,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 				if (a == REPLACEALL_A || c == 'A') end_undo_chain(b);
 
 				if (num_replace) {
-					snprintf(msg, MAX_MESSAGE_SIZE, "%" PRId64 " replacement%s made.%s", num_replace, num_replace > 1 ? "s" : "", error == NOT_FOUND ? index(error_msg[NOT_FOUND],'(')-1 :"");
+					snprintf(msg, MAX_MESSAGE_SIZE, "%" PRId64 " replacement%s made.%s", num_replace, num_replace > 1 ? "s" : "", error == NOT_FOUND ? index(error_msg[NOT_FOUND], '(')-1 :"");
 					print_message(msg);
 				}
 				if (stop) error = STOPPED;
@@ -1063,7 +1063,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 		end_undo_chain(b);
 		if (num_replace) {
-			snprintf(msg, MAX_MESSAGE_SIZE, "%" PRId64 " replacement%s made.%s", num_replace, num_replace > 1 ? "s" : "", error == NOT_FOUND ? index(error_msg[NOT_FOUND],'(')-1 :"");
+			snprintf(msg, MAX_MESSAGE_SIZE, "%" PRId64 " replacement%s made.%s", num_replace, num_replace > 1 ? "s" : "", error == NOT_FOUND ? index(error_msg[NOT_FOUND], '(')-1 :"");
 			print_message(msg);
 		}
 		if (stop) error = STOPPED;
