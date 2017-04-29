@@ -27,7 +27,7 @@
 char *error_msg[ERROR_COUNT] = {
 	/*  0 */ "",
 	/*  1 */ "Syntax error.",
-	/*  2 */ "Not found.",
+	/*  2 */ "Not found. (RepeatLast to wrap)",
 	/*  3 */ "Can't save a document. Exit suspended.",
 	/*  4 */ "Can't save all modified documents.",
 	/*  5 */ "You are not positioned over {}, (), [] or <>.",

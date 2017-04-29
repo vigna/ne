@@ -141,9 +141,9 @@ static void print_strings() {
 		clear_to_eol();
 		if (row < NAMES_PER_COL(page)) {
 			for(int col = 0; col < NAMES_PER_LINE(page); col++) {
-				if (PXY2N(page,col,row) < rl.cur_entries) {
+				if (PXY2N(page, col, row) < rl.cur_entries) {
 					move_cursor(row, col * dx);
-					const char * const p = rl.entries[PXY2N(page,col,row)];
+					const char * const p = rl.entries[PXY2N(page, col, row)];
 					if (rl.suffix) set_attr(p[strlen(p) - 1] == rl.suffix ? BOLD : 0);
 					output_string(p, io_utf8);
 				}
@@ -169,7 +169,7 @@ static void request_move_to_sol(void) {
 
 
 static void request_move_to_eol(void) {
-	while (x < NAMES_PER_LINE(page) - 1 && PXY2N(page,x+1,y) < rl.cur_entries) {
+	while (x < NAMES_PER_LINE(page) - 1 && PXY2N(page, x+1, y) < rl.cur_entries) {
 		x++;
 	}
 }
@@ -188,18 +188,18 @@ static void request_toggle_seof(void) {
 }
 
 static void request_prev_page(void) {
-	if (page == 0 ) normalize(PXY2N(page,0,0));
-	else normalize(PXY2N(page-1,x,y));
+	if (page == 0 ) normalize(PXY2N(page, 0, 0));
+	else normalize(PXY2N(page-1, x, y));
 }
 
 
 static void request_next_page(void) {
-	normalize(PXY2N(page+1,x,y));
+	normalize(PXY2N(page+1, x, y));
 }
 
 
 static void request_move_up(void) {
-	normalize(PXY2N(page,x,y) - DY);
+	normalize(PXY2N(page, x, y) - DY);
 }
 
 static void request_move_inc_up(void) {
@@ -211,7 +211,7 @@ static void request_move_inc_up(void) {
 }
 
 static void request_move_down(void) {
-	normalize(PXY2N(page,x,y) + DY);
+	normalize(PXY2N(page, x, y) + DY);
 }
 
 void request_move_inc_down(void) {
@@ -229,29 +229,29 @@ static void request_move_left(void) {
 		request_move_to_eol();
 	}
 	else {
-		normalize(PXY2N(page,x,y) - DX(page));
+		normalize(PXY2N(page, x, y) - DX(page));
 	}
 }
 
 static void request_move_next(void) {
-	normalize(PXY2N(page,x,y)+1);
+	normalize(PXY2N(page, x, y)+1);
 }
 
 static void request_move_previous(void) {
-	normalize(PXY2N(page,x,y)-1);
+	normalize(PXY2N(page, x, y)-1);
 }
 
 static void request_move_right(void) {
-	if (y < NAMES_PER_COL(page) - 1 && PXY2N(page,0,y+1) < rl.cur_entries &&
-	    (x == NAMES_PER_LINE(page) - 1 || PXY2N(page,x+1,y) > rl.cur_entries -1)  ) {
+	if (y < NAMES_PER_COL(page) - 1 && PXY2N(page, 0, y+1) < rl.cur_entries &&
+	    (x == NAMES_PER_LINE(page) - 1 || PXY2N(page, x+1, y) > rl.cur_entries -1)  ) {
 		request_move_to_sol();
 		request_move_down();
 	}
-	else if (y == NAMES_PER_COL(page) - 1 && x == NAMES_PER_LINE(page) - 1 && PXY2N(page+1,0,0) < rl.cur_entries) {
-		normalize(PXY2N(page+1,0,0));
+	else if (y == NAMES_PER_COL(page) - 1 && x == NAMES_PER_LINE(page) - 1 && PXY2N(page+1, 0, 0) < rl.cur_entries) {
+		normalize(PXY2N(page+1, 0, 0));
 	}
-	else if (PXY2N(page,x,y) + DX(page) < rl.cur_entries ) {
-		normalize(PXY2N(page,x,y) + DX(page));
+	else if (PXY2N(page, x, y) + DX(page) < rl.cur_entries ) {
+		normalize(PXY2N(page, x, y) + DX(page));
 	}
 }
 
@@ -260,7 +260,7 @@ static void request_move_right(void) {
 static bool request_reorder(const int dir) {
 	if (! rl0->allow_reorder || rl.cur_entries < 2) return false;
 
-	const int n0 = PXY2N(page,x,y);
+	const int n0 = PXY2N(page, x, y);
 	const int n1 = (n0 + dir + rl.cur_entries ) % rl.cur_entries; /* Allows wrap around. */
 	char * const p0 = rl.entries[n0];
 	char * const p1 = rl.entries[n1];
@@ -296,8 +296,8 @@ static bool request_reorder(const int dir) {
    In any case, return the (possibly new) index of the highlighted entry in rl. */
 
 static int reset_rl_entries() {
-	const int n0 = PXY2N(page,x,y);
-	const char * const p0 = rl.entries[PXY2N(page,x,y)];
+	const int n0 = PXY2N(page, x, y);
+	const char * const p0 = rl.entries[PXY2N(page, x, y)];
 	int n1 = n0;
 	int i;
 	for (int j = n1 = i = 0; j < rl0->cur_entries; j++) {
@@ -314,7 +314,7 @@ static int reset_rl_entries() {
 /* Count how many entries match our highlighted entry up through len characters. */
 
 static int count_fuzz_matches(const int len) {
-	const int n0 = PXY2N(page,x,y);
+	const int n0 = PXY2N(page, x, y);
 	const char * const p0 = rl.entries[n0];
 	if (len <= 0) return rl.cur_entries;
 	if (len > strlen(p0)) return 1;
@@ -329,7 +329,7 @@ static int count_fuzz_matches(const int len) {
 
 static void shift_fuzz(const int d) {
 	int c0 = count_fuzz_matches(fuzz_len);
-	const char * const p0 = rl.entries[PXY2N(page,x,y)];
+	const char * const p0 = rl.entries[PXY2N(page, x, y)];
 	assert(d==1||d==-1);
 	if (d==-1) {
 		while(fuzz_len > 0 && count_fuzz_matches(fuzz_len+1) == count_fuzz_matches(fuzz_len)) fuzz_len--;
@@ -348,13 +348,13 @@ static void shift_fuzz(const int d) {
 
 static void fuzz_back() {
 	const int orig_entries = rl.cur_entries;
-	const int n0 = PXY2N(page,x,y);
-	const char * const p0 = rl.entries[PXY2N(page,x,y)];
+	const int n0 = PXY2N(page, x, y);
+	const char * const p0 = rl.entries[PXY2N(page, x, y)];
 	int n1 = n0;
 	if (fuzz_len == 0) return;
 	if (prune) {
 		while (rl.cur_entries == orig_entries && fuzz_len > 0) {
-			fuzz_len = max(0,fuzz_len-1);
+			fuzz_len = max(0, fuzz_len-1);
 			n1 = reset_rl_entries();
 		}
 	} else {
@@ -397,7 +397,7 @@ static void fuzz_back() {
    order of rl.entries[] is preserved. */
 
 static void fuzz_forward(const int c) {
-	const int n0 = PXY2N(page,x,y);
+	const int n0 = PXY2N(page, x, y);
 	const char * const p0 = rl.entries[n0];
 
 	assert(fuzz_len >= 0);
@@ -462,7 +462,7 @@ static int request_strings_init(req_list *rlp0) {
 }
 
 static int request_strings_cleanup(bool reordered) {
-	int n = PXY2N(page,x,y);
+	int n = PXY2N(page, x, y);
 	const char * const p0 = rl.entries[n];
 	for (int i = 0; i<rl0->cur_entries; i++) {
 		if (rl0->entries[i] == p0) {
@@ -501,7 +501,7 @@ int request_strings(req_list *rlp0, int n) {
 
 	while(true) {
 		if (ne_lines0 != ne_lines || ne_columns0 != ne_columns || resume_bar) {
-			if (ne_lines0 && ne_columns0 ) n = PXY2N(page,x,y);
+			if (ne_lines0 && ne_columns0 ) n = PXY2N(page, x, y);
 			if (!(max_names_per_line = ne_columns / dx)) max_names_per_line = 1;
 			max_names_per_col = ne_lines - 1;
 			names_per_page = max_names_per_line * max_names_per_col;
@@ -517,7 +517,7 @@ int request_strings(req_list *rlp0, int n) {
 			}
 		}
 
-		n = PXY2N(page,x,y);
+		n = PXY2N(page, x, y);
 
 		assert(fuzz_len >= 0);
 
@@ -769,14 +769,14 @@ char *request_syntax() {
 	if ((p = exists_prefs_dir()) && strlen(p) + 2 + strlen(SYNTAX_DIR) < sizeof syn_dir_name) {
 		strcat(strcpy(syn_dir_name, p), SYNTAX_DIR);
 		if (d = opendir(syn_dir_name)) {
-			load_syntax_names(&rl,d,true);
+			load_syntax_names(&rl, d, true);
 			closedir(d);
 		}
 	}
 	if ((p = exists_gprefs_dir()) && strlen(p) + 2 + strlen(SYNTAX_DIR) < sizeof syn_dir_name) {
 		strcat(strcpy(syn_dir_name, p), SYNTAX_DIR);
 		if (d = opendir(syn_dir_name)) {
-			load_syntax_names(&rl,d,false);
+			load_syntax_names(&rl, d, false);
 			closedir(d);
 		}
 	}
@@ -786,7 +786,7 @@ char *request_syntax() {
 	if (rl.cur_entries && (result = request_strings(&rl, 0)) != ERROR) {
 		char * const q = rl.entries[result >= 0 ? result : -result - 2];
 		if (p = malloc(strlen(q)+3)) {
-			strcpy(p,q);
+			strcpy(p, q);
 			if (p[strlen(p)-1] == rl.suffix) p[strlen(p)-1] = '\0';
 			if (result < 0) {
 				memmove(p + 1, p, strlen(p) + 1);
@@ -863,7 +863,7 @@ char *request_files(const char * const filename, bool use_prefix) {
 						if (strcmp(result, "/")) strcat(result, "/");
 						strcat(result, p);
 						if (!absolute) {
-							char *rp = relative_file_path(result,cur_dir_name);
+							char *rp = relative_file_path(result, cur_dir_name);
 							free(result);
 							result = rp;
 						}
@@ -1133,7 +1133,7 @@ char *req_list_add(req_list * const rl, char * const str, const int suffix) {
 	}
 
 	char * const newstr = &rl->chars[rl->cur_chars];
-	char * p = strcpy(newstr,str)+len+1;
+	char * p = strcpy(newstr, str)+len+1;
 	if (rl->suffix && suffix) *p++ = rl->suffix;
 	*p = '\0';
 	rl->cur_chars += lentot;

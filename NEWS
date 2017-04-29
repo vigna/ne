@@ -6,8 +6,8 @@
     if enough disk space is available.
 
   * Determine a "virtual extension" based on document contents and patterns
-    from ~/.ne/.extensions. If no match, use filename extension, else
-    use .default#ap prefs.
+    from ~/.ne/.extensions. Allows overrides of specified extensions only.
+    If no match, use .default#ap prefs.
 
   * Status flag "!" indicates the last line of document is not empty, thus
     the last line of the resulting saved file will not be terminated.
@@ -35,6 +35,9 @@
   * Suspend (Crtl-Z) works in prompts, requesters.
 
   * "KeyCode" now takes optional parameter.
+
+  * Immediately/only after "Not Found", RepeatLast wraps around to the
+    other end of the document.
 
 3.0  2015-06-18
 

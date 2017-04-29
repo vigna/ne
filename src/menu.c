@@ -317,21 +317,21 @@ int dump_config(void) {
 	int menu, item, key;
 	FILE *f;
 
-	if (!(f = fopen("ne_test_dump_config","w")) ) return ERROR;
+	if (!(f = fopen("ne_test_dump_config", "w")) ) return ERROR;
 
 	for (menu = 0; menu < menu_num; menu++) {
-		fprintf(f,"%s \"%s\"\n", MENU_KEYWORD, menus[menu].text );
+		fprintf(f, "%s \"%s\"\n", MENU_KEYWORD, menus[menu].text );
 		for (item = 0; item < menus[menu].item_num; item++) {
-			fprintf(f,"%s \"%s\" \"%s\"\n", ITEM_KEYWORD,
+			fprintf(f, "%s \"%s\" \"%s\"\n", ITEM_KEYWORD,
 															menus[menu].items[item].text,
 															menus[menu].items[item].command_line);
 		}
-		fprintf(f,"\n");
+		fprintf(f, "\n");
 	}
 
 	for (key = 0; key < NUM_KEYS; key++) {
 		if (key_binding[key] && key_binding[key][0])
-			fprintf(f,"%s\t%4x\t%s\n",KEY_KEYWORD, key, key_binding[key] );
+			fprintf(f, "%s\t%4x\t%s\n", KEY_KEYWORD, key, key_binding[key] );
 	}
 	fclose(f);
 	return OK;
@@ -493,7 +493,7 @@ static void item_search(const int c) {
 
 
 static void draw_first_menu(void) {
-	move_cursor(0,0);
+	move_cursor(0, 0);
 
 	set_attr(0);
 	standout_on();

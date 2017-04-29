@@ -82,13 +82,13 @@ int binsearch(const char * const s) {
 void dump_keys(void) {
 	 for (int i = 0; i < num_keys; i++) {
 		char *p = key[i].string;
-		fprintf(stderr,"%3d: \"",i);
+		fprintf(stderr, "%3d: \"", i);
 		while (*p) {
-			if (isprint(*p)) fprintf(stderr,"%c",*p);
-			else fprintf(stderr,"\\x%02x", *p );
+			if (isprint(*p)) fprintf(stderr, "%c", *p);
+			else fprintf(stderr, "\\x%02x", *p);
 			p++;
 		}
-		fprintf (stderr,"\"\t-> %d\n", key[i].code );
+		fprintf (stderr,"\"\t-> %d\n", key[i].code);
 	}
 }
 
@@ -272,7 +272,7 @@ void read_key_capabilities(void) {
 
 	assert(num_keys < MAX_TERM_KEY - 1);
 
-	D(fprintf(stderr,"Got %d keys from terminfo\n", num_keys);)
+	D(fprintf(stderr, "Got %d keys from terminfo\n", num_keys);)
 
 	qsort(key, num_keys, sizeof(term_key), keycmp);
 

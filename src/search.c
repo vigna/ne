@@ -93,7 +93,7 @@ const unsigned char ascii_up_case[256] = {
    b->find_string. The cursor is moved on the occurrence position if a match is
    found. */
 
-int find(buffer * const b, const char *pattern, const bool skip_first) {
+int find(buffer * const b, const char *pattern, const bool skip_first, bool wrap_once) {
 
 	bool recompile_string;
 
@@ -128,8 +128,9 @@ int find(buffer * const b, const char *pattern, const bool skip_first) {
 
 		char * p = ld->line + b->cur_pos + m - 1 + (skip_first ? 1 : 0);
 		const unsigned char first_char = CONV((unsigned char)pattern[m - 1]);
+		int64_t wrap_lines_left = b->num_lines + 1;
 
-		while(y < b->num_lines && !stop) {
+		while(y < b->num_lines && !stop && wrap_lines_left--) {
 
 			assert(ld->ld_node.next != NULL);
 
@@ -155,6 +156,12 @@ int find(buffer * const b, const char *pattern, const bool skip_first) {
 
 			ld = (line_desc *)ld->ld_node.next;
 			if (ld->ld_node.next) p = ld->line + m-1;
+			else if (wrap_once) {
+				wrap_once = false;
+				ld = b->top_line_desc;
+				p = ld->line + m-1;
+				y = -1;
+			}
 			y++;
 		}
 	}
@@ -167,8 +174,9 @@ int find(buffer * const b, const char *pattern, const bool skip_first) {
 
 		char * p = ld->line + (b->cur_pos > ld->line_len - m ? ld->line_len - m : b->cur_pos + (skip_first ? -1 : 0));
 		const unsigned char first_char = CONV((unsigned char)pattern[0]);
+		int64_t wrap_lines_left = b->num_lines + 1;
 
-		while(y >= 0 && !stop) {
+		while(y >= 0 && !stop && wrap_lines_left--) {
 
 			assert(ld->ld_node.prev != NULL);
 
@@ -195,6 +203,12 @@ int find(buffer * const b, const char *pattern, const bool skip_first) {
 
 			ld = (line_desc *)ld->ld_node.prev;
 			if (ld->ld_node.prev) p = ld->line + ld->line_len - m;
+			else if (wrap_once) {
+				wrap_once = false;
+				ld = (line_desc *)b->line_desc_list.tail_pred;
+				p = ld->line + ld->line_len - m;
+				y = b->num_lines;
+			}
 			y--;
 		}
 	}
@@ -267,7 +281,7 @@ static int use_map_group;
 
 /* Works exactly like find(), but uses the regex library instead. */
 
-int find_regexp(buffer * const b, const char *regex, const bool skip_first) {
+int find_regexp(buffer * const b, const char *regex, const bool skip_first, bool wrap_once) {
 
 	const unsigned char * const up_case = b->encoding == ENC_UTF8 ? ascii_up_case : localised_up_case;
 	bool recompile_string;
@@ -430,8 +444,9 @@ int find_regexp(buffer * const b, const char *regex, const bool skip_first) {
 	if (! b->opt.search_back) {
 
 		int64_t start_pos = b->cur_pos + (skip_first ? 1 : 0);
+		int64_t wrap_lines_left = b->num_lines + 1;
 
-		while(y < b->num_lines && !stop) {
+		while(y < b->num_lines && !stop && wrap_lines_left--) {
 			assert(ld->ld_node.next != NULL);
 
 			int64_t pos;
@@ -444,13 +459,19 @@ int find_regexp(buffer * const b, const char *regex, const bool skip_first) {
 			ld = (line_desc *)ld->ld_node.next;
 			start_pos = 0;
 			y++;
+			if (wrap_once && y == b->num_lines) {
+				wrap_once = false;
+				ld = b->top_line_desc;
+				y = 0;
+			}
 		}
 	}
 	else {
 
 		int64_t start_pos = b->cur_pos + (skip_first ? -1 : 0);
+		int64_t wrap_lines_left = b->num_lines + 1;
 
-		while(y >= 0 && !stop) {
+		while(y >= 0 && !stop && wrap_lines_left--) {
 
 			assert(ld->ld_node.prev != NULL);
 
@@ -463,6 +484,12 @@ int find_regexp(buffer * const b, const char *regex, const bool skip_first) {
 
 			ld = (line_desc *)ld->ld_node.prev;
 			if (ld->ld_node.prev) start_pos = ld->line_len;
+			else if (wrap_once) {
+				wrap_once = false;
+				ld = (line_desc *)b->line_desc_list.tail_pred;
+				start_pos = ld->line_len;
+				y = b->num_lines;
+			}
 			y--;
 		}
 	}

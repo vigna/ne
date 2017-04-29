@@ -61,6 +61,10 @@ is what most commands require. */
 #define NUMERIC_ERROR(c) ((c) == ABORT ? OK : NOT_A_NUMBER)
 
 
+/* Do we want RepealLast to wrap on the next invocation? Upon NOT_FOUND from
+   search/replace functions, set this to 2. do_action() reduces toward 0.*/
+
+static int perform_wrap;
 
 
 /* This is the dispatcher of all actions that have some effect on the text.
@@ -103,6 +107,8 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 	stop = false;
 
 	if (b->recording) record_action(b->cur_macro, a, c, p, verbose_macros);
+
+	if (perform_wrap > 0) perform_wrap--;
 
 	switch(a) {
 
@@ -210,7 +216,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 	case ADJUSTVIEW_A:
 		NORMALIZE(c);
-		error = adjust_view(b,p);
+		error = adjust_view(b, p);
 		if (p) free(p);
 		return error;
 
@@ -777,7 +783,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		if (p || (q = p = request_file(b, "Filename", b->filename))) {
 			print_info(SAVING);
 
-			if (buffer_file_modified(b,p) && !request_response(b, info_msg[a==SAVE_A ? FILE_HAS_BEEN_MODIFIED : FILE_ALREADY_EXISTS], false)) {
+			if (buffer_file_modified(b, p) && !request_response(b, info_msg[a==SAVE_A ? FILE_HAS_BEEN_MODIFIED : FILE_ALREADY_EXISTS], false)) {
 				free(p);
 				return DOCUMENT_NOT_SAVED;
 			}
@@ -788,7 +794,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 				change_filename(b, p);
 				if (load_syntax) {
 					b->syn = NULL; /* So that autoprefs will load the right syntax. */
-					load_auto_prefs(b,NULL); /* Will get extension from the name, or virtual extension. */
+					load_auto_prefs(b, NULL); /* Will get extension from the name, or virtual extension. */
 					reset_syntax_states(b);
 					reset_window();
 				}
@@ -889,7 +895,8 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			free(b->find_string);
 			b->find_string = p;
 			b->find_string_changed = 1;
-			print_error(error = (a == FIND_A ? find : find_regexp)(b, NULL, false));
+			print_error(error = (a == FIND_A ? find : find_regexp)(b, NULL, false, false));
+			if (error == NOT_FOUND) perform_wrap = 2;
 			b->last_was_replace = 0;
 			b->last_was_regexp = (a == FINDREGEXP_A);
 		}
@@ -941,7 +948,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 				if (a == REPLACEALL_A) start_undo_chain(b);
 
 				while(!stop &&
-						!(error = (b->last_was_regexp ? find_regexp : find)(b, NULL, !first_search && a != REPLACEALL_A && c != 'A' && c != 'Y'))) {
+						!(error = (b->last_was_regexp ? find_regexp : find)(b, NULL, !first_search && a != REPLACEALL_A && c != 'A' && c != 'Y', false))) {
 
 					if (c != 'A' && a != REPLACEALL_A && a != REPLACEONCE_A) {
 						refresh_window(b);
@@ -993,11 +1000,12 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 				if (a == REPLACEALL_A || c == 'A') end_undo_chain(b);
 
 				if (num_replace) {
-					snprintf(msg, MAX_MESSAGE_SIZE, "%" PRId64 " replacement%s made.", num_replace, num_replace > 1 ? "s" : "");
+					snprintf(msg, MAX_MESSAGE_SIZE, "%" PRId64 " replacement%s made.%s", num_replace, num_replace > 1 ? "s" : "", error == NOT_FOUND ? index(error_msg[NOT_FOUND], '(')-1 :"");
 					print_message(msg);
 				}
 				if (stop) error = STOPPED;
 				if (error == STOPPED) reset_window();
+				if (error == NOT_FOUND) perform_wrap = 2;
 
 				if (error && ((c != 'A' && a != REPLACEALL_A || first_search) || error != NOT_FOUND)) {
 					print_error(error);
@@ -1027,7 +1035,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		error = OK;
 		int64_t num_replace = 0;
 		start_undo_chain(b);
-		for(int64_t i = 0; i < c && ! stop && ! (error = (b->last_was_regexp ? find_regexp : find)(b, NULL, !b->last_was_replace)); i++)
+		for (int64_t i = 0; i < c && ! stop && ! (error = (b->last_was_regexp ? find_regexp : find)(b, NULL, !b->last_was_replace, perform_wrap > 0)); i++)
 			if (b->last_was_replace) {
 				const int64_t cur_char = b->cur_char;
 				const int cur_x = b->cur_x;
@@ -1055,12 +1063,13 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 		end_undo_chain(b);
 		if (num_replace) {
-			snprintf(msg, MAX_MESSAGE_SIZE, "%" PRId64 " replacement%s made.", num_replace, num_replace > 1 ? "s" : "");
+			snprintf(msg, MAX_MESSAGE_SIZE, "%" PRId64 " replacement%s made.%s", num_replace, num_replace > 1 ? "s" : "", error == NOT_FOUND ? index(error_msg[NOT_FOUND], '(')-1 :"");
 			print_message(msg);
 		}
 		if (stop) error = STOPPED;
 		if (error == STOPPED) reset_window();
-		return ! b->last_was_replace || error != NOT_FOUND ? error : 0;
+		if (error == NOT_FOUND) perform_wrap = 2;
+		return num_replace && error ? ERROR : error;
 
 	case MATCHBRACKET_A:
 		return print_error(match_bracket(b)) ? ERROR : 0;

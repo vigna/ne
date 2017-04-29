@@ -12,6 +12,18 @@ pl    1   ^#!\s*/.*perl\b\s*
 py    1   ^#!\s*/.*python[0-9]*\b\s*
 rb    1   ^#!\s*/.*ruby\b\s*
 xml   1   ^\s*<\?xml\b
+
 # These must match in the first 30 and 20 lines respectively to work.
 yaml 30   ^\+\+\+$
 ini  20   ^\[\s*\w+\s*\]$
+
+# By default ne does not override a file's given extension. However,
+# you can specify any number of extensions that you would like to
+# allow to be overridden by including lines in your ~/.ne/extensions
+# containing only a dot followed by a single extension or shell "glob
+# pattern". (Basically if "ls *.pat" matches, then put ".pat" on a
+# line by itself in your ~/.ne/.extensions file. Note that ".*" would
+# allow overriding all extensions.
+#
+# Don't put such extensions in this global file, as then individual
+# users cannot choose whether to allow overriding such files.

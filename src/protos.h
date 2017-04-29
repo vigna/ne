@@ -94,7 +94,7 @@ int execute_macro(buffer *b, const char *name);
 void help(char *p);
 int cmdcmp(const char *c, const char *m);
 void unload_macros(void);
-
+char *find_key_strokes(int c, int n);
 void optimize_macro(char_stream *cs, bool verbose);
 
 /* display.c */
@@ -242,9 +242,9 @@ void  req_list_finalize(req_list * const rl);
 
 
 /* search.c */
-int  find(buffer *b, const char *pattern, const bool skip_first);
+int  find(buffer *b, const char *pattern, const bool skip_first, bool wrap_once);
 int  replace(buffer *b, int n, const char *string);
-int  find_regexp(buffer *b, const char *regex, const bool skip_first);
+int  find_regexp(buffer *b, const char *regex, const bool skip_first, bool wrap_once);
 int  replace_regexp(buffer *b, const char *string);
 char *nth_regex_substring(const line_desc *ld, int i);
 bool nth_regex_substring_nonempty(const line_desc *ld, int i);

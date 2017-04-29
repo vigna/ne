@@ -62,7 +62,7 @@ void normalize_path(char *c) {
 	while (*p) {
 		if ((p[0] == '.' || p[0] == '/') && p[1] == '/') {
 			while ((p[0] == '.' || p[0] == '/') && p[1] == '/') {
-				memmove(p,p+1,strlen(p));
+				memmove(p, p+1, strlen(p));
 			}
 		} else if (p[0] == '/') {
 			p++;
@@ -71,7 +71,7 @@ void normalize_path(char *c) {
 			if (t > c && *--t == '/') {
 				while (t > c && *--t != '/') /* empty loop */ ;
 				if (*t == '/' && (t == c || !( t[1] == '.' && t[2] == '.' && t[3] == '/'))) {
-					memmove(t,p+2,strlen(p+2)+1);
+					memmove(t, p+2, strlen(p+2)+1);
 					p = t + 1;
 				} else p += 2;
 			} else p += 2;
@@ -96,7 +96,7 @@ char *absolute_file_path(const char *a, const char *b) {
 		if (c) free(c);
 		return NULL;
 	}
-	strcpy(c,b);
+	strcpy(c, b);
 	normalize_path(c);
 	cc = c+strlen(c);
 	aa = a;
@@ -133,7 +133,7 @@ char *relative_file_path(const char *aa, const char *b) {
 	a = str_dup(aa);
 	if (!a) return NULL;
 	normalize_path(a);
-	int match = max_prefix(a,b);
+	int match = max_prefix(a, b);
 	if (a[0] != '/' || b[0] != '/') {
 		if (a) free(a);
 		return NULL;
@@ -156,8 +156,8 @@ char *relative_file_path(const char *aa, const char *b) {
 	if (c) {
 		*c = '\0';
 		for (i=0; i<up_dirs; i++)
-			strcat(c,"../");
-		strcat(c,a+j);
+			strcat(c, "../");
+		strcat(c, a + j);
 		normalize_path(c);
 	}
 	return c;
@@ -682,7 +682,7 @@ const char *cur_bookmarks_string(const buffer *b) {
 	char *s = str;
 	int i;
 
-	memset(str,0,16);
+	memset(str, 0, 16);
 	for (i=0, bits &= 0x03ff; i<10 && bits; i++, bits >>= 1) {
 		if ( bits & 1 ) {
 			*(s++) = '0' + i;

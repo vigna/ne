@@ -85,7 +85,7 @@ void cmcostinit () {
 	char *p;
 	
 #define	COST(x,e)	(x ? (cost = 0, tputs (x, 1, e), cost) : BIG)
-#define CMCOST(x,e)	((x == 0) ? BIG : (p = tgoto(x, 0, 0), COST(p ,e)))
+#define CMCOST(x,e)	((x == 0) ? BIG : (p = tgoto(x, 0, 0), COST(p, e)))
 	
 	Wcm.cc_up =		COST (Wcm.cm_up, evalcost);
 	Wcm.cc_down =	COST (Wcm.cm_down, evalcost);

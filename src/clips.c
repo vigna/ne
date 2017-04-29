@@ -155,10 +155,10 @@ int copy_to_clip(buffer *b, int n, bool cut) {
 						insert_spaces(b, ld, i, ld->line_len, b->block_start_pos - ld->line_len);
 						b->block_start_pos = bsp;
 					}
-					start_pos = min(ld->line_len,b->block_start_pos);
+					start_pos = min(ld->line_len, b->block_start_pos);
 				}
 
-				const int64_t end_pos = i == y ? min(ld->line_len,b->cur_pos) : ld->line_len;
+				const int64_t end_pos = i == y ? min(ld->line_len, b->cur_pos) : ld->line_len;
 				const int64_t len = end_pos - start_pos;
 
 				if (pass) {
@@ -290,9 +290,9 @@ int erase_block(buffer *b) {
 					insert_spaces(b, ld, i, ld->line_len, b->block_start_pos - ld->line_len);
 					b->block_start_pos = bsp;
 				}
-				start_pos = min(ld->line_len,b->block_start_pos);
+				start_pos = min(ld->line_len, b->block_start_pos);
 			}
-			const int64_t end_pos = i == y ? min(ld->line_len,b->cur_pos) : ld->line_len;
+			const int64_t end_pos = i == y ? min(ld->line_len, b->cur_pos) : ld->line_len;
 			const int64_t len = end_pos - start_pos;
 
 			erase_len += len + 1;
