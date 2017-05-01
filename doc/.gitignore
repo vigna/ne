@@ -1,1 +1,16 @@
 version.texinfo
+html/
+*.gz
+ne.txt
+ne.txt-e
+ne.aux
+ne.cm
+ne.cp
+ne.fn
+ne.ky
+ne.log
+ne.pg
+ne.toc
+ne.tp
+ne.vr
+*.pdf

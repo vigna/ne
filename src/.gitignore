@@ -9,3 +9,4 @@ names.h
 ne
 version.h
 *.gcno
+*.o

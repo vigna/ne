@@ -44,6 +44,10 @@ target requires a complete build, and in particular the presence of a
 number of tools that manipulate texinfo files, as some of the source files
 are generated from the documentation.
 
+By default the build target does not produce the documentation PDF since
+that depends on pdftex. If you still want to build the PDF you can do that
+using `make alldocs build install`.
+
 By playing with the low-level src makefile you have more options (as you can
 first build using the low-level makefile and then use the install target
 of the top-level makefile). If you have a termcap database, you should

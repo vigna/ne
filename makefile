@@ -25,11 +25,13 @@ build: docs
 docs:
 	( cd doc; make )
 
+alldocs: docs
+	( cd doc; make pdf )
+
 version:
 	./version.pl VERSION=$(VERSION)
 
-source: version
-	( cd doc; make )
+source: version alldocs
 	( cd src; make clean; make )
 	-rm -f ne-$(VERSION)
 	ln -s . ne-$(VERSION)
@@ -58,7 +60,8 @@ install:
 	cp -p syntax/*.jsf $(DESTDIR)$(PREFIX)/share/ne/syntax
 	cp -p macros/*     $(DESTDIR)$(PREFIX)/share/ne/macros
 	cp -p doc/ne.1 $(DESTDIR)$(PREFIX)/share/man/man1
-	cp -pr doc/ne.pdf doc/html doc/ne.txt doc/default.* README.md COPYING NEWS CHANGES $(DESTDIR)$(PREFIX)/share/doc/ne
+	cp -pR doc/html doc/ne.txt doc/default.* README.md COPYING NEWS CHANGES $(DESTDIR)$(PREFIX)/share/doc/ne
+	if [ -f doc/ne.pdf ]; then cp -p doc/ne.pdf $(DESTDIR)$(PREFIX)/share/doc/ne ; fi
 	cp -p doc/ne.info.gz $(DESTDIR)$(PREFIX)/share/info
 	-install-info --dir-file=$(DESTDIR)$(PREFIX)/share/info/dir $(DESTDIR)$(PREFIX)/share/info/ne.info.gz
 
