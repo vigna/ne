@@ -25,7 +25,7 @@ resource usage.
 
 %build
 
-cd src; make NE_GLOBAL_DIR=/usr/share/ne; strip ne
+cd src; make NE_GLOBAL_DIR=/usr/share/ne LIBS=-lncurses; strip ne
 
 %install
 rm -rf $RPM_BUILD_ROOT
