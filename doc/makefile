@@ -5,14 +5,13 @@
 # document (ne.pdf).
 #
 
-INFODOCS=ne.info.gz
-INFODOCSNUM=ne.info-1.gz ne.info-2.gz ne.info-3.gz ne.info-4.gz
+DOCS=ne.info.gz ne.txt html/index.html
 
-DOCS=$(INFODOCS) ne.txt html/index.html ne.dvi ne.pdf
+docs: $(DOCS)
 
-all: $(DOCS)
+pdf: ne.pdf
 
-install: all
+install: docs
 	cp * ../../../doc
 
 version.texinfo:
@@ -24,7 +23,7 @@ ne.txt: ne.texinfo version.texinfo
 	sed -i -e "s/''''/'\`''/g" ne.txt
 	sed -i -e "s/'ne'/ne/g" ne.txt
 
-$(INFODOCS): ne.texinfo version.texinfo
+ne.info.gz: ne.texinfo version.texinfo
 	makeinfo ne.texinfo
 	sed -i -e "s/\`/'/g" ne.info
 	sed -i -e "s/''''/'\`''/g" ne.info
@@ -40,5 +39,5 @@ html/index.html: ne.texinfo version.texinfo
 	makeinfo --html -o html ne.texinfo
 
 clean:
-	rm -f ne.txt ne.info* ne.ps ne.pdf ne.dvi
+	rm -f ne.txt ne.info* ne.ps ne.pdf
 	rm -rf html/
