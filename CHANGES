@@ -1,6 +1,6 @@
 (This file, CHANGES, lists fixes. See NEWS for new features and enhancements.)
 
-3.1.0
+3.1.0 2017-04-29
 
   * Comments in .yaml files are highlighted more correctly.
 
