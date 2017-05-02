@@ -28,7 +28,10 @@ The top-level makefile provides targets "source" (builds the standard
 source distribution), "cygwin" (builds the cygwin distribution), "build"
 (builds ne) and "install" (installs ne). The PREFIX make variable (see
 above) decides where ne will be installed and which will be its global
-directory.
+directory. The LIBS variable can be used to change the name of the curses
+library: by default, the low-level makefile uses "-lcurses", but depending
+on your system you might prefer to specify "LIBS=-lncurses",
+"LIBS=-lncursesw" or even "LIBS=-lterminfo".
 
 For installation (i.e., "make install"), a POSIX compliant machine with a
 terminfo database should be sufficient. Note that terminfo might come
