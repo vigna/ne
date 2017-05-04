@@ -28,7 +28,7 @@
 	"#"		line_comment	recolor=-1
 
 :idle Constant
-	*		idle
+	*		plain_scalar	noeat
 	"\n"		line_start
 	" "		maybe_idlecomment
 	"%"		directive	recolor=-1
@@ -38,6 +38,11 @@
 	"."		maybe_block_end1
 	"*&"		maybe_reference
 	"!"		maybe_typecast
+
+:plain_scalar Constant
+	*		plain_scalar
+	"\t"		bad_tab		recolor=-1
+	"\n"		line_start      noeat
 
 :maybe_key Idle
 	*		maybe_key1	recolor=-1 mark
