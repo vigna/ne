@@ -1000,7 +1000,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 				if (a == REPLACEALL_A || c == 'A') end_undo_chain(b);
 
 				if (num_replace) {
-					snprintf(msg, MAX_MESSAGE_SIZE, "%" PRId64 " replacement%s made.%s", num_replace, num_replace > 1 ? "s" : "", error == NOT_FOUND ? index(error_msg[NOT_FOUND], '(')-1 :"");
+					snprintf(msg, MAX_MESSAGE_SIZE, "%" PRId64 " replacement%s made.%s", num_replace, num_replace > 1 ? "s" : "", error == NOT_FOUND ? strchr(error_msg[NOT_FOUND], '(')-1 :"");
 					print_message(msg);
 				}
 				if (stop) error = STOPPED;
@@ -1063,7 +1063,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 		end_undo_chain(b);
 		if (num_replace) {
-			snprintf(msg, MAX_MESSAGE_SIZE, "%" PRId64 " replacement%s made.%s", num_replace, num_replace > 1 ? "s" : "", error == NOT_FOUND ? index(error_msg[NOT_FOUND], '(')-1 :"");
+			snprintf(msg, MAX_MESSAGE_SIZE, "%" PRId64 " replacement%s made.%s", num_replace, num_replace > 1 ? "s" : "", error == NOT_FOUND ? strchr(error_msg[NOT_FOUND], '(')-1 :"");
 			print_message(msg);
 		}
 		if (stop) error = STOPPED;
