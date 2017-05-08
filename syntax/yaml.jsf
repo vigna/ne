@@ -32,6 +32,7 @@
 	"\n"		line_start
 	" "		maybe_idlecomment
 	"%"		directive	recolor=-1
+	" "		maybe_idle_comment
 	"'"		string_sq_1	recolor=-1
 	"\""		string_dq_1	recolor=-1
 	"{[]}"		brace		recolor=-1
@@ -42,7 +43,8 @@
 :plain_scalar Constant
 	*		plain_scalar
 	"\t"		bad_tab		recolor=-1
-	"\n"		line_start      noeat
+	"\n"		line_start	noeat
+	" "		maybe_plain_scalar_comment
 
 :maybe_key Idle
 	*		maybe_key1	recolor=-1 mark
@@ -65,6 +67,14 @@
 # mark bad tabs until the first non-whitespace
 :bad_tab BadTab
 	*		line_start	noeat
+
+:maybe_plain_scalar_comment Comment
+	*		plain_scalar	noeat
+	"#"		line_comment
+
+:maybe_idle_comment Comment
+	*		idle		noeat
+	"#"		line_comment
 
 :line_comment Comment
 	*		line_comment
