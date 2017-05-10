@@ -14,7 +14,7 @@ rb    1   ^#!\s*/.*ruby\b\s*
 xml   1   ^\s*<\?xml\b
 
 # These must match in the first 30 and 20 lines respectively to work.
-yaml 30   ^\+\+\+$
+yaml 30   ^---$
 ini  20   ^\[\s*\w+\s*\]$
 
 # By default ne does not override a file's given extension. However,
