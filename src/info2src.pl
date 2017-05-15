@@ -383,6 +383,10 @@ sub tail_names_c
 const char PLAYONCE_ABBREV[] = "PL 1";
 const char MIDDLEVIEW_ABBREV[] = "AV M";
 const char SHIFTLEFT_ABBREV[] = "SH <";
+#ifdef ALTPAGING
+const char SHIFTSPACELEFT_ABBREV[] = "SH <S";
+const char SHIFTSPACERIGHT_ABBREV[] = "SH >S";
+#endif
 
 /* This is the NULL-terminated, ordered list of names, useful for help etc. */
 
@@ -429,6 +433,10 @@ sub tail_names_h
 extern const char PLAYONCE_ABBREV[];
 extern const char MIDDLEVIEW_ABBREV[];
 extern const char SHIFTLEFT_ABBREV[];
+#ifdef ALTPAGING
+extern const char SHIFTSPACELEFT_ABBREV[];
+extern const char SHIFTSPACERIGHT_ABBREV[];
+#endif
 
 /* This is the NULL-terminated, ordered list of names, useful for help etc. */
 
