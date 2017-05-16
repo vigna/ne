@@ -130,24 +130,17 @@ buffer *new_buffer(void) {
 	return b;
 }
 
-int delete_buffer(void) {
-
-	buffer *nb = (buffer *)cur_buffer->b_node.next, *pb = (buffer *)cur_buffer->b_node.prev;
+bool delete_buffer(void) {
+	buffer *b = (buffer *)cur_buffer->b_node.next;
 
 	rem(&cur_buffer->b_node);
 	free_buffer(cur_buffer);
 
-	if (pb->b_node.prev) {
-		cur_buffer = pb;
-		return true;
-	}
+	if (! b->b_node.next) b = (buffer *)buffers.head;
+	if (b == (buffer *)&buffers.tail) return false;
 
-	if (nb->b_node.next) {
-		cur_buffer = nb;
-		return true;
-	}
-
-	return false;
+	cur_buffer = b;
+	return true;
 }
 
 void about(void) {
