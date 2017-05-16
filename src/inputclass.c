@@ -208,9 +208,43 @@ const char *key_binding[NUM_KEYS] = {
 	/* F14 */ NULL,
 	/* F15 */ NULL,
 
-	NULL,                  NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, DELETEPREVWORD_ABBREV,  /* 336..351  150..15F */
-	DELETENEXTWORD_ABBREV, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,                   /* 352..367  160..16F */
-	NULL,                  NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,                   /* 368..383  170..17F */
+   /* 336..351  150..15F */
+   /* F16 */ NULL,
+   /* F17 */ PICK(NULL,SHIFTLEFT_ABBREV), /* Shift-F5 */
+   /* F18 */ PICK(NULL,SHIFT_ABBREV),     /* Shift-F6 */
+   /* F19 */ NULL,
+   /* F20 */ NULL,
+   /* F21 */ NULL,
+   /* F22 */ NULL,
+   /* F23 */ NULL,
+   /* F24 */ NULL,
+   /* F25 */ NULL,
+   /* F26 */ NULL,
+   /* F27 */ NULL,
+   /* F28 */ NULL,
+   /* F29 */ PICK(NULL,SHIFTSPACELEFT_ABBREV),  /* Ctrl-F5 */
+   /* F30 */ PICK(NULL,SHIFTSPACERIGHT_ABBREV), /* Ctrl-F6 */
+   /* F31 */ DELETEPREVWORD_ABBREV,             /* Ctrl-F7 */
+   
+	/* 352..367  160..16F */
+	/* F32 */ DELETENEXTWORD_ABBREV, /* Ctrl-F8 */
+	/* F33 */ NULL,
+	/* F34 */ NULL,
+	/* F35 */ NULL,
+	/* F36 */ NULL,
+	/* F37 */ NULL,
+	/* F38 */ NULL,
+	/* F39 */ NULL,
+	/* F40 */ NULL,
+	/* F41 */ NULL,
+	/* F42 */ NULL,
+	/* F43 */ NULL,
+	/* F44 */ NULL,
+	/* F45 */ NULL,
+	/* F46 */ NULL,
+	/* F47 */ NULL,
+	
+	NULL,                  NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, /* 368..383  170..17F */
 
 	/* Prefix-simulated META (ESC Ctrl-a)  384..416  180..1A0 */
 
