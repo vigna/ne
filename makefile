@@ -65,7 +65,7 @@ install:
 	cp -p doc/ne.info.gz $(DESTDIR)$(PREFIX)/share/info
 	-install-info --dir-file=$(DESTDIR)$(PREFIX)/share/info/dir $(DESTDIR)$(PREFIX)/share/info/ne.info.gz
 
-# Creates cygwin package on Windows from source tar.
+# Creates cygwin package on Windows
 
 cygwin:
 ifneq ($(OS), Windows)
@@ -79,13 +79,13 @@ endif
 	tar zcvf ne-cygwin-$(VERSION)-$(shell uname -m).tar.gz /usr/share/ne /usr/bin/ne.exe /usr/share/doc/ne /usr/share/info/ne.info.gz /usr/share/man/man1/ne.1
 
 
-# Creates Mac OS X .dmg from source tar.
+# Creates Mac OS X .dmg
 
-macosx:
+macosx: alldocs
 ifneq ($(OS), Darwin)
 	$(error This target can only be run under Mac OS X)
 endif
-	( cd src; make clean; make NE_GLOBAL_DIR=/usr/share/ne; strip ne )
+	( cd src; make clean; make NE_GLOBAL_DIR=/usr/local/share/ne; strip ne )
 	-rm -fr /tmp/package-ne-$(VERSION)
 	make install DESTDIR=/tmp/package-ne-$(VERSION)
 	pkgbuild --root /tmp/package-ne-$(VERSION) --install-location "/" --version $(VERSION) --identifier ne-$(VERSION) ne-$(VERSION).pkg
