@@ -233,13 +233,14 @@ int64_t word_wrap(buffer * const b) {
 
 	start_undo_chain(b);
 
+	const int64_t result = b->cur_pos - pos - 1;
 	if (pos < b->cur_pos) b->cur_pos = -1;
 	delete_one_char(b, b->cur_line_desc, b->cur_line, pos);
 	insert_one_line(b, b->cur_line_desc, b->cur_line, pos);
 
 	end_undo_chain(b);
 
-	return b->cur_pos - pos - 1;
+	return result;
 }
 
 
