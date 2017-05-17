@@ -1409,37 +1409,30 @@ int load_fd_in_buffer(buffer *b, int fd) {
 		ldp = alloc_line_desc_pool(b->num_lines + STANDARD_LINE_INCREMENT, -1);
 		if (ldp) {
 
-			char *p = cp->pool;
+			char *p = cp->pool, * const end = p + len;
 
 			/* This is the second pass. Here we find the actual lines, and set to
 			NUL the line terminators if necessary, following the same rationale of
 			the first pass (this is important, as b->free_chars has been computed
-			on the first pass).*/
+			on the first pass). */
 
 			for(int64_t i = 0; i < b->num_lines; i++) {
 				line_desc *ld = do_syntax ? &((line_desc *)ldp->pool)[i] : (line_desc *)&((no_syntax_line_desc *)ldp->pool)[i];
 				rem(&ld->ld_node);
 				add_tail(&b->line_desc_list, &ld->ld_node);
 
-				/* last line */
-				if (i == b->num_lines - 1) {
-					if (p - cp->pool < len) {
-						assert(*p && (*p != terminators[0] && *p != terminators[1]));
-						ld->line = p;
-						ld->line_len = len - (p - cp->pool);
-					}
-				} else {
-					char *q = p;
-					while((b->opt.binary || *q != terminators[0] && *q != terminators[1]) && *q) q++;
+				char *q = p;
+				while(q < end && (b->opt.binary || *q != terminators[0] && *q != terminators[1]) && *q) q++;
 
-					ld->line_len = q - p;
-					ld->line = q - p ? p : NULL;
+				ld->line_len = q - p;
+				ld->line = q - p ? p : NULL;
 
+				if (q < end) {
 					if (q - cp->pool < len - 1 && q[0] == '\r' && q[1] == '\n') *q++ = 0;
 					*q++ = 0;
-
-					p = q;
 				}
+
+				p = q;
 			}
 
 			ldp->allocated_items = b->num_lines;
