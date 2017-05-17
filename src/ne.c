@@ -153,20 +153,13 @@ void about(void) {
 		move_cursor(i, 0);
 		output_string(NO_WARRANTY_msg[i], false);
 	}
-	if (++i < ne_lines - 1) {
-		move_cursor(i, 0);
-		if (exists_gprefs_dir()) {
-			output_string("Global Directory: ", false);
-			output_string(exists_gprefs_dir(), false);
-		}
-		else {
-			output_string("Global directory \"", false);
-			output_string(get_global_dir(), false);
-			output_string("\" not found!", false);
-		}
-	}
 	reset_window();
-	print_message(ABOUT_MSG);
+
+	char t[256] = ABOUT_MSG " Global directory";
+	char * const gprefs_dir = exists_gprefs_dir();
+	if (gprefs_dir) strncat(strncat(t, ": ", sizeof t - 1), gprefs_dir, sizeof t - 1);
+	else strncat(strncat(strncat(t, " ", sizeof t - 1), get_global_dir(), sizeof t - 1), " not found!", sizeof t - 1);
+	print_message(t);
 }
 
 /* The main() function. It is responsible for argument parsing, calling
