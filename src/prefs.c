@@ -268,10 +268,10 @@ static void load_virt_ext(char *vname) {
 	buffer * vb = alloc_buffer(NULL);
 	if (vb == NULL) return;
 	clear_buffer(vb);
-	if (load_file_in_buffer(vb, vname) != OK) return;
-	vb->opt.do_undo = 0;
 	vb->opt.auto_prefs = 0;
+	vb->opt.do_undo = 0;
 	vb->opt.case_search = 0;
+	if (load_file_in_buffer(vb, vname) != OK) return;
 
 	bool skip_first = false;
 	vb->find_string = "^\\s*(\\w+)\\s+([0-9]+i?)\\s+(.+[^ \\t])\\s*$|^\\.([^ \\t/]+)\\s*$";
