@@ -476,6 +476,13 @@ static int request_strings_cleanup(bool reordered) {
 	return n;
 }
 
+/* indicates the function request_strings() should call upon CLOSEDOC_A */
+static int (*rs_closedoc)(int n) = NULL;
+
+static int handle_closedoc(const int n) {
+	return (n + 1) % rl.cur_entries;
+}
+
 /* indicates the correct function to call to restore the status bar after
    suspend/resume, particularly during requesters. */
 void (*resume_status_bar)(const char *message);
@@ -660,6 +667,14 @@ int request_strings(req_list *rlp0, int n) {
 						break;
 
 					case CLOSEDOC_A:
+						if (rs_closedoc) {
+							int n0 = PXY2N(page, x, y);
+							n0 = rs_closedoc(n0);
+							page = -1;
+							normalize(n0);
+						}
+						break;
+						
 					case ESCAPE_A:
 					case QUIT_A:
 					case SELECTDOC_A:
@@ -931,7 +946,9 @@ int request_document(void) {
 		rl.ignore_tab = true;
 		req_list_finalize(&rl);
 		print_message(info_msg[SELECT_DOC]);
+		rs_closedoc = &handle_closedoc;
 		i = request_strings(&rl, cur_entry);
+		rs_closedoc = NULL;
 		reset_window();
 		draw_status_bar();
 		if (i >= 0 && rl.reordered) {
@@ -967,16 +984,14 @@ int request_document(void) {
 #define DEF_ENTRIES_ALLOC_SIZE     256
 #define DEF_CHARS_ALLOC_SIZE  (4*1024)
 
-#if 0
-/* The req_list_del() function works just fine; we just don't need it yet/any more. */
 
-/* Delete the nth string from the given request list. This will work regardelss of whether
+/* Delete the nth string from the given request list. This will work regardless of whether
    the req_list has been finalized. */
 
 int req_list_del(req_list * const rl, int nth) {
 
 	if (nth < 0 || nth >= rl->cur_entries ) return ERROR;
-	const char * const str = rl->entries[nth];
+	char * const str = rl->entries[nth];
 	const int len0 = strlen(str);
 	int len = len0;
 
@@ -986,6 +1001,16 @@ int req_list_del(req_list * const rl, int nth) {
 	for(int i = 0; i < rl->cur_entries; i++)
 		if (rl->entries[i] > str )
 			rl->entries[i] -= len;
+
+	if (rl->orig_order) {
+		int nth0 = rl->orig_order[nth];
+		int skip = 0;
+		for (int i = 0; i < rl->cur_entries; i++) {
+			if (i >= nth) skip = 1;
+			int i0 = rl->orig_order[i+skip];
+			rl->orig_order[i] = (i0 >= nth0) ? i0 - 1 : i0;
+		}
+	}
 
 	rl->cur_chars -= len;
 	memmove(&rl->entries[nth], &rl->entries[nth+1], sizeof(char *)*(rl->cur_entries - nth));
@@ -1000,13 +1025,14 @@ int req_list_del(req_list * const rl, int nth) {
 	}
 	return rl->cur_entries;
 }
-#endif
 
 void req_list_free(req_list * const rl) {
 	if (rl->entries) free(rl->entries);
 	rl->entries = NULL;
 	if (rl->chars) free(rl->chars);
 	rl->chars = NULL;
+	if (rl->orig_order) free(rl->orig_order);
+	rl->orig_order = NULL;
 	rl->cur_entries = rl->alloc_entries = rl->max_entry_len = 0;
 	rl->cur_chars = rl->alloc_chars = 0;
 }
