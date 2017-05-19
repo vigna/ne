@@ -1,5 +1,12 @@
 (This file, CHANGES, lists fixes. See NEWS for new features and enhancements.)
 
+unreleased
+
+  * Fixed broken behavior in WordWrap with leading whitespace.
+
+  * On CloseDoc (^Q), the next document now becomes active. It used to make
+    the previous document active.
+
 3.1.0 2017-04-29
 
   * Comments in .yaml files are highlighted more correctly.
