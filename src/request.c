@@ -152,7 +152,9 @@ static void print_strings() {
 	}
 }
 
-static void normalize(int n) {
+/* Reset x, y, and page in terms of n.
+   Return true if we called print_strings(), false otherwise. */
+static bool normalize(int n) {
 	const int p = page;
 
 	if (n < 0 ) n = 0;
@@ -160,7 +162,11 @@ static void normalize(int n) {
 	x = N2X(n);
 	y = N2Y(n);
 	page = N2P(n);
-	if ( p != page ) print_strings();
+	if ( p != page ) {
+		print_strings();
+		return true;
+	}
+	return false;
 }
 
 static void request_move_to_sol(void) {
@@ -296,19 +302,17 @@ static bool request_reorder(const int dir) {
    In any case, return the (possibly new) index of the highlighted entry in rl. */
 
 static int reset_rl_entries() {
-	const int n0 = PXY2N(page, x, y);
 	const char * const p0 = rl.entries[PXY2N(page, x, y)];
-	int n1 = n0;
-	int i;
-	for (int j = n1 = i = 0; j < rl0->cur_entries; j++) {
+	int i, n;
+	for (int j = n = i = 0; j < rl0->cur_entries; j++) {
 		char * const p1 = rl0->entries[j];
 		if ( ! prune || ! strncasecmp(p0, p1, fuzz_len) ) {
-			if (p1 == p0) n1 = i;
+			if (p1 == p0) n = i;
 			rl.entries[i++] = p1;
 		}
 	}
 	rl.cur_entries = i;
-	return n1;
+	return n;
 }
 
 /* Count how many entries match our highlighted entry up through len characters. */
@@ -391,10 +395,10 @@ static void fuzz_back() {
 /* given a localised_up_case character c, find the next entry that
    matches our current fuzz_len chars plus this new character. The
    behavior is quite different depending on 'prune'. If true, we keep
-   only entries that matches our current fuzz_len prefix plus this
-   additional character. If false, we keep all the current entries,
-   and only (possibly) change the selected one.  Note that relative
-   order of rl.entries[] is preserved. */
+   only entries that match our current fuzz_len prefix plus this
+   additional character while preserving the relative order of
+   rl.entries[]. If false, we keep all the current entries, and only
+   (possibly) change the selected one. */
 
 static void fuzz_forward(const int c) {
 	const int n0 = PXY2N(page, x, y);
@@ -457,7 +461,7 @@ static int request_strings_init(req_list *rlp0) {
 	rl.cur_chars = rl.alloc_chars = 0;
 	rl.chars = NULL;
 	fuzz_len = common_prefix_len(&rl);
-	prune = false;
+	/* prune = false; */
 	return rl.cur_entries;
 }
 
@@ -478,10 +482,6 @@ static int request_strings_cleanup(bool reordered) {
 
 /* indicates the function request_strings() should call upon CLOSEDOC_A */
 static int (*rs_closedoc)(int n) = NULL;
-
-static int handle_closedoc(const int n) {
-	return (n + 1) % rl.cur_entries;
-}
 
 /* indicates the correct function to call to restore the status bar after
    suspend/resume, particularly during requesters. */
@@ -668,16 +668,16 @@ int request_strings(req_list *rlp0, int n) {
 
 					case CLOSEDOC_A:
 						if (rs_closedoc) {
-							int n0 = PXY2N(page, x, y);
-							n0 = rs_closedoc(n0);
+							int n0 = rs_closedoc(PXY2N(page, x, y));
 							page = -1;
 							normalize(n0);
 						}
 						break;
 						
+					case SELECTDOC_A:           /* Allow F4 to toggle us in */
+						if (!rs_closedoc) break; /* out of requestor.        */
 					case ESCAPE_A:
 					case QUIT_A:
-					case SELECTDOC_A:
 						request_strings_cleanup(reordered);
 						return -1;
 					}
@@ -924,6 +924,59 @@ char *request_file(const buffer *b, const char *prompt, const char *default_name
 	return NULL;
 }
 
+/* This is the callback function for the SelectDoc requester's CloseDoc action. */
+static int handle_closedoc(int n) {
+	/* "n" is the index into rl.entries of the "char *p" corresponding to an
+	   entry in rl0->entries, the index "o" of which -- possibly via
+	   rl0->orig_order -- corresponds to the index of the buffer we want
+	   to close if it is unmodified. */
+
+	const char * const p = rl.entries[n];
+	
+	int o;
+	for (o = 0; o < rl0->cur_entries && rl0->entries[o] != p; o++) /* empty loop */ ;
+
+	if (o == rl0->cur_entries) return n; /* This should never happen. */
+
+	if (rl0->orig_order) o = rl0->orig_order[o];
+
+	buffer *bp = get_nth_buffer(o);
+
+	if (!bp || bp->is_modified) return n; /* We don't close modified buffers here. */
+
+	/* We've determined we are going to close document *bp. */
+
+	if (rl.cur_entries == 1 && rl0->cur_entries > 1) {
+		/* Ensure we'll still have an entry in view after closing *bp. */
+		fuzz_back(); /* "n" is no longer valid. */
+	}
+
+	/* Normally when we close the indicated buffer, we advance the indicator to the next
+	   buffer. But "wrapping around" when deleting the last entry is very jarring in a
+	   requester, so in that case we back up one before closing the buffer. */
+
+	if (PXY2N(page, x, y) == rl.cur_entries - 1 && rl.cur_entries > 1)
+		normalize(rl.cur_entries - 2);
+
+	req_list_del(rl0, o);
+	n = reset_rl_entries();
+
+	buffer *nextb = (buffer *)bp->b_node.next;
+
+	rem(&bp->b_node);
+	free_buffer(bp);
+
+	if (! nextb->b_node.next) nextb = (buffer *)buffers.head;
+	if (nextb == (buffer *)&buffers.tail) {
+		close_history();
+		unset_interactive_mode();
+		exit(0);
+	}
+
+	if (bp == cur_buffer) cur_buffer = nextb;
+
+	return n;
+}
 
 /* Presents to the user a list of the documents currently available.  It
    returns the number of the document selected, or -1 on escape or error. */

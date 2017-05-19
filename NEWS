@@ -1,5 +1,10 @@
 (This file, NEWS, lists new features and enhancements. See CHANGES for fixes.)
 
+unreleased
+
+  * You can now CloseDoc (^Q) unmodified documents from within the
+    SelectDoc (F4) requester.
+
 3.1.0 2017-04-29
 
   * Large files that do not fit into memory are memory-mapped transparently
