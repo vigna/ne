@@ -673,7 +673,7 @@ int request_strings(req_list *rlp0, int n) {
 							normalize(n0);
 						}
 						break;
-						
+
 					case SELECTDOC_A:           /* Allow F4 to toggle us in */
 						if (!rs_closedoc) break; /* out of requestor.        */
 					case ESCAPE_A:
@@ -862,8 +862,6 @@ char *request_files(const char * const filename, bool use_prefix) {
 			req_list_finalize(&rl);
 
 			if (rl.cur_entries) {
-				/* qsort(rl.entries, rl.cur_entries, sizeof(char *), filenamecmpp); */
-
 				const int t = request_strings(&rl, 0);
 				if (t != ERROR) {
 					char * const p = rl.entries[t >= 0 ? t : -t - 2];
@@ -889,7 +887,6 @@ char *request_files(const char * const filename, bool use_prefix) {
 					}
 				}
 			}
-
 			closedir(d);
 		}
 		else alert();
@@ -932,7 +929,7 @@ static int handle_closedoc(int n) {
 	   to close if it is unmodified. */
 
 	const char * const p = rl.entries[n];
-	
+
 	int o;
 	for (o = 0; o < rl0->cur_entries && rl0->entries[o] != p; o++) /* empty loop */ ;
 
@@ -1084,8 +1081,9 @@ void req_list_free(req_list * const rl) {
 	rl->entries = NULL;
 	if (rl->chars) free(rl->chars);
 	rl->chars = NULL;
-	if (rl->orig_order) free(rl->orig_order);
+	if (rl->allow_reorder && rl->orig_order) free(rl->orig_order);
 	rl->orig_order = NULL;
+	rl->allow_reorder = false;
 	rl->cur_entries = rl->alloc_entries = rl->max_entry_len = 0;
 	rl->cur_chars = rl->alloc_chars = 0;
 }
@@ -1136,11 +1134,12 @@ void req_list_finalize(req_list * const rl) {
 		*(rl->entries[i]+len) = *(rl->entries[i]+len+1);
 		*(rl->entries[i]+len+1) = '\0';
 	}
+	rl->orig_order = NULL;
 	if (rl->allow_reorder ) {
 		if ( rl->orig_order = malloc(sizeof(int) * rl->cur_entries)) {
 			for (int i = 0; i < rl->cur_entries; i++)
 				rl->orig_order[i] = i;
-		} 
+		}
 		else rl->allow_reorder = false;
 	}
 }
