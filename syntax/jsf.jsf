@@ -405,7 +405,41 @@
 # newline.
 :state_color Color
 	*		state_color
-	" \t#\n"	comment_or_bad		noeat
+	" \t"		context_ws		recolor=-1
+	"#\n"		comment_or_bad		noeat
+
+# Following the state color, there might be one or more contexts.  Loop over
+# whitespace until we find something else.
+:context_ws Idle
+	*		comment_or_bad		noeat
+	" \t"		context_ws
+	"A-Za-z_"	context			mark recolor=-1 buffer
+
+# Here we recognize the possible contexts.
+:context Idle
+	*		context_unknown		noeat strings
+	"comment"	context_color
+	"string"	context_color
+	done
+	"A-Za-z0-9_"	context
+
+# We encountered what looks like a context but is unrecognized as such.
+:context_unknown Idle
+.ifdef CHECKING
+	*		context_bad		recolormark noeat
+.else
+	*		context_ws		noeat
+.endif
+
+# We encountered a valid context.
+:context_color Keyword
+	*		context_ws		noeat
+
+# We saw something that is not a valid context name with checking enabled.
+# Continue to highlight it as Bad until we see whitespace or a comment.
+:context_bad Bad
+	*		context_bad
+	" \t#\n"	context_ws		noeat
 .endif
 
 
@@ -425,7 +459,7 @@
 # We are in a string.  Continue until we see the close quote or a newline.
 # Highlight escaped characters within the string differently.  They start with a
 # '\'.
-:string Literal
+:string Literal string
 	*		string
 	"\\"		escape			recolor=-1
 	"\""		need_next_state
@@ -436,7 +470,7 @@
 .endif
 
 # Highlight an escaped character within a string.
-:escape Escape
+:escape Escape string
 	*		string
 
 # Loop over whitespace until we see the first character of the next state.
@@ -677,7 +711,7 @@
 	") \t#\n"	call_parameters_ws	noeat
 
 # We saw something that is not a valid option name.  Continue to highlight it as
-# Bad until we see whitespace.
+# Bad until we see whitespace or a comment.
 :option_bad Bad
 	*		option_bad
 	" \t#\n"	options_ws		noeat
@@ -720,7 +754,7 @@
 ###########
 
 # Continue to highlight the comment until the end of the line.
-:comment Comment
+:comment Comment comment
 	*		comment
 	"\n"		idle
 
