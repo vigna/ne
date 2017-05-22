@@ -528,21 +528,32 @@ At this point, we suggest you explore by trial and error the other
 flags of the @samp{Prefs} menu, or try the @code{Flags} command (@pxref{Flags}),
 which explains all the flags and the commands that operate on
 them. We prefer spending a few words discussing @dfn{automatic
-preferences} or @dfn{autoprefs}.
+preferences} or @dfn{autoprefs}, and @dfn{default preferences} or @dfn{defprefs}.
 
 Having many flags ensures a high degree of flexibility, but it can turn
 editing into a nightmare if you have to turn on and off dozens of flags
 for each different kind of file you edit. @code{ne}'s solution is to
-automatically set a document's flags when a file is loaded based on your
-stated preferences for each @dfn{file type}. A file's type is determined
+load your default preferences whenever @code{ne} is run before loading
+any file, then additionally set your stated preferences automatically
+for each @dfn{file type} as files are loaded. A file's type is determined
 by the @dfn{extension} of its file name, that is, the last group of letters
 after the last dot. For instance, the extension of @file{ne.texinfo} is
 @samp{texinfo}, the extension of @file{source.c} is @samp{c}, and the
 extension of @file{my.txt} is @samp{txt}.
 
-Whenever you select the @samp{Save AutoPrefs} menu item, @code{ne} saves
+Thus, when you select the @samp{Save Def Prefs} menu item or the
+@code{SaveDefPrefs} command, a special preferences file named
+@file{.default#ap} is saved. In addition to other preferences, this file also
+includes a small set of preferences which are global to @code{ne} rather than
+specific to particular document types. These preferences are: @code{FastGUI},
+@code{RequestOrder}, @code{StatusBar} and @code{VerboseMacros};
+@pxref{FastGUI}, @xref{RequestOrder}, @xref{StatusBar}, and
+@xref{VerboseMacros}. These extra preferences are not saved by the
+@code{SaveAutoPrefs} command.
+
+By contrast, whenever you select the @samp{Save AutoPrefs} menu item, @code{ne} saves
 the flags of your current document to be used when
-you load other files with the same extension as your current document.
+you load other files with the same extension.
 These @dfn{autoprefs} are saved in a file in your @file{~/.ne}
 directory. This file has the same name as the extension of the current
 document with @samp{#ap} appended to it. It contains all the commands
@@ -551,30 +562,18 @@ you open a file with this file name extension, @code{ne} will
 automagically recreate your preferred flag settings for that file type.
 (There is a flag that inhibits the process; @pxref{AutoPrefs}.)
 
-Finally, when you select the @samp{Save Def Prefs} menu item, a special
-preferences file named @file{.default#ap} is saved. These preferences
-are loaded whenever @code{ne} is run before loading any file. This is
-how you set up the preferences you always want to be set.
-
-A small set of preferences are global to @code{ne} rather than specific
-to particular document types. Thus they are saved in the @file{.default#ap}
-file by the @code{SaveDefPrefs} command or the @samp{Save Def Prefs} menu.
-They are not saved by the @code{SaveAutoPrefs} command. These preferences are:
-@code{FastGUI}, @code{RequestOrder}, @code{StatusBar} and @code{VerboseMacros};
-@pxref{FastGUI}, @xref{RequestOrder}, @xref{StatusBar}, and @xref{VerboseMacros}.
-
-Similarly, the current syntax definition is specific to the current
-document type, so it is saved only in autoprefs files by the
+Similar to preference flags, the current syntax definition is specific to the current
+document type, so it also is saved in autoprefs files by the
 @code{SaveAutoPrefs} command or @samp{Save AutoPrefs} menu; it is not
 saved in the @file{.default#ap} file.
 
-Note also that a preferences file is just a macro (as described in the
-following section). Thus, it can be edited manually if necessary.
+Note that a preferences file---whether @file{.default#ap} or an AutoPrefs file---
+is just a macro (as described in the following section). Thus, it can be edited manually if necessary.
 
-Some files have no extension. Others have obviously incorrect extensions.
-Consider for example a file named @file{example.conf} which contains XML.
-You may reasonably expect it to be considered a @file{.xml} file rather than
-a @file{.conf} file. For the purposes of applying automatic preferences and
+Some files have no extension, but the file type can be discerned by simple
+examination. Consider for example a file named @file{example} which contains XML.
+You may reasonably expect it to be treated as an @file{.xml} file rather than
+a generic file. For the purposes of applying automatic preferences and
 syntax definitions, @code{ne} provides a mechanism for overriding a wrong or
 missing extension with a @dfn{virtual extension} based on a document's
 contents. You do this by creating a @file{~/.ne/.extensions} file which is
@@ -1316,7 +1315,7 @@ a prefix given to the @code{AutoComplete} command. A third example is
 the file requester that @code{ne} issues whenever a file operation is
 going to take place. In this case, pressing @key{Return} while on a
 directory name will enter that directory and refresh the requester with
-its entries. Note also that, should the requester take too long to
+that directory's entries. Note also that, should the requester take too long to
 appear, you can interrupt the directory scanning with
 @kbd{@key{Control}-\}. However, the listing will likely be incomplete.
 
@@ -1330,7 +1329,11 @@ were opened. However, in this requester you can reorder these documents
 by using the keys bound to the @code{NextDoc} and @code{PrevDoc}
 commands, usually @key{f2} and @key{f3}. Any document reordering and
 selection will only take effect if you exit the requester with the
-@key{Return} key.
+@key{Return} key. 
+You can also close unmodified documents without leaving the @code{SelectDoc}
+requester by using the key bound to the @code{CloseDoc} command,
+usually @kbd{@key{Control}-Q}. Closing the last document this way will
+cause @code{ne} to exit.
 
 Regardless of the type of requester, you can confirm your selection
 with @key{Return} just as with the input line (@pxref{The Input Line}), or
@@ -2627,16 +2630,19 @@ confirm the action.
 documents in memory. Your cursor will be on your current document's
 name, and documents with unsaved changes will be indicated with
 asterisks (and bold if your terminal supports that). You select
-whichever document you want to become the current document.
+whichever document you want to become the current document by moving
+your cursor to its name and hitting @key{Return}..
 
-While the list of documents is displayed, you can alter their relative order
+While the list of documents is displayed, you can close unmodified
+documents with your @code{CloseDoc} key (@kbd{@key{Control}-Q}), and
+you can alter their relative order
 using your @code{NextDoc} and @code{PrevDoc} keys (@key{f2} and @key{f3}),
 which have the effect of swapping your currently selected document with
 the next or previous document in the list, respectively.
 
 If you escape from the requester, the requester goes away, you are
-returned to your original current document, and no reordering of
-documents takes place.
+returned to your original current document (unless you closed it!),
+and no reordering of documents takes place.
 
 @code{SelectDoc} is especially useful if you have a large number of
 documents open or if you want to quickly see which documents contain

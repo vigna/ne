@@ -39,5 +39,7 @@ html/index.html: ne.texinfo version.texinfo
 	makeinfo --html -o html ne.texinfo
 
 clean:
-	rm -f ne.txt ne.info* ne.ps ne.pdf
+	rm -f ne.txt ne.info* ne.ps ne.pdf ne.aux ne.cms ne.cps ne.fn ne.log ne.tp ne.cm ne.cp ne.dvi ne.ky ne.pg ne.toc ne.vr
 	rm -rf html/
+
+
