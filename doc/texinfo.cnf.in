@@ -1,0 +1,4 @@
+@c Most of the world uses A4 paper, but texinfo defaults to
+@c US Letter (8.5in x 11in) paper. If we can determine from
+@c the locale that we should use 11in (279mm) paper, we'll take
+@c the default. Otherwise we'll assume A4 paper.

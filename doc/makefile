@@ -31,7 +31,16 @@ ne.info.gz: ne.texinfo version.texinfo
 	rm -f ne.info*gz
 	gzip -9 ne.info*
 
-ne.pdf: ne.texinfo version.texinfo
+texinfo.cnf: texinfo.cnf.in
+	cp texinfo.cnf.in texinfo.cnf
+	if locale -c height | grep 279 ; then \
+	  echo "@c -- US Letter detected by makefile." >> texinfo.cnf ;\
+	else \
+	  echo "@c -- US Letter not detected by makefile; selecting A4." >> texinfo.cnf ;\
+	  echo "@afourpaper" >> texinfo.cnf ;\
+	fi
+
+ne.pdf: ne.texinfo version.texinfo texinfo.cnf
 	pdftex ne.texinfo
 
 html/index.html: ne.texinfo version.texinfo
