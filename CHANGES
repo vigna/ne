@@ -2,6 +2,8 @@
 
 unreleased
 
+  * Fixed visual glitch when deleting characters from long lines.
+
   * Fixed broken behavior in WordWrap with leading whitespace.
 
   * On CloseDoc (^Q), the next document now becomes active. It used to make
