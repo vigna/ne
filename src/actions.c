@@ -618,9 +618,11 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 				/* Deletion inside a line. */
 				const int old_char = b->encoding == ENC_UTF8 ? utf8char(&b->cur_line_desc->line[b->cur_pos]) : b->cur_line_desc->line[b->cur_pos];
 				const uint32_t old_attr = b->syn ? b->attr_buf[b->cur_pos] : 0;
-				if (b->syn) /* Invalidate attrs beyond the right window edge. */
-					for (int64_t right_pos = calc_pos(b->cur_line_desc, b->win_x + ne_columns, b->opt.tab_size, b->encoding); right_pos < b->attr_len; right_pos++)
-						b->attr_buf[right_pos] ^= 1;
+				if (b->syn) {
+					/* Invalidate attrs beyond the right window edge. */
+					const int64_t right_char = calc_char_len(b->cur_line_desc, calc_pos(b->cur_line_desc, b->win_x + ne_columns, b->opt.tab_size, b->encoding), b->encoding);
+					if (right_char < b->attr_len) b->attr_len = right_char;
+				}
 				delete_one_char(b, b->cur_line_desc, b->cur_line, b->cur_pos);
 
 				update_deleted_char(b, old_char, old_attr, b->cur_line_desc, b->cur_pos, b->cur_char, b->cur_y, b->cur_x);
