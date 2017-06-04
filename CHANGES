@@ -1,6 +1,6 @@
 (This file, CHANGES, lists fixes. See NEWS for new features and enhancements.)
 
-unreleased
+3.1.1 2017-06-04
 
   * Fixed visual glitch when deleting characters from long lines.
 
