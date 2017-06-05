@@ -332,7 +332,6 @@ static int count_fuzz_matches(const int len) {
 /* Shift fuzz_len by +1 or -1 until the matching count changes or we run out of string. */
 
 static void shift_fuzz(const int d) {
-	int c0 = count_fuzz_matches(fuzz_len);
 	const char * const p0 = rl.entries[PXY2N(page, x, y)];
 	assert(d==1||d==-1);
 	if (d==-1) {

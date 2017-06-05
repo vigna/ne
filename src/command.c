@@ -690,7 +690,7 @@ char *find_key_strokes(int c, int n) {
 
 char *bound_keys_string(int c) {
 	char *key_strokes = find_key_strokes(c, 9);
-	char *str=NULL, *p;
+	char *str=NULL;
 	if (key_strokes) {
 		if ((str = malloc(strlen(key_strokes) + 16)))
 			strcat(strcpy(str, "Bound keys(s): "), key_strokes);
