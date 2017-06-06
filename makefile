@@ -8,9 +8,11 @@ VERSION=3.1.1
 # and installed under the $(PREFIX) hierarchy. You can even use "make install PREFIX=$HOME/<dir>"
 # to install ne locally into the directory <dir>.
 
-PREFIX=/usr/local
+PREFIX?=/usr/local
 
 PROGRAM       = ne
+
+STRIP?=strip
 
 ifeq ($(OS), Windows_NT)
 	OS := Windows
@@ -20,7 +22,7 @@ endif
 
 
 build: docs
-	( cd src; make clean; make NE_GLOBAL_DIR=$(PREFIX)/share/ne; strip ne )
+	( cd src; make clean; make NE_GLOBAL_DIR=$(PREFIX)/share/ne; $(STRIP) ne )
 
 docs:
 	( cd doc; make )

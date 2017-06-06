@@ -28,7 +28,7 @@
 # where ne tries to read system-wide information (configuration
 # files, etc.).
 
-NE_GLOBAL_DIR = /usr/local/share/ne
+NE_GLOBAL_DIR ?= /usr/local/share/ne
 
 PROGRAM       = ne
 
@@ -81,7 +81,7 @@ NE_NOWCHAR=
 NE_DEBUG=
 NE_TEST=
 
-CC=c99
+CC?=c99
 
 ifeq ($(CC),gcc)
 GCCFLAGS=-std=c99 -Wall -Wno-parentheses
