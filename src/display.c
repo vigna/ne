@@ -183,9 +183,8 @@ void output_line_desc(const int row, const int col, const line_desc *ld, const i
 
 		if (*s == '\t') {
 			const int tab_width = tab_size - curr_col % tab_size;
-			int i;
 
-			for(i = 0; i < tab_width; i++)
+			for(int i = 0; i < tab_width; i++)
 				if (curr_col + i >= from_col && curr_col + i < from_col + num_cols) {
 					move_cursor(row, output_col + i);
 					output_char(' ', attr ? attr[attr_pos] : 0, false);
@@ -196,7 +195,7 @@ void output_line_desc(const int row, const int col, const line_desc *ld, const i
 		else {
 			const int c_width = output_width(c);
 
-			if (output_col >= col || output_col + c_width > col && output_col >= 0) {
+			if (output_col >= col) {
 				if (output_col + c_width <= ne_columns) {
 					if (attr) {
 						/* In the case of a differential update, we output only
@@ -218,6 +217,15 @@ void output_line_desc(const int row, const int col, const line_desc *ld, const i
 					output_spaces(ne_columns - output_col, attr ? &attr[attr_pos] : NULL);
 				}
 			}
+			else if (output_col + c_width > col) {
+				/* The caracter is only partially displayed. We can only output spaces. */
+				const int output_width = output_col + c_width - col;
+				for(int i = 0; i < output_width; i++) {
+					move_cursor(row, col + i);
+					output_char(' ', attr ? attr[attr_pos] : 0, false);
+				}
+			}
+
 			curr_col += c_width;
 		}
 		s += c_len;
