@@ -8,6 +8,10 @@
 #     make
 #     make NE_ANSI=1
 #     make NE_TERMCAP=1
+#
+# Including ncursesw support for newer Linuxes
+#
+#     make NE_NCURSESW=1
 # 
 # If you use NE_ANSI=1 or NE_TERMCAP=1, no external library is needed.
 #
@@ -75,6 +79,7 @@ TERMCAPOBJS   = tparam.o \
 		info2cap.o \
 		termcap.o
 
+NE_NCURSESW=
 NE_TERMCAP=
 NE_ANSI=
 NE_NOWCHAR=
@@ -93,10 +98,11 @@ CFLAGS=$(OPTS) $(GCCFLAGS) \
 	$(if $(NE_TEST),    -DNE_TEST -coverage,) \
 	$(if $(NE_DEBUG),   -g,-O3 -DNDEBUG) \
 	$(if $(NE_TERMCAP), -DTERMCAP,) \
-	$(if $(NE_ANSI),    -DTERMCAP -DANSI,)
+	$(if $(NE_ANSI),    -DTERMCAP -DANSI,)\
+	$(if $(NE_NCURSESW),$(shell pkg-config --cflags ncursesw),)
 
 
-LIBS=$(if $(NE_TERMCAP)$(NE_ANSI),,-lcurses)
+LIBS=$(if $(NE_TERMCAP)$(NE_ANSI)$(NE_NCURSESW),,-lcurses) $(if $(NE_NCURSESW),$(shell pkg-config --libs ncursesw),)
 
 ne:	$(OBJS) $(if $(NE_TERMCAP)$(NE_ANSI),$(TERMCAPOBJS),)
 	$(CC) $(OPTS) $(LDFLAGS) $(if $(NE_TEST), -coverage -lefence,) $^ -lm $(LIBS) -o $(PROGRAM)
