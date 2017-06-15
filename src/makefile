@@ -1,29 +1,32 @@
 #
-# This is the makefile for ne. 
-# 
+# This is the makefile for ne.
+#
 # The default build relies on terminfo, but you can specify NE_TERMCAP=1 to
 # rely on termcap, or even NE_ANSI=1 to rely on termcap and to use by default
 # the built-in ANSI terminal description. For example:
-# 
+#
 #     make
 #     make NE_ANSI=1
 #     make NE_TERMCAP=1
-# 
+#
 # If you use NE_ANSI=1 or NE_TERMCAP=1, no external library is needed.
 #
 # Specifying NE_DEBUG=1 will enable debugging info and will compile in a
 # number of assertions. Moreover, specifying NE_NOWCHAR=1 will remove the
 # calls to wide character versions of toupper(), tolower(), isspace(), etc.,
 # and also calls to wcwidth().
-# 
-# Defining ALTPAGING will create an ne which by default will bind the PageUp
-# and PageDown commands to the ^p and ^n keys as well as the PgUp and PgDn
-# keys. Some users may prefer this to the PrevPage and NextPage command
-# behavior. N.B.: This will cause ne's operation to differ slightly from the
-# documentation.
-# 
+#
+# Defining ALTPAGING will create an ne with slightly different configuration:
+# - PageUp and ^p map to PageUp (rather than PrevPage)
+# - PageDown and ^n map to PageDown (rather than NextPage)
+# - Home and End map to MoveSOL and MoveEOL (rather than MoveIncUp and MoveIncDown)
+# - (Shift-,Ctrl-)(F5,F6) shift left and right by (tabs,spaces)
+# - RequestOrder is set, so requesters display in column major order.
+# Some users may prefer this to the historical settings.
+# N.B.: This will cause ne's operation to differ slightly from the documentation.
+#
 #     make OPTS=-DALTPAGING
-# 
+#
 # By changing the value of NE_GLOBAL_DIR, you can change the directory
 # where ne tries to read system-wide information (configuration
 # files, etc.).
@@ -135,7 +138,7 @@ enums.h names.c names.h hash.c hash.h help.c help.h ext.c: ne.texinfo version.te
 	perl info2src.pl
 	rm -f ne.info*
 
-actions.o: $(MAINH)	support.h keycodes.h names.h names.c errors.h errors.c protos.h version.h
+actions.o: $(MAINH) support.h keycodes.h names.h names.c errors.h errors.c protos.h version.h
 
 autocomp.o: $(MAINH) support.h protos.h
 
