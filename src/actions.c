@@ -349,14 +349,14 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 				b->bookmark[c].cur_y = b->cur_y;
 				b->bookmark_mask |= (1 << c);
 				b->cur_bookmark = c;
-				snprintf(msg, MAX_MESSAGE_SIZE, "Bookmark %c set", c<=MAX_USER_BOOKMARK?'0'+(int)c : '-');
+				snprintf(msg, MAX_MESSAGE_SIZE, "Bookmark %c set", c <= MAX_USER_BOOKMARK?'0' + (int)c : '-');
 				print_message(msg);
 				break;
 			case UNSETBOOKMARK_A:
 				if (! (b->bookmark_mask & (1 << c)))
 					return BOOKMARK_NOT_SET;
 				b->bookmark_mask &= ~(1 << c);
-				snprintf(msg, MAX_MESSAGE_SIZE, "Bookmark %c unset", c<=MAX_USER_BOOKMARK?'0'+(int)c : '-');
+				snprintf(msg, MAX_MESSAGE_SIZE, "Bookmark %c unset", c <= MAX_USER_BOOKMARK?'0' + (int)c : '-');
 				print_message(msg);
 				break;
 			case GOTOBOOKMARK_A:
@@ -378,7 +378,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 					b->bookmark[AUTO_BOOKMARK].cur_y = cur_y;
 					b->bookmark_mask |= 1<<AUTO_BOOKMARK;
 					if (relative) {
-						snprintf(msg, MAX_MESSAGE_SIZE, "At Bookmark %c", c<=MAX_USER_BOOKMARK?'0'+(int)c : '-');
+						snprintf(msg, MAX_MESSAGE_SIZE, "At Bookmark %c", c <= MAX_USER_BOOKMARK?'0' + (int)c : '-');
 						print_message(msg);
 					}
 				}
@@ -388,13 +388,13 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		}
 
 	case GOTOLINE_A:
-		if (c < 0 && (c = request_number(b, "Line", b->cur_line + 1))<0) return NUMERIC_ERROR(c);
+		if (c < 0 && (c = request_number(b, "Line", b->cur_line + 1)) < 0) return NUMERIC_ERROR(c);
 		if (c == 0 || c > b->num_lines) c = b->num_lines;
 		goto_line(b, --c);
 		return OK;
 
 	case GOTOCOLUMN_A:
-		if (c < 0 && (c = request_number(b, "Column", b->cur_x + b->win_x + 1))<0) return NUMERIC_ERROR(c);
+		if (c < 0 && (c = request_number(b, "Column", b->cur_x + b->win_x + 1)) < 0) return NUMERIC_ERROR(c);
 		goto_column(b, c ? --c : 0);
 		return OK;
 
@@ -433,7 +433,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		return OK;
 
 	case AUTOMATCHBRACKET_A:
-		if (c < 0 && (c = request_number(b, "Match mode (sum of 0:none, 1:brightness, 2:inverse, 4:bold, 8:underline)", b->opt.automatch))<0||c>15) return ((c) == ABORT ? OK : INVALID_MATCH_MODE);
+		if (c < 0 && (c = request_number(b, "Match mode (sum of 0:none, 1:brightness, 2:inverse, 4:bold, 8:underline)", b->opt.automatch)) < 0 || c > 15) return ((c) == ABORT ? OK : INVALID_MATCH_MODE);
 		b->opt.automatch = c;
 		return OK;
 
@@ -464,7 +464,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 
-		if (c < 0 && (c = request_number(b, "Char Code", last_inserted_char))<0) return NUMERIC_ERROR(c);
+		if ((c < 0 || c > MAX_UTF_8) && ((c = request_number(b, "Char Code", last_inserted_char)) < 0 || c > MAX_UTF_8)) return NUMERIC_ERROR(c);
 		if (c == 0) return CANT_INSERT_0;
 
 		if (b->encoding == ENC_ASCII) {
@@ -815,7 +815,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 	case KEYCODE_A:
 		if (c >= NUM_KEYS) c = -1;
-		if (c < 0 ) {
+		if (c < 0) {
 			print_message(info_msg[PRESS_A_KEY]);
 			do c = get_key_code(); while(c == INVALID_CHAR || c > 0xFF || CHAR_CLASS(c) == IGNORE);
 		}
@@ -1112,17 +1112,17 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		return TAB_SIZE_OUT_OF_RANGE;
 
 	case TURBO_A:
-		if (c < 0 && (c = request_number(b, "Turbo Threshold", turbo))<0) return NUMERIC_ERROR(c);
+		if ((int)c < 0 && (int)(c = request_number(b, "Turbo Threshold", turbo)) < 0) return NUMERIC_ERROR(c);
 		turbo = c;
 		return OK;
 
 	case CLIPNUMBER_A:
-		if (c < 0 && (c = request_number(b, "Clip Number", b->opt.cur_clip))<0) return NUMERIC_ERROR(c);
+		if ((int)c < 0 && (int)(c = request_number(b, "Clip Number", b->opt.cur_clip)) < 0) return NUMERIC_ERROR(c);
 		b->opt.cur_clip = c;
 		return OK;
 
 	case RIGHTMARGIN_A:
-		if (c < 0 && (c = request_number(b, "Right Margin", b->opt.right_margin))<0) return NUMERIC_ERROR(c);
+		if ((int)c < 0 && (int)(c = request_number(b, "Right Margin", b->opt.right_margin)) < 0) return NUMERIC_ERROR(c);
 		b->opt.right_margin = c;
 		return OK;
 
@@ -1386,7 +1386,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 
 	case COPY_A:
-		if (!(error = print_error((b->mark_is_vertical ? copy_vert_to_clip : copy_to_clip)(b, c < 0 ? b->opt.cur_clip : c, a == CUT_A)))) {
+		if (!(error = print_error((b->mark_is_vertical ? copy_vert_to_clip : copy_to_clip)(b, (int)c < 0 ? b->opt.cur_clip : c, a == CUT_A)))) {
 			b->marking = 0;
 			update_window_lines(b, b->cur_line_desc, b->cur_y, ne_lines - 2, false);
 		}
@@ -1403,7 +1403,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 	case PASTE_A:
 	case PASTEVERT_A:
 		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
-		if (!(error = print_error((a == PASTE_A ? paste_to_buffer : paste_vert_to_buffer)(b, c < 0 ? b->opt.cur_clip : c)))) update_window_lines(b, b->cur_line_desc, b->cur_y, ne_lines - 2, false);
+		if (!(error = print_error((a == PASTE_A ? paste_to_buffer : paste_vert_to_buffer)(b, (int)c < 0 ? b->opt.cur_clip : c)))) update_window_lines(b, b->cur_line_desc, b->cur_y, ne_lines - 2, false);
 		assert_buffer_content(b);
 		return error ? ERROR : 0;
 
