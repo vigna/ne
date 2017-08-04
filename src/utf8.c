@@ -40,6 +40,7 @@ int64_t utf8strlen(const char * const s, const int64_t len) {
 /* Returns the length of a bytes sequence encoding the given character. */
 
 int utf8seqlen(const int c) {
+	assert(c >= 0);
 	if (c < 0x80) return 1;
 	if (c < 0x800) return 2;
 	if (c < 0x10000) return 3;
@@ -65,6 +66,7 @@ int utf8char(const char * const ss) {
    given string. Returns the length of the string written. */
 
 int utf8str(const int c, char * const ss) {
+	assert(c >= 0);
 	unsigned char * const s = (unsigned char *)ss;
 
 	if (c < 0x80) {
@@ -116,6 +118,7 @@ int utf8str(const int c, char * const ss) {
    has the same prototype as toupper(). */
 
 int utf8toupper(const int c) {
+	assert(c >= 0);
 #ifdef NOWCHAR
 	return c < 0x80 ? toupper(c) : c;
 #else
@@ -127,6 +130,7 @@ int utf8toupper(const int c) {
    has the same prototype as tolower(). */
 
 int utf8tolower(const int c) {
+	assert(c >= 0);
 #ifdef NOWCHAR
 	return c < 0x80 ? tolower(c) : c;
 #else

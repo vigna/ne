@@ -44,3 +44,5 @@ int utf8toupper(int c);
 #include <wchar.h>
 #include <wctype.h>
 #endif
+
+#define MAX_UTF_8 (0x7FFFFFFF)
