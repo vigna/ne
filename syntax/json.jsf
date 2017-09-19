@@ -215,7 +215,7 @@ done
 :integer Number
 	*			end		noeat
 	"0-9"			integer
-	"."			decimalpoint
+	"."			decimalpart
 	"eE"			exponentpart
 
 :decimalpoint Number
