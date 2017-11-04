@@ -620,8 +620,8 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 				const uint32_t old_attr = b->syn ? b->attr_buf[b->cur_pos] : 0;
 				if (b->syn) {
 					/* Invalidate attrs beyond the right window edge. */
-					for (int64_t right_pos = calc_pos(b->cur_line_desc, b->win_x + ne_columns, b->opt.tab_size, b->encoding); right_pos < b->attr_len; right_pos++)
-						b->attr_buf[right_pos] ^= 1;
+					const int64_t right_char = calc_char_len(b->cur_line_desc, calc_pos(b->cur_line_desc, b->win_x + ne_columns, b->opt.tab_size, b->encoding), b->encoding);
+					if (right_char < b->attr_len) b->attr_len = right_char;
 				}
 				delete_one_char(b, b->cur_line_desc, b->cur_line, b->cur_pos);
 
