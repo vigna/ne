@@ -102,7 +102,7 @@ CFLAGS=$(OPTS) $(GCCFLAGS) \
 LIBS=$(if $(NE_TERMCAP)$(NE_ANSI),,-lcurses)
 
 ne:	$(OBJS) $(if $(NE_TERMCAP)$(NE_ANSI),$(TERMCAPOBJS),)
-	$(CC) $(OPTS) $(LDFLAGS) $(if $(NE_TEST), -coverage -lefence,) $^ -lm $(LIBS) -o $(PROGRAM)
+	$(CC) $(OPTS) $(LDFLAGS) $(if $(NE_TEST), -coverage,) $^ -lm $(LIBS) -o $(PROGRAM)
 
 clean:
 	rm -f ne *.o *.gcda *.gcda.info *.gcno core
