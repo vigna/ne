@@ -12,7 +12,7 @@
 
 =Directive	red
 =Reference	yellow
-=LocalType	blue
+=LocalType	fg_310 # brown
 =BlockDelim	bold blue
 
 =BadTab		inverse red
@@ -23,14 +23,9 @@
 	"#"		line_comment	recolor=-1
 	" "		line_start
 
-:maybe_idlecomment Comment
-	*		idle		noeat
-	"#"		line_comment	recolor=-1
-
 :idle Constant
 	*		plain_scalar	noeat
 	"\n"		line_start
-	" "		maybe_idlecomment
 	"%"		directive	recolor=-1
 	" "		maybe_idle_comment
 	"'"		string_sq_1	recolor=-1
@@ -55,7 +50,8 @@
 :maybe_key1 Constant
 	*		idle		noeat
 	":"		key
-	" a-zA-Z0-9_-"	maybe_key1
+	"a-zA-Z0-9_-"	maybe_key1
+	" "		maybe_key1_comment
 
 # necessary to include the :
 :key Idle
@@ -70,6 +66,10 @@
 
 :maybe_plain_scalar_comment Comment
 	*		plain_scalar	noeat
+	"#"		line_comment
+
+:maybe_key1_comment Comment
+	*		maybe_key1	noeat
 	"#"		line_comment
 
 :maybe_idle_comment Comment
