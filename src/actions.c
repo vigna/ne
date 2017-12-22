@@ -89,6 +89,21 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 	int64_t col;
 	char *q;
 
+	static int depth = 0;
+	static FILE *log;
+	
+	if (!log) log = fopen("/tmp/ne-actions.log","a");
+	if (log) {
+		fprintf(log,"%p %2d (%ld,%ld(%ld)) %s %ld '%s'\n",
+	                b,  depth,
+	                        b->cur_line,
+	                            b->cur_pos,
+	                                b->cur_char,
+	                                 command_names[a],
+	                                    c,   p ? p : "<null>");
+		fflush(log);
+	}
+
 	assert(b->cur_pos >= 0);
 	assert_buffer(b);
 	assert_buffer_content(b);
