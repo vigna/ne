@@ -80,29 +80,34 @@ static int perform_wrap;
    somewhere. Though efficient, this has lead to some memory leaks (can you
    find them?). */
 
-
+int do_action_wrapped(buffer *b, action a, int64_t c, char *p);
 int do_action(buffer *b, action a, int64_t c, char *p) {
-	static char msg[MAX_MESSAGE_SIZE];
-	line_desc *next_ld;
-	HIGHLIGHT_STATE next_line_state;
-	int error = OK, recording;
-	int64_t col;
-	char *q;
-
 	static int da_depth = 0;
 	static FILE *log;
 	
 	if (!log) log = fopen("/tmp/ne-actions.log","a");
 	if (log) {
 		fprintf(log,"%p%2d %ld,%ld(%ld) %s %ld '%s'\n",
-	                b, da_depth++,
-	                       b->cur_line,
-	                           b->cur_pos,
-	                              b->cur_char,
-	                                   command_names[a],
-	                                      c,   p ? p : "<null>");
+		             b, da_depth++,
+		                    b->cur_line,
+		                        b->cur_pos,
+		                           b->cur_char,
+		                                command_names[a],
+		                                   c,   p ? p : "<null>");
 		fflush(log);
 	}
+	int rc = do_action_wrapped(b, a, c, p);
+	da_depth--;
+	return rc;
+}
+
+int do_action_wrapped(buffer *b, action a, int64_t c, char *p) {
+	static char msg[MAX_MESSAGE_SIZE];
+	line_desc *next_ld;
+	HIGHLIGHT_STATE next_line_state;
+	int error = OK, recording;
+	int64_t col;
+	char *q;
 
 	assert(b->cur_pos >= 0);
 	assert_buffer(b);
@@ -130,35 +135,35 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 	case EXIT_A:
 		if (save_all_modified_buffers()) {
 			print_error(CANT_SAVE_EXIT_SUSPENDED);
-			da_depth--; return ERROR;
+			return ERROR;
 		}
 		else {
 			close_history();
 			unset_interactive_mode();
 			exit(0);
 		}
-		da_depth--; return OK;
+		return OK;
 
 	case SAVEALL_A:
 		if (save_all_modified_buffers()) {
 			print_error(CANT_SAVE_ALL);
-			da_depth--; return ERROR;
+			return ERROR;
 		}
 		else print_message(info_msg[MODIFIED_SAVED]);
-		da_depth--; return OK;
+		return OK;
 
 	case PUSHPREFS_A:
 		NORMALIZE(c);
 		for (int64_t i = 0; i < c && !(error = push_prefs(b)) && !stop; i++);
-		da_depth--; return stop ? STOPPED : error ;
+		return stop ? STOPPED : error ;
 
 	case POPPREFS_A:
 		NORMALIZE(c);
 		for (int64_t i = 0; i < c && !(error = pop_prefs(b)) && !stop; i++);
-		da_depth--; return stop ? STOPPED : error ;
+		return stop ? STOPPED : error ;
 
 	case QUIT_A:
-		if (modified_buffers() && !request_response(b, info_msg[SOME_DOCUMENTS_ARE_NOT_SAVED], false)) {da_depth--; return ERROR;}
+		if (modified_buffers() && !request_response(b, info_msg[SOME_DOCUMENTS_ARE_NOT_SAVED], false)) return ERROR;
 		close_history();
 		unset_interactive_mode();
 		exit(0);
@@ -166,92 +171,92 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 	case LINEUP_A:
 		NORMALIZE(c);
 		for(int64_t i = 0; i < c && !(error = line_up(b)) && !stop; i++);
-		da_depth--; return stop ? STOPPED : error;
+		return stop ? STOPPED : error;
 
 	case LINEDOWN_A:
 		NORMALIZE(c);
 		for(int64_t i = 0; i < c && !(error = line_down(b)) && !stop; i++);
-		da_depth--; return stop ? STOPPED : error;
+		return stop ? STOPPED : error;
 
 	case PREVPAGE_A:
 		NORMALIZE(c);
 		for(int64_t i = 0; i < c && !(error = prev_page(b)) && !stop; i++);
-		da_depth--; return stop ? STOPPED : error;
+		return stop ? STOPPED : error;
 
 	case NEXTPAGE_A:
 		NORMALIZE(c);
 		for(int64_t i = 0; i < c && !(error = next_page(b)) && !stop; i++);
-		da_depth--; return stop ? STOPPED : error;
+		return stop ? STOPPED : error;
 
 	case MOVELEFT_A:
 		NORMALIZE(c);
 		for(int64_t i = 0; i < c && !(error = char_left(b)) && !stop; i++);
-		da_depth--; return stop ? STOPPED : error;
+		return stop ? STOPPED : error;
 
 	case MOVERIGHT_A:
 		NORMALIZE(c);
 		for(int64_t i = 0; i < c && !(error = char_right(b)) && !stop; i++);
-		da_depth--; return stop ? STOPPED : error;
+		return stop ? STOPPED : error;
 
 	case MOVESOL_A:
 		move_to_sol(b);
-		da_depth--; return OK;
+		return OK;
 
 	case MOVEEOL_A:
 		move_to_eol(b);
-		da_depth--; return OK;
+		return OK;
 
 	case MOVESOF_A:
 		move_to_sof(b);
-		da_depth--; return OK;
+		return OK;
 
 	case MOVEEOF_A:
 		delay_update();
 		move_to_bof(b);
 		move_to_eol(b);
-		da_depth--; return OK;
+		return OK;
 
 	case PAGEUP_A:
 		NORMALIZE(c);
 		for(int64_t i = 0; i < c && !(error = page_up(b)) && !stop; i++);
-		da_depth--; return stop ? STOPPED : error;
+		return stop ? STOPPED : error;
 
 	case PAGEDOWN_A:
 		NORMALIZE(c);
 		for(int64_t i = 0; i < c && !(error = page_down(b)) && !stop; i++);
-		da_depth--; return stop ? STOPPED : error;
+		return stop ? STOPPED : error;
 
 	case MOVETOS_A:
 		error = move_tos(b);
-		da_depth--; return error;
+		return error;
 
 	case MOVEBOS_A:
 		error = move_bos(b);
-		da_depth--; return error;
+		return error;
 
 	case ADJUSTVIEW_A:
 		NORMALIZE(c);
 		error = adjust_view(b, p);
 		if (p) free(p);
-		da_depth--; return error;
+		return error;
 
 	case TOGGLESEOF_A:
 		toggle_sof_eof(b);
-		da_depth--; return OK;
+		return OK;
 
 	case TOGGLESEOL_A:
 		toggle_sol_eol(b);
-		da_depth--; return OK;
+		return OK;
 
 	case NEXTWORD_A:
 		NORMALIZE(c);
 		for(int64_t i = 0; i < c && !(error = search_word(b, 1)) && !stop; i++);
-		da_depth--; return stop ? STOPPED : error;
+		return stop ? STOPPED : error;
 
 	case PREVWORD_A:
 		NORMALIZE(c);
 		for(int64_t i = 0; i < c && !(error = search_word(b, -1)) && !stop; i++);
-		da_depth--; return stop ? STOPPED : error;
+		return stop ? STOPPED : error;
 
 	case DELETENEXTWORD_A:
 	case DELETEPREVWORD_A:
@@ -283,26 +288,26 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		}
 		end_undo_chain(b);
 		b->recording = recording;
-		da_depth--; return stop ? STOPPED : error;
+		return stop ? STOPPED : error;
 
 	case MOVEEOW_A:
 		move_to_eow(b);
-		da_depth--; return OK;
+		return OK;
 
 	case MOVEINCUP_A:
 		move_inc_up(b);
-		da_depth--; return OK;
+		return OK;
 
 	case MOVEINCDOWN_A:
 		move_inc_down(b);
-		da_depth--; return OK;
+		return OK;
 
 	case UNSETBOOKMARK_A:
 		if (p && p[0]=='*' && !p[1]) { /* Special parm "*" for UNSETBOOKMARK_A */
 			b->bookmark_mask = b->cur_bookmark = 0;
 			print_message("All BookMarks cleared.");
 			free(p);
-			da_depth--; return OK;
+			return OK;
 		} /* Intentionally fall through to regular BOOKMARK parm parsing. */
 
 	case SETBOOKMARK_A:
@@ -317,7 +322,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 					snprintf(msg, MAX_MESSAGE_SIZE, "Cur Bookmarks: [%s] %s (0-9, -1, +1, or '-')", cur_bookmarks_string(b), a==SETBOOKMARK_A?"SetBookmark":"GotoBookmark");
 					p = request_string(b, msg, NULL, true, COMPLETE_NONE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto);
 					if (!p) {
-						da_depth--; return INVALID_BOOKMARK_DESIGNATION;
+						return INVALID_BOOKMARK_DESIGNATION;
 					}
 				}
 			}
@@ -337,11 +342,11 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 						free(p);
 						switch (a) {
 						case SETBOOKMARK_A:
-							da_depth--; return NO_UNSET_BOOKMARKS_TO_SET;
+							return NO_UNSET_BOOKMARKS_TO_SET;
 						case GOTOBOOKMARK_A:
-							da_depth--; return NO_SET_BOOKMARKS_TO_GOTO;
+							return NO_SET_BOOKMARKS_TO_GOTO;
 						default:
-							da_depth--; return NO_SET_BOOKMARKS_TO_UNSET;
+							return NO_SET_BOOKMARKS_TO_UNSET;
 						}
 					}
 				} else if (p[0]) {
@@ -353,7 +358,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 				}
 				else c = 0;
 				free(p);
-				if (c < 0 || c > AUTO_BOOKMARK) {da_depth--; return INVALID_BOOKMARK_DESIGNATION;}
+				if (c < 0 || c > AUTO_BOOKMARK) return INVALID_BOOKMARK_DESIGNATION;
 			}
 			else
 				c = 0;
@@ -369,13 +374,13 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 				break;
 			case UNSETBOOKMARK_A:
 				if (! (b->bookmark_mask & (1 << c)))
-					{da_depth--; return BOOKMARK_NOT_SET;}
+					return BOOKMARK_NOT_SET;
 				b->bookmark_mask &= ~(1 << c);
 				snprintf(msg, MAX_MESSAGE_SIZE, "Bookmark %c unset", c <= MAX_USER_BOOKMARK?'0' + (int)c : '-');
 				print_message(msg);
 				break;
 			case GOTOBOOKMARK_A:
-				if (! (b->bookmark_mask & (1 << c))) {da_depth--; return BOOKMARK_NOT_SET;}
+				if (! (b->bookmark_mask & (1 << c))) return BOOKMARK_NOT_SET;
 				else {
 					const int64_t prev_line = b->cur_line;
 					const int64_t prev_pos = b->cur_pos;
@@ -399,19 +404,19 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 				}
 			default: ; /* Can't happen */
 			}
-			da_depth--; return OK;
+			return OK;
 		}
 
 	case GOTOLINE_A:
-		if (c < 0 && (c = request_number(b, "Line", b->cur_line + 1)) < 0) {da_depth--; return NUMERIC_ERROR(c);}
+		if (c < 0 && (c = request_number(b, "Line", b->cur_line + 1)) < 0) return NUMERIC_ERROR(c);
 		if (c == 0 || c > b->num_lines) c = b->num_lines;
 		goto_line(b, --c);
-		da_depth--; return OK;
+		return OK;
 
 	case GOTOCOLUMN_A:
-		if (c < 0 && (c = request_number(b, "Column", b->cur_x + b->win_x + 1)) < 0) {da_depth--; return NUMERIC_ERROR(c);}
+		if (c < 0 && (c = request_number(b, "Column", b->cur_x + b->win_x + 1)) < 0) return NUMERIC_ERROR(c);
 		goto_column(b, c ? --c : 0);
-		da_depth--; return OK;
+		return OK;
 
 	case INSERTSTRING_A:
 		/* Since we are going to call another action, we do not want to record this insertion twice. */
@@ -433,24 +438,24 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			free(p);
 		}
 		b->recording = recording;
-		da_depth--; return error;
+		return error;
 
 	case TABS_A:
 		SET_USER_FLAG(b, c, opt.tabs);
-		da_depth--; return OK;
+		return OK;
 
 	case DELTABS_A:
 		SET_USER_FLAG(b, c, opt.del_tabs);
-		da_depth--; return OK;
+		return OK;
 
 	case SHIFTTABS_A:
 		SET_USER_FLAG(b, c, opt.shift_tabs);
-		da_depth--; return OK;
+		return OK;
 
 	case AUTOMATCHBRACKET_A:
-		if (c < 0 && (c = request_number(b, "Match mode (sum of 0:none, 1:brightness, 2:inverse, 4:bold, 8:underline)", b->opt.automatch)) < 0 || c > 15) {da_depth--; return ((c) == ABORT ? OK : INVALID_MATCH_MODE);}
+		if (c < 0 && (c = request_number(b, "Match mode (sum of 0:none, 1:brightness, 2:inverse, 4:bold, 8:underline)", b->opt.automatch)) < 0 || c > 15) return ((c) == ABORT ? OK : INVALID_MATCH_MODE);
 		b->opt.automatch = c;
-		da_depth--; return OK;
+		return OK;
 
 	case INSERTTAB_A:
 		recording = b->recording;
@@ -471,22 +476,22 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		}
 		end_undo_chain(b);
 		b->recording = recording;
-		da_depth--; return error;
+		return error;
 
 	case INSERTCHAR_A: {
 		static int last_inserted_char = ' ';
 		int deleted_char, old_char;
 
-		if (b->opt.read_only) {da_depth--; return DOCUMENT_IS_READ_ONLY;}
+		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 
-		if ((c < 0 || c > MAX_UTF_8) && ((c = request_number(b, "Char Code", last_inserted_char)) < 0 || c > MAX_UTF_8)) {da_depth--; return NUMERIC_ERROR(c);}
-		if (c == 0) {da_depth--; return CANT_INSERT_0;}
+		if ((c < 0 || c > MAX_UTF_8) && ((c = request_number(b, "Char Code", last_inserted_char)) < 0 || c > MAX_UTF_8)) return NUMERIC_ERROR(c);
+		if (c == 0) return CANT_INSERT_0;
 
 		if (b->encoding == ENC_ASCII) {
 			if (c > 0xFF) b->encoding = ENC_UTF8;
 			else if (c > 0x7F) b->encoding = b->opt.utf8auto ? ENC_UTF8 : ENC_8_BIT;
 		}
-		if (c > 0xFF && b->encoding == ENC_8_BIT) {da_depth--; return INVALID_CHARACTER;}
+		if (c > 0xFF && b->encoding == ENC_8_BIT) return INVALID_CHARACTER;
 
 		last_inserted_char = c;
 
@@ -550,13 +555,13 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		}
 
 		end_undo_chain(b);
-		da_depth--; return OK;
+		return OK;
 	}
 
 
 	case BACKSPACE_A:
 	case DELETECHAR_A:
-		if (b->opt.read_only) {da_depth--; return DOCUMENT_IS_READ_ONLY;}
+		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 		NORMALIZE(c);
 		start_undo_chain(b);
 		for(int64_t i = 0; i < c && !stop; i++) {
@@ -565,7 +570,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 					if (b->cur_line == 0) {
 						/* Start of buffer. We just return an error. */
 						end_undo_chain(b);
-						da_depth--; return ERROR;
+						return ERROR;
 					}
 					/* We turn a backspace at the start of a line into a delete
 					   at the end of the previous line. */
@@ -658,10 +663,10 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		}
 		need_attr_update = true;
 		end_undo_chain(b);
-		da_depth--; return error ? error : stop ? STOPPED : 0;
+		return error ? error : stop ? STOPPED : 0;
 
 	case INSERTLINE_A:
-		if (b->opt.read_only) {da_depth--; return DOCUMENT_IS_READ_ONLY;}
+		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 		NORMALIZE(c);
 		/* There SHOULD be a start_undo_chain(b) here, but in practice we've become used to using
 		   a single Undo after an InsertLine to remove the autoindent space. Therefore, this sillyness.
@@ -725,11 +730,11 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			} else end_undo_chain(b);
 		}
 
-		da_depth--; return stop ? STOPPED : 0;
+		return stop ? STOPPED : 0;
 
 	case DELETELINE_A:
 
-		if (b->opt.read_only) {da_depth--; return DOCUMENT_IS_READ_ONLY;}
+		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 		NORMALIZE(c);
 
 		col = b->win_x + b->cur_x;
@@ -747,11 +752,11 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		}
 		goto_column(b, col);
 
-		da_depth--; return stop ? STOPPED : error;
+		return stop ? STOPPED : error;
 
 	case UNDELLINE_A:
 
-		if (b->opt.read_only) {da_depth--; return DOCUMENT_IS_READ_ONLY;}
+		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 
 		NORMALIZE(c);
 
@@ -784,17 +789,17 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			update_syntax_states(b, b->cur_y, b->cur_line_desc, next_ld);
 		}
 		end_undo_chain(b);
-		da_depth--; return stop ? STOPPED : error;
+		return stop ? STOPPED : error;
 
 	case DELETEEOL_A:
 
-		if (b->opt.read_only) {da_depth--; return DOCUMENT_IS_READ_ONLY;}
+		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 		ensure_attributes(b);
 		delete_to_eol(b, b->cur_line_desc, b->cur_line, b->cur_pos);
 		update_line(b, b->cur_line_desc, b->cur_y, b->cur_x, false);
 		need_attr_update = true;
 
-		da_depth--; return OK;
+		return OK;
 
 	case SAVE_A:
 		p = str_dup(b->filename);
@@ -805,7 +810,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 			if (buffer_file_modified(b, p) && !request_response(b, info_msg[a==SAVE_A ? FILE_HAS_BEEN_MODIFIED : FILE_ALREADY_EXISTS], false)) {
 				free(p);
-				da_depth--; return DOCUMENT_NOT_SAVED;
+				return DOCUMENT_NOT_SAVED;
 			}
 			error = save_buffer_to_file(b, p);
 
@@ -822,11 +827,11 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			}
 			else {
 				free(p);
-				da_depth--; return ERROR;
+				return ERROR;
 			}
 		}
 		b->undo.last_save_step = b->undo.cur_step;
-		da_depth--; return OK;
+		return OK;
 
 	case KEYCODE_A:
 		if (c >= NUM_KEYS) c = -1;
@@ -838,13 +843,13 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		snprintf(msg, MAX_MESSAGE_SIZE, "Key Code: 0x%02x,  Input Class: %s,  Assigned Command: %s", (int)col, input_class_names[CHAR_CLASS(c)],
 		         (key_binding[col] && key_binding[col][0]) ? key_binding[col] : "(none)" );
 		print_message(msg);
-		da_depth--; return OK;
+		return OK;
 
 	case CLEAR_A:
-		if ((b->is_modified) && !request_response(b, info_msg[THIS_DOCUMENT_NOT_SAVED], false)) {da_depth--; return ERROR;}
+		if ((b->is_modified) && !request_response(b, info_msg[THIS_DOCUMENT_NOT_SAVED], false)) return ERROR;
 		clear_buffer(b);
 		reset_window();
-		da_depth--; return OK;
+		return OK;
 
 	case OPENNEW_A:
 		b = new_buffer();
@@ -853,7 +858,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 	case OPEN_A:
 		if ((b->is_modified) && !request_response(b, info_msg[THIS_DOCUMENT_NOT_SAVED], false)) {
 			if (a == OPENNEW_A) do_action(b, CLOSEDOC_A, 1, NULL);
-			da_depth--; return ERROR;
+			return ERROR;
 		}
 
 		if (p || (p = request_file(b, "Filename", b->filename))) {
@@ -883,23 +888,23 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 				}
 				print_error(error);
 				reset_window();
-				da_depth--; return OK;
+				return OK;
 			}
 			free(p);
 		}
 		if (a == OPENNEW_A) do_action(b, CLOSEDOC_A, 1, NULL);
-		da_depth--; return ERROR;
+		return ERROR;
 
 	case ABOUT_A:
 		about();
-		da_depth--; return OK;
+		return OK;
 
 	case REFRESH_A:
 		clear_entire_screen();
 		ttysize();
 		keep_cursor_on_screen(cur_buffer);
 		reset_window();
-		da_depth--; return OK;
+		return OK;
 
 	case FIND_A:
 	case FINDREGEXP_A:
@@ -909,7 +914,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 			if (encoding != ENC_ASCII && b->encoding != ENC_ASCII && encoding != b->encoding) {
 				free(p);
-				da_depth--; return INCOMPATIBLE_SEARCH_STRING_ENCODING;
+				return INCOMPATIBLE_SEARCH_STRING_ENCODING;
 			}
 
 			free(b->find_string);
@@ -921,7 +926,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			b->last_was_regexp = (a == FINDREGEXP_A);
 		}
 
-		da_depth--; return error ? ERROR : 0;
+		return error ? ERROR : 0;
 
 	case REPLACE_A:
 	case REPLACEONCE_A:
@@ -929,7 +934,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 		if (b->opt.read_only) {
 			free(p);
-			da_depth--; return DOCUMENT_IS_READ_ONLY;
+			return DOCUMENT_IS_READ_ONLY;
 		}
 
 		if ((q = b->find_string) || (q = request_string(b, b->last_was_regexp ? "Find RegExp" : "Find", NULL, false, COMPLETE_NONE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
@@ -939,7 +944,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			if (search_encoding != ENC_ASCII && b->encoding != ENC_ASCII && search_encoding != b->encoding) {
 				free(p);
 				free(q);
-				da_depth--; return INCOMPATIBLE_SEARCH_STRING_ENCODING;
+				return INCOMPATIBLE_SEARCH_STRING_ENCODING;
 			}
 
 			if (q != b->find_string) {
@@ -956,7 +961,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 				if (replace_encoding != ENC_ASCII && b->encoding != ENC_ASCII && replace_encoding != b->encoding ||
 					search_encoding != ENC_ASCII && replace_encoding != ENC_ASCII && search_encoding != replace_encoding) {
 					free(p);
-					da_depth--; return INCOMPATIBLE_REPLACE_STRING_ENCODING;
+					return INCOMPATIBLE_REPLACE_STRING_ENCODING;
 				}
 
 				c = 0;
@@ -1003,7 +1008,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 						if (print_error(error)) {
 							if (a == REPLACEALL_A || c == 'A') end_undo_chain(b);
-							da_depth--; return ERROR;
+							return ERROR;
 						}
 					}
 
@@ -1029,25 +1034,25 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 				if (error && ((c != 'A' && a != REPLACEALL_A || first_search) || error != NOT_FOUND)) {
 					print_error(error);
-					da_depth--; return ERROR;
+					return ERROR;
 				}
-				da_depth--; return OK;
+				return OK;
 			}
 		}
-		da_depth--; return ERROR;
+		return ERROR;
 
 	case REPEATLAST_A:
-		if (b->opt.read_only && b->last_was_replace) {da_depth--; return DOCUMENT_IS_READ_ONLY;}
-		if (!b->find_string) {da_depth--; return NO_SEARCH_STRING;}
-		if ((b->last_was_replace) && !b->replace_string) {da_depth--; return NO_REPLACE_STRING;}
+		if (b->opt.read_only && b->last_was_replace) return DOCUMENT_IS_READ_ONLY;
+		if (!b->find_string) return NO_SEARCH_STRING;
+		if ((b->last_was_replace) && !b->replace_string) return NO_REPLACE_STRING;
 
 		const encoding_type search_encoding = detect_encoding(b->find_string, strlen(b->find_string));
-		if (search_encoding != ENC_ASCII && b->encoding != ENC_ASCII && search_encoding != b->encoding) {da_depth--; return INCOMPATIBLE_SEARCH_STRING_ENCODING;}
+		if (search_encoding != ENC_ASCII && b->encoding != ENC_ASCII && search_encoding != b->encoding) return INCOMPATIBLE_SEARCH_STRING_ENCODING;
 		if (b->last_was_replace) {
 			const encoding_type replace_encoding = detect_encoding(b->replace_string, strlen(b->replace_string));
 			if (replace_encoding != ENC_ASCII && b->encoding != ENC_ASCII && replace_encoding != b->encoding ||
 				 search_encoding != ENC_ASCII && replace_encoding != ENC_ASCII && search_encoding != replace_encoding)
-				{da_depth--; return INCOMPATIBLE_REPLACE_STRING_ENCODING;}
+				return INCOMPATIBLE_REPLACE_STRING_ENCODING;
 		}
 
 		NORMALIZE(c);
@@ -1089,131 +1094,131 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		if (stop) error = STOPPED;
 		if (error == STOPPED) reset_window();
 		if (error == NOT_FOUND) perform_wrap = 2;
-		da_depth--; return num_replace && error ? ERROR : error;
+		return num_replace && error ? ERROR : error;
 
 	case MATCHBRACKET_A:
-		da_depth--; return print_error(match_bracket(b)) ? ERROR : 0;
+		return print_error(match_bracket(b)) ? ERROR : 0;
 
 	case ALERT_A:
 		alert();
-		da_depth--; return OK;
+		return OK;
 
 	case BEEP_A:
 		ring_bell();
-		da_depth--; return OK;
+		return OK;
 
 	case FLASH_A:
 		do_flash();
-		da_depth--; return OK;
+		return OK;
 
 	case ESCAPETIME_A:
-		if (c < 0 && (c = request_number(b, "Timeout (1/10s)", -1))<0) {da_depth--; return NUMERIC_ERROR(c);}
+		if (c < 0 && (c = request_number(b, "Timeout (1/10s)", -1))<0) return NUMERIC_ERROR(c);
 		if (c < 256) {
 			set_escape_time(c);
-			da_depth--; return OK;
+			return OK;
 		}
-		else {da_depth--; return ESCAPE_TIME_OUT_OF_RANGE;}
+		else return ESCAPE_TIME_OUT_OF_RANGE;
 
 	case TABSIZE_A:
-		if (c < 0 && (c = request_number(b, "TAB Size", b->opt.tab_size))<=0) {da_depth--; return NUMERIC_ERROR(c);}
+		if (c < 0 && (c = request_number(b, "TAB Size", b->opt.tab_size))<=0) return NUMERIC_ERROR(c);
 		if (c < ne_columns / 2) {
 			const int64_t pos = b->cur_pos;
 			move_to_sol(b);
 			b->opt.tab_size = c;
 			goto_pos(b, pos);
 			reset_window();
-			da_depth--; return OK;
+			return OK;
 		}
-		da_depth--; return TAB_SIZE_OUT_OF_RANGE;
+		return TAB_SIZE_OUT_OF_RANGE;
 
 	case TURBO_A:
-		if ((int)c < 0 && (int)(c = request_number(b, "Turbo Threshold", turbo)) < 0) {da_depth--; return NUMERIC_ERROR(c);}
+		if ((int)c < 0 && (int)(c = request_number(b, "Turbo Threshold", turbo)) < 0) return NUMERIC_ERROR(c);
 		turbo = c;
-		da_depth--; return OK;
+		return OK;
 
 	case CLIPNUMBER_A:
-		if ((int)c < 0 && (int)(c = request_number(b, "Clip Number", b->opt.cur_clip)) < 0) {da_depth--; return NUMERIC_ERROR(c);}
+		if ((int)c < 0 && (int)(c = request_number(b, "Clip Number", b->opt.cur_clip)) < 0) return NUMERIC_ERROR(c);
 		b->opt.cur_clip = c;
-		da_depth--; return OK;
+		return OK;
 
 	case RIGHTMARGIN_A:
-		if ((int)c < 0 && (int)(c = request_number(b, "Right Margin", b->opt.right_margin)) < 0) {da_depth--; return NUMERIC_ERROR(c);}
+		if ((int)c < 0 && (int)(c = request_number(b, "Right Margin", b->opt.right_margin)) < 0) return NUMERIC_ERROR(c);
 		b->opt.right_margin = c;
-		da_depth--; return OK;
+		return OK;
 
 	case FREEFORM_A:
 		SET_USER_FLAG(b, c, opt.free_form);
-		da_depth--; return OK;
+		return OK;
 
 	case PRESERVECR_A:
 		SET_USER_FLAG(b, c, opt.preserve_cr);
-		da_depth--; return OK;
+		return OK;
 
 	case CRLF_A:
 		SET_USER_FLAG(b, c, is_CRLF);
-		da_depth--; return OK;
+		return OK;
 
 	case VISUALBELL_A:
 		SET_USER_FLAG(b, c, opt.visual_bell);
-		da_depth--; return OK;
+		return OK;
 
 	case STATUSBAR_A:
 		SET_GLOBAL_FLAG(c, status_bar);
 		reset_status_bar();
-		da_depth--; return OK;
+		return OK;
 
 	case HEXCODE_A:
 		SET_USER_FLAG(b, c, opt.hex_code);
 		reset_status_bar();
-		da_depth--; return OK;
+		return OK;
 
 	case FASTGUI_A:
 		SET_GLOBAL_FLAG(c, fast_gui);
 		reset_status_bar();
-		da_depth--; return OK;
+		return OK;
 
 	case INSERT_A:
 		SET_USER_FLAG(b, c, opt.insert);
-		da_depth--; return OK;
+		return OK;
 
 	case WORDWRAP_A:
 		SET_USER_FLAG(b, c, opt.word_wrap);
-		da_depth--; return OK;
+		return OK;
 
 	case AUTOINDENT_A:
 		SET_USER_FLAG(b, c, opt.auto_indent);
-		da_depth--; return OK;
+		return OK;
 
 	case VERBOSEMACROS_A:
 		SET_GLOBAL_FLAG(c, verbose_macros);
-		da_depth--; return OK;
+		return OK;
 
 	case AUTOPREFS_A:
 		SET_USER_FLAG(b, c, opt.auto_prefs);
-		da_depth--; return OK;
+		return OK;
 
 	case BINARY_A:
 		SET_USER_FLAG(b, c, opt.binary);
-		da_depth--; return OK;
+		return OK;
 
 	case NOFILEREQ_A:
 		SET_USER_FLAG(b, c, opt.no_file_req);
-		da_depth--; return OK;
+		return OK;
 
 	case REQUESTORDER_A:
 		SET_GLOBAL_FLAG(c, req_order);
-		da_depth--; return OK;
+		return OK;
 
 	case UTF8AUTO_A:
 		SET_USER_FLAG(b, c, opt.utf8auto);
-		da_depth--; return OK;
+		return OK;
 
 	case UTF8_A: {
 		const encoding_type old_encoding = b->encoding, encoding = detect_buffer_encoding(b);
 
 		if (c < 0 && b->encoding != ENC_UTF8 || c > 0) {
 			if (encoding == ENC_ASCII || encoding == ENC_UTF8) b->encoding = ENC_UTF8;
-			else {da_depth--; return BUFFER_IS_NOT_UTF8;}
+			else return BUFFER_IS_NOT_UTF8;
 		}
 		else b->encoding = encoding == ENC_ASCII ? ENC_ASCII : ENC_8_BIT;
 		if (old_encoding != b->encoding) {
@@ -1224,18 +1229,18 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		need_attr_update = false;
 		move_to_sol(b);
 		reset_window();
-		da_depth--; return OK;
+		return OK;
 	}
 
 	case MODIFIED_A:
 		SET_USER_FLAG(b, c, is_modified);
-		da_depth--; return OK;
+		return OK;
 
 	case UTF8IO_A:
 		if (c < 0) io_utf8 = ! io_utf8;
 		else io_utf8 = c != 0;
 		reset_window();
-		da_depth--; return OK;
+		return OK;
 
 	case DOUNDO_A:
 		SET_USER_FLAG(b, c, opt.do_undo);
@@ -1243,21 +1248,21 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			reset_undo_buffer(&b->undo);
 			b->atomic_undo = 0;
 		}
-		da_depth--; return OK;
+		return OK;
 
 	case READONLY_A:
 		SET_USER_FLAG(b, c, opt.read_only);
-		da_depth--; return OK;
+		return OK;
 
 	case CASESEARCH_A:
 		SET_USER_FLAG(b, c, opt.case_search);
 		b->find_string_changed = 1;
-		da_depth--; return OK;
+		return OK;
 
 	case SEARCHBACK_A:
 		SET_USER_FLAG(b, c, opt.search_back);
 		b->find_string_changed = 1;
-		da_depth--; return OK;
+		return OK;
 
 	case ATOMICUNDO_A:
 		if (b->opt.do_undo) {
@@ -1272,7 +1277,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 				c = b->link_undos + 1;
 			} else {
 				free(p);
-				da_depth--; return INVALID_LEVEL;
+				return INVALID_LEVEL;
 			}
 			while(c > b->link_undos) start_undo_chain(b);
 			while(c < b->link_undos) end_undo_chain(b);
@@ -1280,10 +1285,10 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			snprintf(msg, MAX_MESSAGE_SIZE, "AtomicUndo level: %" PRId64, c);
 			print_message(msg);
 			if (p) free(p);
-			da_depth--; return OK;
+			return OK;
 		} else {
 			if (p) free(p);
-			da_depth--; return UNDO_NOT_ENABLED;
+			return UNDO_NOT_ENABLED;
 		}
 
 	case RECORD_A:
@@ -1294,17 +1299,17 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			print_message(info_msg[STARTING_MACRO_RECORDING]);
 		}
 		else if (!b->recording && recording) print_message(info_msg[MACRO_RECORDING_COMPLETED]);
-		da_depth--; return OK;
+		return OK;
 
 	case PLAY_A:
 		if (!b->recording && !b->executing_internal_macro) {
-			if (c < 0 && (c = request_number(b, "Times", 1))<=0) {da_depth--; return NUMERIC_ERROR(c);}
+			if (c < 0 && (c = request_number(b, "Times", 1))<=0) return NUMERIC_ERROR(c);
 			b->executing_internal_macro = 1;
 			for(int64_t i = 0; i < c && !(error = play_macro(b, b->cur_macro)); i++);
 			b->executing_internal_macro = 0;
-			da_depth--; return print_error(error) ? ERROR : 0;
+			return print_error(error) ? ERROR : 0;
 		}
-		else {da_depth--; return ERROR;}
+		else return ERROR;
 
 	case SAVEMACRO_A:
 		if (p || (p = request_file(b, "Macro Name", NULL))) {
@@ -1312,9 +1317,9 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			optimize_macro(b->cur_macro, verbose_macros);
 			if ((error = print_error(save_stream(b->cur_macro, p, b->is_CRLF, false))) == OK) print_info(SAVED);
 			free(p);
-			da_depth--; return error ? ERROR : 0;
+			return error ? ERROR : 0;
 		}
-		da_depth--; return ERROR;
+		return ERROR;
 
 	case OPENMACRO_A:
 		if (p || (p = request_file(b, "Macro Name", NULL))) {
@@ -1322,29 +1327,29 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			cs = load_stream(b->cur_macro, p, false, false);
 			if (cs) b->cur_macro = cs;
 			free(p);
-			da_depth--; return cs ? 0 : ERROR;
+			return cs ? 0 : ERROR;
 		}
-		da_depth--; return ERROR;
+		return ERROR;
 
 	case MACRO_A:
 		if (p || (p = request_file(b, "Macro Name", NULL))) {
 			error = print_error(execute_macro(b, p));
 			free(p);
-			da_depth--; return error ? ERROR : 0;
+			return error ? ERROR : 0;
 		}
-		da_depth--; return ERROR;
+		return ERROR;
 
 	case UNLOADMACROS_A:
 		unload_macros();
-		da_depth--; return OK;
+		return OK;
 
 	case NEWDOC_A:
 		new_buffer();
 		reset_window();
-		da_depth--; return OK;
+		return OK;
 
 	case CLOSEDOC_A:
-		if ((b->is_modified) && !request_response(b, info_msg[THIS_DOCUMENT_NOT_SAVED], false)) {da_depth--; return ERROR;}
+		if ((b->is_modified) && !request_response(b, info_msg[THIS_DOCUMENT_NOT_SAVED], false)) return ERROR;
 		if (!delete_buffer()) {
 			close_history();
 			unset_interactive_mode();
@@ -1356,7 +1361,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		/* We always return ERROR after a buffer has been deleted. Otherwise,
 		   the calling routines (and macros) could work on an unexisting buffer. */
 
-		da_depth--; return ERROR;
+		return ERROR;
 
 	case NEXTDOC_A: /* Was NEXT_BUFFER: */
 		if (b->b_node.next->next) cur_buffer = (buffer *)b->b_node.next;
@@ -1365,7 +1370,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		reset_window();
 		need_attr_update = false;
 		b->attr_len = -1;
-		da_depth--; return OK;
+		return OK;
 
 	case PREVDOC_A:
 		if (b->b_node.prev->prev) cur_buffer = (buffer *)b->b_node.prev;
@@ -1374,87 +1379,87 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		reset_window();
 		need_attr_update = false;
 		b->attr_len = -1;
-		da_depth--; return OK;
+		return OK;
 
 	case SELECTDOC_A: ;
 		const int n = request_document();
-		if (n < 0 || !(b = get_nth_buffer(n))) {da_depth--; return ERROR;}
+		if (n < 0 || !(b = get_nth_buffer(n))) return ERROR;
 		cur_buffer = b;
 		keep_cursor_on_screen(cur_buffer);
 		reset_window();
 		need_attr_update = false;
 		b->attr_len = -1;
-		da_depth--; return OK;
+		return OK;
 
 	case MARK_A:
 	case MARKVERT_A:
 		if (c < 0) c = 1;
 		SET_USER_FLAG(b, c, marking);
-		if (!b->marking) {da_depth--; return(OK);}
+		if (!b->marking) return(OK);
 		print_message(info_msg[a==MARK_A ? BLOCK_START_MARKED : VERTICAL_BLOCK_START_MARKED]);
 		b->mark_is_vertical = (a == MARKVERT_A);
 		b->block_start_line = b->cur_line;
 		b->block_start_pos = b->cur_pos;
-		da_depth--; return OK;
+		return OK;
 
 	case CUT_A:
-		if (b->opt.read_only) {da_depth--; return DOCUMENT_IS_READ_ONLY;}
+		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 
 	case COPY_A:
 		if (!(error = print_error((b->mark_is_vertical ? copy_vert_to_clip : copy_to_clip)(b, (int)c < 0 ? b->opt.cur_clip : c, a == CUT_A)))) {
 			b->marking = 0;
 			update_window_lines(b, b->cur_line_desc, b->cur_y, ne_lines - 2, false);
 		}
-		da_depth--; return error ? ERROR : 0;
+		return error ? ERROR : 0;
 
 	case ERASE_A:
-		if (b->opt.read_only) {da_depth--; return DOCUMENT_IS_READ_ONLY;}
+		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 		if (!(error = print_error((b->mark_is_vertical ? erase_vert_block : erase_block)(b)))) {
 			b->marking = 0;
 			update_window_lines(b, b->cur_line_desc, b->cur_y, ne_lines - 2, false);
 		}
-		da_depth--; return OK;
+		return OK;
 
 	case PASTE_A:
 	case PASTEVERT_A:
-		if (b->opt.read_only) {da_depth--; return DOCUMENT_IS_READ_ONLY;}
+		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 		if (!(error = print_error((a == PASTE_A ? paste_to_buffer : paste_vert_to_buffer)(b, (int)c < 0 ? b->opt.cur_clip : c)))) update_window_lines(b, b->cur_line_desc, b->cur_y, ne_lines - 2, false);
 		assert_buffer_content(b);
-		da_depth--; return error ? ERROR : 0;
+		return error ? ERROR : 0;
 
 	case GOTOMARK_A:
 		if (b->marking) {
 			delay_update();
 			goto_line_pos(b, b->block_start_line, b->block_start_pos);
-			da_depth--; return OK;
+			return OK;
 		}
 		print_error(MARK_BLOCK_FIRST);
-		da_depth--; return ERROR;
+		return ERROR;
 
 	case OPENCLIP_A:
 		if (p || (p = request_file(b, "Clip Name", NULL))) {
 			error = print_error(load_clip(b->opt.cur_clip, p, b->opt.preserve_cr, b->opt.binary));
 			free(p);
-			da_depth--; return error ? ERROR : 0;
+			return error ? ERROR : 0;
 		}
-		da_depth--; return ERROR;
+		return ERROR;
 
 	case SAVECLIP_A:
 		if (p || (p = request_file(b, "Clip Name", NULL))) {
 			print_info(SAVING);
 			if ((error = print_error(save_clip(b->opt.cur_clip, p, b->is_CRLF, b->opt.binary))) == OK) print_info(SAVED);
 			free(p);
-			da_depth--; return error ? ERROR : 0;
+			return error ? ERROR : 0;
 		}
-		da_depth--; return ERROR;
+		return ERROR;
 
 	case EXEC_A:
 		if (p || (p = request_string(b, "Command", b->command_line, false, COMPLETE_FILE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
 			free(b->command_line);
 			b->command_line = p;
-			da_depth--; return print_error(execute_command_line(b, p)) ? ERROR : 0;
+			return print_error(execute_command_line(b, p)) ? ERROR : 0;
 		}
-		da_depth--; return ERROR;
+		return ERROR;
 
 	case NAMECONVERT_A:
 		q = NULL;
@@ -1469,7 +1474,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			}
 			free(p);
 		}
-		da_depth--; return OK;
+		return OK;
 
 	case SYSTEM_A:
 		if (p || (p = request_string(b, "Shell command", NULL, false, COMPLETE_FILE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
@@ -1482,13 +1487,13 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			ttysize();
 			keep_cursor_on_screen(cur_buffer);
 			reset_window();
-			da_depth--; return print_error(error) ? ERROR : OK;
+			return print_error(error) ? ERROR : OK;
 		}
-		da_depth--; return ERROR;
+		return ERROR;
 
 	case THROUGH_A:
 
-		if (b->opt.read_only) {da_depth--; return DOCUMENT_IS_READ_ONLY;}
+		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 
 		if (!b->marking) b->mark_is_vertical = 0;
 
@@ -1546,40 +1551,40 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			keep_cursor_on_screen(cur_buffer);
 			reset_window();
 			free(p);
-			da_depth--; return print_error(error) ? ERROR : OK;
+			return print_error(error) ? ERROR : OK;
 		}
-		da_depth--; return ERROR;
+		return ERROR;
 
 	case TOUPPER_A:
-		if (b->opt.read_only) {da_depth--; return DOCUMENT_IS_READ_ONLY;}
+		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 		NORMALIZE(c);
 		start_undo_chain(b);
 		for(int64_t i = 0; i < c && !(error = to_upper(b)) && !stop; i++);
 		end_undo_chain(b);
 		if (stop) error = STOPPED;
-		da_depth--; return print_error(error) ? ERROR : 0;
+		return print_error(error) ? ERROR : 0;
 
 	case TOLOWER_A:
-		if (b->opt.read_only) {da_depth--; return DOCUMENT_IS_READ_ONLY;}
+		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 		NORMALIZE(c);
 		start_undo_chain(b);
 		for(int64_t i = 0; i < c && !(error = to_lower(b)) && !stop; i++);
 		end_undo_chain(b);
 		if (stop) error = STOPPED;
-		da_depth--; return print_error(error) ? ERROR : 0;
+		return print_error(error) ? ERROR : 0;
 
 	case CAPITALIZE_A:
-		if (b->opt.read_only) {da_depth--; return DOCUMENT_IS_READ_ONLY;}
+		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 		NORMALIZE(c);
 		start_undo_chain(b);
 		for(int64_t i = 0; i < c && !(error = capitalize(b)) && !stop; i++);
 		end_undo_chain(b);
 		if (stop) error = STOPPED;
-		da_depth--; return print_error(error) ? ERROR : 0;
+		return print_error(error) ? ERROR : 0;
 
 
 	case CENTER_A:
-		if (b->opt.read_only) {da_depth--; return DOCUMENT_IS_READ_ONLY;}
+		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 		NORMALIZE(c);
 		start_undo_chain(b);
 		for(int64_t i = 0; i < c && !(error = center(b)) && !stop; i++) {
@@ -1592,66 +1597,66 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		end_undo_chain(b);
 
 		if (stop) error = STOPPED;
-		da_depth--; return print_error(error) ? ERROR : 0;
+		return print_error(error) ? ERROR : 0;
 
 	case PARAGRAPH_A:
-		if (b->opt.read_only) {da_depth--; return DOCUMENT_IS_READ_ONLY;}
+		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 		NORMALIZE(c);
 		for(int64_t i = 0; i < c && !(error = paragraph(b)) && !stop; i++);
 		if (stop) error = STOPPED;
 		if (error == STOPPED) reset_window();
-		da_depth--; return print_error(error) ? ERROR : 0;
+		return print_error(error) ? ERROR : 0;
 
 	case SHIFT_A:
-		if (b->opt.read_only) {da_depth--; return DOCUMENT_IS_READ_ONLY;}
+		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 		error = shift(b, p, &msg[0], MAX_MESSAGE_SIZE);
 		if (stop) error = STOPPED;
 		if (p) free(p);
-		da_depth--; return print_error(error) ? ERROR : 0;
+		return print_error(error) ? ERROR : 0;
 
 	case LOADPREFS_A:
 		if (p || (p = request_file(b, "Prefs Name", NULL))) {
 			error = print_error(load_prefs(b, p));
 			free(p);
-			da_depth--; return error ? ERROR : OK;
+			return error ? ERROR : OK;
 		}
-		da_depth--; return ERROR;
+		return ERROR;
 
 	case SAVEPREFS_A:
 		if (p || (p = request_file(b, "Prefs Name", NULL))) {
 			error = print_error(save_prefs(b, p));
 			free(p);
-			da_depth--; return error ? ERROR : OK;
+			return error ? ERROR : OK;
 		}
-		da_depth--; return ERROR;
+		return ERROR;
 
 	case LOADAUTOPREFS_A:
-		da_depth--; return print_error(load_auto_prefs(b, NULL)) ? ERROR : OK;
+		return print_error(load_auto_prefs(b, NULL)) ? ERROR : OK;
 
 	case SAVEAUTOPREFS_A:
-		da_depth--; return print_error(save_auto_prefs(b, NULL)) ? ERROR : OK;
+		return print_error(save_auto_prefs(b, NULL)) ? ERROR : OK;
 
 	case SAVEDEFPREFS_A:
-		da_depth--; return print_error(save_auto_prefs(b, DEF_PREFS_NAME)) ? ERROR : OK;
+		return print_error(save_auto_prefs(b, DEF_PREFS_NAME)) ? ERROR : OK;
 
 	case SYNTAX_A:
-		if (!do_syntax) {da_depth--; return SYNTAX_NOT_ENABLED;}
+		if (!do_syntax) return SYNTAX_NOT_ENABLED;
 		if (p || (p = request_string(b, "Syntax",  b->syn ? (const char *)b->syn->name : NULL, true, COMPLETE_SYNTAX, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
 			if (!strcmp(p, "*")) b->syn = NULL;
 			else error = print_error(load_syntax_by_name(b, p));
 			reset_window();
 			free(p);
-			da_depth--; return error ? ERROR : OK;
+			return error ? ERROR : OK;
 		}
-		da_depth--; return ERROR;
+		return ERROR;
 
 	case ESCAPE_A:
 		handle_menus();
-		da_depth--; return OK;
+		return OK;
 
 	case UNDO_A:
-		if (b->opt.read_only) {da_depth--; return DOCUMENT_IS_READ_ONLY;}
-		if (!b->opt.do_undo) {da_depth--; return UNDO_NOT_ENABLED;}
+		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
+		if (!b->opt.do_undo) return UNDO_NOT_ENABLED;
 
 		NORMALIZE(c);
 		delay_update();
@@ -1666,11 +1671,11 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		if (stop) error = STOPPED;
 		b->is_modified = b->undo.cur_step != b->undo.last_save_step;
 		update_window(b);
-		da_depth--; return print_error(error) ? ERROR : 0;
+		return print_error(error) ? ERROR : 0;
 
 	case REDO_A:
-		if (b->opt.read_only) {da_depth--; return DOCUMENT_IS_READ_ONLY;}
-		if (!b->opt.do_undo) {da_depth--; return UNDO_NOT_ENABLED;}
+		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
+		if (!b->opt.do_undo) return UNDO_NOT_ENABLED;
 
 		NORMALIZE(c);
 		delay_update();
@@ -1680,24 +1685,24 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		if (stop) error = STOPPED;
 		b->is_modified = b->undo.cur_step != b->undo.last_save_step;
 		update_window(b);
-		da_depth--; return print_error(error) ? ERROR : 0;
+		return print_error(error) ? ERROR : 0;
 
 	case FLAGS_A:
 		help("FLAGS");
 		reset_window();
-		da_depth--; return OK;
+		return OK;
 
 	case HELP_A:
 		help(p);
 		if (p) free(p);
 		reset_window();
-		da_depth--; return OK;
+		return OK;
 
 	case SUSPEND_A:
 		stop_ne();
 		reset_window();
 		keep_cursor_on_screen(cur_buffer);
-		da_depth--; return OK;
+		return OK;
 
 	case AUTOCOMPLETE_A:
 		/* Since we are going to call other actions (INSERTSTRING_A and DELETEPREVWORD_A),
@@ -1708,7 +1713,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		int64_t pos = b->cur_pos;
 
 		if (!p) { /* no prefix given; find one left of the cursor. */
-			if (context_prefix(b, &p, &pos)) {da_depth--; return OUT_OF_MEMORY;}
+			if (context_prefix(b, &p, &pos)) return OUT_OF_MEMORY;
 		}
 
 		snprintf(msg, MAX_MESSAGE_SIZE, "AutoComplete: prefix \"%s\"", p);
@@ -1725,10 +1730,10 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		else if (stop) error = STOPPED;
 		else if (e == AUTOCOMPLETE_NO_MATCH) print_message(info_msg[AUTOCOMPLETE_NO_MATCH]);
 
-		da_depth--; return print_error(error) ? ERROR : 0;
+		return print_error(error) ? ERROR : 0;
 
 	default:
 		if (p) free(p);
-		da_depth--; return OK;
+		return OK;
 	}
 }
