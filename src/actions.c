@@ -117,7 +117,7 @@ char *request_wrapper(const buffer *b, const char *prompt, const char *default_s
 	return resp;
 }
 #define request request_wrapper
-	
+
 char *request_file_wrapper(const buffer *b, const char *prompt, const char *default_name) {
 	char * resp = request_file(b, prompt, default_name);
 	if (da_log) {
