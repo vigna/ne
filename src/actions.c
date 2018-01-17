@@ -66,6 +66,89 @@ is what most commands require. */
 
 static int perform_wrap;
 
+/* The following bits are inserted to implement logging of actions taken by do_action(). */
+
+int do_action_wrapped(buffer *b, action a, int64_t c, char *p);
+static int da_depth = 0;
+static FILE *da_log;
+static buffer *da_prev_b;
+
+bool request_response_wrapper(const buffer *b, const char *prompt, bool default_value) {
+	bool resp = request_response(b, prompt, default_value);
+	if (da_log) {
+		fprintf(da_log,"  %p request_response: %s\n", b, resp ? "true" : "false");
+	}
+	return resp;
+}
+#define request_response request_response_wrapper
+
+char request_char_wrapper(const buffer *b, const char *prompt, const char default_value) {
+	char resp = request_char(b, prompt, default_value);
+	if (da_log) {
+		fprintf(da_log,"  %p request_char: '%c'\n", b, resp);
+	}
+	return resp;
+}
+#define request_char request_char_wrapper
+
+int64_t request_number_wrapper(const buffer *b, const char *prompt, int64_t default_value) {
+	int64_t resp = request_number(b, prompt, default_value);
+	if (da_log) {
+		fprintf(da_log,"  %p request_number: %ld\n", b, resp);
+	}
+	return resp;
+}
+#define request_number request_number_wrapper
+
+char *request_string_wrapper(const buffer *b, const char *prompt, const char *default_string, bool accept_null_string, int completion_type, bool prefer_utf8) {
+	char *resp = request_string(b, prompt, default_string, accept_null_string, completion_type, prefer_utf8);
+	if (da_log) {
+		fprintf(da_log,"  %p request_string: '%s'\n", b, resp ? resp : "<null>");
+	}
+	return resp;
+}
+#define request_string request_string_wrapper
+
+char *request_wrapper(const buffer *b, const char *prompt, const char *default_string, bool alpha_allowed, int completion_type, bool prefer_utf8) {
+	char * resp = request(b, prompt, default_string, alpha_allowed, completion_type, prefer_utf8);
+	if (da_log) {
+		fprintf(da_log,"  %p request: '%s'\n", b, resp ? resp : "<null>");
+	}
+	return resp;
+}
+#define request request_wrapper
+	
+char *request_file_wrapper(const buffer *b, const char *prompt, const char *default_name) {
+	char * resp = request_file(b, prompt, default_name);
+	if (da_log) {
+		fprintf(da_log,"  %p request: '%s'\n", b, resp ? resp : "<null>");
+	}
+	return resp;
+}
+#define request_file request_file_wrapper
+
+int do_action(buffer *b, action a, int64_t c, char *p) {
+	if (!da_log) da_log = fopen("/tmp/ne-actions.log","a");
+	if (da_log) {
+		if (b != da_prev_b && b->filename) {
+			fprintf(da_log, "%p: %s\n", b, b->filename);
+			da_prev_b = b;
+		}
+		fprintf(da_log,"%p%2d %ld,%ld(%ld) %s %ld '%s'\n",
+		             b, da_depth++,
+		                    b->cur_line,
+		                        b->cur_pos,
+		                           b->cur_char,
+		                                command_names[a],
+		                                   c,   p ? p : "<null>");
+		fflush(da_log);
+	}
+	int rc = do_action_wrapped(b, a, c, p);
+	da_depth--;
+	return rc;
+}
+
+/* End of the insertions to achieve loggin of do_action(). */
 
 /* This is the dispatcher of all actions that have some effect on the text.
 
@@ -79,27 +162,6 @@ static int perform_wrap;
    action will consume p -- it ends up being free()d or stored
    somewhere. Though efficient, this has lead to some memory leaks (can you
    find them?). */
-
-int do_action_wrapped(buffer *b, action a, int64_t c, char *p);
-int do_action(buffer *b, action a, int64_t c, char *p) {
-	static int da_depth = 0;
-	static FILE *log;
-	
-	if (!log) log = fopen("/tmp/ne-actions.log","a");
-	if (log) {
-		fprintf(log,"%p%2d %ld,%ld(%ld) %s %ld '%s'\n",
-		             b, da_depth++,
-		                    b->cur_line,
-		                        b->cur_pos,
-		                           b->cur_char,
-		                                command_names[a],
-		                                   c,   p ? p : "<null>");
-		fflush(log);
-	}
-	int rc = do_action_wrapped(b, a, c, p);
-	da_depth--;
-	return rc;
-}
 
 int do_action_wrapped(buffer *b, action a, int64_t c, char *p) {
 	static char msg[MAX_MESSAGE_SIZE];
