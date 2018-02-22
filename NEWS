@@ -1,5 +1,11 @@
 (This file, NEWS, lists new features and enhancements. See CHANGES for fixes.)
 
+3.1.2 not yet released
+
+  * RepeatLast now accepts "Find" or "Replace" after its optional number so
+    you can explicitly repeat either operation even if the other was most
+    recently performed.
+
 3.1.1 2017-06-04
 
   * You can now CloseDoc (^Q) unmodified documents from within the

@@ -1,6 +1,6 @@
 /* Command table manipulation functions and vectors.
 
-   Copyright (C) 1993-1998 Sebastiano Vigna 
+   Copyright (C) 1993-1998 Sebastiano Vigna
    Copyright (C) 1999-2017 Todd M. Lewis and Sebastiano Vigna
 
    This file is part of ne, the nice editor.
@@ -158,7 +158,7 @@ static const command commands[ACTION_COUNT] = {
 	{ NAHL(RECORD        ),                           IS_OPTION | DO_NOT_RECORD                   },
 	{ NAHL(REDO          ),0                                                                      },
 	{ NAHL(REFRESH       ), NO_ARGS                                                               },
-	{ NAHL(REPEATLAST    ),0                                                                      },
+	{ NAHL(REPEATLAST    ),           ARG_IS_STRING |                             EMPTY_STRING_OK },
 	{ NAHL(REPLACE       ),           ARG_IS_STRING |                             EMPTY_STRING_OK },
 	{ NAHL(REPLACEALL    ),           ARG_IS_STRING |                             EMPTY_STRING_OK },
 	{ NAHL(REPLACEONCE   ),           ARG_IS_STRING |                             EMPTY_STRING_OK },

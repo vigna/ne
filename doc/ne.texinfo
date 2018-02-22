@@ -3067,12 +3067,13 @@ pattern replaced by @code{ReplaceAll}. See @ref{Undo}.
 @subsection RepeatLast
 @cmindex RepeatLast
 
-@noindent Syntax: @code{RepeatLast [@var{times}]}@*
+@noindent Syntax: @code{RepeatLast [@var{times}] [F|Find|R|Replace]}@*
 @noindent Abbreviation: @code{RL}
 
 @noindent repeats for the given number of times the last find or replace operation
 (with replace we mean here a single replace, even if the last @code{Replace}
-operation ended with a global substitution).
+operation ended with a global substitution). If you don't specify either
+@var{Find} or @var{Replace}, it will repeat whichever one was last performed.
 
 If any find or replace operation runs into the end of the document (in the direction
 indicated by the @code{SearchBack} flag) and stops, then and only then will a

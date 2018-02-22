@@ -1022,6 +1022,21 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		return ERROR;
 
 	case REPEATLAST_A:
+		if (p) {
+			char *q;
+			c = strtoll(p, &q, 0);
+			if (p == q) c = -1;
+			while (*q == ' ') q++;
+			if (*q) {
+				if (     !strcasecmp("f",q) || !strcasecmp("find",q))    b->last_was_replace = false;
+				else if (!strcasecmp("r",q) || !strcasecmp("replace",q)) b->last_was_replace = true;
+				else {
+					free(p);
+					return SYNTAX_ERROR;
+				}
+			}
+			free(p);
+		}
 		if (b->opt.read_only && b->last_was_replace) return DOCUMENT_IS_READ_ONLY;
 		if (!b->find_string) return NO_SEARCH_STRING;
 		if ((b->last_was_replace) && !b->replace_string) return NO_REPLACE_STRING;
