@@ -295,11 +295,9 @@ void update_line(buffer * const b, line_desc * const ld, const int row, const in
 		if (ld == b->cur_line_desc) {
 			/* If we updated current line, we update the local attribute buffer. */
 			b->next_state = next_state;
+			ensure_attr_buf(b, attr_len);
 			// This test is necessary to avoid warnings from -fsanitize
-			if (attr_len) {
-				ensure_attr_buf(b, attr_len);
-				memcpy(b->attr_buf, attr_buf, (b->attr_len = attr_len) * sizeof *b->attr_buf);
-			}
+			if (b->attr_len = attr_len) memcpy(b->attr_buf, attr_buf, attr_len * sizeof *b->attr_buf);
 		}
 	}
 	else output_line_desc(row, from_col, ld, from_col + b->win_x, ne_columns - from_col, b->opt.tab_size, cleared_at_end, b->encoding == ENC_UTF8, NULL, NULL, 0);
@@ -746,10 +744,8 @@ void store_attributes(buffer *b, line_desc *ld) {
 	b->next_state = parse(b->syn, ld, ld->highlight_state, b->encoding == ENC_UTF8);
 	assert(calc_char_len(ld, ld->line_len, b->encoding) == attr_len);
 	// This test is necessary to avoid warnings from -fsanitize
-	if (attr_len) {
-		ensure_attr_buf(b, attr_len);
-		memcpy(b->attr_buf, attr_buf, (b->attr_len = attr_len) * sizeof *b->attr_buf);
-	}
+	ensure_attr_buf(b, attr_len);
+	if (b->attr_len = attr_len) memcpy(b->attr_buf, attr_buf, attr_len * sizeof *b->attr_buf);
 }
 
 /* (Un)highlights (depending on the value of show) the bracket matching
