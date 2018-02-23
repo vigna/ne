@@ -94,7 +94,7 @@ CFLAGS=$(OPTS) $(GCCFLAGS) \
 	-D_REGEX_LARGE_OFFSETS -D_GNU_SOURCE -DSTDC_HEADERS -Dinline=__inline__ \
 	$(if $(NE_NOWCHAR), -DNOWCHAR,) \
 	$(if $(NE_TEST),    -DNE_TEST -coverage,) \
-	$(if $(NE_DEBUG),   -g,-O3 -DNDEBUG) \
+	$(if $(NE_DEBUG),   -g -fsanitize=address -fsanitize=undefined,-O3 -DNDEBUG) \
 	$(if $(NE_TERMCAP), -DTERMCAP,) \
 	$(if $(NE_ANSI),    -DTERMCAP -DANSI,)
 
@@ -102,7 +102,7 @@ CFLAGS=$(OPTS) $(GCCFLAGS) \
 LIBS=$(if $(NE_TERMCAP)$(NE_ANSI),,-lcurses)
 
 ne:	$(OBJS) $(if $(NE_TERMCAP)$(NE_ANSI),$(TERMCAPOBJS),)
-	$(CC) $(OPTS) $(LDFLAGS) $(if $(NE_TEST), -coverage,) $(if $(NE_DEBUG), -fsanitize=address,) $^ -lm $(LIBS) -o $(PROGRAM)
+	$(CC) $(OPTS) $(LDFLAGS) $(if $(NE_TEST), -coverage,) $(if $(NE_DEBUG), -fsanitize=address -fsanitize=undefined,) $^ -lm $(LIBS) -o $(PROGRAM)
 
 clean:
 	rm -f ne *.o *.gcda *.gcda.info *.gcno core

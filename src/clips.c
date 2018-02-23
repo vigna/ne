@@ -181,7 +181,7 @@ int copy_to_clip(buffer *b, int n, bool cut) {
 				if (cut) {
 					goto_line_pos(b, b->block_start_line, b->block_start_pos);
 					delete_stream(b, b->cur_line_desc, b->cur_line, b->cur_pos, clip_len);
-					update_syntax_and_lines(b, b->cur_line_desc, NULL);
+					update_syntax_states_delay(b, b->cur_line_desc, NULL);
 				}
 
 				if (chaining) end_undo_chain(b);
@@ -241,7 +241,7 @@ int copy_to_clip(buffer *b, int n, bool cut) {
 				set_stream_encoding(cd->cs, b->encoding);
 				assert_clip_desc(cd);
 				if (cut) delete_stream(b, b->cur_line_desc, b->cur_line, b->cur_pos, clip_len);
-				update_syntax_and_lines(b, b->cur_line_desc, NULL);
+				update_syntax_states_delay(b, b->cur_line_desc, NULL);
 				if (chaining) end_undo_chain(b);
 				return OK;
 			}
@@ -262,7 +262,7 @@ int copy_to_clip(buffer *b, int n, bool cut) {
 
 
 
-/* Simply erases a block, without putting it in a clip. Calls update_syntax_and_lines(). */
+/* Simply erases a block, without putting it in a clip. Calls update_syntax_states_delay(). */
 
 int erase_block(buffer *b) {
 	if (!b->marking) return MARK_BLOCK_FIRST;
@@ -323,7 +323,7 @@ int erase_block(buffer *b) {
 
 	delete_stream(b, b->cur_line_desc, b->cur_line, b->cur_pos, erase_len - 1);
 	if (chaining) end_undo_chain(b);
-	update_syntax_and_lines(b, b->cur_line_desc, NULL);
+	update_syntax_states_delay(b, b->cur_line_desc, NULL);
 	return OK;
 }
 
@@ -351,7 +351,7 @@ int paste_to_buffer(buffer *b, int n) {
 		end_undo_chain(b);
 
 		assert(ld == b->cur_line_desc);
-		update_syntax_and_lines(b, ld, end_ld);
+		update_syntax_states_delay(b, ld, end_ld);
 		return OK;
 	}
 
@@ -427,7 +427,7 @@ int copy_vert_to_clip(buffer *b, int n, bool cut) {
 				set_stream_encoding(cd->cs, b->encoding);
 				assert_clip_desc(cd);
 				if (cut) {
-					update_syntax_and_lines(b, (line_desc *)ld->ld_node.next, b->cur_line_desc);
+					update_syntax_states_delay(b, (line_desc *)ld->ld_node.next, b->cur_line_desc);
 					goto_line_pos(b, min(b->block_start_line, b->cur_line), min(b->block_start_pos, cur_pos));
 					end_undo_chain(b);
 				}
@@ -468,7 +468,7 @@ int copy_vert_to_clip(buffer *b, int n, bool cut) {
 				set_stream_encoding(cd->cs, b->encoding);
 				assert_clip_desc(cd);
 				if (cut) {
-					update_syntax_and_lines(b, b->cur_line_desc, (line_desc *)ld->ld_node.prev);
+					update_syntax_states_delay(b, b->cur_line_desc, (line_desc *)ld->ld_node.prev);
 					goto_line_pos(b, min(b->block_start_line, b->cur_line), min(b->block_start_pos, cur_pos));
 					end_undo_chain(b);
 				}
@@ -487,7 +487,7 @@ int copy_vert_to_clip(buffer *b, int n, bool cut) {
 	return OK;
 }
 
-/* Simply erases a vertical block, without putting it in a clip. Calls update_syntax_and_lines(). */
+/* Simply erases a vertical block, without putting it in a clip. Calls update_syntax_states_delay(). */
 
 int erase_vert_block(buffer *b) {
 
@@ -524,7 +524,7 @@ int erase_vert_block(buffer *b) {
 			delete_stream(b, ld, i, start_pos, len);
 			ld = (line_desc *)ld->ld_node.prev;
 		}
-		update_syntax_and_lines(b, (line_desc *)ld->ld_node.next, b->cur_line_desc);
+		update_syntax_states_delay(b, (line_desc *)ld->ld_node.next, b->cur_line_desc);
 	}
 	else {
 		for(int64_t i = y; i <= b->block_start_line; i++) {
@@ -533,7 +533,7 @@ int erase_vert_block(buffer *b) {
 			delete_stream(b, ld, i, start_pos, len);
 			ld = (line_desc *)ld->ld_node.next;
 		}
-		update_syntax_and_lines(b, b->cur_line_desc, (line_desc *)ld->ld_node.prev);
+		update_syntax_states_delay(b, b->cur_line_desc, (line_desc *)ld->ld_node.prev);
 	}
 
 	end_undo_chain(b);
@@ -595,7 +595,7 @@ int paste_vert_to_buffer(buffer *b, int n) {
 	}
 	
 	end_undo_chain(b);
-	update_syntax_and_lines(b, b->cur_line_desc, ld);
+	update_syntax_states_delay(b, b->cur_line_desc, ld);
 	return OK;
 }
 

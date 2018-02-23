@@ -181,7 +181,7 @@ int do_action_wrapped(buffer *b, action a, int64_t c, char *p) {
 	if (b->syn && b->attr_len != -1) {
 		HIGHLIGHT_STATE next_state = parse(b->syn, b->cur_line_desc, b->cur_line_desc->highlight_state, b->encoding == ENC_UTF8);
 		assert(attr_len == b->attr_len);
-		assert(memcmp(attr_buf, b->attr_buf, attr_len) == 0);
+		assert(attr_len == 0 || memcmp(attr_buf, b->attr_buf, attr_len) == 0);
 		assert(memcmp(&next_state, &b->next_state, sizeof next_state) == 0);
 	}
 #endif
@@ -783,10 +783,8 @@ int do_action_wrapped(buffer *b, action a, int64_t c, char *p) {
 					move_to_sol(b);
 					line_down(b);
 					if (a != -1) goto_pos(b, a);
-
 					if (b->cur_line == b->num_lines - 1) update_line(b, b->cur_line_desc, b->cur_y, 0, false);
 					else scroll_window(b, b->cur_line_desc, b->cur_y, 1);
-
 				}
 				need_attr_update = true;
 			} else end_undo_chain(b);

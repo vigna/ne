@@ -296,7 +296,8 @@ void update_line(buffer * const b, line_desc * const ld, const int row, const in
 			/* If we updated current line, we update the local attribute buffer. */
 			b->next_state = next_state;
 			ensure_attr_buf(b, attr_len);
-			memcpy(b->attr_buf, attr_buf, (b->attr_len = attr_len) * sizeof *b->attr_buf);
+			// This test is necessary to avoid warnings from -fsanitize
+			if (b->attr_len = attr_len) memcpy(b->attr_buf, attr_buf, attr_len * sizeof *b->attr_buf);
 		}
 	}
 	else output_line_desc(row, from_col, ld, from_col + b->win_x, ne_columns - from_col, b->opt.tab_size, cleared_at_end, b->encoding == ENC_UTF8, NULL, NULL, 0);
@@ -354,7 +355,7 @@ void update_window(buffer * const b) {
    a call to delay_update(). This is mainly written to fix the screen
    state after a block operation. */
 
-void update_syntax_and_lines(buffer *b, line_desc *start_ld, line_desc *end_ld) {
+void update_syntax_states_delay(buffer *b, line_desc *start_ld, line_desc *end_ld) {
 	delay_update();
 
 	if (b->syn) {
@@ -384,6 +385,8 @@ void update_deleted_char(buffer * const b, const int c, const int a, line_desc *
 	if (b->syn) {
 		assert(b->attr_len >= 0);
 		assert(b->attr_len > attr_pos);
+		assert(b->attr_len + 1 >= calc_char_len(ld, ld->line_len, b->encoding));
+		assert(! window_needs_refresh);
 		memmove(b->attr_buf + attr_pos, b->attr_buf + attr_pos + 1, (--b->attr_len - attr_pos) * sizeof *b->attr_buf);
 	}
 
@@ -463,6 +466,7 @@ void update_inserted_char(buffer * const b, const int c, line_desc * const ld, c
 		assert(b->attr_len >= 0);
 		/*fprintf(stderr, "+b->attr_len: %d calc_char_len: %d pos: %d ld->line_len %d attr_pos: %d\n", b->attr_len, calc_char_len(ld, ld->line_len, b->encoding), pos, ld->line_len, attr_pos);*/
 		assert(b->attr_len + 1 == calc_char_len(ld, ld->line_len, b->encoding));
+		assert(! window_needs_refresh);
 		/* We update the stored attribute vector. */
 		ensure_attr_buf(b, b->attr_len + 1);
 		memmove(b->attr_buf + attr_pos + 1, b->attr_buf + attr_pos, (b->attr_len++ - attr_pos) * sizeof *b->attr_buf );
@@ -535,6 +539,7 @@ void update_overwritten_char(buffer * const b, const int old_char, const int new
 		/* fprintf(stderr, "-b->attr_len: %d calc_char_len: %d pos: %d ld->line_len %d attr_pos: %d\n", b->attr_len, calc_char_len(ld, ld->line_len, b->encoding), pos, ld->line_len, attr_pos);*/
 		assert(b->attr_len + 1 == calc_char_len(ld, ld->line_len, b->encoding) || b->attr_len == calc_char_len(ld, ld->line_len, b->encoding));
 		assert(attr_pos <= b->attr_len);
+		assert(! window_needs_refresh);
 		if (attr_pos == b->attr_len) ensure_attr_buf(b, ++b->attr_len);
 		b->attr_buf[attr_pos] = *attr;
 	}
@@ -738,8 +743,9 @@ void ensure_attributes(buffer *b) {
 void store_attributes(buffer *b, line_desc *ld) {
 	b->next_state = parse(b->syn, ld, ld->highlight_state, b->encoding == ENC_UTF8);
 	assert(calc_char_len(ld, ld->line_len, b->encoding) == attr_len);
+	// This test is necessary to avoid warnings from -fsanitize
 	ensure_attr_buf(b, attr_len);
-	memcpy(b->attr_buf, attr_buf, (b->attr_len = attr_len) * sizeof *b->attr_buf);
+	if (b->attr_len = attr_len) memcpy(b->attr_buf, attr_buf, attr_len * sizeof *b->attr_buf);
 }
 
 /* (Un)highlights (depending on the value of show) the bracket matching
