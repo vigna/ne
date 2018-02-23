@@ -201,12 +201,12 @@ int undo(buffer * const b) {
 
 			if (b->undo.steps[b->undo.cur_step].len < 0) {
 				delete_stream(b, b->cur_line_desc, b->cur_line, b->cur_pos, -b->undo.steps[b->undo.cur_step].len);
-				update_syntax_and_lines(b, b->cur_line_desc, NULL);
+				update_syntax_states_delay(b, b->cur_line_desc, NULL);
 			}
 			else {
 				line_desc *end_ld = (line_desc *)b->cur_line_desc->ld_node.next;
 				insert_stream(b, b->cur_line_desc, b->cur_line, b->cur_pos, b->undo.streams + (b->undo.cur_stream -= b->undo.steps[b->undo.cur_step].len), b->undo.steps[b->undo.cur_step].len);
-				update_syntax_and_lines(b, b->cur_line_desc, end_ld);
+				update_syntax_states_delay(b, b->cur_line_desc, end_ld);
 			}
 
 		}
@@ -249,12 +249,12 @@ int redo(buffer * const b) {
 			if (b->undo.steps[b->undo.cur_step].len < 0) { 
 				line_desc *end_ld = (line_desc *)b->cur_line_desc->ld_node.next;
 				insert_stream(b, b->cur_line_desc, b->cur_line, b->cur_pos, b->undo.redo.stream + (b->undo.redo.len += b->undo.steps[b->undo.cur_step].len), -b->undo.steps[b->undo.cur_step].len);
-				update_syntax_and_lines(b, b->cur_line_desc, end_ld);
+				update_syntax_states_delay(b, b->cur_line_desc, end_ld);
 			}	
 			else {
 				delete_stream(b, b->cur_line_desc, b->cur_line, b->cur_pos, b->undo.steps[b->undo.cur_step].len);
 				b->undo.cur_stream += b->undo.steps[b->undo.cur_step].len;
-				update_syntax_and_lines(b, b->cur_line_desc, NULL);
+				update_syntax_states_delay(b, b->cur_line_desc, NULL);
 			}
 		}
 
