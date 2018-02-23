@@ -1,6 +1,6 @@
 Summary: ne, the nice editor
 Name: ne
-Version: 3.1.0
+Version: 3.1.1
 Release: 1
 License: GPLv3
 Group: Applications/Editors
