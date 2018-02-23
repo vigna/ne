@@ -58,7 +58,7 @@ static int first_line, last_line, updated_lines;
 
 void delay_update() {
 	/* During tests, we never delay updates. */
-#ifndef NE_TEST
+#ifdef NE_TEST
 	updated_lines = TURBO + 1;
 	window_needs_refresh = true;
 #endif
@@ -386,7 +386,6 @@ void update_deleted_char(buffer * const b, const int c, const int a, line_desc *
 		assert(b->attr_len >= 0);
 		assert(b->attr_len > attr_pos);
 		assert(b->attr_len + 1 >= calc_char_len(ld, ld->line_len, b->encoding));
-		assert(! window_needs_refresh);
 		memmove(b->attr_buf + attr_pos, b->attr_buf + attr_pos + 1, (--b->attr_len - attr_pos) * sizeof *b->attr_buf);
 	}
 
@@ -466,7 +465,6 @@ void update_inserted_char(buffer * const b, const int c, line_desc * const ld, c
 		assert(b->attr_len >= 0);
 		/*fprintf(stderr, "+b->attr_len: %d calc_char_len: %d pos: %d ld->line_len %d attr_pos: %d\n", b->attr_len, calc_char_len(ld, ld->line_len, b->encoding), pos, ld->line_len, attr_pos);*/
 		assert(b->attr_len + 1 == calc_char_len(ld, ld->line_len, b->encoding));
-		assert(! window_needs_refresh);
 		/* We update the stored attribute vector. */
 		ensure_attr_buf(b, b->attr_len + 1);
 		memmove(b->attr_buf + attr_pos + 1, b->attr_buf + attr_pos, (b->attr_len++ - attr_pos) * sizeof *b->attr_buf );
@@ -539,7 +537,6 @@ void update_overwritten_char(buffer * const b, const int old_char, const int new
 		/* fprintf(stderr, "-b->attr_len: %d calc_char_len: %d pos: %d ld->line_len %d attr_pos: %d\n", b->attr_len, calc_char_len(ld, ld->line_len, b->encoding), pos, ld->line_len, attr_pos);*/
 		assert(b->attr_len + 1 == calc_char_len(ld, ld->line_len, b->encoding) || b->attr_len == calc_char_len(ld, ld->line_len, b->encoding));
 		assert(attr_pos <= b->attr_len);
-		assert(! window_needs_refresh);
 		if (attr_pos == b->attr_len) ensure_attr_buf(b, ++b->attr_len);
 		b->attr_buf[attr_pos] = *attr;
 	}
