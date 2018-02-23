@@ -354,7 +354,7 @@ void update_window(buffer * const b) {
    a call to delay_update(). This is mainly written to fix the screen
    state after a block operation. */
 
-void update_syntax_and_lines(buffer *b, line_desc *start_ld, line_desc *end_ld) {
+void update_syntax_states_delay(buffer *b, line_desc *start_ld, line_desc *end_ld) {
 	delay_update();
 
 	if (b->syn) {
