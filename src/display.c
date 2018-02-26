@@ -394,7 +394,6 @@ void update_deleted_char(buffer * const b, const int c, const int a, line_desc *
 	if (b->syn) {
 		assert(b->attr_len >= 0);
 		assert(b->attr_len > attr_pos);
-		assert(b->attr_len - 1 >= calc_char_len(ld, ld->line_len, b->encoding));
 		memmove(b->attr_buf + attr_pos, b->attr_buf + attr_pos + 1, (--b->attr_len - attr_pos) * sizeof *b->attr_buf);
 	}
 
