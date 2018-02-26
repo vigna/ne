@@ -33,6 +33,13 @@
 
 NE_GLOBAL_DIR = /usr/local/share/ne
 
+NE_TERMCAP=
+NE_ANSI=
+NE_NOWCHAR=
+NE_DEBUG=
+NE_TEST=
+NE_EMBED_SYNTAX=
+
 PROGRAM       = ne
 
 OBJS	      = actions.o \
@@ -44,6 +51,10 @@ OBJS	      = actions.o \
 		command.o \
 		display.o \
 		edit.o \
+		$(if $(NE_EMBED_SYNTAX), \
+		  efopen.o \
+		  efopen_dat.o \
+		,) \
 		errors.o \
 		exec.o \
 		ext.o \
@@ -78,12 +89,6 @@ TERMCAPOBJS   = tparam.o \
 		info2cap.o \
 		termcap.o
 
-NE_TERMCAP=
-NE_ANSI=
-NE_NOWCHAR=
-NE_DEBUG=
-NE_TEST=
-
 CC=c99
 
 ifeq ($(CC),gcc)
@@ -92,6 +97,7 @@ endif
 
 CFLAGS=$(OPTS) $(GCCFLAGS) \
 	-D_REGEX_LARGE_OFFSETS -D_GNU_SOURCE -DSTDC_HEADERS -Dinline=__inline__ \
+	$(if $(NE_EMBED_SYNTAX), -DNE_EMBED_SYNTAX,) \
 	$(if $(NE_NOWCHAR), -DNOWCHAR,) \
 	$(if $(NE_TEST),    -DNE_TEST -coverage,) \
 	$(if $(NE_DEBUG),   -g -fsanitize=address -fsanitize=undefined,-O3 -DNDEBUG) \
@@ -105,7 +111,7 @@ ne:	$(OBJS) $(if $(NE_TERMCAP)$(NE_ANSI),$(TERMCAPOBJS),)
 	$(CC) $(OPTS) $(LDFLAGS) $(if $(NE_TEST), -coverage,) $(if $(NE_DEBUG), -fsanitize=address -fsanitize=undefined,) $^ -lm $(LIBS) -o $(PROGRAM)
 
 clean:
-	rm -f ne *.o *.gcda *.gcda.info *.gcno core
+	rm -f ne *.o *.gcda *.gcda.info *.gcno core efopen_mkdat efopen.dat
 
 really-clean: clean
 	rm -f ne hash.h hash.c help.c help.h names.c names.h enums.h ext.c
@@ -153,6 +159,16 @@ command.o: $(MAINH) support.h keycodes.h names.h errors.h protos.h help.h hash.h
 display.o: $(MAINH) support.h keycodes.h names.h errors.h protos.h termchar.h
 
 edit.o: $(MAINH) support.h keycodes.h names.h errors.h protos.h
+
+efopen.o: $(MAINH) efopen.h
+
+efopen.dat: efopen_mkdat ../syntax/*.jsf
+	cd ..;src/efopen_mkdat syntax/*.jsf > src/efopen.dat
+
+efopen_dat.o: efopen.dat
+	$(LD) -r -o $@ -z noexecstack -b binary $<
+
+efopen_mkdat.o: $(MAINH) efopen.h
 
 errors.o: errors.h
 

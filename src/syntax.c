@@ -22,6 +22,9 @@
 #include "ne.h"
 #include "support.h"
 #include "termchar.h"
+#ifdef NE_EMBED_SYNTAX
+# include "efopen.h"
+#endif
 #undef joe_gettext
 #define joe_gettext(a) (a)
 
@@ -709,15 +712,22 @@ struct high_state *load_dfa(struct high_syntax *syntax)
 
 	/* Load it */
 
-	if ((p = (unsigned char *)exists_prefs_dir()) && strlen((const char *)p) + 2 + strlen(SYNTAX_DIR) + strlen(SYNTAX_EXT) + strlen((const char *)syntax->name) < sizeof name) {
-		strcat(strcat(strcat(strcat(strcpy((char *)name, (const char *)p), SYNTAX_DIR), "/"), (const char *)syntax->name), SYNTAX_EXT);
+	if ((p = (unsigned char *)exists_prefs_dir())) {
+		snprintf((char *)name,sizeof(name),"%s"SYNTAX_DIR"/%s"SYNTAX_EXT,(char *)p,(char *)syntax->name);
 		f = fopen((char *)name,"r");
 	}
 
-	if (!f && (p = (unsigned char*)exists_gprefs_dir()) && strlen((const char *)p) + 2 + strlen(SYNTAX_DIR) + strlen(SYNTAX_EXT) + strlen((const char *)syntax->name) < sizeof name) {
-		strcat(strcat(strcat(strcat(strcpy((char *)name, (const char *)p), SYNTAX_DIR), "/"), (const char *)syntax->name), SYNTAX_EXT);
+#ifdef NE_EMBED_SYNTAX
+	if (!f) {
+		snprintf((char *)name,sizeof(name),SYNTAX_DIR"/%s"SYNTAX_EXT,(char *)syntax->name);
+		f = efopen((char *)name,"r");
+	}
+#else
+	if (!f && (p = (unsigned char *)exists_gprefs_dir())) {
+		snprintf((char *)name,sizeof(name),"%s"SYNTAX_DIR"/%s"SYNTAX_EXT,(char *)p,(char *)syntax->name);
 		f = fopen((char *)name,"r");
 	}
+#endif
 
 	if (!f) return 0;
 
