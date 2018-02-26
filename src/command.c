@@ -532,7 +532,7 @@ int play_macro(buffer *b, char_stream *cs) {
 #endif
 				;
 
-#ifndef NE_TEST
+#ifdef NE_TEST
 		refresh_window(cur_buffer);
 		draw_status_bar();
 #endif

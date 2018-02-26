@@ -1583,6 +1583,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		for(int64_t i = 0; i < c && !(error = paragraph(b)) && !stop; i++);
 		if (stop) error = STOPPED;
 		if (error == STOPPED) reset_window();
+		assert(b->cur_pos >= 0);
 		return print_error(error) ? ERROR : 0;
 
 	case SHIFT_A:
