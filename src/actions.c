@@ -134,13 +134,17 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			fprintf(da_log, "%p: %s\n", b, b->filename);
 			da_prev_b = b;
 		}
-		fprintf(da_log,"%p%2d %ld,%ld(%ld) %s %ld '%s'\n",
-		             b, da_depth++,
-		                    b->cur_line,
-		                        b->cur_pos,
-		                           b->cur_char,
-		                                command_names[a],
-		                                   c,   p ? p : "<null>");
+		fprintf(da_log,"%p%2d %ld,%ld(%ld) %s %ld '%s' b->attr_len:%d attr_len:%d wnr:%d, updl:%d\n",
+		                 b,
+		                  da_depth++,
+		                      b->cur_line,
+		                          b->cur_pos,
+		                              b->cur_char,
+		                                   command_names[a],
+		                                      c,   p ? p : "<null>",
+		                                                           b->attr_len,attr_len,
+		                                                                              wnr(),
+		                                                                                       updl());
 		fflush(da_log);
 	}
 	int rc = do_action_wrapped(b, a, c, p);

@@ -51,6 +51,11 @@ bool need_attr_update;
 static bool window_needs_refresh;
 static int first_line, last_line, updated_lines;
 
+/* These two accessor functions are here to facilitate action logging
+   over in actions.c. Don't let these migrate to production code! */
+bool wnr() { return window_needs_refresh; }
+int  updl() { return updated_lines; }
+
 /* Prevents any other update from being actually done by setting updated_lines
    to a value greater than TURBO. It is most useful when the we know that a
    great deal of update is going to happen, most of which is useless (for
