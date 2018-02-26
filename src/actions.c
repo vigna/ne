@@ -258,7 +258,10 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			b->block_start_pos = b->cur_pos;
 
 			if(!(error = do_action(b, a == DELETENEXTWORD_A ? NEXTWORD_A : PREVWORD_A, 1, NULL))) {
-				if (!(error = erase_block(b))) update_window_lines(b, b->cur_line_desc, b->cur_y, ne_lines - 2, false);
+				if (!(error = erase_block(b))) {
+					b->attr_len = -1;
+					update_window_lines(b, b->cur_line_desc, b->cur_y, ne_lines - 2, false);
+				}
 			}
 			b->bookmark_mask &= ~(1 << WORDWRAP_BOOKMARK);
 			b->block_start_pos = b->bookmark[WORDWRAP_BOOKMARK].pos;
@@ -1583,6 +1586,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		for(int64_t i = 0; i < c && !(error = paragraph(b)) && !stop; i++);
 		if (stop) error = STOPPED;
 		if (error == STOPPED) reset_window();
+		resync_pos(b);
 		assert(b->cur_pos >= 0);
 		return print_error(error) ? ERROR : 0;
 
