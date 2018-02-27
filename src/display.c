@@ -387,20 +387,19 @@ void update_syntax_states_delay(buffer *b, line_desc *start_ld, line_desc *end_l
    taken into consideration. */
 
 void update_deleted_char(buffer * const b, const int c, const int a, line_desc * const ld, int64_t pos, int64_t attr_pos, const int line, const int x) {
-	if (b->syn) {
-		assert(b->attr_len >= 0);
-		assert(b->attr_len > attr_pos);
-		assert(b->attr_len + 1 >= calc_char_len(ld, ld->line_len, b->encoding));
-		assert(! window_needs_refresh);
-		memmove(b->attr_buf + attr_pos, b->attr_buf + attr_pos + 1, (--b->attr_len - attr_pos) * sizeof *b->attr_buf);
-	}
-
 	if (++updated_lines > TURBO) window_needs_refresh = true;
 
 	if (window_needs_refresh) {
 		if (line < first_line) first_line = line;
 		if (line > last_line) last_line = line;
+		b->attr_len = -1;
 		return;
+	}
+
+	if (b->syn) {
+		assert(b->attr_len >= 0);
+		assert(b->attr_len > attr_pos);
+		memmove(b->attr_buf + attr_pos, b->attr_buf + attr_pos + 1, (--b->attr_len - attr_pos) * sizeof *b->attr_buf);
 	}
 
 	if (pos > ld->line_len || (pos == ld->line_len && ((c == '\t' || c == ' ') && !a))) return;
@@ -465,25 +464,25 @@ void update_deleted_char(buffer * const b, const int c, const int a, line_desc *
 void update_inserted_char(buffer * const b, const int c, line_desc * const ld, const int64_t pos, const int64_t attr_pos, const int line, const int x) {
 	assert(pos < ld->line_len);
 
+	if (++updated_lines > TURBO) window_needs_refresh = true;
+
+	if (window_needs_refresh) {
+		if (line < first_line) first_line = line;
+		if (line > last_line) last_line = line;
+		b->attr_len = -1;
+		return;
+	}
+
 	const uint32_t * const attr = b->syn ? &attr_buf[attr_pos] : NULL;
 
 	if (b->syn) {
 		assert(b->attr_len >= 0);
 		/*fprintf(stderr, "+b->attr_len: %d calc_char_len: %d pos: %d ld->line_len %d attr_pos: %d\n", b->attr_len, calc_char_len(ld, ld->line_len, b->encoding), pos, ld->line_len, attr_pos);*/
 		assert(b->attr_len + 1 == calc_char_len(ld, ld->line_len, b->encoding));
-		assert(! window_needs_refresh);
 		/* We update the stored attribute vector. */
 		ensure_attr_buf(b, b->attr_len + 1);
 		memmove(b->attr_buf + attr_pos + 1, b->attr_buf + attr_pos, (b->attr_len++ - attr_pos) * sizeof *b->attr_buf );
 		b->attr_buf[attr_pos] = *attr;
-	}
-
-	if (++updated_lines > TURBO) window_needs_refresh = true;
-
-	if (window_needs_refresh) {
-		if (line < first_line) first_line = line;
-		if (line > last_line) last_line = line;
-		return;
 	}
 
 	move_cursor(line, x);
@@ -538,23 +537,23 @@ void update_overwritten_char(buffer * const b, const int old_char, const int new
 	assert(ld != NULL);
 	assert(pos < ld->line_len);
 
+	if (++updated_lines > TURBO) window_needs_refresh = true;
+
+	if (window_needs_refresh) {
+		if (line < first_line) first_line = line;
+		if (line > last_line) last_line = line;
+		b->attr_len = -1;
+		return;
+	}
+
 	const uint32_t * const attr = b->syn ? &attr_buf[attr_pos] : NULL;
 
 	if (b->syn) {
 		/* fprintf(stderr, "-b->attr_len: %d calc_char_len: %d pos: %d ld->line_len %d attr_pos: %d\n", b->attr_len, calc_char_len(ld, ld->line_len, b->encoding), pos, ld->line_len, attr_pos);*/
 		assert(b->attr_len + 1 == calc_char_len(ld, ld->line_len, b->encoding) || b->attr_len == calc_char_len(ld, ld->line_len, b->encoding));
 		assert(attr_pos <= b->attr_len);
-		assert(! window_needs_refresh);
 		if (attr_pos == b->attr_len) ensure_attr_buf(b, ++b->attr_len);
 		b->attr_buf[attr_pos] = *attr;
-	}
-
-	if (++updated_lines > TURBO) window_needs_refresh = true;
-
-	if (window_needs_refresh) {
-		if (line < first_line) first_line = line;
-		if (line > last_line) last_line = line;
-		return;
 	}
 
 	const int old_width = old_char == '\t' ? b->opt.tab_size - x % b->opt.tab_size : output_width(old_char);
