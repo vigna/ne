@@ -620,7 +620,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			if (b->cur_pos < b->cur_line_desc->line_len) {
 				/* Deletion inside a line. */
 				const int old_char = b->encoding == ENC_UTF8 ? utf8char(&b->cur_line_desc->line[b->cur_pos]) : b->cur_line_desc->line[b->cur_pos];
-				const uint32_t old_attr = b->syn ? b->attr_buf[b->cur_pos] : 0;
+				const uint32_t old_attr = b->syn ? b->attr_buf[b->cur_char] : 0;
 				if (b->syn) {
 					/* Invalidate attrs beyond the right window edge. */
 					const int64_t right_char = calc_char_len(b->cur_line_desc, calc_pos(b->cur_line_desc, b->win_x + ne_columns, b->opt.tab_size, b->encoding), b->encoding);
