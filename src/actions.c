@@ -1673,7 +1673,6 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		for(int64_t i = 0; i < c && !(error = paragraph(b)) && !stop; i++);
 		if (stop) error = STOPPED;
 		if (error == STOPPED) reset_window();
-		resync_pos(b);
 		assert(b->cur_pos >= 0);
 		return print_error(error) ? ERROR : 0;
 
