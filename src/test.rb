@@ -126,7 +126,7 @@ ARGV[0].to_i.times do |i|
 
 	elsif r < 30 # Deleting text
 		ops += 1
-		case rand(5)
+		case rand(6)
 		when 0
 			puts("BACKSPACE " + (rand(20)).to_s)
 		when 1
@@ -137,6 +137,8 @@ ARGV[0].to_i.times do |i|
 			puts("DELETELINE " + (rand(10)).to_s)
 		when 4
 			puts("DELETENEXTWORD " + (rand(3)).to_s)
+		when 5
+			puts("DELETEPREVWORD " + (rand(3)).to_s)
 		end
 
 	elsif r < 40 
