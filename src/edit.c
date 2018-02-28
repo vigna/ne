@@ -404,7 +404,8 @@ int paragraph(buffer * const b) {
 
 	const int right_margin = b->opt.right_margin ? b->opt.right_margin : ne_columns;
 	bool done;
-	int64_t pos = b->cur_pos;
+	int64_t pos;
+
 	do {
 		done = true; /* set this to false if we do any work in the loop. */
 
