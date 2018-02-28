@@ -66,7 +66,8 @@ is what most commands require. */
 
 static int perform_wrap;
 
-/* The following bits are inserted to implement logging of actions taken by do_action(). */
+#ifdef LOGACTIONS
+/* Wrap do_action() and various request* functions to facilitate action logging. */
 
 int do_action_wrapped(buffer *b, action a, int64_t c, char *p);
 static int da_depth = 0;
@@ -126,7 +127,6 @@ char *request_file_wrapper(const buffer *b, const char *prompt, const char *defa
 	return resp;
 }
 #define request_file request_file_wrapper
-
 int do_action(buffer *b, action a, int64_t c, char *p) {
 	if (!da_log) da_log = fopen("/tmp/ne-actions.log","a");
 	if (da_log) {
@@ -134,25 +134,22 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			fprintf(da_log, "%p: %s\n", b, b->filename);
 			da_prev_b = b;
 		}
-		fprintf(da_log,"%p%2d %ld,%ld(%ld) %s %ld '%s' b->attr_len:%d attr_len:%d wnr:%d, updl:%d\n",
-		                 b,
+		fprintf(da_log,"%p%2d %ld,%ld(%ld) %s %ld '%s'\n",
+		                b,
 		                  da_depth++,
 		                      b->cur_line,
 		                          b->cur_pos,
 		                              b->cur_char,
 		                                   command_names[a],
-		                                      c,   p ? p : "<null>",
-		                                                           b->attr_len,attr_len,
-		                                                                              wnr(),
-		                                                                                       updl());
+		                                      c,   p ? p : "<null>");
 		fflush(da_log);
 	}
 	int rc = do_action_wrapped(b, a, c, p);
 	da_depth--;
 	return rc;
 }
-
 /* End of the insertions to achieve loggin of do_action(). */
+#endif
 
 /* This is the dispatcher of all actions that have some effect on the text.
 
@@ -167,7 +164,11 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
    somewhere. Though efficient, this has lead to some memory leaks (can you
    find them?). */
 
+#ifdef LOGACTIONS
 int do_action_wrapped(buffer *b, action a, int64_t c, char *p) {
+#else
+int do_action(buffer *b, action a, int64_t c, char *p) {
+#endif
 	static char msg[MAX_MESSAGE_SIZE];
 	line_desc *next_ld;
 	HIGHLIGHT_STATE next_line_state;
