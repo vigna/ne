@@ -392,8 +392,6 @@ int paragraph(buffer * const b) {
 	        || save_space(ld, b->opt.tab_size, b->encoding) )
 	   ) return line_down(b);
 
-	b->cur_pos = -1;
-
 	start_undo_chain(b);
 
 	/* This insertion and deletion of a single character ensures
@@ -404,7 +402,7 @@ int paragraph(buffer * const b) {
 
 	const int right_margin = b->opt.right_margin ? b->opt.right_margin : ne_columns;
 	bool done;
-	int64_t pos;
+	int64_t pos = b->cur_pos;
 
 	do {
 		done = true; /* set this to false if we do any work in the loop. */
