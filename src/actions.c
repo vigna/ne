@@ -148,7 +148,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 	da_depth--;
 	return rc;
 }
-/* End of the insertions to achieve loggin of do_action(). */
+/* End of the insertions to achieve logging of do_action(). */
 #endif
 
 /* This is the dispatcher of all actions that have some effect on the text.
