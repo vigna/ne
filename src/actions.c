@@ -837,17 +837,11 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			reset_window();
 		} else {
 			if (p) free(p);
-			return ERROR;
+			return OUT_OF_MEMORY;
 		}
 
 	case OPEN_A:
-		if ((b->is_modified) && !request_response(b, info_msg[THIS_DOCUMENT_NOT_SAVED], false)) {
-			if (a == OPENNEW_A) {
-				do_action(b, CLOSEDOC_A, 1, NULL);
-				do_action(cur_buffer, PREVDOC_A, 1, NULL);
-			}
-			return ERROR;
-		}
+		if ((b->is_modified) && !request_response(b, info_msg[THIS_DOCUMENT_NOT_SAVED], false)) return ERROR;
 
 		if (p || (p = request_file(b, "Filename", b->filename))) {
 			static bool dprompt = false; /* Set to true if we ever respond 'yes' to the prompt. */
