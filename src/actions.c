@@ -66,6 +66,90 @@ is what most commands require. */
 
 static int perform_wrap;
 
+#ifdef LOGACTIONS
+/* Wrap do_action() and various request* functions to facilitate action logging. */
+
+int do_action_wrapped(buffer *b, action a, int64_t c, char *p);
+static int da_depth = 0;
+static FILE *da_log;
+static buffer *da_prev_b;
+
+bool request_response_wrapper(const buffer *b, const char *prompt, bool default_value) {
+	bool resp = request_response(b, prompt, default_value);
+	if (da_log) {
+		fprintf(da_log,"  %p request_response: %s\n", b, resp ? "true" : "false");
+	}
+	return resp;
+}
+#define request_response request_response_wrapper
+
+char request_char_wrapper(const buffer *b, const char *prompt, const char default_value) {
+	char resp = request_char(b, prompt, default_value);
+	if (da_log) {
+		fprintf(da_log,"  %p request_char: '%c'\n", b, resp);
+	}
+	return resp;
+}
+#define request_char request_char_wrapper
+
+int64_t request_number_wrapper(const buffer *b, const char *prompt, int64_t default_value) {
+	int64_t resp = request_number(b, prompt, default_value);
+	if (da_log) {
+		fprintf(da_log,"  %p request_number: %ld\n", b, resp);
+	}
+	return resp;
+}
+#define request_number request_number_wrapper
+
+char *request_string_wrapper(const buffer *b, const char *prompt, const char *default_string, bool accept_null_string, int completion_type, bool prefer_utf8) {
+	char *resp = request_string(b, prompt, default_string, accept_null_string, completion_type, prefer_utf8);
+	if (da_log) {
+		fprintf(da_log,"  %p request_string: '%s'\n", b, resp ? resp : "<null>");
+	}
+	return resp;
+}
+#define request_string request_string_wrapper
+
+char *request_wrapper(const buffer *b, const char *prompt, const char *default_string, bool alpha_allowed, int completion_type, bool prefer_utf8) {
+	char * resp = request(b, prompt, default_string, alpha_allowed, completion_type, prefer_utf8);
+	if (da_log) {
+		fprintf(da_log,"  %p request: '%s'\n", b, resp ? resp : "<null>");
+	}
+	return resp;
+}
+#define request request_wrapper
+
+char *request_file_wrapper(const buffer *b, const char *prompt, const char *default_name) {
+	char * resp = request_file(b, prompt, default_name);
+	if (da_log) {
+		fprintf(da_log,"  %p request: '%s'\n", b, resp ? resp : "<null>");
+	}
+	return resp;
+}
+#define request_file request_file_wrapper
+int do_action(buffer *b, action a, int64_t c, char *p) {
+	if (!da_log) da_log = fopen("/tmp/ne-actions.log","a");
+	if (da_log) {
+		if (b != da_prev_b && b->filename) {
+			fprintf(da_log, "%p: %s\n", b, b->filename);
+			da_prev_b = b;
+		}
+		fprintf(da_log,"%p%2d %ld,%ld(%ld) %s %ld '%s'\n",
+		                b,
+		                  da_depth++,
+		                      b->cur_line,
+		                          b->cur_pos,
+		                              b->cur_char,
+		                                   command_names[a],
+		                                      c,   p ? p : "<null>");
+		fflush(da_log);
+	}
+	int rc = do_action_wrapped(b, a, c, p);
+	da_depth--;
+	return rc;
+}
+/* End of the insertions to achieve logging of do_action(). */
+#endif
 
 /* This is the dispatcher of all actions that have some effect on the text.
 
@@ -80,8 +164,11 @@ static int perform_wrap;
    somewhere. Though efficient, this has lead to some memory leaks (can you
    find them?). */
 
-
+#ifdef LOGACTIONS
+int do_action_wrapped(buffer *b, action a, int64_t c, char *p) {
+#else
 int do_action(buffer *b, action a, int64_t c, char *p) {
+#endif
 	static char msg[MAX_MESSAGE_SIZE];
 	line_desc *next_ld;
 	HIGHLIGHT_STATE next_line_state;
@@ -258,7 +345,10 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			b->block_start_pos = b->cur_pos;
 
 			if(!(error = do_action(b, a == DELETENEXTWORD_A ? NEXTWORD_A : PREVWORD_A, 1, NULL))) {
-				if (!(error = erase_block(b))) update_window_lines(b, b->cur_line_desc, b->cur_y, ne_lines - 2, false);
+				if (!(error = erase_block(b))) {
+					b->attr_len = -1;
+					update_window_lines(b, b->cur_line_desc, b->cur_y, ne_lines - 2, false);
+				}
 			}
 			b->bookmark_mask &= ~(1 << WORDWRAP_BOOKMARK);
 			b->block_start_pos = b->bookmark[WORDWRAP_BOOKMARK].pos;
@@ -617,7 +707,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			if (b->cur_pos < b->cur_line_desc->line_len) {
 				/* Deletion inside a line. */
 				const int old_char = b->encoding == ENC_UTF8 ? utf8char(&b->cur_line_desc->line[b->cur_pos]) : b->cur_line_desc->line[b->cur_pos];
-				const uint32_t old_attr = b->syn ? b->attr_buf[b->cur_pos] : 0;
+				const uint32_t old_attr = b->syn ? b->attr_buf[b->cur_char] : 0;
 				if (b->syn) {
 					/* Invalidate attrs beyond the right window edge. */
 					const int64_t right_char = calc_char_len(b->cur_line_desc, calc_pos(b->cur_line_desc, b->win_x + ne_columns, b->opt.tab_size, b->encoding), b->encoding);
@@ -830,17 +920,18 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		return OK;
 
 	case OPENNEW_A:
-		b = new_buffer();
-		reset_window();
-
-	case OPEN_A:
-		if ((b->is_modified) && !request_response(b, info_msg[THIS_DOCUMENT_NOT_SAVED], false)) {
-			if (a == OPENNEW_A) do_action(b, CLOSEDOC_A, 1, NULL);
-			return ERROR;
+		if (b = new_buffer()) {
+			reset_window();
+		} else {
+			if (p) free(p);
+			return OUT_OF_MEMORY;
 		}
 
+	case OPEN_A:
+		if ((b->is_modified) && !request_response(b, info_msg[THIS_DOCUMENT_NOT_SAVED], false)) return ERROR;
+
 		if (p || (p = request_file(b, "Filename", b->filename))) {
-			static bool dprompt = 0; /* Set to true if we ever respond 'yes' to the prompt. */
+			static bool dprompt = false; /* Set to true if we ever respond 'yes' to the prompt. */
 
 			buffer *dup = get_buffer_named(p);
 
@@ -870,7 +961,10 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			}
 			free(p);
 		}
-		if (a == OPENNEW_A) do_action(b, CLOSEDOC_A, 1, NULL);
+		if (a == OPENNEW_A) {
+			do_action(b, CLOSEDOC_A, 1, NULL);
+			do_action(cur_buffer, PREVDOC_A, 1, NULL);
+		}
 		return ERROR;
 
 	case ABOUT_A:
@@ -1598,6 +1692,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		for(int64_t i = 0; i < c && !(error = paragraph(b)) && !stop; i++);
 		if (stop) error = STOPPED;
 		if (error == STOPPED) reset_window();
+		assert(b->cur_pos >= 0);
 		return print_error(error) ? ERROR : 0;
 
 	case SHIFT_A:

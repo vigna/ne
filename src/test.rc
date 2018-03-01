@@ -30,7 +30,7 @@ export EF_ALLOW_MALLOC_0=1
 
 ./test.rb 2000 $file > test.macro
 time ./ne $opts --macro test.macro 2>test.err
-check_differences $file
+check_differences $file | tee test.result
 
 # Create another macro from the same text file, but
 # this one will run in binary mode. Mung the extension
@@ -39,4 +39,4 @@ cp $file $file.bin$$
 file=$file.bin$$
 ./test.rb 2000 $file BINARY > test.binary.macro
 time ./ne $opts --macro test.binary.macro 2>test.binary.err
-check_differences $file
+check_differences $file | tee -a test.result
