@@ -685,6 +685,10 @@ void goto_line_pos(buffer * const b, const int64_t n, const int64_t pos) {
 	b->y_wanted = 0;
 
 	if (n >= b->num_lines || n == b->cur_line && pos == b->cur_pos) return;
+	if (n == b->cur_line && pos == -1) {
+		resync_pos(b);
+		return;
+	}
 
 	line_desc *ld;
 

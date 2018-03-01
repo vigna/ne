@@ -226,7 +226,7 @@ int64_t word_wrap(buffer * const b) {
 
 	/* Now we know that the line shouldn't be broken before &line[first_pos]. */
 
-	/* Start from the other end now and find a candidate space to break the line on.*/
+	/* Search left from the current position to find a candidate space to break the line on.*/
 	while((pos = prev_pos(line, pos, b->encoding)) && !ne_isspace(get_char(&line[pos], b->encoding), b->encoding));
 
 	if (! pos || pos < first_pos) return ERROR;
@@ -392,6 +392,7 @@ int paragraph(buffer * const b) {
 	        || save_space(ld, b->opt.tab_size, b->encoding) )
 	   ) return line_down(b);
 
+	int64_t pos = b->cur_pos;
 	b->cur_pos = -1;
 
 	start_undo_chain(b);
@@ -404,7 +405,7 @@ int paragraph(buffer * const b) {
 
 	const int right_margin = b->opt.right_margin ? b->opt.right_margin : ne_columns;
 	bool done;
-	int64_t pos = b->cur_pos;
+
 	do {
 		done = true; /* set this to false if we do any work in the loop. */
 
