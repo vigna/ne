@@ -838,7 +838,11 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 	case OPEN_A:
 		if ((b->is_modified) && !request_response(b, info_msg[THIS_DOCUMENT_NOT_SAVED], false)) {
-			if (a == OPENNEW_A) do_action(b, CLOSEDOC_A, 1, NULL);
+			if (a == OPENNEW_A) {
+				bool wrongdoc = (b->b_node.prev->prev && b->b_node.next->next);
+				do_action(b, CLOSEDOC_A, 1, NULL);
+				if (wrongdoc) do_action(cur_buffer, PREVDOC_A, 1, NULL);
+			}
 			return ERROR;
 		}
 
@@ -873,7 +877,11 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			}
 			free(p);
 		}
-		if (a == OPENNEW_A) do_action(b, CLOSEDOC_A, 1, NULL);
+		if (a == OPENNEW_A) {
+			bool wrongdoc = b->b_node.prev->prev && b->b_node.next->next;
+			do_action(b, CLOSEDOC_A, 1, NULL);
+			if (wrongdoc) do_action(cur_buffer, PREVDOC_A, 1, NULL);
+		}
 		return ERROR;
 
 	case ABOUT_A:
