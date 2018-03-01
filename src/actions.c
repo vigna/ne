@@ -833,8 +833,12 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		return OK;
 
 	case OPENNEW_A:
-		b = new_buffer();
-		reset_window();
+		if (b = new_buffer()) {
+			reset_window();
+		} else {
+			if (p) free(p);
+			return ERROR;
+		}
 
 	case OPEN_A:
 		if ((b->is_modified) && !request_response(b, info_msg[THIS_DOCUMENT_NOT_SAVED], false)) {
