@@ -739,7 +739,12 @@ char *complete_filename(const char *start_prefix) {
 	}
 
 	if (cur_dir_name != NULL) {
-		chdir(cur_dir_name);
+		if (chdir(cur_dir_name) == -1) {
+			free(cur_dir_name);
+			free(dir_name);
+			free(cur_prefix);
+			return NULL;
+		}
 		free(cur_dir_name);
 	}
 	free(dir_name);
@@ -892,7 +897,10 @@ char *request_files(const char * const filename, bool use_prefix) {
 		req_list_free(&rl);
 	} while(next_dir);
 
-	chdir(cur_dir_name);
+	if (chdir(cur_dir_name) == -1) {
+		free(cur_dir_name);
+		return NULL;
+	}
 	free(cur_dir_name);
 
 	return result;
