@@ -353,14 +353,12 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		if (b->block_start_line != b->cur_line || b->block_start_pos != b->cur_pos ) { /* we moved */
 			error |= erase_block(b);
 			end_undo_chain(b);
-			b->attr_len = -1;
-			update_window_lines(b, b->cur_line_desc, b->cur_y, ne_lines - 2, false);
 		} else {
-			b->attr_len = -1;
-			update_window_lines(b, b->cur_line_desc, b->cur_y, ne_lines - 2, false);
 			end_undo_chain(b);
 			error |= undo(b);
 		}
+		b->attr_len = -1;
+		update_window_lines(b, b->cur_line_desc, b->cur_y, ne_lines - 2, false);
 		b->bookmark_mask &= ~(1 << WORDWRAP_BOOKMARK);
 		b->block_start_pos = b->bookmark[WORDWRAP_BOOKMARK].pos;
 		b->block_start_line = b->bookmark[WORDWRAP_BOOKMARK].line;
