@@ -349,7 +349,14 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		b->block_start_line = b->cur_line;
 		b->block_start_pos = b->cur_pos;
 
-		for(int64_t i = 0; i < c && !(error = search_word(b, a == DELETENEXTWORD_A ? 1 : -1)) && !stop; i++);
+		if (a == DELETEPREVWORD_A ) {
+			for(int64_t i = 0; i < c && !(error = search_word(b, -1)) && !stop; i++);
+		} else if (c > 0) {
+			move_to_eow(b);
+			if (b->block_start_line != b->cur_line || b->block_start_pos != b->cur_pos ) c--;
+			for(int64_t i = 0; i < c && !(error = search_word(b, 1)) && !stop; i++);
+			if (c) move_to_eow(b);
+		}
 		if (b->block_start_line != b->cur_line || b->block_start_pos != b->cur_pos ) { /* we moved */
 			error |= erase_block(b);
 			end_undo_chain(b);
