@@ -327,36 +327,45 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 	case DELETENEXTWORD_A:
 	case DELETEPREVWORD_A:
+		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 		recording = b->recording;
 		b->recording = 0;
 		NORMALIZE(c);
 		delay_update();
+		int marking_t = b->marking;
+		int mark_is_vertical_t = b->mark_is_vertical;
+		b->bookmark[WORDWRAP_BOOKMARK].pos = b->block_start_pos;
+		b->bookmark[WORDWRAP_BOOKMARK].line = b->block_start_line;
+		b->bookmark_mask |= (1 << WORDWRAP_BOOKMARK);
+
 		start_undo_chain(b);
-		for(int64_t i = 0; i < c && !error && !stop; i++) {
-			int marking_t = b->marking;
-			int mark_is_vertical_t = b->mark_is_vertical;
-			b->bookmark[WORDWRAP_BOOKMARK].pos = b->block_start_pos;
-			b->bookmark[WORDWRAP_BOOKMARK].line = b->block_start_line;
-			b->bookmark_mask |= (1 << WORDWRAP_BOOKMARK);
+		/* This insertion and deletion of a single character ensures
+			that the cursor ends up here after an undo. */
+		insert_one_char(b, b->cur_line_desc, b->cur_line, b->cur_pos, ' ');
+		delete_stream(b, b->cur_line_desc, b->cur_line, b->cur_pos, 1);
 
-			b->marking = 1;
-			b->mark_is_vertical = 0;
-			b->block_start_line = b->cur_line;
-			b->block_start_pos = b->cur_pos;
+		b->marking = 1;
+		b->mark_is_vertical = 0;
+		b->block_start_line = b->cur_line;
+		b->block_start_pos = b->cur_pos;
 
-			if(!(error = do_action(b, a == DELETENEXTWORD_A ? NEXTWORD_A : PREVWORD_A, 1, NULL))) {
-				if (!(error = erase_block(b))) {
-					b->attr_len = -1;
-					update_window_lines(b, b->cur_line_desc, b->cur_y, ne_lines - 2, false);
-				}
-			}
-			b->bookmark_mask &= ~(1 << WORDWRAP_BOOKMARK);
-			b->block_start_pos = b->bookmark[WORDWRAP_BOOKMARK].pos;
-			b->block_start_line = b->bookmark[WORDWRAP_BOOKMARK].line;
-			b->marking = marking_t;
-			b->mark_is_vertical = mark_is_vertical_t;
+		for(int64_t i = 0; i < c && !(error = search_word(b, a == DELETENEXTWORD_A ? 1 : -1)) && !stop; i++);
+		if (b->block_start_line != b->cur_line || b->block_start_pos != b->cur_pos ) { /* we moved */
+			error |= erase_block(b);
+			end_undo_chain(b);
+			b->attr_len = -1;
+			update_window_lines(b, b->cur_line_desc, b->cur_y, ne_lines - 2, false);
+		} else {
+			b->attr_len = -1;
+			update_window_lines(b, b->cur_line_desc, b->cur_y, ne_lines - 2, false);
+			end_undo_chain(b);
+			error |= undo(b);
 		}
-		end_undo_chain(b);
+		b->bookmark_mask &= ~(1 << WORDWRAP_BOOKMARK);
+		b->block_start_pos = b->bookmark[WORDWRAP_BOOKMARK].pos;
+		b->block_start_line = b->bookmark[WORDWRAP_BOOKMARK].line;
+		b->marking = marking_t;
+		b->mark_is_vertical = mark_is_vertical_t;
 		b->recording = recording;
 		return stop ? STOPPED : error;
 
