@@ -6,6 +6,9 @@
     you can explicitly repeat either operation even if the other was most
     recently performed.
 
+  * We now use the xenl property to detect whether we can write on the last
+    column of the last line, thus making the status bar complete.
+
 3.1.1 2017-06-04
 
   * You can now CloseDoc (^Q) unmodified documents from within the

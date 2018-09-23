@@ -675,7 +675,7 @@ void output_chars(const char *string, const uint32_t *attr, const int raw_len, c
 		len. Moreover, we don't dare write in last column of bottom line, if
 		AutoWrap, since that would scroll the whole screen on some terminals. */
 
-	cmplus(string_output_width(string, &len, ne_columns - curX - (AutoWrap && curY == ne_lines - 1), utf8));
+	cmplus(string_output_width(string, &len, ne_columns - curX - (AutoWrap && !MagicWrap && curY == ne_lines - 1), utf8));
 
 	if (string == NULL) {
 		for(int i = 0; i < len; i++) {
@@ -787,7 +787,7 @@ void insert_chars(const char * start, const uint32_t * const attr, const int raw
 		bottom line, if AutoWrap, since that would scroll the whole screen
 		on some terminals. */
 
-	cmplus(string_output_width(start, &len, ne_columns - curX - (AutoWrap && curY == ne_lines - 1), utf8));
+	cmplus(string_output_width(start, &len, ne_columns - curX - (AutoWrap && !MagicWrap && curY == ne_lines - 1), utf8));
 
 	if (!ne_transparent_underline && !ne_tilde_glitch && start
 		  && ne_insert_padding == NULL && ne_insert_character == NULL) {
