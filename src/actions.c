@@ -359,12 +359,14 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		const bool line_changed = b->block_start_line != b->cur_line;
 		if (line_changed || b->block_start_pos != b->cur_pos) { /* we moved */
 			b->attr_len = -1;
-			error |= erase_block(b);
+			error |= erase_block(b, false);
 			end_undo_chain(b);
 
-			if (line_changed) update_window_lines(b, b->cur_line_desc, b->cur_y, ne_lines - 2, false);
+			if (line_changed) {
+				if (b->syn) update_syntax_states_delay(b, b->cur_line_desc, NULL);
+				update_window_lines(b, b->cur_line_desc, b->cur_y, ne_lines - 2, false);
+			}
 			else {
-				b->attr_len = -1;
 				update_line(b, b->cur_line_desc, b->cur_y, 0, false);
 				if (b->syn) need_attr_update = true;
 			}
@@ -1522,7 +1524,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 	case ERASE_A:
 		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
-		if (!(error = print_error((b->mark_is_vertical ? erase_vert_block : erase_block)(b)))) {
+		if (!(error = print_error((b->mark_is_vertical ? erase_vert_block : erase_block)(b, true)))) {
 			b->marking = 0;
 			update_window_lines(b, b->cur_line_desc, b->cur_y, ne_lines - 2, false);
 		}
@@ -1635,7 +1637,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 									start_undo_chain(b);
 
-									if (b->marking) (b->mark_is_vertical ? erase_vert_block : erase_block)(b);
+									if (b->marking) (b->mark_is_vertical ? erase_vert_block : erase_block)(b, true);
 									error = (b->mark_is_vertical ? paste_vert_to_buffer : paste_to_buffer)(b, INT_MAX);
 									end_undo_chain(b);
 

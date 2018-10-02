@@ -262,9 +262,10 @@ int copy_to_clip(buffer *b, int n, bool cut) {
 
 
 
-/* Simply erases a block, without putting it in a clip. Calls update_syntax_states_delay(). */
+/* Simply erases a block, without putting it in a clip. Calls
+   update_syntax_states_delay() if update is true. */
 
-int erase_block(buffer *b) {
+int erase_block(buffer *b, const bool update) {
 	if (!b->marking) return MARK_BLOCK_FIRST;
 	if (b->block_start_line >= b->num_lines) return MARK_OUT_OF_BUFFER;
 
@@ -323,7 +324,7 @@ int erase_block(buffer *b) {
 
 	delete_stream(b, b->cur_line_desc, b->cur_line, b->cur_pos, erase_len - 1);
 	if (chaining) end_undo_chain(b);
-	update_syntax_states_delay(b, b->cur_line_desc, NULL);
+	if (update) update_syntax_states_delay(b, b->cur_line_desc, NULL);
 	return OK;
 }
 
@@ -487,10 +488,10 @@ int copy_vert_to_clip(buffer *b, int n, bool cut) {
 	return OK;
 }
 
-/* Simply erases a vertical block, without putting it in a clip. Calls update_syntax_states_delay(). */
+/* Simply erases a vertical block, without putting it in a clip. Calls
+   update_syntax_states_delay() if update is true. */
 
-int erase_vert_block(buffer *b) {
-
+int erase_vert_block(buffer *b, const bool update) {
 
 	if (!b->marking) return MARK_BLOCK_FIRST;
 	if (b->block_start_line >= b->num_lines) return MARK_OUT_OF_BUFFER;
@@ -524,7 +525,7 @@ int erase_vert_block(buffer *b) {
 			delete_stream(b, ld, i, start_pos, len);
 			ld = (line_desc *)ld->ld_node.prev;
 		}
-		update_syntax_states_delay(b, (line_desc *)ld->ld_node.next, b->cur_line_desc);
+		if (update) update_syntax_states_delay(b, (line_desc *)ld->ld_node.next, b->cur_line_desc);
 	}
 	else {
 		for(int64_t i = y; i <= b->block_start_line; i++) {
@@ -533,7 +534,7 @@ int erase_vert_block(buffer *b) {
 			delete_stream(b, ld, i, start_pos, len);
 			ld = (line_desc *)ld->ld_node.next;
 		}
-		update_syntax_states_delay(b, b->cur_line_desc, (line_desc *)ld->ld_node.prev);
+		if (update) update_syntax_states_delay(b, b->cur_line_desc, (line_desc *)ld->ld_node.prev);
 	}
 
 	end_undo_chain(b);

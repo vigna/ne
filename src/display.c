@@ -94,7 +94,6 @@ void update_syntax_states(buffer *b, int row, line_desc *ld, line_desc *end_ld) 
  		bool got_end_ld = end_ld == NULL;
 		bool invalidate_attr_buf = false;
 		HIGHLIGHT_STATE next_line_state = b->attr_len < 0 ? parse(b->syn, ld, ld->highlight_state, b->encoding == ENC_UTF8) : b->next_state;
-
 		assert(b->attr_len < 0 || b->attr_len == calc_char_len(ld, ld->line_len, b->encoding));
 
 		for(;;) {
@@ -105,7 +104,6 @@ void update_syntax_states(buffer *b, int row, line_desc *ld, line_desc *end_ld) 
 			/* We update lines until next_line_state is equal to our current highlight_state, but we go until
 			   end_ld if it is not NULL. In any case, we bail out at the end of the file. */
 			if ((highlight_cmp(&ld->highlight_state, &next_line_state) && got_end_ld) || !ld->ld_node.next) break;
-			fprintf(stderr, "* %d first: %d last: %d needs: %d\n", first_line, last_line, window_needs_refresh);
 			if (row >= 0) {
 				row++;
 				if (row < ne_lines - 1) {
