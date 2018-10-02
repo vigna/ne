@@ -105,7 +105,7 @@ void update_syntax_states(buffer *b, int row, line_desc *ld, line_desc *end_ld) 
 			/* We update lines until next_line_state is equal to our current highlight_state, but we go until
 			   end_ld if it is not NULL. In any case, we bail out at the end of the file. */
 			if ((highlight_cmp(&ld->highlight_state, &next_line_state) && got_end_ld) || !ld->ld_node.next) break;
-
+			fprintf(stderr, "* %d first: %d last: %d needs: %d\n", first_line, last_line, window_needs_refresh);
 			if (row >= 0) {
 				row++;
 				if (row < ne_lines - 1) {
@@ -259,7 +259,7 @@ void output_line_desc(const int row, const int col, const line_desc *ld, const i
 
    After a call to this function with argument b->cur_line_desc,
    b->attr_buf will be updated so to contain again the currently displayed
-   attributes, unless no refresh has been performed, in which base
+   attributes, unless no refresh has been performed, in which case
    b->attr_len will be set to -1.
 */
 

@@ -331,7 +331,6 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		recording = b->recording;
 		b->recording = 0;
 		NORMALIZE(c);
-		delay_update();
 		int marking_t = b->marking;
 		int mark_is_vertical_t = b->mark_is_vertical;
 		b->bookmark[WORDWRAP_BOOKMARK].pos = b->block_start_pos;
@@ -339,33 +338,41 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		b->bookmark_mask |= (1 << WORDWRAP_BOOKMARK);
 
 		start_undo_chain(b);
-		/* This insertion and deletion of a single character ensures
-			that the cursor ends up here after an undo. */
-		insert_one_char(b, b->cur_line_desc, b->cur_line, b->cur_pos, ' ');
-		delete_stream(b, b->cur_line_desc, b->cur_line, b->cur_pos, 1);
 
 		b->marking = 1;
 		b->mark_is_vertical = 0;
 		b->block_start_line = b->cur_line;
 		b->block_start_pos = b->cur_pos;
 
-		if (a == DELETEPREVWORD_A ) {
+		if (a == DELETEPREVWORD_A) {
+			/* This ugly insertion and deletion of a single character ensures
+				that the cursor ends up here after an undo. */
+			insert_one_char(b, b->cur_line_desc, b->cur_line, b->cur_pos, ' ');
+			delete_stream(b, b->cur_line_desc, b->cur_line, b->cur_pos, 1);
 			for(int64_t i = 0; i < c && !(error = search_word(b, -1)) && !stop; i++);
 		} else if (c > 0) {
 			move_to_eow(b);
-			if (b->block_start_line != b->cur_line || b->block_start_pos != b->cur_pos ) c--;
+			if (b->block_start_line != b->cur_line || b->block_start_pos != b->cur_pos) c--;
 			for(int64_t i = 0; i < c && !(error = search_word(b, 1)) && !stop; i++);
 			if (c) move_to_eow(b);
 		}
-		if (b->block_start_line != b->cur_line || b->block_start_pos != b->cur_pos ) { /* we moved */
+		const bool line_changed = b->block_start_line != b->cur_line;
+		if (line_changed || b->block_start_pos != b->cur_pos) { /* we moved */
+			b->attr_len = -1;
 			error |= erase_block(b);
 			end_undo_chain(b);
+
+			if (line_changed) update_window_lines(b, b->cur_line_desc, b->cur_y, ne_lines - 2, false);
+			else {
+				b->attr_len = -1;
+				update_line(b, b->cur_line_desc, b->cur_y, 0, false);
+				if (b->syn) need_attr_update = true;
+			}
 		} else {
 			end_undo_chain(b);
-			error |= undo(b);
+			if (a == DELETEPREVWORD_A) error |= undo(b);
 		}
-		b->attr_len = -1;
-		update_window_lines(b, b->cur_line_desc, b->cur_y, ne_lines - 2, false);
+
 		b->bookmark_mask &= ~(1 << WORDWRAP_BOOKMARK);
 		b->block_start_pos = b->bookmark[WORDWRAP_BOOKMARK].pos;
 		b->block_start_line = b->bookmark[WORDWRAP_BOOKMARK].line;
