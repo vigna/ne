@@ -115,6 +115,7 @@ really-clean: clean
 coverage:
 	geninfo .
 	-rm -fr coverage
+	-rm -f hash.gcda.info help.gcda.info inputclass.gcda.info names.gcda.info errors.gcda.info
 	genhtml -o coverage *.info
 
 ###

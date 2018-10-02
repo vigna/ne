@@ -136,9 +136,9 @@ ARGV[0].to_i.times do |i|
 		when 3
 			puts("DELETELINE " + (rand(10)).to_s)
 		when 4
-			puts("DELETENEXTWORD " + (rand(3)).to_s)
+			puts("DELETENEXTWORD " + (rand(10)).to_s)
 		when 5
-			puts("DELETEPREVWORD " + (rand(3)).to_s)
+			puts("DELETEPREVWORD " + (rand(10)).to_s)
 		end
 
 	elsif r < 40 
