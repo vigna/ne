@@ -5089,8 +5089,8 @@ no action will be performed.
 @noindent Syntax: @code{DeletePrevWord [@var{n}]}@*
 @noindent Abbreviation: @code{DPW}
 
-@noindent deletes text from the current position to the first character of the
-previous word @var{n} times. If the optional @var{n} argument is not specified,
+@noindent deletes text from the current position through the first character of the
+@var{n}'th previous start-of-word. If the optional @var{n} argument is not specified,
 it is assumed to be one (in which case, if the cursor is in the middle of a
 word the effect is just to delete to the start of that word).
 
@@ -5104,9 +5104,10 @@ word the effect is just to delete to the start of that word).
 @noindent Syntax: @code{DeleteNextWord [@var{n}]}@*
 @noindent Abbreviation: @code{DNW}
 
-@noindent deletes text from the current position to the next word @var{n}
-times. If the optional @var{n} argument is not specified, it is assumed to be
-one.
+@noindent deletes text from the current position to the @var{n}'th next end-of-word
+If the optional @var{n} argument is not specified, it is assumed to be
+one (in which case, if the cursor is in the middle of a word the effect is
+just to delete to the end of that word).
 
 
 

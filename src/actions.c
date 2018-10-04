@@ -327,36 +327,59 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 	case DELETENEXTWORD_A:
 	case DELETEPREVWORD_A:
+		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 		recording = b->recording;
 		b->recording = 0;
 		NORMALIZE(c);
-		delay_update();
+		int marking_t = b->marking;
+		int mark_is_vertical_t = b->mark_is_vertical;
+		b->bookmark[WORDWRAP_BOOKMARK].pos = b->block_start_pos;
+		b->bookmark[WORDWRAP_BOOKMARK].line = b->block_start_line;
+		b->bookmark_mask |= (1 << WORDWRAP_BOOKMARK);
+
 		start_undo_chain(b);
-		for(int64_t i = 0; i < c && !error && !stop; i++) {
-			int marking_t = b->marking;
-			int mark_is_vertical_t = b->mark_is_vertical;
-			b->bookmark[WORDWRAP_BOOKMARK].pos = b->block_start_pos;
-			b->bookmark[WORDWRAP_BOOKMARK].line = b->block_start_line;
-			b->bookmark_mask |= (1 << WORDWRAP_BOOKMARK);
 
-			b->marking = 1;
-			b->mark_is_vertical = 0;
-			b->block_start_line = b->cur_line;
-			b->block_start_pos = b->cur_pos;
+		b->marking = 1;
+		b->mark_is_vertical = 0;
+		b->block_start_line = b->cur_line;
+		b->block_start_pos = b->cur_pos;
 
-			if(!(error = do_action(b, a == DELETENEXTWORD_A ? NEXTWORD_A : PREVWORD_A, 1, NULL))) {
-				if (!(error = erase_block(b))) {
-					b->attr_len = -1;
-					update_window_lines(b, b->cur_line_desc, b->cur_y, ne_lines - 2, false);
-				}
-			}
-			b->bookmark_mask &= ~(1 << WORDWRAP_BOOKMARK);
-			b->block_start_pos = b->bookmark[WORDWRAP_BOOKMARK].pos;
-			b->block_start_line = b->bookmark[WORDWRAP_BOOKMARK].line;
-			b->marking = marking_t;
-			b->mark_is_vertical = mark_is_vertical_t;
+		if (a == DELETEPREVWORD_A) {
+			/* This ugly insertion and deletion of a single character ensures
+				that the cursor ends up here after an undo. */
+			insert_one_char(b, b->cur_line_desc, b->cur_line, b->cur_pos, ' ');
+			delete_stream(b, b->cur_line_desc, b->cur_line, b->cur_pos, 1);
+			for(int64_t i = 0; i < c && !(error = search_word(b, -1)) && !stop; i++);
+		} else if (c > 0) {
+			move_to_eow(b);
+			if (b->block_start_line != b->cur_line || b->block_start_pos != b->cur_pos) c--;
+			for(int64_t i = 0; i < c && !(error = search_word(b, 1)) && !stop; i++);
+			if (c) move_to_eow(b);
 		}
-		end_undo_chain(b);
+		const bool line_changed = b->block_start_line != b->cur_line;
+		if (line_changed || b->block_start_pos != b->cur_pos) { /* we moved */
+			b->attr_len = -1;
+			error |= erase_block(b, false);
+			end_undo_chain(b);
+
+			if (line_changed) {
+				if (b->syn) update_syntax_states_delay(b, b->cur_line_desc, NULL);
+				update_window_lines(b, b->cur_line_desc, b->cur_y, ne_lines - 2, false);
+			}
+			else {
+				update_line(b, b->cur_line_desc, b->cur_y, 0, false);
+				if (b->syn) need_attr_update = true;
+			}
+		} else {
+			end_undo_chain(b);
+			if (a == DELETEPREVWORD_A) error |= undo(b);
+		}
+
+		b->bookmark_mask &= ~(1 << WORDWRAP_BOOKMARK);
+		b->block_start_pos = b->bookmark[WORDWRAP_BOOKMARK].pos;
+		b->block_start_line = b->bookmark[WORDWRAP_BOOKMARK].line;
+		b->marking = marking_t;
+		b->mark_is_vertical = mark_is_vertical_t;
 		b->recording = recording;
 		return stop ? STOPPED : error;
 
@@ -1501,7 +1524,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 	case ERASE_A:
 		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
-		if (!(error = print_error((b->mark_is_vertical ? erase_vert_block : erase_block)(b)))) {
+		if (!(error = print_error((b->mark_is_vertical ? erase_vert_block : erase_block)(b, true)))) {
 			b->marking = 0;
 			update_window_lines(b, b->cur_line_desc, b->cur_y, ne_lines - 2, false);
 		}
@@ -1614,7 +1637,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 									start_undo_chain(b);
 
-									if (b->marking) (b->mark_is_vertical ? erase_vert_block : erase_block)(b);
+									if (b->marking) (b->mark_is_vertical ? erase_vert_block : erase_block)(b, true);
 									error = (b->mark_is_vertical ? paste_vert_to_buffer : paste_to_buffer)(b, INT_MAX);
 									end_undo_chain(b);
 
