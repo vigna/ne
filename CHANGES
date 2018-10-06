@@ -1,6 +1,6 @@
 (This file, CHANGES, lists fixes. See NEWS for new features and enhancements.)
 
-3.1.2 not yet released
+3.1.2 2018-10-06
 
   * Fixed visual glitch when characters spanning multiple columns are only
     partially displayed on the left side.
