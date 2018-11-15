@@ -305,6 +305,11 @@ static int joe2color(const int joe_color) {
 /* Sets up attributes */
 
 
+#define TPARM2(a, b) tparm(a, b, 0, 0, 0, 0, 0, 0, 0, 0)
+#define TPARM3(a, b, c) tparm(a, b, c, 0, 0, 0, 0, 0, 0, 0)
+#define TPARM4(a, b, c, d) tparm(a, b, c, d, 0, 0, 0, 0, 0, 0)
+#define TPARM5(a, b, c, d, e) tparm(a, b, c, d, e, 0, 0, 0, 0, 0)
+
 #ifdef PLAIN_SET_ATTR
 
 void set_attr(const uint32_t attr) {
@@ -318,11 +323,11 @@ void set_attr(const uint32_t attr) {
 
 	if (color_ok) {
 		if (attr & FG_NOT_DEFAULT) {
-			const char * const buf = tparm(ne_set_foreground , joe2color(attr >> FG_SHIFT));
+			const char * const buf = TPARM2(ne_set_foreground , joe2color(attr >> FG_SHIFT));
 			OUTPUT1(buf);
 		}
 		if (attr & BG_NOT_DEFAULT) {
-			const char * const buf = tparm(ne_set_background , joe2color(attr >> BG_SHIFT));
+			const char * const buf = TPARM2(ne_set_background , joe2color(attr >> BG_SHIFT));
 			OUTPUT1(buf);
 		}
 	}
@@ -357,13 +362,13 @@ void set_attr(const uint32_t attr) {
 
 		if (attr_reset && (attr & FG_NOT_DEFAULT) || (attr & FG_MASK) != (curr_attr & FG_MASK)) {
 			if (attr & FG_NOT_DEFAULT) {
-				const char * const buf = tparm(ne_set_foreground , joe2color(attr >> FG_SHIFT));
+				const char * const buf = TPARM2(ne_set_foreground , joe2color(attr >> FG_SHIFT));
 				OUTPUT1(buf);
 			}
 		}
 		if (attr_reset && (attr & BG_NOT_DEFAULT) || (attr & BG_MASK) != (curr_attr & BG_MASK)) {
 			if (attr & BG_NOT_DEFAULT) {
-				const char * const buf = tparm(ne_set_background , joe2color(attr >> BG_SHIFT));
+				const char * const buf = TPARM2(ne_set_background , joe2color(attr >> BG_SHIFT));
 				OUTPUT1(buf);
 			}
 		}
@@ -512,8 +517,8 @@ static void set_scroll_region (const int start, const int stop) {
 	/* Both control string have line range 0 to lines-1 */
 
 	char *buf;
-	if (ne_change_scroll_region) buf = tparm (ne_change_scroll_region, start, stop);
-	else buf = tparm (ne_set_window, start, stop, 0, ne_columns - 1);
+	if (ne_change_scroll_region) buf = TPARM3(ne_change_scroll_region, start, stop);
+	else buf = TPARM5(ne_set_window, start, stop, 0, ne_columns - 1);
 
 	OUTPUT1(buf);
 	losecursor();
@@ -772,7 +777,7 @@ void insert_chars(const char * start, const uint32_t * const attr, const int raw
 		}
 		else width = len;
 
-		const char * const buf = tparm (ne_parm_ich, width);
+		const char * const buf = TPARM2(ne_parm_ich, width);
 		OUTPUT1 (buf);
 
 		if (start) output_chars(start, attr, raw_len, utf8);
@@ -862,7 +867,7 @@ void delete_chars (int n) {
 	}
 
 	if (ne_parm_dch) {
-		const char * const buf = tparm(ne_parm_dch, n);
+		const char * const buf = TPARM2(ne_parm_dch, n);
 		OUTPUT1(buf);
 	}
 	else while(n-- != 0) OUTPUT1(ne_delete_character);
@@ -877,7 +882,7 @@ for that purpose. */
 
 static void do_multi_ins_del(char * const multi, const char * const single, int n) {
 	if (multi) {
-		const char * const buf = tparm(multi, n);
+		const char * const buf = TPARM2(multi, n);
 		OUTPUT(buf);
 	}
 	else while(n-- != 0) OUTPUT(single);
@@ -957,7 +962,7 @@ static void calculate_costs (void) {
 
 	if (ne_repeat_char) {
 
-		char *const buf = tparm(ne_repeat_char, ' ', 1);
+		char *const buf = TPARM3(ne_repeat_char, ' ', 1);
 
 		cost = 0;
 		tputs(buf, 1, evalcost);
