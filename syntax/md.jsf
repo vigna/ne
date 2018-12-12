@@ -34,6 +34,7 @@
 	"\\"		escape		recolor=-1
 	"*_"		maybe_bold1
 	"["		maybe_link_desc1
+	"`"		backtick	buffer noeat
 
 :headline_prefix Idle
 	*		headline
@@ -133,3 +134,20 @@
 
 :link_end Idle
 	*		idle
+
+:backtick Quote
+	*		backtick_body	save_s noeat
+	"`"		backtick
+
+:backtick_body Code
+	*		backtick_body
+	"`"             backtick_end_maybe	buffer
+
+:backtick_end_maybe Code
+	*		backtick_body	strings
+	"&"		backtick_end
+done
+	"`"		backtick_end_maybe
+
+:backtick_end Quote
+	*		idle		noeat
