@@ -961,7 +961,8 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			/* 'c' -- flag meaning "Don't prompt if we've ever responded 'yes'." */
 			if (!dup || dup == b || (dprompt && !c) || (dprompt = request_response(b, info_msg[SAME_NAME], false))) {
 				error = load_file_in_buffer(b, p);
-				if (error != FILE_IS_MIGRATED
+				if ((error != CANT_OPEN_FILE || b->num_lines == 1 && b->filename == NULL)
+					&& error != FILE_IS_MIGRATED
 					&& error != FILE_IS_DIRECTORY
 					&& error != IO_ERROR
 					&& error != FILE_IS_TOO_LARGE
