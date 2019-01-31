@@ -942,33 +942,23 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		reset_window();
 		return OK;
 
-	case OPENNEW_A:
-		if (b = new_buffer()) {
-			reset_window();
-		} else {
-			if (p) free(p);
-			return OUT_OF_MEMORY;
-		}
-
 	case OPEN_A:
 		if ((b->is_modified) && !request_response(b, info_msg[THIS_DOCUMENT_NOT_SAVED], false)) return ERROR;
-
+	case OPENNEW_A:
 		if (p || (p = request_file(b, "Filename", b->filename))) {
 			static bool dprompt = false; /* Set to true if we ever respond 'yes' to the prompt. */
-
+		   if (b = new_buffer()) {
+			   reset_window();
+		   } else {
+			   if (p) free(p);
+			   return OUT_OF_MEMORY;
+		   }
 			buffer *dup = get_buffer_named(p);
-
 			/* 'c' -- flag meaning "Don't prompt if we've ever responded 'yes'." */
 			if (!dup || dup == b || (dprompt && !c) || (dprompt = request_response(b, info_msg[SAME_NAME], false))) {
 				error = load_file_in_buffer(b, p);
-				if ((error != CANT_OPEN_FILE || b->num_lines == 1 && b->filename == NULL)
-					&& error != FILE_IS_MIGRATED
-					&& error != FILE_IS_DIRECTORY
-					&& error != IO_ERROR
-					&& error != FILE_IS_TOO_LARGE
-					&& error != OUT_OF_MEMORY
-					&& error != OUT_OF_MEMORY_DISK_FULL) {
-					change_filename(b, p);
+				if (! error || error == FILE_DOESNOT_EXIST) {
+					change_filename(b, p); p = NULL;
 					b->syn = NULL; /* So that autoprefs will load the right syntax. */
 					if (b->opt.auto_prefs) {
 						if (b->allocated_chars - b->free_chars <= MAX_SYNTAX_SIZE) {
@@ -978,16 +968,16 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 						}
 						else if (error == OK) error = FILE_TOO_LARGE_SYNTAX_HIGHLIGHTING_DISABLED;
 					}
-				}
-				print_error(error);
-				reset_window();
-				return OK;
-			}
-			free(p);
-		}
-		if (a == OPENNEW_A) {
-			do_action(b, CLOSEDOC_A, 1, NULL);
-			do_action(cur_buffer, PREVDOC_A, 1, NULL);
+					if (a == OPEN_A) {
+						do_action(cur_buffer, PREVDOC_A, 1, NULL);
+						do_action(b, CLOSEDOC_A, 1, NULL);
+					}
+				} else delete_buffer();
+			} else delete_buffer();
+			print_error(error);
+			reset_window();
+			if (p) free(p);
+			return error;
 		}
 		return ERROR;
 
