@@ -957,7 +957,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			/* 'c' -- flag meaning "Don't prompt if we've ever responded 'yes'." */
 			if (!dup || dup == b || (dprompt && !c) || (dprompt = request_response(b, info_msg[SAME_NAME], false))) {
 				error = load_file_in_buffer(b, p);
-				if (! error || error == FILE_DOESNOT_EXIST) {
+				if (! error || error == FILE_DOESNOT_EXIST) { /* Keep the new buffer, or delete it? */
 					change_filename(b, p); p = NULL;
 					b->syn = NULL; /* So that autoprefs will load the right syntax. */
 					if (b->opt.auto_prefs) {
@@ -970,10 +970,16 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 					}
 					if (a == OPEN_A) {
 						do_action(cur_buffer, PREVDOC_A, 1, NULL);
-						do_action(b, CLOSEDOC_A, 1, NULL);
+						delete_buffer();
 					}
-				} else delete_buffer();
-			} else delete_buffer();
+				} else {
+					delete_buffer();
+					do_action(cur_buffer, PREVDOC_A, 1, NULL);
+				}
+			} else {
+				delete_buffer();
+				do_action(cur_buffer, PREVDOC_A, 1, NULL);
+			}
 			print_error(error);
 			reset_window();
 			if (p) free(p);
