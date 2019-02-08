@@ -1070,6 +1070,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 				while(!stop &&
 						!(error = (b->last_was_regexp ? find_regexp : find)(b, NULL, !first_search && a != REPLACEALL_A && c != 'A' && c != 'Y', false))) {
+					fprintf(stderr,"first_search:%d, c:%c\n", first_search, c);
 
 					if (c != 'A' && a != REPLACEALL_A && a != REPLACEONCE_A) {
 						refresh_window(b);
