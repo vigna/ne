@@ -172,8 +172,7 @@ int find(buffer * const b, const char *pattern, const bool skip_first, bool wrap
 			b->find_string_changed = search_serial_num;
 		}
 
-		fprintf(stderr,"skip_first:%d\n", skip_first);
-		char * p = ld->line + (b->cur_pos > ld->line_len - m ? ld->line_len - m : b->cur_pos - (skip_first ? 1 : 0));  /* BOOM */
+		char * p = ld->line + (b->cur_pos > ld->line_len - m ? ld->line_len - m : b->cur_pos + (skip_first ? -1 : 0));
 		const unsigned char first_char = CONV((unsigned char)pattern[0]);
 		int64_t wrap_lines_left = b->num_lines + 1;
 
@@ -469,7 +468,7 @@ int find_regexp(buffer * const b, const char *regex, const bool skip_first, bool
 	}
 	else {
 
-		int64_t start_pos = b->cur_pos - (skip_first ? 1 : 1); /* BOOM */
+		int64_t start_pos = b->cur_pos + (skip_first ? -1 : 0);
 		int64_t wrap_lines_left = b->num_lines + 1;
 
 		while(y >= 0 && !stop && wrap_lines_left--) {
