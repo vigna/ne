@@ -1144,7 +1144,7 @@ int load_file_in_buffer(buffer * const b, const char *name) {
 		return result;
 	}
 
-	return errno==ENOENT ? FILE_DOESNOT_EXIST : CANT_OPEN_FILE;
+	return errno == ENOENT ? FILE_DOES_NOT_EXIST : CANT_OPEN_FILE;
 }
 
 /* Support function for load_fd_in_buffer(). */

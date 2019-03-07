@@ -947,9 +947,8 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 	case OPENNEW_A:
 		if (p || (p = request_file(b, "Filename", b->filename))) {
 			static bool dprompt = false; /* Set to true if we ever respond 'yes' to the prompt. */
-		   if (b = new_buffer()) {
-			   reset_window();
-		   } else {
+		   if (b = new_buffer()) reset_window();
+		   else {
 			   if (p) free(p);
 			   return OUT_OF_MEMORY;
 		   }
@@ -957,13 +956,13 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			/* 'c' -- flag meaning "Don't prompt if we've ever responded 'yes'." */
 			if (!dup || dup == b || (dprompt && !c) || (dprompt = request_response(b, info_msg[SAME_NAME], false))) {
 				error = load_file_in_buffer(b, p);
-				if (! error || error == FILE_DOESNOT_EXIST) { /* Keep the new buffer, or delete it? */
-					change_filename(b, p); p = NULL;
+				if (! error || error == FILE_DOES_NOT_EXIST) { /* Keep the new buffer, or delete it? */
+					change_filename(b, p);
+					p = NULL;
 					b->syn = NULL; /* So that autoprefs will load the right syntax. */
 					if (b->opt.auto_prefs) {
 						if (b->allocated_chars - b->free_chars <= MAX_SYNTAX_SIZE) {
-							if (load_auto_prefs(b, NULL) == HAS_NO_EXTENSION)
-								load_auto_prefs(b, DEF_PREFS_NAME);
+							if (load_auto_prefs(b, NULL) == HAS_NO_EXTENSION) load_auto_prefs(b, DEF_PREFS_NAME);
 							reset_syntax_states(b);
 						}
 						else if (error == OK) error = FILE_TOO_LARGE_SYNTAX_HIGHLIGHTING_DISABLED;
