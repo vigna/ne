@@ -1091,10 +1091,9 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 							}
 
 							num_replace++;
-
-							if (last_replace_empty_match)
-								if (b->opt.search_back) error = char_left(cur_buffer);
-								else error = char_right(cur_buffer);
+							if (b->opt.search_back) error = char_left(b) ? NOT_FOUND : OK;
+							else if (last_replace_empty_match) error = char_right(cur_buffer) ? NOT_FOUND : OK;
+							if (error) break;
 						}
 
 						if (print_error(error)) {
@@ -1166,7 +1165,8 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		error = OK;
 		int64_t num_replace = 0;
 		start_undo_chain(b);
-		for (int64_t i = 0; i < c && ! stop && ! (error = (b->last_was_regexp ? find_regexp : find)(b, NULL, !b->last_was_replace, perform_wrap > 0)); i++)
+
+		for (int64_t i = 0; i < c && ! stop && ! (error = (b->last_was_regexp ? find_regexp : find)(b, NULL, !b->last_was_replace||((b->cur_pos + b->cur_line == 0)&&b->opt.search_back), perform_wrap > 0)); i++)
 			if (b->last_was_replace) {
 				const int64_t cur_char = b->cur_char;
 				const int cur_x = b->cur_x;
@@ -1184,9 +1184,9 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 					num_replace++;
 
-					if (last_replace_empty_match)
-						if (b->opt.search_back) error = char_left(cur_buffer);
-						else error = char_right(cur_buffer);
+					if (b->opt.search_back) error = char_left(b) ? NOT_FOUND : OK;
+					else if (last_replace_empty_match) error = char_right(cur_buffer) ? NOT_FOUND : OK;
+
 				}
 
 				if (error) break;

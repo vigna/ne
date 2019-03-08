@@ -6,6 +6,8 @@ unreleased
 
   * Add backtick support for MarkDown syntax (md.jsf)
 
+  * Fixed potentially infinite backwards search-and-replace.
+
 3.1.2 2018-10-06
 
   * Fixed visual glitch when characters spanning multiple columns are only
