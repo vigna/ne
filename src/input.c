@@ -66,7 +66,9 @@ static encoding_type encoding;
 
 static int start_x, len, pos, x, offset;
 
-
+static bool searching;
+static char search_buffer[MAX_INPUT_LINE_LEN + 1];
+static int search_len;
 
 /* Prints an input prompt in the input line. The prompt is assumed not to be
    UTF-8 encoded. A colon is postpended to the prompt. The position of the
@@ -87,6 +89,13 @@ static unsigned int print_prompt(const char * const prompt) {
 	standout_on();
 	set_attr(0);
 	output_string(prior_prompt, false);
+
+	if (searching) {
+		output_string(" [", false);
+		output_string(search_buffer, false);
+		output_string("]", false);
+	}
+	
 	output_string(":", false);
 
 	standout_off();
@@ -95,7 +104,7 @@ static unsigned int print_prompt(const char * const prompt) {
 
 	reset_status_bar();
 
-	return start_x = strlen(prior_prompt) + 2;
+	return start_x = strlen(prior_prompt) + 2 + (searching ? 3 + search_len : 0);
 }
 
 
@@ -544,7 +553,9 @@ static void input_paste(void) {
 char *request(const buffer * const b, const char *prompt, const char * const default_string, const bool alpha_allowed, const int completion_type, const bool prefer_utf8) {
 
 	input_buffer[pos = len = offset = 0] = 0;
+	search_buffer[search_len = 0] = 0;
 	encoding = ENC_ASCII;
+	searching = false;
 	x = start_x = print_prompt(prompt);
 
 	init_history();
@@ -701,6 +712,17 @@ char *request(const buffer * const b, const char *prompt, const char * const def
 					input_and_prompt_refresh();
 					break;
 
+				case FIND_A:
+				   if (searching) {
+				   	x -= 3 + search_len;
+				   } else {
+				   	x += 3 + search_len;
+				   }
+				   searching = !searching;
+					start_x = print_prompt(NULL);
+					input_refresh();
+					break;
+					
 				case LINEUP_A:
 				case LINEDOWN_A:
 				case MOVESOF_A:
