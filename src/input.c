@@ -50,25 +50,24 @@
    always, we would really need nested functions, but, alas, C can't cope with
    them. */
 
-static char input_buffer[MAX_INPUT_LINE_LEN + 1];
+typedef struct {
+	int start_x;             /* first usable screen x position for editing */
+	int len;                 /* current raw length of input buffer; buf[len] is always a NULL */
+	int x;                   /* screen x position of the cursor */
+	int pos;                 /* position of the cursor inside the input buffer */
+	int offset;              /* first displayed buffer character */
+	encoding_type encoding;  /* current encoding of the buffer */
+	char buf[MAX_INPUT_LINE_LEN + 1]; /* input buffer itself */
+} input_buf;
 
-/* The current encoding of the command line. Contrarily to buffers, the command line may (and will) move
+static input_buf ib;        /* our main input buffer */
+static input_buf ib_backup; /* a backup of input_buffer in case we abort a FIND_A */
+static input_buf sb;        /* a search string for searching the history buffer */
+
+/* Unlike ne's document buffers, the command line may (and will) move
    back to ASCII if all non-US-ASCII characters are deleted .*/
 
-static encoding_type encoding;
-
-/* start_x  is the first usable screen x position for editing;
-   len      is the current raw length of the input buffer (input_buffer[len] is always a NULL);
-   x        is the screen x position of the cursor;
-   pos      is the position of the cursor inside the input buffer;
-   offset   is the first displayed buffer character.
-*/
-
-static int start_x, len, pos, x, offset;
-
 static bool searching;
-static char search_buffer[MAX_INPUT_LINE_LEN + 1];
-static int search_len;
 
 /* Prints an input prompt in the input line. The prompt is assumed not to be
    UTF-8 encoded. A colon is postpended to the prompt. The position of the
@@ -91,8 +90,9 @@ static unsigned int print_prompt(const char * const prompt) {
 	output_string(prior_prompt, false);
 
 	if (searching) {
+		sb.start_x = strlen(prior_prompt) + 1;
 		output_string(" [", false);
-		output_string(search_buffer, false);
+		output_string(sb.buf, false);
 		output_string("]", false);
 	}
 	
@@ -104,7 +104,8 @@ static unsigned int print_prompt(const char * const prompt) {
 
 	reset_status_bar();
 
-	return start_x = strlen(prior_prompt) + 2 + (searching ? 3 + search_len : 0);
+	ib.start_x = strlen(prior_prompt) + 2 + (searching ? 3 + sb.len : 0);
+	return ib.start_x;
 }
 
 
@@ -299,16 +300,16 @@ static void add_to_history(const char * const str) {
 }
 
 static int input_buffer_is_ascii() {
-	return is_ascii(input_buffer, len);
+	return is_ascii(ib.buf, ib.len);
 }
 
 /* The following functions perform basic editing actions on the input line. */
 
 static void input_refresh(void) {
-	move_cursor(ne_lines - 1, start_x);
-	for(int i = start_x, j = offset; j < len; i += get_char_width(&input_buffer[j], encoding), j = next_pos(input_buffer, j, encoding)) {
-		if (i + get_char_width(&input_buffer[j], encoding) >= ne_columns) break;
-		output_char(get_char(&input_buffer[j], encoding), 0, encoding);
+	move_cursor(ne_lines - 1, ib.start_x);
+	for(int i = ib.start_x, j = ib.offset; j < ib.len; i += get_char_width(&ib.buf[j], ib.encoding), j = next_pos(ib.buf, j, ib.encoding)) {
+		if (i + get_char_width(&ib.buf[j], ib.encoding) >= ne_columns) break;
+		output_char(get_char(&ib.buf[j], ib.encoding), 0, ib.encoding);
 	}
 	clear_to_eol();
 	fflush(stdout);
@@ -320,64 +321,64 @@ void input_and_prompt_refresh() {
 }
 
 static void input_autocomplete(void) {
-	int dx = 0, prefix_pos = pos;
+	int dx = 0, prefix_pos = ib.pos;
 	char *p;
 
 	/* find a usable prefix */
-	if (prefix_pos && prefix_pos <= len) {
-		prefix_pos = prev_pos(input_buffer, prefix_pos, encoding);
+	if (prefix_pos && prefix_pos <= ib.len) {
+		prefix_pos = prev_pos(ib.buf, prefix_pos, ib.encoding);
 		dx--;
-		while (prefix_pos && ne_isword(get_char(&input_buffer[prefix_pos], encoding), encoding)) {
+		while (prefix_pos && ne_isword(get_char(&ib.buf[prefix_pos], ib.encoding), ib.encoding)) {
 			dx--;
-			prefix_pos = prev_pos(input_buffer, prefix_pos, encoding);
+			prefix_pos = prev_pos(ib.buf, prefix_pos, ib.encoding);
 		}
-		if (! ne_isword(get_char(&input_buffer[prefix_pos], encoding), encoding)) {
+		if (! ne_isword(get_char(&ib.buf[prefix_pos], ib.encoding), ib.encoding)) {
 			dx++;
-			prefix_pos = next_pos(input_buffer, prefix_pos, encoding);
+			prefix_pos = next_pos(ib.buf, prefix_pos, ib.encoding);
 		}
-		p = malloc(pos - prefix_pos + 1);
+		p = malloc(ib.pos - prefix_pos + 1);
 		if (!p) {
 			alert(); /* OUT_OF_MEMORY */
 			return;
 		}
-		strncpy(p, &input_buffer[prefix_pos], pos - prefix_pos);
+		strncpy(p, &ib.buf[prefix_pos], ib.pos - prefix_pos);
 	}
 	else p = malloc(1); /* no prefix left of the cursor; we'll give an empty one. */
-	p[pos - prefix_pos] = 0;
+	p[ib.pos - prefix_pos] = 0;
 
 	int ac_err;
 	if (p = autocomplete(p, NULL, true, &ac_err)) {
 		encoding_type ac_encoding = detect_encoding(p, strlen(p));
-		if (ac_encoding != ENC_ASCII && encoding != ENC_ASCII && ac_encoding != encoding) {
+		if (ac_encoding != ENC_ASCII && ib.encoding != ENC_ASCII && ac_encoding != ib.encoding) {
 			free(p);
 			alert();
 		} else {
-			encoding = ac_encoding;
+			ib.encoding = ac_encoding;
 
-			if (prefix_pos < pos) {
-				memmove(&input_buffer[prefix_pos], &input_buffer[pos], len - pos + 1);
-				len -= pos - prefix_pos;
-				pos = prefix_pos;
+			if (prefix_pos < ib.pos) {
+				memmove(&ib.buf[prefix_pos], &ib.buf[ib.pos], ib.len - ib.pos + 1);
+				ib.len -= ib.pos - prefix_pos;
+				ib.pos = prefix_pos;
 			}
 			int ac_len = strlen(p);
-			if (ac_len + len >= MAX_INPUT_LINE_LEN) ac_len = MAX_INPUT_LINE_LEN - len;
-			memmove(&input_buffer[pos + ac_len], &input_buffer[pos], len - pos + 1);
-			memmove(&input_buffer[pos], p, ac_len);
-			len += ac_len;
+			if (ac_len + ib.len >= MAX_INPUT_LINE_LEN) ac_len = MAX_INPUT_LINE_LEN - ib.len;
+			memmove(&ib.buf[ib.pos + ac_len], &ib.buf[ib.pos], ib.len - ib.pos + 1);
+			memmove(&ib.buf[ib.pos], p, ac_len);
+			ib.len += ac_len;
 			while (ac_len > 0) {
-				const int cw = get_char_width(&input_buffer[pos], encoding);
-				pos = next_pos(input_buffer, pos, encoding);
+				const int cw = get_char_width(&ib.buf[ib.pos], ib.encoding);
+				ib.pos = next_pos(ib.buf, ib.pos, ib.encoding);
 				ac_len -= cw;
 				dx++;
 			}
 			free(p);
-			x += dx;
-			if (x >= ne_columns) {
-				dx = x - ne_columns + 1;
+			ib.x += dx;
+			if (ib.x >= ne_columns) {
+				dx = ib.x - ne_columns + 1;
 				while (dx--) {
-					offset = next_pos(input_buffer, offset, encoding);
+					ib.offset = next_pos(ib.buf, ib.offset, ib.encoding);
 				}
-				x = ne_columns - 1;
+				ib.x = ne_columns - 1;
 			}
 		}
 	}
@@ -391,68 +392,68 @@ static void input_autocomplete(void) {
 
 
 static void input_move_left(const bool do_refresh) {
-	if (pos > 0) {
+	if (ib.pos > 0) {
 
-		const int x_delta = get_char_width(&input_buffer[pos = prev_pos(input_buffer, pos, encoding)], encoding);
+		const int x_delta = get_char_width(&ib.buf[ib.pos = prev_pos(ib.buf, ib.pos, ib.encoding)], ib.encoding);
 
-		assert(pos >= 0);
+		assert(ib.pos >= 0);
 
-		if (x == start_x) {
-			offset = pos;
+		if (ib.x == ib.start_x) {
+			ib.offset = ib.pos;
 
 			if (char_ins_del_ok) {
 				int i, j;
-				for(i = start_x, j = offset; j < len && i + get_char_width(&input_buffer[j], encoding) < ne_columns; i += get_char_width(&input_buffer[j], encoding), j = next_pos(input_buffer, j, encoding));
-				if (j < len) {
+				for(i = ib.start_x, j = ib.offset; j < ib.len && i + get_char_width(&ib.buf[j], ib.encoding) < ne_columns; i += get_char_width(&ib.buf[j], ib.encoding), j = next_pos(ib.buf, j, ib.encoding));
+				if (j < ib.len) {
 					move_cursor(ne_lines - 1, i);
-					delete_chars(get_char_width(&input_buffer[j], encoding));
+					delete_chars(get_char_width(&ib.buf[j], ib.encoding));
 				}
-				move_cursor(ne_lines - 1, start_x);
-				insert_char(get_char(&input_buffer[pos], encoding), 0, encoding);
-				move_cursor(ne_lines - 1, start_x);
+				move_cursor(ne_lines - 1, ib.start_x);
+				insert_char(get_char(&ib.buf[ib.pos], ib.encoding), 0, ib.encoding);
+				move_cursor(ne_lines - 1, ib.start_x);
 			}
 			else if (do_refresh) input_refresh();
 		}
-		else x -= x_delta;
+		else ib.x -= x_delta;
 	}
 }
 
 
 static void input_move_right(const bool do_refresh) {
-	const int prev_pos = pos;
+	const int prev_pos = ib.pos;
 
-	if (pos < len) {
-		const int x_delta = get_char_width(&input_buffer[pos], encoding);
-		pos = next_pos(input_buffer, pos, encoding);
+	if (ib.pos < ib.len) {
+		const int x_delta = get_char_width(&ib.buf[ib.pos], ib.encoding);
+		ib.pos = next_pos(ib.buf, ib.pos, ib.encoding);
 
-		assert(pos <= len);
+		assert(ib.pos <= ib.len);
 
-		if ((x += x_delta) >= ne_columns) {
-			const int shift = x - (ne_columns - 1);
+		if ((ib.x += x_delta) >= ne_columns) {
+			const int shift = ib.x - (ne_columns - 1);
 			int width = 0;
 
 			do {
-				width += get_char_width(&input_buffer[offset], encoding);
-				offset = next_pos(input_buffer, offset, encoding);
-			} while(width < shift && offset < len);
+				width += get_char_width(&ib.buf[ib.offset], ib.encoding);
+				ib.offset = next_pos(ib.buf, ib.offset, ib.encoding);
+			} while(width < shift && ib.offset < ib.len);
 
-			assert(offset < len);
+			assert(ib.offset < ib.len);
 
-			x -= width;
+			ib.x -= width;
 
 			if (char_ins_del_ok) {
 				int i, j;
-				move_cursor(ne_lines - 1, start_x);
+				move_cursor(ne_lines - 1, ib.start_x);
 				delete_chars(width);
-				move_cursor(ne_lines - 1, x - x_delta);
-				output_char(get_char(&input_buffer[prev_pos], encoding), 0, encoding);
+				move_cursor(ne_lines - 1, ib.x - x_delta);
+				output_char(get_char(&ib.buf[prev_pos], ib.encoding), 0, ib.encoding);
 
-				i = x;
-				j = pos;
-				while(j < len && i + (width = get_char_width(&input_buffer[j], encoding)) < ne_columns) {
-					output_char(get_char(&input_buffer[j], encoding), 0, encoding);
+				i = ib.x;
+				j = ib.pos;
+				while(j < ib.len && i + (width = get_char_width(&ib.buf[j], ib.encoding)) < ne_columns) {
+					output_char(get_char(&ib.buf[j], ib.encoding), 0, ib.encoding);
 					i += width;
-					j = next_pos(input_buffer, j, encoding);
+					j = next_pos(ib.buf, j, ib.encoding);
 				}
 			}
 			else if (do_refresh) input_refresh();
@@ -462,37 +463,37 @@ static void input_move_right(const bool do_refresh) {
 
 
 static void input_move_to_sol(void) {
-	if (offset == 0) {
-		x = start_x;
-		pos = 0;
+	if (ib.offset == 0) {
+		ib.x = ib.start_x;
+		ib.pos = 0;
 		return;
 	}
 
-	x = start_x;
-	offset = pos = 0;
+	ib.x = ib.start_x;
+	ib.offset = ib.pos = 0;
 	input_refresh();
 }
 
 
 static void input_move_to_eol(void) {
-	const int width_to_end = get_string_width(input_buffer + pos, len - pos, encoding);
+	const int width_to_end = get_string_width(ib.buf + ib.pos, ib.len - ib.pos, ib.encoding);
 
-	if (x + width_to_end < ne_columns) {
-		x += width_to_end;
-		pos = len;
+	if (ib.x + width_to_end < ne_columns) {
+		ib.x += width_to_end;
+		ib.pos = ib.len;
 		return;
 	}
 
-	x = start_x;
-	pos = offset = len;
-	int i = ne_columns - 1 - start_x;
+	ib.x = ib.start_x;
+	ib.pos = ib.offset = ib.len;
+	int i = ne_columns - 1 - ib.start_x;
 	for(;;) {
-		const int prev = prev_pos(input_buffer, offset, encoding);
-		const int width = get_char_width(&input_buffer[prev], encoding);
+		const int prev = prev_pos(ib.buf, ib.offset, ib.encoding);
+		const int width = get_char_width(&ib.buf[prev], ib.encoding);
 		if (i - width < 0) break;
-		offset = prev;
+		ib.offset = prev;
 		i -= width;
-		x += width;
+		ib.x += width;
 	}
 	input_refresh();
 }
@@ -501,15 +502,15 @@ static void input_move_to_eol(void) {
 static void input_next_word(void) {
 	bool space_skipped = false;
 
-	while(pos < len) {
-		const int c = get_char(&input_buffer[pos], encoding);
-		if (!ne_isword(c, encoding)) space_skipped = true;
+	while(ib.pos < ib.len) {
+		const int c = get_char(&ib.buf[ib.pos], ib.encoding);
+		if (!ne_isword(c, ib.encoding)) space_skipped = true;
 		else if (space_skipped) break;
 		input_move_right(false);
 	}
-	if (x == ne_columns - 1) {
-		offset = pos;
-		x = start_x;
+	if (ib.x == ne_columns - 1) {
+		ib.offset = ib.pos;
+		ib.x = ib.start_x;
 	}
 	input_refresh();
 }
@@ -518,10 +519,10 @@ static void input_next_word(void) {
 static void input_prev_word(void) {
 	bool word_skipped = false;
 
-	while(pos > 0) {
+	while(ib.pos > 0) {
 		input_move_left(false);
-		const int c = get_char(&input_buffer[pos], encoding);
-		if (ne_isword(c, encoding)) word_skipped = true;
+		const int c = get_char(&ib.buf[ib.pos], ib.encoding);
+		if (ne_isword(c, ib.encoding)) word_skipped = true;
 		else if (word_skipped) {
 			input_move_right(false);
 			break;
@@ -535,35 +536,35 @@ static void input_paste(void) {
 	const clip_desc * const cd = get_nth_clip(cur_buffer->opt.cur_clip);
 
 	if (cd) {
-		if (cd->cs->encoding != ENC_ASCII && encoding != ENC_ASCII && cd->cs->encoding != encoding) {
+		if (cd->cs->encoding != ENC_ASCII && ib.encoding != ENC_ASCII && cd->cs->encoding != ib.encoding) {
 			alert();
 			return;
 		}
 
 		int paste_len = strnlen_ne(cd->cs->stream, cd->cs->len);
-		if (len + paste_len > MAX_INPUT_LINE_LEN) paste_len = MAX_INPUT_LINE_LEN - len;
-		memmove(&input_buffer[pos + paste_len], &input_buffer[pos], len - pos + 1);
-		strncpy(&input_buffer[pos], cd->cs->stream, paste_len);
-		len += paste_len;
-		if (!input_buffer_is_ascii() && cd->cs->encoding != ENC_ASCII) encoding = cd->cs->encoding;
+		if (ib.len + paste_len > MAX_INPUT_LINE_LEN) paste_len = MAX_INPUT_LINE_LEN - ib.len;
+		memmove(&ib.buf[ib.pos + paste_len], &ib.buf[ib.pos], ib.len - ib.pos + 1);
+		strncpy(&ib.buf[ib.pos], cd->cs->stream, paste_len);
+		ib.len += paste_len;
+		if (!input_buffer_is_ascii() && cd->cs->encoding != ENC_ASCII) ib.encoding = cd->cs->encoding;
 		input_refresh();
 	}
 }
 
 char *request(const buffer * const b, const char *prompt, const char * const default_string, const bool alpha_allowed, const int completion_type, const bool prefer_utf8) {
 
-	input_buffer[pos = len = offset = 0] = 0;
-	search_buffer[search_len = 0] = 0;
-	encoding = ENC_ASCII;
+	ib.buf[ib.pos = ib.len = ib.offset = 0] = 0;
+	sb.buf[sb.len = 0] = 0;
+	ib.encoding = ENC_ASCII;
 	searching = false;
-	x = start_x = print_prompt(prompt);
+	ib.x = ib.start_x = print_prompt(prompt);
 
 	init_history();
 
 	if (default_string) {
-		strncpy(input_buffer, default_string, MAX_INPUT_LINE_LEN);
-		len = strlen(input_buffer);
-		encoding = detect_encoding(input_buffer, len);
+		strncpy(ib.buf, default_string, MAX_INPUT_LINE_LEN);
+		ib.len = strlen(ib.buf);
+		ib.encoding = detect_encoding(ib.buf, ib.len);
 		input_refresh();
 	}
 
@@ -571,9 +572,9 @@ char *request(const buffer * const b, const char *prompt, const char * const def
 
 	while(true) {
 
-		assert(input_buffer[len] == 0);
+		assert(ib.buf[ib.len] == 0);
 
-		move_cursor(ne_lines - 1, x);
+		move_cursor(ne_lines - 1, ib.x);
 
 		int c;
 		input_class ic;
@@ -590,7 +591,7 @@ char *request(const buffer * const b, const char *prompt, const char * const def
 		if (c == INVALID_CHAR) continue; /* Window resizing. */
 
 		/* ISO 10646 characters *above 256* can be added only to UTF-8 lines, or ASCII lines (making them, of course, UTF-8). */
-		if (ic == ALPHA && c > 0xFF && encoding != ENC_ASCII && encoding != ENC_UTF8) ic = INVALID;
+		if (ic == ALPHA && c > 0xFF && ib.encoding != ENC_ASCII && ib.encoding != ENC_UTF8) ic = INVALID;
 
 		if (ic != TAB) last_char_completion = false;
 		if (ic == TAB && !completion_type) ic = ALPHA;
@@ -604,29 +605,29 @@ char *request(const buffer * const b, const char *prompt, const char * const def
 		case ALPHA:
 
 			if (first_char_typed) {
-				input_buffer[len = 0] = 0;
+				ib.buf[ib.len = 0] = 0;
 				clear_to_eol();
 			}
 
-			if (encoding == ENC_ASCII && c > 0x7F) encoding = prefer_utf8 || c > 0xFF ? ENC_UTF8 : ENC_8_BIT;
-			int c_len = encoding == ENC_UTF8 ? utf8seqlen(c) : 1;
+			if (ib.encoding == ENC_ASCII && c > 0x7F) ib.encoding = prefer_utf8 || c > 0xFF ? ENC_UTF8 : ENC_8_BIT;
+			int c_len = ib.encoding == ENC_UTF8 ? utf8seqlen(c) : 1;
 			int c_width = output_width(c);
 			assert(c_len > 0);
 
-			if (len <= MAX_INPUT_LINE_LEN - c_len && (alpha_allowed || (c < 0x100 && isxdigit(c)) || c=='X' || c=='x')) {
+			if (ib.len <= MAX_INPUT_LINE_LEN - c_len && (alpha_allowed || (c < 0x100 && isxdigit(c)) || c=='X' || c=='x')) {
 
-				memmove(&input_buffer[pos + c_len], &input_buffer[pos], len - pos + 1);
+				memmove(&ib.buf[ib.pos + c_len], &ib.buf[ib.pos], ib.len - ib.pos + 1);
 
-				if (c_len == 1) input_buffer[pos] = c;
-				else utf8str(c, &input_buffer[pos]);
+				if (c_len == 1) ib.buf[ib.pos] = c;
+				else utf8str(c, &ib.buf[ib.pos]);
 
-				len += c_len;
+				ib.len += c_len;
 
-				move_cursor(ne_lines - 1, x);
+				move_cursor(ne_lines - 1, ib.x);
 
-				if (x < ne_columns - c_width) {
-					if (pos == len - c_len) output_char(c, 0, encoding);
-					else if (char_ins_del_ok) insert_char(c, 0, encoding);
+				if (ib.x < ne_columns - c_width) {
+					if (ib.pos == ib.len - c_len) output_char(c, 0, ib.encoding);
+					else if (char_ins_del_ok) insert_char(c, 0, ib.encoding);
 					else input_refresh();
 				}
 
@@ -642,19 +643,19 @@ char *request(const buffer * const b, const char *prompt, const char * const def
 			if (completion_type == COMPLETE_FILE || completion_type == COMPLETE_SYNTAX) {
 				bool quoted = false;
 				char *prefix, *completion, *p;
-				if (len && input_buffer[len - 1] == '"') {
-					input_buffer[len - 1] = 0;
-					if (prefix = strrchr(input_buffer, '"')) {
+				if (ib.len && ib.buf[ib.len - 1] == '"') {
+					ib.buf[ib.len - 1] = 0;
+					if (prefix = strrchr(ib.buf, '"')) {
 						quoted = true;
 						prefix++;
 					}
-					else input_buffer[len - 1] = '"';
+					else ib.buf[ib.len - 1] = '"';
 				}
 
 				if (!quoted) {
-					prefix = strrchr(input_buffer, ' ');
+					prefix = strrchr(ib.buf, ' ');
 					if (prefix) prefix++;
-					else prefix = input_buffer;
+					else prefix = ib.buf;
 				}
 
 				if (last_char_completion || completion_type == COMPLETE_SYNTAX) {
@@ -677,15 +678,15 @@ char *request(const buffer * const b, const char *prompt, const char * const def
 					if (!completion) alert();
 				}
 
-				if (completion && (prefix - input_buffer) + strlen(completion) + 1 < MAX_INPUT_LINE_LEN) {
+				if (completion && (prefix - ib.buf) + strlen(completion) + 1 < MAX_INPUT_LINE_LEN) {
 					const encoding_type completion_encoding = detect_encoding(completion, strlen(completion));
-					if (encoding == ENC_ASCII || completion_encoding == ENC_ASCII || encoding == completion_encoding) {
+					if (ib.encoding == ENC_ASCII || completion_encoding == ENC_ASCII || ib.encoding == completion_encoding) {
 						strcpy(prefix, completion);
 						if (quoted) strcat(prefix, "\"");
-						len = strlen(input_buffer);
-						pos = offset = 0;
-						x = start_x;
-						if (encoding == ENC_ASCII) encoding = completion_encoding;
+						ib.len = strlen(ib.buf);
+						ib.pos = ib.offset = 0;
+						ib.x = ib.start_x;
+						if (ib.encoding == ENC_ASCII) ib.encoding = completion_encoding;
 						input_move_to_eol();
 						if (quoted) input_move_left(false);
 						input_refresh();
@@ -714,12 +715,14 @@ char *request(const buffer * const b, const char *prompt, const char * const def
 
 				case FIND_A:
 				   if (searching) {
-				   	x -= 3 + search_len;
+				   	ib.x -= 3 + sb.len;
+				   	memcpy(&ib, &ib_backup, sizeof(ib));
 				   } else {
-				   	x += 3 + search_len;
+				   	memcpy(&ib_backup, &ib, sizeof(ib));
+				   	ib.x += 3 + sb.len;
 				   }
 				   searching = !searching;
-					start_x = print_prompt(NULL);
+					ib.start_x = print_prompt(NULL);
 					input_refresh();
 					break;
 					
@@ -749,25 +752,25 @@ char *request(const buffer * const b, const char *prompt, const char * const def
 						if (first_char_typed == true
 							 && a == LINEUP_A
 							 && history_buff->cur_line_desc->line
-							 && !strncmp(history_buff->cur_line_desc->line, input_buffer, history_buff->cur_line_desc->line_len))
+							 && !strncmp(history_buff->cur_line_desc->line, ib.buf, history_buff->cur_line_desc->line_len))
 							line_up(history_buff);
 
 						if (history_buff->cur_line_desc->line) {
-							strncpy(input_buffer,
+							strncpy(ib.buf,
 									  history_buff->cur_line_desc->line,
 									  min(history_buff->cur_line_desc->line_len, MAX_INPUT_LINE_LEN));
-							input_buffer[min(history_buff->cur_line_desc->line_len, MAX_INPUT_LINE_LEN)] = 0;
-							len = strlen(input_buffer);
-							encoding = detect_encoding(input_buffer, len);
+							ib.buf[min(history_buff->cur_line_desc->line_len, MAX_INPUT_LINE_LEN)] = 0;
+							ib.len = strlen(ib.buf);
+							ib.encoding = detect_encoding(ib.buf, ib.len);
 						}
 						else {
-							input_buffer[len = 0] = 0;
-							encoding = ENC_ASCII;
+							ib.buf[ib.len = 0] = 0;
+							ib.encoding = ENC_ASCII;
 						}
 
-						x      = start_x;
-						pos    = 0;
-						offset = 0;
+						ib.x      = ib.start_x;
+						ib.pos    = 0;
+						ib.offset = 0;
 						input_refresh();
 					}
 					break;
@@ -781,31 +784,31 @@ char *request(const buffer * const b, const char *prompt, const char * const def
 					break;
 
 				case BACKSPACE_A:
-					if (pos == 0) break;
+					if (ib.pos == 0) break;
 					input_move_left(true);
 
 				case DELETECHAR_A:
-					if (len > 0 && pos < len) {
-						int c_len = encoding == ENC_UTF8 ? utf8len(input_buffer[pos]) : 1;
-						int c_width = get_char_width(&input_buffer[pos], encoding);
-						memmove(&input_buffer[pos], &input_buffer[pos + c_len], len - pos - c_len + 1);
-						len -= c_len;
-						if (input_buffer_is_ascii()) encoding = ENC_ASCII;
+					if (ib.len > 0 && ib.pos < ib.len) {
+						int c_len = ib.encoding == ENC_UTF8 ? utf8len(ib.buf[ib.pos]) : 1;
+						int c_width = get_char_width(&ib.buf[ib.pos], ib.encoding);
+						memmove(&ib.buf[ib.pos], &ib.buf[ib.pos + c_len], ib.len - ib.pos - c_len + 1);
+						ib.len -= c_len;
+						if (input_buffer_is_ascii()) ib.encoding = ENC_ASCII;
 
 						if (char_ins_del_ok) {
 							int i, j;
 
-							move_cursor(ne_lines - 1, x);
+							move_cursor(ne_lines - 1, ib.x);
 							delete_chars(c_width);
 
-							for(i = x, j = pos; j < len && i + get_char_width(&input_buffer[j], encoding) < ne_columns - c_width; i += get_char_width(&input_buffer[j], encoding), j = next_pos(input_buffer, j, encoding));
+							for(i = ib.x, j = ib.pos; j < ib.len && i + get_char_width(&ib.buf[j], ib.encoding) < ne_columns - c_width; i += get_char_width(&ib.buf[j], ib.encoding), j = next_pos(ib.buf, j, ib.encoding));
 
-							if (j < len) {
+							if (j < ib.len) {
 								move_cursor(ne_lines - 1, i);
-								while(j < len && i + get_char_width(&input_buffer[j], encoding) < ne_columns) {
-									output_char(get_char(&input_buffer[j], encoding), 0, encoding);
-									i += get_char_width(&input_buffer[j], encoding);
-									j = next_pos(input_buffer, j, encoding);
+								while(j < ib.len && i + get_char_width(&ib.buf[j], ib.encoding) < ne_columns) {
+									output_char(get_char(&ib.buf[j], ib.encoding), 0, ib.encoding);
+									i += get_char_width(&ib.buf[j], ib.encoding);
+									j = next_pos(ib.buf, j, ib.encoding);
 								}
 							}
 						}
@@ -814,23 +817,23 @@ char *request(const buffer * const b, const char *prompt, const char * const def
 					break;
 
 				case DELETELINE_A:
-					move_cursor(ne_lines - 1, start_x);
+					move_cursor(ne_lines - 1, ib.start_x);
 					clear_to_eol();
-					input_buffer[len = pos = offset = 0] = 0;
-					encoding = ENC_ASCII;
-					x = start_x;
+					ib.buf[ib.len = ib.pos = ib.offset = 0] = 0;
+					ib.encoding = ENC_ASCII;
+					ib.x = ib.start_x;
 					break;
 
 				case DELETEEOL_A:
-					input_buffer[len = pos] = 0;
+					ib.buf[ib.len = ib.pos] = 0;
 					clear_to_eol();
-					if (input_buffer_is_ascii()) encoding = ENC_ASCII;
+					if (input_buffer_is_ascii()) ib.encoding = ENC_ASCII;
 					break;
 
 				case MOVEINCUP_A:
-					if (x != start_x) {
-						pos = offset;
-						x = start_x;
+					if (ib.x != ib.start_x) {
+						ib.pos = ib.offset;
+						ib.x = ib.start_x;
 						break;
 					}
 
@@ -840,10 +843,10 @@ char *request(const buffer * const b, const char *prompt, const char * const def
 
 				case MOVEINCDOWN_A: {
 					int i, j;
-					for(i = x, j = pos; j < len && i + get_char_width(&input_buffer[j], encoding) < ne_columns; i += get_char_width(&input_buffer[j], encoding), j = next_pos(input_buffer, j, encoding));
-					if (j != pos && j < len) {
-						pos = j;
-						x = i;
+					for(i = ib.x, j = ib.pos; j < ib.len && i + get_char_width(&ib.buf[j], ib.encoding) < ne_columns; i += get_char_width(&ib.buf[j], ib.encoding), j = next_pos(ib.buf, j, ib.encoding));
+					if (j != ib.pos && j < ib.len) {
+						ib.pos = j;
+						ib.x = i;
 						break;
 					}
 				}
@@ -854,7 +857,7 @@ char *request(const buffer * const b, const char *prompt, const char * const def
 
 				case TOGGLESEOL_A:
 				case TOGGLESEOF_A:
-					if (pos != 0) input_move_to_sol();
+					if (ib.pos != 0) input_move_to_sol();
 					else input_move_to_eol();
 					break;
 
@@ -893,9 +896,9 @@ char *request(const buffer * const b, const char *prompt, const char * const def
 
 		if (selection) {
 			const line_desc * const last = (line_desc *)history_buff->line_desc_list.tail_pred->prev;
-			assert(input_buffer[len] == 0);
-			if (history_buff->num_lines == 0 || len != last->line_len || strncmp(input_buffer, last->line, last->line_len)) add_to_history(input_buffer);
-			return input_buffer;
+			assert(ib.buf[ib.len] == 0);
+			if (history_buff->num_lines == 0 || ib.len != last->line_len || strncmp(ib.buf, last->line, last->line_len)) add_to_history(ib.buf);
+			return ib.buf;
 		}
 
 		first_char_typed = false;
