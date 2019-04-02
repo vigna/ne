@@ -1,0 +1,179 @@
+# JOE syntax highlight file for Asterisk (INI alike) files
+# Original Credit (2015): Christian Nicolai, https://github.com/cmur2/joe-syntax
+# AstLinux Project (2019): Support block-comments, nested ${}'s (up to 4), #include's (#inc)
+# Usage:
+# -- extensions snippet --
+# asterisk    4    ^(;|\[\w+\])
+# .conf
+# --
+
+=Idle
+=Comment	green
+=Constant	cyan
+=Escape		magenta
+=Include	bold blue
+=Bad		bold red
+
+=Key
+=Separator	bold
+=SeparatorArrow	bold
+=Section	bold magenta
+
+:line_start Idle
+	*		key		noeat
+	"\n"		line_start
+	" \t\r"		line_start # leading spaces
+	";"		semi_comment	recolor=-1
+	"#"		maybe_include	recolor=-1
+	"["		section		recolor=-1
+	"="		missing_key	recolor=-1
+
+:dash_start_comment Comment
+	*		line_comment
+	"-"		dash_exception_comment
+	"\n"		line_start
+
+:dash_exception_comment Comment
+	*		block_comment
+	"-"		line_comment  # Except ;--- is not a block comment
+
+:block_comment Comment
+	*		block_comment
+	"-"		dash_end_comment
+
+:dash_end_comment Comment
+	*		block_comment
+	"-"		maybe_end_comment
+
+:maybe_end_comment Comment
+	*		block_comment
+	";"		line_start
+	"-"		maybe_end_comment
+
+:semi_comment Comment
+	*		line_comment
+	"-"		dash_start_comment
+	"\n"		line_start
+
+:maybe_include Comment
+	*		line_comment
+	"Ii"		maybe_include1
+	"\n"		line_start
+
+:maybe_include1 Comment
+	*		line_comment
+	"Nn"		maybe_include2
+	"\n"		line_start
+
+:maybe_include2 Comment
+	*		line_comment
+	"Cc"		include			recolor=-4
+	"\n"		line_start
+
+:include Include
+	*		include
+	";#"		line_comment		recolor=-1
+	"\n"		line_start
+
+:line_comment Comment
+	*		line_comment
+	"\n"		line_start
+
+:section Section
+	*		section
+	"]"		section_post
+	"\n"		section_unexp_end	recolor=-2
+
+:section_post Idle
+	*		section_post
+	"\n"		line_start
+	";#"		line_comment		recolor=-1
+
+:section_unexp_end Bad
+	*		line_start	noeat
+
+:missing_key Bad
+	*		value_pre	noeat
+
+:key Key
+	*		key
+	" \t\r"		key_post	noeat
+	"="		sep		recolor=-1
+	"\n"		key_error	recolor=-2
+
+:key_post Idle
+	*		value_pre	noeat
+	" \t\r"		key_post
+	"="		sep		recolor=-1
+
+:key_error Bad
+	*		key		noeat
+
+:sep Separator
+	*		value_pre	noeat
+	">"		sep_arrow	recolor=-2
+
+:sep_arrow SeparatorArrow
+	*		value_pre	noeat
+
+:value_pre Idle
+	*		value		noeat
+	" \t\r"		value_pre
+
+:value Constant
+	*		value
+	"\\"		value_esc
+	"\n"		line_start
+	" \t\r"		maybe_comment	recolor=-1
+	"$"		maybe_subst
+
+:value_esc Escape
+	*		value
+	"\n"		value_error	recolor=-2
+
+:value_error Bad
+	*		value		noeat
+
+:maybe_comment Idle
+	*		value		noeat
+	";#"		line_comment	recolor=-1
+
+:maybe_subst Constant
+	*		value		noeat
+	"{"		subst		recolor=-2
+
+:subst Escape
+	*		subst
+	"}"		value
+	"\n"		line_start
+	"$"		maybe_subst_1
+
+:maybe_subst_1 Escape
+	*		subst		noeat
+	"{"		subst_1
+
+:subst_1 Escape
+	*		subst_1
+	"}"		subst
+	"\n"		line_start
+	"$"		maybe_subst_2
+
+:maybe_subst_2 Escape
+	*		subst_1		noeat
+	"{"		subst_2
+
+:subst_2 Escape
+	*		subst_2
+	"}"		subst_1
+	"\n"		line_start
+	"$"		maybe_subst_3
+
+:maybe_subst_3 Escape
+	*		subst_2		noeat
+	"{"		subst_3
+
+:subst_3 Escape
+	*		subst_3
+	"}"		subst_2
+	"\n"		line_start
+
