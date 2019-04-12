@@ -9,6 +9,9 @@
   * We now use the xenl property to detect whether we can write on the last
     column of the last line, thus making the status bar complete.
 
+  * Word completion now does not consider the word the cursor is currently
+    in, which helps in disambiguating.
+
 3.1.1 2017-06-04
 
   * You can now CloseDoc (^Q) unmodified documents from within the

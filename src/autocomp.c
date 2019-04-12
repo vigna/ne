@@ -57,7 +57,7 @@ static void add_string(const char * const s, const int len, const int ext) {
 static void search_buff(const buffer *b, char * p, const int encoding, const bool case_search, const int ext) {
 	assert(p);
 	const int p_len = strlen(p);
-
+	const int (*cmp)(const char *, const char *, size_t) = case_search ? strncmp : strncasecmp;
 	for(line_desc *ld = (line_desc *)b->line_desc_list.head, *next; next = (line_desc *)ld->ld_node.next; ld = next) {
 		int64_t l = 0, r = 0;
 		do {
@@ -74,9 +74,10 @@ static void search_buff(const buffer *b, char * p, const int encoding, const boo
 				            || ( r+1 < ld->line_len && ch == '\'' && ne_isword(get_char(&ld->line[r+1], b->encoding), b->encoding))
 				          )
 				      ) r += get_char_width(&ld->line[r], b->encoding);
-				if (r - l > p_len && !(case_search ? strncmp : strncasecmp)(p, &ld->line[l], p_len)) {
-					if (b->encoding == encoding || is_ascii(&ld->line[l], r - l)) add_string(&ld->line[l], r - l, ext);
-				}
+				if ((b != cur_buffer || ld != b->cur_line_desc || b->cur_pos < l || r < b->cur_pos)
+				     && r - l > p_len && (b->encoding == encoding || is_ascii(&ld->line[l], r - l))
+				     && !cmp(p, &ld->line[l], p_len))
+					add_string(&ld->line[l], r - l, ext);
 				l = r;
 				count_scanned++;
 			}
