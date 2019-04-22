@@ -893,6 +893,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		return OK;
 
 	case SAVE_A:
+		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 		p = str_dup(b->filename);
 
 	case SAVEAS_A:
