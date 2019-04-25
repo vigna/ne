@@ -12,6 +12,9 @@
   * Word completion now does not consider the word the cursor is currently
     in, which helps in disambiguating.
 
+  * The option -h is now an alias for --help. Thanks to Lonnie Abelbeck for
+    implementing this feature.
+
 3.1.1 2017-06-04
 
   * You can now CloseDoc (^Q) unmodified documents from within the

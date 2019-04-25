@@ -885,7 +885,7 @@ and features are not available through menus.
 
 The main arguments you can give to @code{ne} are the names of files you
 want to edit. They will be loaded into separate documents. If you
-specify @code{--help} anywhere on the command line, a simple help text
+specify @code{--help} or @code{-h} anywhere on the command line, a simple help text
 describing @code{ne}'s arguments will be printed.
 
 The @code{+@var{N}} option causes @code{ne} to advance to the @var{N}th
@@ -905,7 +905,7 @@ characters. Like @code{+N,M}, @code{--binary} only affects the next
 document loaded, and it can appear multiple times on the command line.
 See @ref{Binary}.
 
-The @code{--read-only} option causes @code{ne} to load the next named file
+The @code{--read-only}/@code{--read-only}/@code{--ro} option causes @code{ne} to load the next named file
 into a read-only document. You can still @code{Save} (@ref{Save}) a read-only document to a
 file if the file's permissions allow it, but you can't modify a read-only
 document without taking special action such as turning off the read-only flag
@@ -916,7 +916,7 @@ corresponding file is not writable (as determined by the @code{access()}
 system call) regardless of whether the @code{--read-only} option is used. See
 @ref{ReadOnly}.
 
-The @code{--no-config} option skips the reading of the key
+The @code{--no-config}/@code{--noconfig} option skips the reading of the key
 bindings and menu configuration files (@pxref{Configuration}). This is
 essential if you are experimenting with a new configuration and you make
 mistakes in it.
@@ -942,7 +942,7 @@ the menu configuration files. Note that @code{ne} searches for these
 files first in the current directory, and then in your @file{~/.ne}
 directory.
 
-The @code{--ansi} and the @code{--no-ansi} options manage
+The @code{--ansi} and the @code{--no-ansi}/@code{--noansi} options manage
 @code{ne}'s built-in ANSI sequences. Usually @code{ne} tries to retrieve
 from your system some information that is necessary to handle your
 terminal. If for some reason this is impossible, you can ask @code{ne}
