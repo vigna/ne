@@ -905,7 +905,7 @@ characters. Like @code{+N,M}, @code{--binary} only affects the next
 document loaded, and it can appear multiple times on the command line.
 See @ref{Binary}.
 
-The @code{--read-only}/@code{--read-only}/@code{--ro} option causes @code{ne} to load the next named file
+The @code{--read-only}/@code{--readonly}/@code{--ro} option causes @code{ne} to load the next named file
 into a read-only document. You can still @code{Save} (@ref{Save}) a read-only document to a
 file if the file's permissions allow it, but you can't modify a read-only
 document without taking special action such as turning off the read-only flag
