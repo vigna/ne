@@ -1520,6 +1520,7 @@ int save_buffer_to_file(buffer *b, const char *name) {
 
 	assert_buffer(b);
 
+	if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 	if (name == NULL) name = b->filename;
 
 	if (!name) return ERROR;

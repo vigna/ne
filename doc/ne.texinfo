@@ -906,10 +906,12 @@ document loaded, and it can appear multiple times on the command line.
 See @ref{Binary}.
 
 The @code{--read-only}/@code{--readonly}/@code{--ro} option causes @code{ne} to load the next named file
-into a read-only document. You can still @code{Save} (@ref{Save}) a read-only document to a
-file if the file's permissions allow it, but you can't modify a read-only
-document without taking special action such as turning off the read-only flag
-first. The @code{--read-only} option only affects the next document loaded,
+into a read-only document. You can't modify a read-only
+document without first taking special action such as turning off the read-only
+flag. You can still @code{Save} (@ref{Save}) a read-only document to a
+file if the file's permissions allow it, but @code{ne} will prompt you
+before attempting to save a document marked read-only.
+The @code{--read-only} option only affects the next document loaded,
 so it can appear multiple times on the command line. A document's
 read-only flag is automatically set when a file is loaded if the
 corresponding file is not writable (as determined by the @code{access()}
@@ -2463,7 +2465,8 @@ command line.
 
 If the file has been modified since the current document was loaded or last
 saved (perhaps by another user), @code{ne} will warn you before overwriting
-the updated file.
+the updated file. If the current document's read only flag is set, @code{ne}
+will prompt you before attempting to save it.
 
 
 
@@ -2487,7 +2490,8 @@ input line, the default being the current document name, if available.
 
 If the file has been modified since the current document was loaded or last
 saved (perhaps by another user), @code{ne} will warn you before overwriting
-the updated file.
+the updated file. If the current document's read only flag is set, @code{ne}
+will prompt you before attempting to save it.
 
 
 @node SaveAll
@@ -2500,9 +2504,10 @@ the updated file.
 @noindent saves all modified documents. If any modified documents cannot be
 saved, the action is suspended and an error message is issued. Note that
 only named documents can be saved, so @code{SaveAll} will report an error
-if you have any modified unnamed documents, or if any of the modified
-documents' corresponding files have been updated since they were
-loaded or last saved.
+if you have any modified unnamed documents. Other reasons @code{SaveAll}
+may fail include: if any of the modified documents' corresponding files
+have been updated since they were loaded or last saved, or if any modified
+documents' read only flags are set.
 
 
 
@@ -2550,7 +2555,8 @@ is issued and no documents are closed. Note that only named documents can be
 saved, so @code{Exit} will report an error if you have any modified unnamed
 documents. Like @code{SaveAll}, @code{Exit} will not save a document if its
 corresponding file has been modified since the document was loaded or last
-saved, in which case an error is reported and no documents are closed.
+saved, or if its read only flag is set, in which case an error is reported
+and no documents are closed.
 
 
 
@@ -3760,7 +3766,7 @@ FLAG COMMAND      ABBR  DESCRIPTION
   p   AutoPrefs     AP   use automatic preferences based on file extension
   v   VerboseMacros VM   record macros using use long command names
   u   DoUndo        DU   record edits for later undoing
-  r   ReadOnly      RO   changes are not allowed
+  r   ReadOnly      RO   changes are not allowed/saves are prompted
   t/T Tabs          TAB  TAB key inserts TABs instead of spaces
   T   ShiftTabs     ST   Shift may insert TABs (only if 't' is also set)
   d   DelTabs       DT   BS and DEL may remove tabs worth of space
@@ -3987,7 +3993,9 @@ displayed on the status bar.
 @noindent Abbreviation: @code{RO}
 
 @noindent sets the read only flag. When this flag is true, no editing can be
-performed on the document (any such attempt produces an error message). This
+performed on the document (any such attempt produces an error message). Saving
+read only documents is inhibited as well; you must affirmatively answer a prompt
+to save a document with the read only flag set. This
 flag is automatically set whenever you open a file that you cannot write to.
 See @ref{Open}.
 
