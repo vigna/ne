@@ -63,16 +63,16 @@ char *NO_WARRANTY_msg[] = {	PROGRAM_NAME " " VERSION ".",
 
 char ARG_HELP[] = ABOUT_MSG "\n"
 						"Usage: ne [options] [files]\n"
-						"--help        print this message.\n"
+						"--help        print this message. [-h]\n"
 						"--           *next token is a filename.\n"
 						"+[N[,M]]     *move to last or N-th line, first or M-th column of next named file.\n"
 						"--binary     *load the next file in binary mode.\n"
-						"--read-only  *load the next file in read-only mode.\n"
+						"--read-only  *load the next file in read-only mode. [--readonly|--ro]\n"
 						"--utf8        use UTF-8 I/O.\n"
 						"--no-utf8     do not use UTF-8 I/O.\n"
 						"--ansi        use built-in ANSI control sequences.\n"
-						"--no-ansi     do not use built-in ANSI control sequences.\n"
-						"--no-config   do not read configuration files.\n"
+						"--no-ansi     do not use built-in ANSI control sequences. [--noansi]\n"
+						"--no-config   do not read configuration files. [--noconfig]\n"
 						"--no-syntax   disable syntax-highlighting support.\n"
 						"--prefs EXT   set autoprefs for the provided extension before loading the first file.\n"
 						"--keys FILE   use this file for keyboard configuration.\n"
@@ -194,6 +194,11 @@ int main(int argc, char **argv) {
 
 	for(int i = 1; i < argc; i++) {
 
+		if (argv[i][0] == '-' && (!strcmp(&argv[i][1], "h") || !strcmp(&argv[i][1], "-help" "\0" VERSION_STRING))) {
+			puts(ARG_HELP);
+			exit(0);
+		}
+
 		/* Special arguments start with two dashes. If we find one, we
 		   cancel its entry in argv[], so that it will be skipped when opening
 		   the specified files. The only exception is +N for skipping to the
@@ -201,10 +206,6 @@ int main(int argc, char **argv) {
 
 		if (argv[i][0] == '-' && argv[i][1] == '-') {
 			if (!argv[i][2]) i++; /* You can use "--" to force the next token to be a filename */
-			else if (!strcmp(&argv[i][2], "help" "\0" VERSION_STRING)) {
-				puts(ARG_HELP);
-				exit(0);
-			}
 			else if (!strcmp(&argv[i][2], "noconfig") || !strcmp(&argv[i][2], "no-config")) {
 				no_config = true;
 				skiplist[i] = 1; /* argv[i] = NULL; */
