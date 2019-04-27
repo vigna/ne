@@ -100,6 +100,7 @@ char *info_msg[INFO_COUNT] = {
 	"Saving...",
 	"Saved.",
 	"All modified documents saved.",
+	"Document is marked ReadOnly; save anyway?",
 	"SELECT cursor/Enter FILTER chars/BS MODE Ins/Del EDIT Tab FILENAME F1/Esc-Esc/Esc",
 	"Start of block marked. Move to the end of block and request actions.",
 	"Start of vertical block marked. Move to the end of block and request actions.",
