@@ -893,10 +893,13 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		return OK;
 
 	case SAVE_A:
-		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 		p = str_dup(b->filename);
 
 	case SAVEAS_A:
+		if (b->opt.read_only && !request_response(b, info_msg[SAVE_READ_ONLY_DOCUMENT],false)) {
+			free(p);
+			return DOCUMENT_NOT_SAVED;
+		}
 		if (p || (q = p = request_file(b, "Filename", b->filename))) {
 			print_info(SAVING);
 
@@ -904,7 +907,10 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 				free(p);
 				return DOCUMENT_NOT_SAVED;
 			}
+			c = b->opt.read_only;
+			SET_USER_FLAG(b, 0, opt.read_only);
 			error = save_buffer_to_file(b, p);
+			SET_USER_FLAG(b, c, opt.read_only);
 
 			if (!print_error(error)) {
 				const bool load_syntax = b->filename == NULL || ! same_str(extension(p), extension(b->filename));
