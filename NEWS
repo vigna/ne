@@ -1,8 +1,16 @@
 (This file, NEWS, lists new features and enhancements. See CHANGES for fixes.)
 
-pending
+unreleased
 
   * Saving of read-only documents requires confirmation.
+
+  * Word completion now does not consider the word the cursor is currently
+    in, which helps in disambiguating.
+
+  * The option -h is now an alias for --help. Thanks to Lonnie Abelbeck for
+    implementing this feature.
+
+  * Add asterisk.jsf syntax.
 
 3.1.2 2018-10-06
 
@@ -12,12 +20,6 @@ pending
 
   * We now use the xenl property to detect whether we can write on the last
     column of the last line, thus making the status bar complete.
-
-  * Word completion now does not consider the word the cursor is currently
-    in, which helps in disambiguating.
-
-  * The option -h is now an alias for --help. Thanks to Lonnie Abelbeck for
-    implementing this feature.
 
 3.1.1 2017-06-04
 
