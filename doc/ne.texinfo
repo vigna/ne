@@ -5664,7 +5664,7 @@ allow overriding all extensions.
  rb   1  ^#!\s*/.*\bruby\s*
  xml  1  ^<\?xml
 # These must match in the first 30 and 1000 lines, respectively.
- yaml   30  ^\+\+\+$
+ yaml   30  ^---$
  ini  1000i ^\[\s*(\w|[.-])+\s*\]\s*$
 # You must list the existing extensions you wish to override, one
 # per line. Shell glob patterns are allowed. Note that ".*" would
