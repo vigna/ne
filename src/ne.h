@@ -169,16 +169,16 @@ typedef struct {
 		help_quits:1,      /* Map HELP_A to QUIT_A (for help requester). */
 		selectdoc_quits:1; /* Map SELECTDOC_A to QUIT_A (for F4 requester). */
 	char suffix;
-
-	int cur_entries;
-	int alloc_entries;
-	int max_entry_len;
-	char **entries;
+	int cur_entries;      /* count of entries */
+	int alloc_entries;    /* allocated slots in **entries */
+	int max_entry_len;    /* This is going away to be replaced by individual entry lengths for varying width columns */
+	char **entries;       /* The array of alloc_entries string pointers pointing into *chars */
+	int *lens;            /* When set, the column width needed to display corresponding entry (strlen() + suffix + blank) */
 	int *orig_order;      /* maps from current order to original order when allow_reorder is true. */
 
-	int cur_chars;
-	int alloc_chars;
-	char *chars;
+	int cur_chars;        /* count of used characters */
+	int alloc_chars;      /* allocated characters in *chars */
+	char *chars;          /* contiguous block of allocated characters */
 } req_list;
 
 /* These are the list and node structures used throughout ne. See the exec.c

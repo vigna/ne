@@ -24,6 +24,8 @@ unreleased
   * Enhanced commands: MoveEOW, NextWord, and PrevWord can now move to either
     end of the indicated word via optional '<' and '>' parameter modifiers.
 
+  * Requesters make better use of white space.
+
 3.1.2 2018-10-06
 
   * RepeatLast now accepts "Find" or "Replace" after its optional number so

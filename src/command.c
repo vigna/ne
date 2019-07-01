@@ -32,8 +32,8 @@
 
 
 /* This structure represents a command. It includes a long and a short name,
-a NULL-terminated vector of help strings (of specified length) and some flags
-which are related to the syntax and the semantics of the arguments. */
+   a NULL-terminated vector of help strings (of specified length) and some flags
+   which are related to the syntax and the semantics of the arguments. */
 
 typedef struct {
 	const char *name, *short_name;
@@ -199,7 +199,6 @@ static const command commands[ACTION_COUNT] = {
 	{ NAHL(VERBOSEMACROS ),                           IS_OPTION                                   },
 	{ NAHL(VISUALBELL    ),                           IS_OPTION                                   },
 	{ NAHL(WORDWRAP      ),                           IS_OPTION                                   },
-
 };
 
 
@@ -219,9 +218,6 @@ int cmdcmp(const char *c, const char *m) {
 }
 
 
-
-
-
 /* This table *can* have conflicts, so that we can keep its size much
    smaller. */
 
@@ -236,7 +232,6 @@ static macro_desc *macro_hash_table[MACRO_HASH_TABLE_SIZE];
    this doesn't seem to produce any improvement. hash_macro() act as hash(),
    but uses MACRO_HASH_TABLE_SIZE for its modulo. */
 
-
 static int hash_cmd(const char * const s, int len) {
 	int h = -1;
 	while(len-- != 0) h = (h * 31 + ascii_up_case[(unsigned char)s[len]]) % HASH_TABLE_SIZE;
@@ -249,7 +244,6 @@ static int hash_macro(const char * const s, int len) {
 	while(len-- != 0) h = (h * 31 + ascii_up_case[(unsigned char)s[len]]) % MACRO_HASH_TABLE_SIZE;
 	return (h + MACRO_HASH_TABLE_SIZE) % MACRO_HASH_TABLE_SIZE;
 }
-
 
 
 /* Parses a command line. This function has an interface which is slightly
@@ -349,14 +343,12 @@ int execute_command_line(buffer *b, const char *command_line) {
 }
 
 
-
 /* Allocates a macro descriptor. It does not allocate the internal character
    stream, which has to be allocated and stuffed in separately. */
 
 macro_desc *alloc_macro_desc(void) {
 	return calloc(1, sizeof(macro_desc));
 }
-
 
 
 /* Frees a macro descriptor. */
@@ -385,7 +377,7 @@ void record_action(char_stream *cs, action a, int64_t c, const char *p, bool ver
 	char t[MAX_INT_LEN + 2];
 
 	/* NOP_A is special; it may actually be a comment.
-		Blank lines and real NOPs are recorded as blank lines. */
+	   Blank lines and real NOPs are recorded as blank lines. */
 	if (a == NOP_A) {
 		if (p && *p) add_to_stream(cs, p, strlen(p) + 1);
 		else add_to_stream(cs, "", 1);
@@ -437,6 +429,7 @@ static int insertchar_val(const char *p) {
 	return 0;
 }
 
+
 /* Optimizing macros is not safe if there are any subsequent undo commands or
    calls to other macros (which may themselves contain undo commands). This function
    looks through a stream for undo or non-built in commands, and returns false
@@ -459,6 +452,7 @@ bool vet_optimize_macro_stream(char_stream * const cs, int64_t pos) {
 	}
 	return true;
 }
+
 
 /* Looks through the macro stream for consecutive runs of InsertChar commands
    and replaces them with appropriate InsertString commands. This makes macros
@@ -497,12 +491,11 @@ void optimize_macro(char_stream *cs, bool verbose) {
 }
 
 
-/* This function is the ultimate goal of this file. It plays a character
-   stream, considering each line as a command line. It polls the global stop
-   variable in order to check for the user interrupting. Note that the macro is
-   duplicated before execution: this is absolutely necessary, for otherwise a
-   call to CloseDoc, Record or UnloadMacros could free() the block of memory
-   which we are executing. */
+/* Plays a character stream, considering each line as a command line. It
+   polls the global stop variable in order to check for the user interrupting.
+   Note that the macro is duplicated before execution: this is absolutely
+   necessary, for otherwise a call to CloseDoc, Record or UnloadMacros could
+   free() the block of memory which we are executing. */
 
 int play_macro(char_stream *cs) {
 	if (!cs) return ERROR;
@@ -544,14 +537,12 @@ int play_macro(char_stream *cs) {
 }
 
 
-
 /* Loads a macro, and puts it in the global macro hash table.  file_part is
    applied to the name argument before storing it and hashing it.  Note that if
    the macro can't be opened, we retry prefixing its name with the preferences
    directory name (~/.ne/). Thus, for instance, all autopreferences file whose
    name does not conflict with internal commands can be executed transparently
    just by typing their name. */
-
 
 macro_desc *load_macro(const char *name) {
 
@@ -598,9 +589,8 @@ macro_desc *load_macro(const char *name) {
 }
 
 
-
 /* Executes a named macro. If the macro is not in the global
-macro list, it is loaded. A standard error code is returned. */
+   macro list, it is loaded. A standard error code is returned. */
 
 int execute_macro(buffer *b, const char *name) {
 	static int call_depth = 0;
@@ -654,6 +644,7 @@ void unload_macros(void) {
 
 /* Find first n key strokes that currently map to commands[i].name or commands[i].short_name.
    Returns either NULL or a char string that must be freed by the caller. */
+
 char *find_key_strokes(int c, int n) {
 	char *str=NULL, *p;
 
@@ -687,6 +678,7 @@ char *find_key_strokes(int c, int n) {
 	return str;
 }
 
+
 char *bound_keys_string(int c) {
 	char *key_strokes = find_key_strokes(c, 9);
 	char *str=NULL;
@@ -697,25 +689,37 @@ char *bound_keys_string(int c) {
 	}
 	return str;
 }
-	
-	
+
+
 /* This function helps. The help text relative to the command name pointed to
    by p is displayed (p can also contain arguments). The string *p is not
-   free'd by help(). If p is NULL, the
-   alphabetically ordered list of commands is displayed with the string
-   requester. The help finishes when the user escapes. */
+   free'd by help(). If p is NULL, the alphabetically ordered list of commands
+   is displayed with the string requester. The help finishes when the user
+   escapes.
+
+   WARNING: help() assumes a lot about how request_strings() and 'req_list's
+   work rather than using the support functions to build its req_list. Any
+   changes here or in request.c need to be thoroughly checked in both places. */
 
 void help(char *p) {
+	bool request_order_orig = req_order;
 	req_list rl = { .ignore_tab=true, .help_quits=true };
 
 	D(fprintf(stderr, "Help Called with parm %p.\n", p);)
-	int r = 0;
+	int r = 0, width;
 	do {
 		print_message(info_msg[HELP_KEYS]);
 		rl.cur_entries = ACTION_COUNT;
 		rl.alloc_entries = 0;
 		rl.max_entry_len = MAX_COMMAND_WIDTH;
 		rl.entries = (char **)command_names;
+		rl.lens = realloc(rl.lens, sizeof(int) * rl.cur_entries);
+		width = 0;
+		for (int i=0,w; i<rl.cur_entries; i++)
+			if ((w=strlen(rl.entries[i])) > width) width = w;
+		for (int i=0; i<rl.cur_entries; i++)
+			rl.lens[i] = width + 2;
+		req_order = request_order_orig;
 		if (p || (r = request_strings(&rl, r)) >= 0) {
 			D(fprintf(stderr, "Help check #2: p=%p, r=%d\n", p, r);)
 			if (p) {
@@ -756,7 +760,15 @@ void help(char *p) {
 				rl.alloc_entries = 0;
 				rl.max_entry_len = ne_columns;
 				rl.entries = tmphelp;
+				rl.lens = realloc(rl.lens, sizeof(int) * rl.cur_entries);
+				width = 0;
+				for (int i=0,w; i<rl.cur_entries; i++)
+					if ((w=strlen(rl.entries[i])) > width) width = w;
+				for (int i=0; i<rl.cur_entries; i++)
+					rl.lens[i] = width + 2;
+				req_order = true;
 				const int s = request_strings(&rl, 0);
+				req_order = request_order_orig;
 				if (s < 0) r = s;
 				free(tmphelp);
 			} else {
@@ -764,14 +776,24 @@ void help(char *p) {
 				rl.alloc_entries = 0;
 				rl.max_entry_len = ne_columns;
 				rl.entries = (char **)commands[r].help;
+				rl.lens = realloc(rl.lens, sizeof(int) * rl.cur_entries);
+				width = 0;
+				for (int i=0,w; i<rl.cur_entries; i++)
+					if ((w=strlen(rl.entries[i])) > width) width = w;
+				for (int i=0; i<rl.cur_entries; i++)
+					rl.lens[i] = width + 2;
+				req_order = true;
 				const int s = request_strings(&rl, 0);
+				req_order = request_order_orig;
 				if (s < 0) r = s;
 			}
 			if (key_strokes) free(key_strokes);
 		}
 	} while(r >= 0);
+	free(rl.lens);
 	draw_status_bar();
 }
+
 
 /* Parse string parameters for NextWord, PrevWord, AdjustView, etc. */
 
@@ -805,4 +827,3 @@ int parse_word_parm(char *p, char *pat_in, int64_t *match) {
 	}
 	return OK;
 }
-
