@@ -457,10 +457,11 @@ static int request_strings_init(req_list *rlp0) {
 	rl.allow_reorder = rl0->allow_reorder;
 	rl.ignore_tab = rl0->ignore_tab;
 	rl.reordered = rl0->reordered;
+	rl.fuzz_len = rl0->fuzz_len;
+	prune = rl.prune = rl0->prune;
 	rl.cur_chars = rl.alloc_chars = 0;
 	rl.chars = NULL;
-	fuzz_len = common_prefix_len(&rl);
-	/* prune = false; */
+	fuzz_len = rl.fuzz_len ? rl.fuzz_len : common_prefix_len(&rl);
 	return rl.cur_entries;
 }
 
@@ -1101,6 +1102,8 @@ int req_list_init( req_list * const rl, int cmpfnc(const char *, const char *), 
 	rl->allow_dupes = allow_dupes;
 	rl->allow_reorder = allow_reorder;
 	rl->ignore_tab = false;
+	rl->prune = false;
+	rl->fuzz_len = 0;
 	rl->suffix = suffix;
 	rl->cur_entries = rl->alloc_entries = rl->max_entry_len = 0;
 	rl->cur_chars = rl->alloc_chars = 0;

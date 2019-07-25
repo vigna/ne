@@ -163,7 +163,9 @@ typedef struct {
 		allow_dupes:1,     /* Searches are more efficient if we have no duplicate entries. */
 		allow_reorder:1,   /* Allow NextDoc/PrevDoc keys to re-order entries. */
 		ignore_tab:1,      /* Permits Tab to exit requester. */
-		reordered:1;       /* Indicates whether reordering was done during request. */
+		reordered:1,       /* Indicates whether reordering was done during request. */
+		prune:1;           /* Whether to start off pruning by partial input. */
+	int fuzz_len;         /* Initial offset into initially selected entry. */
 	char suffix;
 	
 	int cur_entries;

@@ -61,13 +61,9 @@ typedef struct {
 } input_buf;
 
 static input_buf ib;        /* our main input buffer */
-static input_buf ib_backup; /* a backup of input_buffer in case we abort a FIND_A */
-static input_buf sb;        /* a search string for searching the history buffer */
 
 /* Unlike ne's document buffers, the command line may (and will) move
    back to ASCII if all non-US-ASCII characters are deleted .*/
-
-static bool searching;
 
 /* Prints an input prompt in the input line. The prompt is assumed not to be
    UTF-8 encoded. A colon is postpended to the prompt. The position of the
@@ -88,14 +84,6 @@ static unsigned int print_prompt(const char * const prompt) {
 	standout_on();
 	set_attr(0);
 	output_string(prior_prompt, false);
-
-	if (searching) {
-		sb.start_x = strlen(prior_prompt) + 1;
-		output_string(" [", false);
-		output_string(sb.buf, false);
-		output_string("]", false);
-	}
-	
 	output_string(":", false);
 
 	standout_off();
@@ -104,8 +92,7 @@ static unsigned int print_prompt(const char * const prompt) {
 
 	reset_status_bar();
 
-	ib.start_x = strlen(prior_prompt) + 2 + (searching ? 3 + sb.len : 0);
-	return ib.start_x;
+	return ib.start_x = strlen(prior_prompt) + 2;
 }
 
 
@@ -155,7 +142,7 @@ char request_char(const buffer * const b, const char * const prompt, const char 
 			if (default_value) output_char(default_value, 0, false);
 			move_cursor(b->cur_y, b->cur_x);
 		}
-			
+
 		if (c == INVALID_CHAR) continue; /* Window resizing. */
 
 		switch(ic) {
@@ -248,8 +235,7 @@ static void init_history(void) {
 			assert_buffer(history_buff);
 
 			/* This should be never necessary with new histories, as all lines will
-				be terminated by a life feed, but it is kept for backward
-				compatibility. */
+				be terminated by a newline, but it is kept for backward compatibility. */
 
 			move_to_bof(history_buff);
 			if (history_buff->cur_line_desc->line && history_buff->cur_line_desc->line_len) {
@@ -551,12 +537,46 @@ static void input_paste(void) {
 	}
 }
 
+static int request_history(void) {
+   req_list rl;
+	int i = -1;
+	char *tmpstr;
+	if (!history_buff) return -1;
+	line_desc *ld = history_buff->top_line_desc;
+	
+   if (ld->ld_node.next && req_list_init(&rl, NULL, true, false, '\0')==OK) {
+   	while (ld->ld_node.next) {
+   		if (ld->line_len)
+   			tmpstr = strntmp(ld->line, ld->line_len);
+   		else
+   			tmpstr = strntmp("-", 1);
+   		D(fprintf(stdout, "adding %s\n", tmpstr));
+   		req_list_add(&rl, tmpstr, false);
+   		ld = (line_desc *)ld->ld_node.next;
+   	}
+   	if (ib.buf[0]) {
+   		req_list_add(&rl, ib.buf, false);
+   	}
+   	strntmp(NULL, -1);
+		rl.ignore_tab = true;
+		rl.prune = true;
+		rl.fuzz_len = ib.pos;
+		req_list_finalize(&rl);
+		i = request_strings(&rl, rl.cur_entries - 1);
+		req_list_free(&rl);
+		window_changed_size = true;
+		// reset_window();
+		// draw_status_bar();
+	}
+	move_to_bof(history_buff);
+	move_to_sol(history_buff);
+	return i;
+}
+
 char *request(const buffer * const b, const char *prompt, const char * const default_string, const bool alpha_allowed, const int completion_type, const bool prefer_utf8) {
 
 	ib.buf[ib.pos = ib.len = ib.offset = 0] = 0;
-	sb.buf[sb.len = 0] = 0;
 	ib.encoding = ENC_ASCII;
-	searching = false;
 	ib.x = ib.start_x = print_prompt(prompt);
 
 	init_history();
@@ -714,18 +734,10 @@ char *request(const buffer * const b, const char *prompt, const char * const def
 					break;
 
 				case FIND_A:
-				   if (searching) {
-				   	ib.x -= 3 + sb.len;
-				   	memcpy(&ib, &ib_backup, sizeof(ib));
-				   } else {
-				   	memcpy(&ib_backup, &ib, sizeof(ib));
-				   	ib.x += 3 + sb.len;
-				   }
-				   searching = !searching;
-					ib.start_x = print_prompt(NULL);
+					request_history();
 					input_refresh();
 					break;
-					
+
 				case LINEUP_A:
 				case LINEDOWN_A:
 				case MOVESOF_A:
