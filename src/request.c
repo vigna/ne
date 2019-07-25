@@ -476,6 +476,7 @@ static int request_strings_cleanup(bool reordered) {
 	}
 	if (rl.entries) free(rl.entries);
 	rl.entries = NULL;
+	rl0->fuzz_len = fuzz_len;
 	rl0->reordered = reordered;
 	return n;
 }

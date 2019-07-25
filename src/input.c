@@ -542,35 +542,39 @@ static int request_history(void) {
 	int i = -1;
 	char *tmpstr;
 	if (!history_buff) return -1;
-	line_desc *ld = history_buff->top_line_desc;
+	line_desc *ld = (line_desc *)history_buff->line_desc_list.head;
 	
    if (ld->ld_node.next && req_list_init(&rl, NULL, true, false, '\0')==OK) {
    	while (ld->ld_node.next) {
-   		if (ld->line_len)
+   		if (ld->line_len) {
    			tmpstr = strntmp(ld->line, ld->line_len);
-   		else
-   			tmpstr = strntmp("-", 1);
-   		D(fprintf(stdout, "adding %s\n", tmpstr));
-   		req_list_add(&rl, tmpstr, false);
+   			req_list_add(&rl, tmpstr, false);
+   		}
    		ld = (line_desc *)ld->ld_node.next;
    	}
-   	if (ib.buf[0]) {
-   		req_list_add(&rl, ib.buf, false);
-   	}
-   	strntmp(NULL, -1);
 		rl.ignore_tab = true;
 		rl.prune = true;
-		rl.fuzz_len = ib.pos;
 		req_list_finalize(&rl);
 		i = request_strings(&rl, rl.cur_entries - 1);
+		if (i >= 0 && i < rl.cur_entries) {
+			ld = (line_desc *)history_buff->line_desc_list.head;
+			while (i-- && ld->ld_node.next) {
+				if (ld->line_len == 0) i++;
+				ld = (line_desc *)ld->ld_node.next;
+			}
+			if (ld->line) {
+				tmpstr = strntmp(ld->line, ld->line_len);
+				strncpy(ib.buf, tmpstr, MAX_INPUT_LINE_LEN);
+				ib.len = strlen(ib.buf);
+				ib.encoding = detect_encoding(ib.buf, ib.len);
+				input_move_to_sol();
+				while (rl.fuzz_len--) input_move_right(false);
+			}
+		}
 		req_list_free(&rl);
-		window_changed_size = true;
-		// reset_window();
-		// draw_status_bar();
 	}
-	move_to_bof(history_buff);
-	move_to_sol(history_buff);
-	return i;
+  	strntmp(NULL, -1);
+	return i >= 0 && i < history_buff->num_lines;
 }
 
 char *request(const buffer * const b, const char *prompt, const char * const default_string, const bool alpha_allowed, const int completion_type, const bool prefer_utf8) {
@@ -735,7 +739,10 @@ char *request(const buffer * const b, const char *prompt, const char * const def
 
 				case FIND_A:
 					request_history();
-					input_refresh();
+					reset_window();
+					keep_cursor_on_screen((buffer * const)b);
+					refresh_window((buffer *)b);
+					input_and_prompt_refresh();
 					break;
 
 				case LINEUP_A:
