@@ -235,7 +235,7 @@ static void init_history(void) {
 			assert_buffer(history_buff);
 
 			/* This should be never necessary with new histories, as all lines will
-				be terminated by a newline, but it is kept for backward compatibility. */
+			   be terminated by a newline, but it is kept for backward compatibility. */
 
 			move_to_bof(history_buff);
 			if (history_buff->cur_line_desc->line && history_buff->cur_line_desc->line_len) {
@@ -517,20 +517,20 @@ static void input_prev_word(void) {
 	input_refresh();
 }
 
-
-static void input_paste(void) {
+/* Pastes the passed string into the input buffer, or the nth clip if str is NULL. */
+static void input_paste(char *str) {
 	const clip_desc * const cd = get_nth_clip(cur_buffer->opt.cur_clip);
 
-	if (cd) {
-		if (cd->cs->encoding != ENC_ASCII && ib.encoding != ENC_ASCII && cd->cs->encoding != ib.encoding) {
+	if (str || cd) {
+		if (cd && cd->cs->encoding != ENC_ASCII && ib.encoding != ENC_ASCII && cd->cs->encoding != ib.encoding) {
 			alert();
 			return;
 		}
 
-		int paste_len = strnlen_ne(cd->cs->stream, cd->cs->len);
+		int paste_len = str ? strlen(str) : strnlen_ne(cd->cs->stream, cd->cs->len);
 		if (ib.len + paste_len > MAX_INPUT_LINE_LEN) paste_len = MAX_INPUT_LINE_LEN - ib.len;
 		memmove(&ib.buf[ib.pos + paste_len], &ib.buf[ib.pos], ib.len - ib.pos + 1);
-		strncpy(&ib.buf[ib.pos], cd->cs->stream, paste_len);
+		strncpy(&ib.buf[ib.pos], str ? str : cd->cs->stream, paste_len);
 		ib.len += paste_len;
 		if (!input_buffer_is_ascii() && cd->cs->encoding != ENC_ASCII) ib.encoding = cd->cs->encoding;
 		input_refresh();
@@ -538,42 +538,45 @@ static void input_paste(void) {
 }
 
 static int request_history(void) {
-   req_list rl;
+	req_list rl;
 	int i = -1;
 	char *tmpstr;
 	if (!history_buff) return -1;
 	line_desc *ld = (line_desc *)history_buff->line_desc_list.head;
-	
-   if (ld->ld_node.next && req_list_init(&rl, NULL, true, false, '\0')==OK) {
-   	while (ld->ld_node.next) {
-   		if (ld->line_len) {
-   			tmpstr = strntmp(ld->line, ld->line_len);
-   			req_list_add(&rl, tmpstr, false);
-   		}
-   		ld = (line_desc *)ld->ld_node.next;
-   	}
-		rl.ignore_tab = true;
+
+	if (ld->ld_node.next && req_list_init(&rl, NULL, true, false, '\0')==OK) {
+		while (ld->ld_node.next) {
+			if (ld->line_len) {
+				tmpstr = strntmp(ld->line, ld->line_len);
+				req_list_add(&rl, tmpstr, false);
+			}
+			ld = (line_desc *)ld->ld_node.next;
+		}
+		rl.ignore_tab = false;
 		rl.prune = true;
 		req_list_finalize(&rl);
 		i = request_strings(&rl, rl.cur_entries - 1);
-		if (i >= 0 && i < rl.cur_entries) {
+		if (i != ERROR) {
+			int selection = i >= 0 ? i : -i - 2;
 			ld = (line_desc *)history_buff->line_desc_list.head;
-			while (i-- && ld->ld_node.next) {
-				if (ld->line_len == 0) i++;
+			while (selection-- && ld->ld_node.next) {
+				if (ld->line_len == 0) selection++;
 				ld = (line_desc *)ld->ld_node.next;
 			}
 			if (ld->line) {
 				tmpstr = strntmp(ld->line, ld->line_len);
-				strncpy(ib.buf, tmpstr, MAX_INPUT_LINE_LEN);
-				ib.len = strlen(ib.buf);
-				ib.encoding = detect_encoding(ib.buf, ib.len);
-				input_move_to_sol();
+				if (i >= 0) {
+					strncpy(ib.buf, tmpstr, MAX_INPUT_LINE_LEN);
+					ib.len = strlen(ib.buf);
+					ib.encoding = detect_encoding(ib.buf, ib.len);
+					input_move_to_sol();
+				} else input_paste(tmpstr);
 				while (rl.fuzz_len--) input_move_right(false);
 			}
 		}
 		req_list_free(&rl);
 	}
-  	strntmp(NULL, -1);
+	strntmp(NULL, -1);
 	return i >= 0 && i < history_buff->num_lines;
 }
 
@@ -766,7 +769,7 @@ char *request(const buffer * const b, const char *prompt, const char * const def
 						}
 
 						/* In some cases, the default displayed on the command line will be the same as the
-							first history item. In that case we skip it. */
+						   first history item. In that case we skip it. */
 
 						if (first_char_typed == true
 							 && a == LINEUP_A
@@ -893,7 +896,7 @@ char *request(const buffer * const b, const char *prompt, const char * const def
 					break;
 
 				case PASTE_A:
-					input_paste();
+					input_paste(NULL);
 					break;
 
 				case AUTOCOMPLETE_A:

@@ -1218,6 +1218,12 @@ saves the most recent long inputs in @file{~/.ne/.history} when you end
 your @code{ne} session and loads them again when you begin another
 @code{ne} session.
 
+Invoking the @code{Find} command, usually bound to
+@kbd{@key{Control}-F}, brings up a requester showing your prior inputs.
+You can close the requester with the @key{Escape} key, replace your
+input line with a highlighted prior entry with the @key{Enter} key, or
+insert that prior entry into your input line with the @key{Tab} key.
+
 When asked to input a number, you can choose between decimal, octal and
 hexadecimal notation in the standard way: a number starting with
 @samp{0} is considered in octal, a number starting with @samp{0x} is

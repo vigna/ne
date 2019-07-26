@@ -1,6 +1,6 @@
 /* Main typedefs and defines.
 
-	Copyright (C) 1993-1998 Sebastiano Vigna 
+	Copyright (C) 1993-1998 Sebastiano Vigna
 	Copyright (C) 1999-2018 Todd M. Lewis and Sebastiano Vigna
 
 	This file is part of ne, the nice editor.
@@ -167,13 +167,13 @@ typedef struct {
 		prune:1;           /* Whether to start off pruning by partial input. */
 	int fuzz_len;         /* Initial offset into initially selected entry. */
 	char suffix;
-	
+
 	int cur_entries;
 	int alloc_entries;
 	int max_entry_len;
 	char **entries;
 	int *orig_order;      /* maps from current order to original order when allow_reorder is true. */
-	
+
 	int cur_chars;
 	int alloc_chars;
 	char *chars;
@@ -436,7 +436,7 @@ typedef struct {
 		binary:1,          /* Load and save in binary mode */
 		utf8auto:1,        /* Try to detect automatically UTF-8 */
 		visual_bell:1;     /* Prefer visible bell to audible */
-  } options_t;
+} options_t;
 
 #ifndef NDEBUG
 #define assert_options(o) {if ((o)) {\
@@ -499,7 +499,7 @@ typedef struct {
 	int cur_bookmark;           /* For Goto(Next|Prev)Bookmark. */
 
 	struct high_syntax *syn;    /* Syntax loaded for this buffer. */
-	uint32_t *attr_buf;              /* If attr_len >= 0, a pointer to the list of *current* attributes of the *current* line. */ 
+	uint32_t *attr_buf;              /* If attr_len >= 0, a pointer to the list of *current* attributes of the *current* line. */
 	int64_t attr_size;              /* attr_buf size. */
 	int64_t attr_len;               /* attr_buf valid number of characters, or -1 to denote that attr_buf is not valid. */
 	HIGHLIGHT_STATE next_state; /* If attr_len >= 0, the state after the *current* line. */
@@ -637,7 +637,7 @@ key combinations required to produce those key codes. */
 
 extern const char *key_stroke[];
 
-/* A boolean recording whether the last replace was for an empty string 
+/* A boolean recording whether the last replace was for an empty string
   (of course, this can happen only with regular expressions). */
 
 extern bool last_replace_empty_match;
