@@ -12,6 +12,9 @@ unreleased
 
   * Add asterisk.jsf syntax.
 
+  * FIND in string inputs brings up a requester with your input history.
+    Use Enter to replace, TAB to insert into your input line; Escape to exit.
+
 3.1.2 2018-10-06
 
   * RepeatLast now accepts "Find" or "Replace" after its optional number so

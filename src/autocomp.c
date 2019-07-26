@@ -31,26 +31,8 @@ static req_list rl;
 static int count_scanned;
 
 static void add_string(const char * const s, const int len, const int ext) {
-	static char *buf = NULL;
-	static uint64_t buflen = 0;
-	char *buf_new;
-	int cplen = len;
-
-	if (len < 1) {
-		if (buf) free(buf);
-		buf = NULL;
-		buflen = 0;
-		return;
-	}
-	if (len >= buflen) {
-		if (buf_new = realloc(buf, len * 2 + 1)) {
-			buflen = len * 2 + 1;
-			buf = buf_new;
-		}
-		else cplen = buflen - 1;
-	}
-	strncpy(buf, s, cplen);
-	buf[cplen] = '\0';
+	char *buf = strntmp(s, len);
+	if (len < 1) return;
 	req_list_add(&rl, buf, ext);
 }
 
@@ -193,3 +175,5 @@ char *autocomplete(char *p, char *req_msg, const int ext, int * const error) {
 	D(fprintf(stderr, "autocomp returning '%s', entries: %d\n", p, rl.cur_entries);)
 	return p;
 }
+
+

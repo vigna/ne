@@ -285,6 +285,7 @@ unsigned long file_mod_time(const char *filename);
 ssize_t read_safely(const int fd, void * const buf, const int64_t len);
 bool buffer_file_modified(const buffer *b, const char *name);
 char *str_dup(const char *s);
+char *strntmp(const char * const s, const int len);
 int64_t strnlen_ne(const char *s, int64_t n);
 int strcmpp(const void *a, const void *b);
 int strdictcmpp(const void *a, const void *b);
