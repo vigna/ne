@@ -70,7 +70,9 @@ static input_buf ib;        /* our main input buffer */
    first character to use for input is returned. Moreover, the status bar is
    reset, so that it will be updated. */
 
-static unsigned int print_prompt(const char * const prompt) {
+static unsigned int print_prompt(const char * const prompt, const bool show_help) {
+	static bool help_shown;
+
 	static const char *prior_prompt;
 	assert(prompt != NULL || prior_prompt);
 
@@ -84,6 +86,13 @@ static unsigned int print_prompt(const char * const prompt) {
 	standout_on();
 	set_attr(0);
 	output_string(prior_prompt, false);
+
+	if (show_help && !help_shown) {
+		help_shown = true;
+		const char *help_string = " (search with ^F)";
+		output_string(help_string, false);
+		ib.start_x = strlen(help_string);
+	} else ib.start_x = 0;
 	output_string(":", false);
 
 	standout_off();
@@ -92,7 +101,7 @@ static unsigned int print_prompt(const char * const prompt) {
 
 	reset_status_bar();
 
-	return ib.start_x = strlen(prior_prompt) + 2;
+	return ib.start_x += strlen(prior_prompt) + 2;
 }
 
 
@@ -123,7 +132,7 @@ bool request_response(const buffer * const b, const char * const prompt, const b
 
 
 char request_char(const buffer * const b, const char * const prompt, const char default_value) {
-	print_prompt(prompt);
+	print_prompt(prompt, false);
 
 	if (default_value) output_char(default_value, 0, false);
 	move_cursor(b->cur_y, b->cur_x);
@@ -138,7 +147,7 @@ char request_char(const buffer * const b, const char * const prompt, const char 
 			reset_window();
 			keep_cursor_on_screen((buffer * const)b);
 			refresh_window((buffer *)b);
-			print_prompt(NULL);
+			print_prompt(NULL, false);
 			if (default_value) output_char(default_value, 0, false);
 			move_cursor(b->cur_y, b->cur_x);
 		}
@@ -164,7 +173,7 @@ char request_char(const buffer * const b, const char * const prompt, const char 
 						reset_window();
 						keep_cursor_on_screen((buffer * const)b);
 						refresh_window((buffer *)b);
-						print_prompt(NULL);
+						print_prompt(NULL, false);
 						if (default_value) output_char(default_value, 0, false);
 						move_cursor(b->cur_y, b->cur_x);
 						break;
@@ -302,7 +311,7 @@ static void input_refresh(void) {
 }
 
 void input_and_prompt_refresh() {
-	print_prompt(NULL);
+	print_prompt(NULL, false);
 	input_refresh();
 }
 
@@ -371,7 +380,7 @@ static void input_autocomplete(void) {
 	if (ac_err == AUTOCOMPLETE_COMPLETED || ac_err == AUTOCOMPLETE_CANCELLED) {
 		do_action(cur_buffer, REFRESH_A, 0, NULL);
 		refresh_window(cur_buffer);
-		print_prompt(NULL);
+		print_prompt(NULL, false);
 	}
 	input_refresh();
 }
@@ -584,7 +593,7 @@ char *request(const buffer * const b, const char *prompt, const char * const def
 
 	ib.buf[ib.pos = ib.len = ib.offset = 0] = 0;
 	ib.encoding = ENC_ASCII;
-	ib.x = ib.start_x = print_prompt(prompt);
+	ib.x = ib.start_x = print_prompt(prompt, true);
 
 	init_history();
 
@@ -746,6 +755,7 @@ char *request(const buffer * const b, const char *prompt, const char * const def
 					keep_cursor_on_screen((buffer * const)b);
 					refresh_window((buffer *)b);
 					input_and_prompt_refresh();
+					ib.x = ib.start_x;
 					break;
 
 				case LINEUP_A:
