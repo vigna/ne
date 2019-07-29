@@ -119,5 +119,5 @@ char *info_msg[INFO_COUNT] = {
 	"A file with that name already exists; are you sure?",
 	"HELP cursor/Enter QUIT F1/Esc-Esc/Esc",
 	"BACK Enter QUIT F1/Esc-Esc/Esc",
-	" (search with ^F)"
+	" (browse history with ^F)"
 };
