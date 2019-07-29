@@ -453,15 +453,16 @@ static int request_strings_init(req_list *rlp0) {
 	rl.alloc_entries = rlp0->cur_entries;
 	memcpy(rl.entries, rlp0->entries, rl.cur_entries * sizeof(char *));
 	rl0 = rlp0;
-	rl.allow_dupes = rl0->allow_dupes;
-	rl.allow_reorder = rl0->allow_reorder;
-	rl.ignore_tab = rl0->ignore_tab;
-	rl.reordered = rl0->reordered;
-	rl.fuzz_len = rl0->fuzz_len;
-	prune = rl.prune = rl0->prune;
+	rl.allow_dupes     = rl0->allow_dupes;
+	rl.allow_reorder   = rl0->allow_reorder;
+	rl.ignore_tab      = rl0->ignore_tab;
+	rl.reordered       = rl0->reordered;
+	rl.find_quits      = rl0->find_quits;
+	rl.selectdoc_quits = rl0->selectdoc_quits;
+	prune = rl.prune   = rl0->prune;
 	rl.cur_chars = rl.alloc_chars = 0;
 	rl.chars = NULL;
-	fuzz_len = rl.fuzz_len ? rl.fuzz_len : common_prefix_len(&rl);
+	fuzz_len = common_prefix_len(&rl);
 	return rl.cur_entries;
 }
 
@@ -476,12 +477,11 @@ static int request_strings_cleanup(bool reordered) {
 	}
 	if (rl.entries) free(rl.entries);
 	rl.entries = NULL;
-	rl0->fuzz_len = fuzz_len;
 	rl0->reordered = reordered;
 	return n;
 }
 
-/* indicates the function request_strings() should call upon CLOSEDOC_A */
+/* indicates the function which request_strings() should call upon CLOSEDOC_A */
 static int (*rs_closedoc)(int n) = NULL;
 
 /* indicates the correct function to call to restore the status bar after
@@ -675,8 +675,11 @@ int request_strings(req_list *rlp0, int n) {
 						}
 						break;
 
-					case SELECTDOC_A:           /* Allow F4 to toggle us in */
-						if (!rs_closedoc) break; /* out of requestor.        */
+					/* Keystrokes that open requesters toggle them closed also. */
+					case FIND_A:
+						if ( rl.find_quits) break;
+					case SELECTDOC_A:
+						if (!rl.selectdoc_quits) break;
 					case ESCAPE_A:
 					case QUIT_A:
 						request_strings_cleanup(reordered);
@@ -995,6 +998,7 @@ int request_document(void) {
 			i++;
 		}
 		rl.ignore_tab = true;
+		rl.selectdoc_quits = true;
 		req_list_finalize(&rl);
 		print_message(info_msg[SELECT_DOC]);
 		rs_closedoc = &handle_closedoc;
@@ -1104,7 +1108,8 @@ int req_list_init( req_list * const rl, int cmpfnc(const char *, const char *), 
 	rl->allow_reorder = allow_reorder;
 	rl->ignore_tab = false;
 	rl->prune = false;
-	rl->fuzz_len = 0;
+	rl->find_quits = false;
+	rl->selectdoc_quits = false;
 	rl->suffix = suffix;
 	rl->cur_entries = rl->alloc_entries = rl->max_entry_len = 0;
 	rl->cur_chars = rl->alloc_chars = 0;

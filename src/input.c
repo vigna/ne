@@ -563,6 +563,7 @@ static int request_history(void) {
 		}
 		rl.ignore_tab = false;
 		rl.prune = true;
+		rl.find_quits = true;
 		req_list_finalize(&rl);
 		i = request_strings(&rl, rl.cur_entries - 1);
 		if (i != ERROR) {
@@ -580,7 +581,8 @@ static int request_history(void) {
 					ib.encoding = detect_encoding(ib.buf, ib.len);
 					input_move_to_sol();
 				} else input_paste(tmpstr);
-				while (rl.fuzz_len--) input_move_right(false);
+				/* Not convinced this movement is useful. */
+				/* while (rl.fuzz_len--) input_move_right(false); */
 			}
 		}
 		req_list_free(&rl);

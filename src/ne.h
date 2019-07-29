@@ -164,8 +164,9 @@ typedef struct {
 		allow_reorder:1,   /* Allow NextDoc/PrevDoc keys to re-order entries. */
 		ignore_tab:1,      /* Permits Tab to exit requester. */
 		reordered:1,       /* Indicates whether reordering was done during request. */
-		prune:1;           /* Whether to start off pruning by partial input. */
-	int fuzz_len;         /* Initial offset into initially selected entry. */
+		prune:1,           /* Whether to start off pruning by partial input. */
+		find_quits:1,      /* Map FIND_A to QUIT_A (for long input ^F requester). */
+		selectdoc_quits:1; /* Map SELECTDOC_A to QUIT_A (for F4 requester). */
 	char suffix;
 
 	int cur_entries;
