@@ -302,9 +302,9 @@ static int input_buffer_is_ascii() {
 
 static void input_refresh(void) {
 	move_cursor(ne_lines - 1, ib.start_x);
+	ib.x = ib.start_x + ib.pos - ib.offset;
 	for(int i = ib.start_x, j = ib.offset; j < ib.len; i += get_char_width(&ib.buf[j], ib.encoding), j = next_pos(ib.buf, j, ib.encoding)) {
 		if (i + get_char_width(&ib.buf[j], ib.encoding) >= ne_columns) break;
-		if (j == ib.pos) ib.x = i;
 		output_char(get_char(&ib.buf[j], ib.encoding), 0, ib.encoding);
 	}
 	clear_to_eol();
@@ -552,27 +552,29 @@ static int request_history(void) {
 	int i = -1;
 	char *tmpstr;
 	if (!history_buff) return -1;
-	line_desc *ld = (line_desc *)history_buff->line_desc_list.head;
+	// line_desc *ld = (line_desc *)history_buff->line_desc_list.head;
+	line_desc *ld = (line_desc *)history_buff->line_desc_list.tail_pred;
 
-	if (ld->ld_node.next && req_list_init(&rl, NULL, true, false, '\0')==OK) {
-		while (ld->ld_node.next) {
+	if (ld->ld_node.prev && req_list_init(&rl, NULL, true, false, '\0')==OK) {
+		while (ld->ld_node.prev) {
 			if (ld->line_len) {
 				tmpstr = strntmp(ld->line, ld->line_len);
 				req_list_add(&rl, tmpstr, false);
 			}
-			ld = (line_desc *)ld->ld_node.next;
+			ld = (line_desc *)ld->ld_node.prev;
 		}
 		rl.ignore_tab = false;
 		rl.prune = true;
 		rl.find_quits = true;
 		req_list_finalize(&rl);
-		i = request_strings(&rl, rl.cur_entries - 1);
+		i = request_strings(&rl, 0);
 		if (i != ERROR) {
 			int selection = i >= 0 ? i : -i - 2;
-			ld = (line_desc *)history_buff->line_desc_list.head;
-			while (selection-- && ld->ld_node.next) {
+			// ld = (line_desc *)history_buff->line_desc_list.head;
+			ld = (line_desc *)history_buff->line_desc_list.tail_pred;
+			while (selection-- && ld->ld_node.prev) {
 				if (ld->line_len == 0) selection++;
-				ld = (line_desc *)ld->ld_node.next;
+				ld = (line_desc *)ld->ld_node.prev;
 			}
 			if (ld->line) {
 				tmpstr = strntmp(ld->line, ld->line_len);
