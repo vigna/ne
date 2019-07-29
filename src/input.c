@@ -551,7 +551,6 @@ static int request_history(void) {
 	int i = -1;
 	char *tmpstr;
 	if (!history_buff) return -1;
-	// line_desc *ld = (line_desc *)history_buff->line_desc_list.head;
 	line_desc *ld = (line_desc *)history_buff->line_desc_list.tail_pred;
 
 	if (ld->ld_node.prev && req_list_init(&rl, NULL, true, false, '\0')==OK) {
@@ -569,21 +568,12 @@ static int request_history(void) {
 		i = request_strings(&rl, 0);
 		if (i != ERROR) {
 			int selection = i >= 0 ? i : -i - 2;
-			// ld = (line_desc *)history_buff->line_desc_list.head;
-			ld = (line_desc *)history_buff->line_desc_list.tail_pred;
-			while (selection-- && ld->ld_node.prev) {
-				if (ld->line_len == 0) selection++;
-				ld = (line_desc *)ld->ld_node.prev;
-			}
-			if (ld->line) {
-				tmpstr = strntmp(ld->line, ld->line_len);
-				if (i >= 0) {
-					strncpy(ib.buf, tmpstr, MAX_INPUT_LINE_LEN);
-					ib.len = strlen(ib.buf);
-					ib.encoding = detect_encoding(ib.buf, ib.len);
-					input_move_to_sol();
-				} else input_paste(tmpstr);
-			}
+			if (i >= 0) {
+				strncpy(ib.buf, rl.entries[selection], MAX_INPUT_LINE_LEN);
+				ib.len = strlen(ib.buf);
+				ib.encoding = detect_encoding(ib.buf, ib.len);
+				input_move_to_sol();
+			} else input_paste(rl.entries[selection]);
 		}
 		req_list_free(&rl);
 	}

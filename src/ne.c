@@ -288,8 +288,8 @@ int main(int argc, char **argv) {
 			free(keystroke_string);
 		}
 		if ((keystroke_string = find_key_strokes(FIND_A, 1))) {
-			if ((new_msg_text = malloc(16+strlen(keystroke_string)))) {
-				strcat(strcat(strcpy(new_msg_text, " (search with "), keystroke_string), ")");
+			if ((new_msg_text = malloc(24+strlen(keystroke_string)))) {
+				strcat(strcat(strcpy(new_msg_text, " (browse history with "), keystroke_string), ")");
 				info_msg[LONG_INPUT_HELP] = new_msg_text;
 			}
 			free(keystroke_string);
