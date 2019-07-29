@@ -118,5 +118,6 @@ char *info_msg[INFO_COUNT] = {
 	"File has been modified since buffer was loaded or saved; are you sure?",
 	"A file with that name already exists; are you sure?",
 	"HELP cursor/Enter QUIT F1/Esc-Esc/Esc",
-	"BACK Enter QUIT F1/Esc-Esc/Esc"
+	"BACK Enter QUIT F1/Esc-Esc/Esc",
+	" (search with ^F)"
 };

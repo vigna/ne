@@ -276,15 +276,23 @@ int main(int argc, char **argv) {
 
 	if (!new_buffer()) exit(1);
 
-	/* Now that key_bindings are loaded, try to fix up the message for NOT_FOUND. */
+	/* Now that key_bindings are loaded, try to fix up the
+	   NOT_FOUND error_msg and the LONG_INPUT_HELP info_msg. */
 	{
-		char *repeat_last_keystroke, *new_not_found;
-		if ((repeat_last_keystroke = find_key_strokes(REPEATLAST_A, 1))) {
-			if ((new_not_found = malloc(39+strlen(repeat_last_keystroke)))) {
-				strcat(strcat(strcpy(new_not_found, "Not Found. (RepeatLast with "), repeat_last_keystroke), " to wrap.)");
-				error_msg[NOT_FOUND] = new_not_found;
+		char *keystroke_string, *new_msg_text;
+		if ((keystroke_string = find_key_strokes(REPEATLAST_A, 1))) {
+			if ((new_msg_text = malloc(39+strlen(keystroke_string)))) {
+				strcat(strcat(strcpy(new_msg_text, "Not Found. (RepeatLast with "), keystroke_string), " to wrap.)");
+				error_msg[NOT_FOUND] = new_msg_text;
 			}
-			free(repeat_last_keystroke);
+			free(keystroke_string);
+		}
+		if ((keystroke_string = find_key_strokes(FIND_A, 1))) {
+			if ((new_msg_text = malloc(16+strlen(keystroke_string)))) {
+				strcat(strcat(strcpy(new_msg_text, " (search with "), keystroke_string), ")");
+				info_msg[LONG_INPUT_HELP] = new_msg_text;
+			}
+			free(keystroke_string);
 		}
 	}
 

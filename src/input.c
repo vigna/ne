@@ -89,9 +89,8 @@ static unsigned int print_prompt(const char * const prompt, const bool show_help
 
 	if (show_help && !help_shown) {
 		help_shown = true;
-		const char *help_string = " (search with ^F)";
-		output_string(help_string, false);
-		ib.start_x = strlen(help_string);
+		output_string(info_msg[LONG_INPUT_HELP], false);
+		ib.start_x = strlen(info_msg[LONG_INPUT_HELP]);
 	} else ib.start_x = 0;
 	output_string(":", false);
 
@@ -753,6 +752,10 @@ char *request(const buffer * const b, const char *prompt, const char * const def
 					break;
 
 				case FIND_A:
+			      if (first_char_typed) {
+				      ib.buf[ib.len = 0] = 0;
+				      clear_to_eol();
+			      }
 					request_history();
 					reset_window();
 					keep_cursor_on_screen((buffer * const)b);
