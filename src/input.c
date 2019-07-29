@@ -304,6 +304,7 @@ static void input_refresh(void) {
 	move_cursor(ne_lines - 1, ib.start_x);
 	for(int i = ib.start_x, j = ib.offset; j < ib.len; i += get_char_width(&ib.buf[j], ib.encoding), j = next_pos(ib.buf, j, ib.encoding)) {
 		if (i + get_char_width(&ib.buf[j], ib.encoding) >= ne_columns) break;
+		if (j == ib.pos) ib.x = i;
 		output_char(get_char(&ib.buf[j], ib.encoding), 0, ib.encoding);
 	}
 	clear_to_eol();
@@ -581,8 +582,6 @@ static int request_history(void) {
 					ib.encoding = detect_encoding(ib.buf, ib.len);
 					input_move_to_sol();
 				} else input_paste(tmpstr);
-				/* Not convinced this movement is useful. */
-				/* while (rl.fuzz_len--) input_move_right(false); */
 			}
 		}
 		req_list_free(&rl);
@@ -757,7 +756,6 @@ char *request(const buffer * const b, const char *prompt, const char * const def
 					keep_cursor_on_screen((buffer * const)b);
 					refresh_window((buffer *)b);
 					input_and_prompt_refresh();
-					ib.x = ib.start_x;
 					break;
 
 				case LINEUP_A:

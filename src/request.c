@@ -458,6 +458,7 @@ static int request_strings_init(req_list *rlp0) {
 	rl.ignore_tab      = rl0->ignore_tab;
 	rl.reordered       = rl0->reordered;
 	rl.find_quits      = rl0->find_quits;
+	rl.help_quits      = rl0->help_quits;
 	rl.selectdoc_quits = rl0->selectdoc_quits;
 	prune = rl.prune   = rl0->prune;
 	rl.cur_chars = rl.alloc_chars = 0;
@@ -677,9 +678,11 @@ int request_strings(req_list *rlp0, int n) {
 
 					/* Keystrokes that open requesters toggle them closed also. */
 					case FIND_A:
-						if ( rl.find_quits) break;
+						if (a == FIND_A && !rl.find_quits) break;
+					case HELP_A:
+						if (a == HELP_A && !rl.help_quits) break;
 					case SELECTDOC_A:
-						if (!rl.selectdoc_quits) break;
+						if (a == SELECTDOC_A && !rl.selectdoc_quits) break;
 					case ESCAPE_A:
 					case QUIT_A:
 						request_strings_cleanup(reordered);
@@ -1109,6 +1112,7 @@ int req_list_init( req_list * const rl, int cmpfnc(const char *, const char *), 
 	rl->ignore_tab = false;
 	rl->prune = false;
 	rl->find_quits = false;
+	rl->help_quits = false;
 	rl->selectdoc_quits = false;
 	rl->suffix = suffix;
 	rl->cur_entries = rl->alloc_entries = rl->max_entry_len = 0;

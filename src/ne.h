@@ -166,6 +166,7 @@ typedef struct {
 		reordered:1,       /* Indicates whether reordering was done during request. */
 		prune:1,           /* Whether to start off pruning by partial input. */
 		find_quits:1,      /* Map FIND_A to QUIT_A (for long input ^F requester). */
+		help_quits:1,      /* Map HELP_A to QUIT_A (for help requester). */
 		selectdoc_quits:1; /* Map SELECTDOC_A to QUIT_A (for F4 requester). */
 	char suffix;
 

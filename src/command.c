@@ -28,7 +28,7 @@
 
 /* The standard macro descriptor allocation dimension. */
 
-#define STD_MACRO_DESC_SIZE	1024
+#define STD_MACRO_DESC_SIZE   1024
 
 
 /* This structure represents a command. It includes a long and a short name,
@@ -428,7 +428,7 @@ static int insertchar_val(const char *p) {
 
 	action a;
 	if (((a = hash_table[h]) && !cmdcmp(commands[--a].name, cmd)
-		|| (a = short_hash_table[h]) && !cmdcmp(commands[--a].short_name, cmd))	&& a == INSERTCHAR_A) {
+		|| (a = short_hash_table[h]) && !cmdcmp(commands[--a].short_name, cmd)) && a == INSERTCHAR_A) {
 
 		while(isasciispace(*p)) p++;
 		h = strtol(p, (char **)&cmd, 0);
@@ -521,7 +521,7 @@ int play_macro(buffer *b, char_stream *cs) {
 
 	b->executing_macro = 1;
 	int error = OK;
-	while(!stop && p - stream < len) {	
+	while(!stop && p - stream < len) {
 #ifdef NE_TEST
 		fprintf(stderr, "%s\n", p); /* During tests, we output to stderr the current command. */
 #endif
@@ -661,13 +661,13 @@ char *find_key_strokes(int c, int n) {
 	for(int i = 0; i < NUM_KEYS && n; i++) {
 		if (key_binding[i]) {
 			if (((!strncasecmp(commands[c].short_name, key_binding[i], strlen(commands[c].short_name))) &&
-				  ((!key_binding[i][strlen(commands[c].short_name)]		) || 
-					(key_binding[i][strlen(commands[c].short_name)] == ' ')
+				  ((!key_binding[i][strlen(commands[c].short_name)]      ) ||
+				   (key_binding[i][strlen(commands[c].short_name)] == ' ')
 				  )
-				 ) || 
+				 ) ||
 				 ((!strncasecmp(commands[c].name, key_binding[i], strlen(commands[c].name))) &&
-				  ((!key_binding[i][strlen(commands[c].name)]		) ||
-					(key_binding[i][strlen(commands[c].name)] == ' ')
+				  ((!key_binding[i][strlen(commands[c].name)]      ) ||
+				   (key_binding[i][strlen(commands[c].name)] == ' ')
 				  )
 				 )
 				) {
@@ -707,7 +707,7 @@ char *bound_keys_string(int c) {
    requester. The help finishes when the user escapes. */
 
 void help(char *p) {
-	req_list rl = { .ignore_tab=true };
+	req_list rl = { .ignore_tab=true, .help_quits=true };
 
 	D(fprintf(stderr, "Help Called with parm %p.\n", p);)
 	int r = 0;
@@ -752,7 +752,7 @@ void help(char *p) {
 				tmphelp[0] = (char *)commands[r].help[0];
 				tmphelp[1] = (char *)commands[r].help[1];
 				tmphelp[2] = key_strokes;
-				memcpy(&tmphelp[3], &commands[r].help[2], sizeof(char *) * (commands[r].help_len-2)); 
+				memcpy(&tmphelp[3], &commands[r].help[2], sizeof(char *) * (commands[r].help_len-2));
 				rl.cur_entries = commands[r].help_len+1;
 				rl.alloc_entries = 0;
 				rl.max_entry_len = ne_columns;
