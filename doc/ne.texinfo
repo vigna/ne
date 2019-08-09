@@ -2706,7 +2706,7 @@ Note that by using the @code{Through} command you can automatically pass a
 
 @noindent sets the mark at the current position or cancels the previous mark.
 The mark and cursor together define the range of text over which clips
-(@code{Cut}, @code{Copy}, @code{Erase}) and left and right shifts operate .
+(@code{Cut}, @code{Copy}, @code{Erase}) and left and right shifts operate.
 
 If you invoke @code{Mark} with no arguments, it will set the mark. If you
 specify 0 or 1, the mark will be canceled or set to the current position,
