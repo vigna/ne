@@ -3774,7 +3774,7 @@ FLAG COMMAND      ABBR  DESCRIPTION
   u   DoUndo        DU   record edits for later undoing
   r   ReadOnly      RO   changes are not allowed/saves are prompted
   t/T Tabs          TAB  TAB key inserts TABs instead of spaces
-  T   ShiftTabs     ST   Shift may insert TABs (only if 't' is also set)
+  T   ShiftTabs     SHT  Shift may insert TABs (only if 't' is also set)
   d   DelTabs       DT   BS and DEL may remove tabs worth of space
   B/! Binary        B    affects file loading/saving
   M   Mark          M    mark set for line-oriented block operations
