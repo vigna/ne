@@ -3070,7 +3070,7 @@ with the given replacement string.
 If the optional argument @var{string} is not specified, you can enter it on
 the input line, the default being the last string used.
 
-Note that a slingle @code{Undo} will restore @emph{all} the occurrences of the search
+Note that a single @code{Undo} will restore @emph{all} the occurrences of the search
 pattern replaced by @code{ReplaceAll}. See @ref{Undo}.
 
 
