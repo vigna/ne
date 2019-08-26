@@ -1015,6 +1015,37 @@ int search_word_orig(buffer * const b, const int dir) {
 	return ERROR;
 }
 
+typedef struct {
+	line_desc *ld;
+	int64_t pos;
+	int64_t y;
+} spot_t;
+
+spot_t *next_spot(const int dir, line_desc * const ld, const int64_t pos, const int64_t y, const encoding_type encoding) {
+	static spot_t spot;
+	spot.ld = ld;
+	spot.y = y;
+	spot.pos = pos;
+	if (dir > 0) {
+		if (pos < ld->line_len) {
+			spot.pos = next_pos(ld->line, pos, encoding);
+		} else {
+			spot.ld = (line_desc *)ld->ld_node.next;
+			spot.y++;
+			spot.pos = 0;
+		}
+	} else {
+		if (pos > 0) {
+			spot.pos = prev_pos(ld->line, pos, encoding);
+		} else {
+			spot.ld = (line_desc *)ld->ld_node.prev;
+			spot.y--;
+			if (spot.ld->ld_node.prev) spot.pos = prev_pos(spot.ld->line, spot.ld->line_len, encoding);
+		}
+	}
+	return spot.ld->ld_node.prev && spot.ld->ld_node.next->next ? &spot : NULL; 
+}
+
 /* Searches for the start or end of the next or previous word, depending on the value
    of dir and start.
    
@@ -1039,18 +1070,15 @@ int search_word(buffer * const b, const int dir, const bool start) {
 
 	bool word_started = false, space_skipped = false;
 
+	spot_t *newspot = next_spot(dir, ld, pos, y, b->encoding);
+	if (!newspot) return ERROR;
+	/* back up one char before searching backwards */
 	if (dir < 0) {
-		if (pos > ld->line_len) pos = ld->line_len;
-		else {
-			/* back up one char before searching backwards */
-			if (pos > 0) pos = prev_pos(ld->line, pos, b->encoding);
-			else if (y > 0) {
-				ld = (line_desc *)ld->ld_node.prev;
-				y--;
-				if (ld->ld_node.prev) pos = prev_pos(ld->line, ld->line_len, b->encoding);
-				else return ERROR;
-			}
-		}
+		ld = newspot->ld;
+		pos = newspot->pos;
+		y = newspot->y;
+		newspot = next_spot(dir, ld, pos, y, b->encoding);
+		if (!newspot) return ERROR;
    }
    bool in_word = ne_isword(get_char(&ld->line[pos], b->encoding), b->encoding);
 	int transitions_left;
@@ -1073,31 +1101,20 @@ int search_word(buffer * const b, const int dir, const bool start) {
 	}
 
 	while(y < b->num_lines && y >= 0) {
-		while(pos <= ld->line_len && pos >= 0) {
-			const int c = get_char(&ld->line[pos], b->encoding);
-			if (ne_isword(c, b->encoding) != in_word) {
-				if (--transitions_left == 0) {
-					if (dir == -1 && pos < ld->line_len) {
-						pos = next_pos(ld->line, pos, b->encoding);
-					}
-					goto_line_pos(b, y, pos);
-					return OK;
-				}
+		newspot = next_spot(dir, ld, pos, y, b->encoding);
+		if (!newspot) return ERROR;
+		const int c = get_char(&newspot->ld->line[pos], b->encoding);
+		if (ne_isword(c, b->encoding) != in_word) {
+			if (--transitions_left == 0) {
+				if (dir == -1) newspot = next_spot(1, newspot->ld, newspot->pos, newspot->y, b->encoding);
+				goto_line_pos(b, newspot->y, newspot->pos);
+				return OK;
 			}
-			in_word = ne_isword(c, b->encoding);
-			pos = (dir > 0 ? next_pos : prev_pos)(ld->line, pos, b->encoding);
 		}
-
-		if (dir > 0) {
-			ld = (line_desc *)ld->ld_node.next;
-			y++;
-			pos = 0;
-		}
-		else {
-			ld = (line_desc *)ld->ld_node.prev;
-			y--;
-			if (ld->ld_node.prev) pos = ld->line_len;
-		}
+		pos = newspot->pos;
+		y = newspot->y;
+		ld = newspot->ld;
+		in_word = ne_isword(c, b->encoding);
 	}
 	return ERROR;
 }
