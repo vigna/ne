@@ -1021,29 +1021,38 @@ typedef struct {
 	int64_t y;
 } spot_t;
 
-spot_t *next_spot(const int dir, line_desc * const ld, const int64_t pos, const int64_t y, const encoding_type encoding) {
+spot_t *next_spot(const int dir, line_desc * ld, int64_t pos, int64_t y, const encoding_type encoding) {
 	static spot_t spot;
+	fprintf(stderr,"next_spot(%d): dir=%d, pos=%d, line_len:%d, y=%d\n", __LINE__, dir, pos, ld->line_len, y);
+	if (dir > 0) {
+		if (pos < ld->line_len) {
+			fprintf(stderr,"next_spot(%d): dir=%d, pos=%d, line_len:%d, y=%d\n", __LINE__, dir, pos, ld->line_len, y);
+			pos = next_pos(ld->line, pos, encoding);
+			fprintf(stderr,"next_spot(%d): dir=%d, pos=%d, line_len:%d, y=%d\n", __LINE__, dir, pos, ld->line_len, y);
+		} else if (ld->ld_node.next->next) {
+			ld = (line_desc *)ld->ld_node.next;
+			y++;
+			pos = 0;
+		} else return NULL;
+	} else {
+		if (pos > 0) {
+			fprintf(stderr,"next_spot(%d): dir=%d, pos=%d, line_len:%d, y=%d\n", __LINE__, dir, pos, ld->line_len, y);
+			if (pos <= ld->line_len) pos = prev_pos(ld->line, pos, encoding);
+			else pos = ld->line_len;
+			fprintf(stderr,"next_spot(%d): dir=%d, pos=%d, line_len:%d, y=%d\n", __LINE__, dir, pos, ld->line_len, y);
+		} else {
+			fprintf(stderr,"next_spot(%d): dir=%d, pos=%d, line_len:%d, y=%d\n", __LINE__, dir, pos, ld->line_len, y);
+			if (--y < 0) return NULL;
+			ld = (line_desc *)ld->ld_node.prev;
+			pos = ld->line_len;
+			fprintf(stderr,"next_spot(%d): dir=%d, pos=%d, line_len:%d, y=%d\n", __LINE__, dir, pos, ld->line_len, y);
+		}
+	}
+	fprintf(stderr,"next_spot(%d): dir=%d, pos=%d, line_len:%d, y=%d\n", __LINE__, dir, pos, ld->line_len, y);
 	spot.ld = ld;
 	spot.y = y;
 	spot.pos = pos;
-	if (dir > 0) {
-		if (pos < ld->line_len) {
-			spot.pos = next_pos(ld->line, pos, encoding);
-		} else {
-			spot.ld = (line_desc *)ld->ld_node.next;
-			spot.y++;
-			spot.pos = 0;
-		}
-	} else {
-		if (pos > 0) {
-			spot.pos = prev_pos(ld->line, pos, encoding);
-		} else {
-			spot.ld = (line_desc *)ld->ld_node.prev;
-			spot.y--;
-			if (spot.ld->ld_node.prev) spot.pos = prev_pos(spot.ld->line, spot.ld->line_len, encoding);
-		}
-	}
-	return spot.ld->ld_node.prev && spot.ld->ld_node.next->next ? &spot : NULL; 
+	return &spot;
 }
 
 /* Searches for the start or end of the next or previous word, depending on the value
@@ -1070,17 +1079,14 @@ int search_word(buffer * const b, const int dir, const bool start) {
 
 	bool word_started = false, space_skipped = false;
 
+   fprintf(stderr,"word_search(%d): start=%d, pos=%d, y=%d\n", __LINE__, start, pos, y);
 	spot_t *newspot = next_spot(dir, ld, pos, y, b->encoding);
 	if (!newspot) return ERROR;
-	/* back up one char before searching backwards */
-	if (dir < 0) {
-		ld = newspot->ld;
-		pos = newspot->pos;
-		y = newspot->y;
-		newspot = next_spot(dir, ld, pos, y, b->encoding);
-		if (!newspot) return ERROR;
-   }
-   bool in_word = ne_isword(get_char(&ld->line[pos], b->encoding), b->encoding);
+
+   fprintf(stderr,"word_search(%d): start=%d, pos=%d, y=%d\n", __LINE__, start, pos, y);
+   bool in_word = ne_isword(pos < ld->line_len ? get_char(&ld->line[pos], b->encoding) : '=', b->encoding);
+   fprintf(stderr,"word_search(%d): start=%d, pos=%d, y=%d\n", __LINE__, start, pos, y);
+
 	int transitions_left;
 	if (start) {
 		if (dir == -1) {
@@ -1100,21 +1106,26 @@ int search_word(buffer * const b, const int dir, const bool start) {
 		}
 	}
 
+   fprintf(stderr,"word_search(%d): in_word=%d, start=%d, tl=%d, pos=%d, y=%d\n", __LINE__, in_word, start, transitions_left, pos, y);
 	while(y < b->num_lines && y >= 0) {
+	   fprintf(stderr,"word_search(%d):    in_word=%d, start=%d, tl=%d, pos=%d, y=%d\n", __LINE__, in_word, start, transitions_left, pos, y);
 		newspot = next_spot(dir, ld, pos, y, b->encoding);
-		if (!newspot) return ERROR;
-		const int c = get_char(&newspot->ld->line[pos], b->encoding);
+	   fprintf(stderr,"word_search(%d):    newspot%ld\n", __LINE__, newspot);
+		if (!newspot && dir == 1) return ERROR;
+		const int c = newspot && newspot->ld->line ? get_char(&newspot->ld->line[pos], b->encoding) : '=';
 		if (ne_isword(c, b->encoding) != in_word) {
-			if (--transitions_left == 0) {
-				if (dir == -1) newspot = next_spot(1, newspot->ld, newspot->pos, newspot->y, b->encoding);
-				goto_line_pos(b, newspot->y, newspot->pos);
+			if (--transitions_left < 1) {
+				if (newspot && dir == 1) goto_line_pos(b, newspot->y, newspot->pos);
+				else goto_line_pos(b, y, pos);
 				return OK;
 			}
 		}
-		pos = newspot->pos;
-		y = newspot->y;
-		ld = newspot->ld;
-		in_word = ne_isword(c, b->encoding);
+		if (newspot) {
+			pos = newspot->pos;
+			y = newspot->y;
+			ld = newspot->ld;
+			in_word = ne_isword(c, b->encoding);
+		} else return ERROR;
 	}
 	return ERROR;
 }

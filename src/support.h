@@ -215,5 +215,5 @@ static bool inline ne_isspace(const int c, const int encoding) {
    For now, hardcode '_'.  */
 
 static bool inline ne_isword(const int c, const int encoding) {
-	return c == '_' || !(ne_isspace(c, encoding) || ne_ispunct(c, encoding));
+	return c == '_' || !(c == '\0' || ne_isspace(c, encoding) || ne_ispunct(c, encoding));
 }
