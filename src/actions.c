@@ -317,12 +317,22 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 	case NEXTWORD_A:
 		NORMALIZE(c);
-		for(int64_t i = 0; i < c && !(error = search_word(b, 1)) && !stop; i++);
+		for(int64_t i = 0; i < c && !(error = search_word(b, 1, true)) && !stop; i++);
+		return stop ? STOPPED : error;
+
+	case NEXTWORDEND_A:
+		NORMALIZE(c);
+		for(int64_t i = 0; i < c && !(error = search_word(b, 1, false)) && !stop; i++);
 		return stop ? STOPPED : error;
 
 	case PREVWORD_A:
 		NORMALIZE(c);
-		for(int64_t i = 0; i < c && !(error = search_word(b, -1)) && !stop; i++);
+		for(int64_t i = 0; i < c && !(error = search_word(b, -1, true)) && !stop; i++);
+		return stop ? STOPPED : error;
+
+	case PREVWORDEND_A:
+		NORMALIZE(c);
+		for(int64_t i = 0; i < c && !(error = search_word(b, -1, false)) && !stop; i++);
 		return stop ? STOPPED : error;
 
 	case DELETENEXTWORD_A:
@@ -349,11 +359,11 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 				that the cursor ends up here after an undo. */
 			insert_one_char(b, b->cur_line_desc, b->cur_line, b->cur_pos, ' ');
 			delete_stream(b, b->cur_line_desc, b->cur_line, b->cur_pos, 1);
-			for(int64_t i = 0; i < c && !(error = search_word(b, -1)) && !stop; i++);
+			for(int64_t i = 0; i < c && !(error = search_word(b, -1, true)) && !stop; i++);
 		} else if (c > 0) {
 			move_to_eow(b);
 			if (b->block_start_line != b->cur_line || b->block_start_pos != b->cur_pos) c--;
-			for(int64_t i = 0; i < c && !(error = search_word(b, 1)) && !stop; i++);
+			for(int64_t i = 0; i < c && !(error = search_word(b, 1, true)) && !stop; i++);
 			if (c) move_to_eow(b);
 		}
 		const bool line_changed = b->block_start_line != b->cur_line;

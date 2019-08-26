@@ -39,7 +39,7 @@ static int to_something(buffer *b, int (to_first)(int), int (to_rest)(int)) {
 	int c;
 	/* First of all, we search for the word start, if we're not over it. */
 	if (pos >= b->cur_line_desc->line_len || !ne_isword(c = get_char(&b->cur_line_desc->line[pos], b->encoding), b->encoding))
-		if (search_word(b, 1) != OK)
+		if (search_word(b, 1, true) != OK)
 			return ERROR;
 
 	bool changed = false;
@@ -97,7 +97,7 @@ static int to_something(buffer *b, int (to_first)(int), int (to_rest)(int)) {
 		need_attr_update = true;
 	}
 
-	return search_word(b, 1);
+	return search_word(b, 1, true);
 }
 
 

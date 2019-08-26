@@ -4543,7 +4543,9 @@ to the same position later.
 * PageUp::
 * PageDown::
 * PrevWord::
+* PrevWordEnd::
 * NextWord::
+* NextWordEnd::
 * MoveEOL::
 * MoveSOL::
 * MoveTOS::
@@ -4727,6 +4729,19 @@ word the effect is just to move it to the start of that word).
 
 
 
+@node PrevWordEnd
+@subsection PrevWordEnd
+@cmindex PrevWordEnd
+
+@noindent Syntax: @code{PrevWordEnd [@var{n}]}@*
+@noindent Abbreviation: @code{PWE}
+
+@noindent moves the cursor just past the last character of the previous word
+@var{n} times. If the optional @var{n} argument is not specified, it is
+assumed to be one.
+
+
+
 @node NextWord
 @subsection NextWord
 @cmindex NextWord
@@ -4736,6 +4751,19 @@ word the effect is just to move it to the start of that word).
 
 @noindent moves the cursor to the next word @var{n} times. If the optional
 @var{n} argument is not specified, it is assumed to be one.
+
+
+
+@node NextWordEnd
+@subsection NextWordEnd
+@cmindex NextWordEnd
+
+@noindent Syntax: @code{NextWordEnd [@var{n}]}@*
+@noindent Abbreviation: @code{NWE}
+
+@noindent moves the cursor just past the last character of the next word
+@var{n} times. If the optional @var{n} argument is not specified, it is
+assumed to be one.
 
 
 
