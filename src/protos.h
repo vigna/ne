@@ -196,6 +196,7 @@ void toggle_sof_eof(buffer *b);
 void toggle_sol_eol(buffer *b);
 int  search_word(buffer *b, int dir, bool start);
 void move_to_eow(buffer *b);
+void move_to_sow(buffer *b);
 void move_inc_down(buffer *b);
 void move_inc_up(buffer *b);
 

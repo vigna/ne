@@ -397,6 +397,10 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		move_to_eow(b);
 		return OK;
 
+	case MOVESOW_A:
+		move_to_sow(b);
+		return OK;
+
 	case MOVEINCUP_A:
 		move_inc_up(b);
 		return OK;

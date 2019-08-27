@@ -129,6 +129,7 @@ static const command commands[ACTION_COUNT] = {
 	{ NAHL(MOVERIGHT     ),0                                                                      },
 	{ NAHL(MOVESOF       ), NO_ARGS                                                               },
 	{ NAHL(MOVESOL       ), NO_ARGS                                                               },
+	{ NAHL(MOVESOW       ),0                                                                      },
 	{ NAHL(MOVETOS       ), NO_ARGS                                                               },
 	{ NAHL(NAMECONVERT   ),                           IS_OPTION                                   },
 	{ NAHL(NEWDOC        ), NO_ARGS                                                               },
