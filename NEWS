@@ -15,7 +15,8 @@ unreleased
   * FIND in string inputs brings up a requester with your input history.
     Use Enter to replace, TAB to insert into your input line; Escape to exit.
 
-  * New commands: MoveSOW, NextWordEnd, PrevWordEnd.
+  * Enhanced commands: MoveEOW, NextWord, and PrevWord can now move to either
+    end of the indicated word via optional '<' and '>' parameter modifiers.
 
 3.1.2 2018-10-06
 

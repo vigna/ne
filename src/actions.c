@@ -326,28 +326,12 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			error = parse_word_parm(p, "#<>", (int64_t *)&params) || (params.left && params.right);
 			if (!error) {
 				if (!(params.left || params.right)) params.left = 1;
-				fprintf(stderr,"Before NORMALIZE(), params.c=%d, params.left=%d, params.right=%d\n", params.c, params.left, params.right);
 				NORMALIZE(params.c);
-				fprintf(stderr,"After  NORMALIZE(), params.c=%d, params.left=%d, params.right=%d\n", params.c, params.left, params.right);
-				for(int64_t i = 0; i < c && !(error = search_word(b, a==NEXTWORD_A ? 1 : -1, params.left!=0)) && !stop; i++);
+				for(int64_t i = 0; i < params.c && !(error = search_word(b, a==NEXTWORD_A ? 1 : -1, params.left!=0)) && !stop; i++);
 			}
 			if (p) free(p);
 			return stop ? STOPPED : error;
 		}
-	// case NEXTWORDEND_A:
-	// 	NORMALIZE(c);
-	// 	for(int64_t i = 0; i < c && !(error = search_word(b, 1, false)) && !stop; i++);
-	// 	return stop ? STOPPED : error;
-   // 
-	// case PREVWORD_A:
-	// 	NORMALIZE(c);
-	// 	for(int64_t i = 0; i < c && !(error = search_word(b, -1, true)) && !stop; i++);
-	// 	return stop ? STOPPED : error;
-   // 
-	// case PREVWORDEND_A:
-	// 	NORMALIZE(c);
-	// 	for(int64_t i = 0; i < c && !(error = search_word(b, -1, false)) && !stop; i++);
-	// 	return stop ? STOPPED : error;
 
 	case DELETENEXTWORD_A:
 	case DELETEPREVWORD_A:
@@ -408,11 +392,13 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		return stop ? STOPPED : error;
 
 	case MOVEEOW_A:
-		move_to_eow(b);
-		return OK;
-
-	case MOVESOW_A:
-		move_to_sow(b);
+		if (!p || (p && !strcmp(p,">"))) move_to_eow(b);
+		else if (p && !strcmp(p,"<")) move_to_sow(b);
+		else if (p) {
+			free(p);
+			return SYNTAX_ERROR;
+		}
+		if (p) free(p);
 		return OK;
 
 	case MOVEINCUP_A:

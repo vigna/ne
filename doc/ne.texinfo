@@ -4551,7 +4551,6 @@ to the same position later.
 * MoveEOF::
 * MoveSOF::
 * MoveEOW::
-* MoveSOW::
 * MoveIncUp::
 * MoveIncDown::
 * AdjustView::
@@ -4826,32 +4825,15 @@ of file).
 @subsection MoveEOW
 @cmindex MoveEOW
 
-@noindent Syntax: @code{MoveEOW}@*
+@noindent Syntax: @code{MoveEOW [<|>]}@*
 @noindent Abbreviation: @code{EOW}
 
-@noindent moves the cursor one character past the end of the current word.
-If the cursor is not currently in a word, it retains its current location.
+@noindent moves the cursor to the end of the current word, that end being
+the right end unless you include the optional parameter @samp{<}. If the
+cursor is not currently in a word, or if it's already at the indicated
+end, it retains its current location.
 
 @code{MoveEOW} is extremely useful in macros, because it allows you to copy
-precisely the word the cursor is on.
-@ifclear autohelp
-@xref{Hints and Tricks}.
-@end ifclear
-
-
-
-
-@node MoveSOW
-@subsection MoveSOW
-@cmindex MoveSOW
-
-@noindent Syntax: @code{MoveSOW}@*
-@noindent Abbreviation: @code{SOW}
-
-@noindent moves the cursor to the first character of the current word.
-If the cursor is not currently in a word, it retains its current location.
-
-@code{MoveSOW} is useful in macros, because it allows you to copy
 precisely the word the cursor is on.
 @ifclear autohelp
 @xref{Hints and Tricks}.

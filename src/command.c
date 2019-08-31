@@ -122,14 +122,13 @@ static const command commands[ACTION_COUNT] = {
 	{ NAHL(MOVEBOS       ), NO_ARGS                                                               },
 	{ NAHL(MOVEEOF       ), NO_ARGS                                                               },
 	{ NAHL(MOVEEOL       ), NO_ARGS                                                               },
-	{ NAHL(MOVEEOW       ),0                                                                      },
+	{ NAHL(MOVEEOW       ),           ARG_IS_STRING |                             EMPTY_STRING_OK },
 	{ NAHL(MOVEINCDOWN   ), NO_ARGS                                                               },
 	{ NAHL(MOVEINCUP     ), NO_ARGS                                                               },
 	{ NAHL(MOVELEFT      ),0                                                                      },
 	{ NAHL(MOVERIGHT     ),0                                                                      },
 	{ NAHL(MOVESOF       ), NO_ARGS                                                               },
 	{ NAHL(MOVESOL       ), NO_ARGS                                                               },
-	{ NAHL(MOVESOW       ),0                                                                      },
 	{ NAHL(MOVETOS       ), NO_ARGS                                                               },
 	{ NAHL(NAMECONVERT   ),                           IS_OPTION                                   },
 	{ NAHL(NEWDOC        ), NO_ARGS                                                               },
@@ -775,38 +774,29 @@ void help(char *p) {
 	draw_status_bar();
 }
 
-/* Parse string parameter for NextWord, PrevWord, MoveEOW */
+/* Parse string parameters for NextWord, PrevWord, AdjustView, etc. */
 
 int parse_word_parm(char *p, char *pat_in, int64_t *match) {
 	int i, len = strlen(pat_in);
 	char *pat = strntmp(pat_in, len);
-	fprintf(stderr,"pwp: startup; pat='%s'\n", pat);
 	if (p) {
-		fprintf(stderr,"pwp: startup; p='%s'\n", p);
 		while (*p) {
-			fprintf(stderr,"pwp: top; p='%s'\n", p);
 			if (isasciispace(*p)) p++;
 			else if (isdigit((unsigned char)*p)) {
-				fprintf(stderr,"pwp: found digit '%c'\n", *p);
 				for (i=0; i<len; i++) {
 					if (pat[i] == '#') {
-						fprintf(stderr,"pwp:    found '#' in position %d in pattern'\n", i);
 						errno = 0;
 						match[i] = strtoll(p, &p, 10);
 						if (errno) return ERROR;
-						fprintf(stderr,"pwp:    read '#' as %d'\n", match[i]);
 						pat[i] = '\0';
 						break;
 					}
 				}
 				if (i==len) return ERROR;
 			} else {
-				fprintf(stderr,"pwp: pattern for non-digit '%c'\n", *p);
 				for (i=0; i<len; i++) {
-					fprintf(stderr,"pwp:    checking '%c'\n", pat[i]);
 					if (toupper(pat[i]) == toupper(*p)) {
 						match[i] = *p++;
-						fprintf(stderr,"pwp:    bingo!\n", pat[i]);
 						break;
 					}
 				}
@@ -814,10 +804,6 @@ int parse_word_parm(char *p, char *pat_in, int64_t *match) {
 			}
 		}
 	}
-	for (i=0; i<len; i++) {
-		fprintf(stderr,"pwp: match[%d]:%d\n", i, match[i]);
-	}
-	fprintf(stderr,"pwp: returning OK\n\n");
 	return OK;
 }
 
