@@ -316,24 +316,38 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		return OK;
 
 	case NEXTWORD_A:
-		NORMALIZE(c);
-		for(int64_t i = 0; i < c && !(error = search_word(b, 1, true)) && !stop; i++);
-		return stop ? STOPPED : error;
-
-	case NEXTWORDEND_A:
-		NORMALIZE(c);
-		for(int64_t i = 0; i < c && !(error = search_word(b, 1, false)) && !stop; i++);
-		return stop ? STOPPED : error;
-
-	case PREVWORD_A:
-		NORMALIZE(c);
-		for(int64_t i = 0; i < c && !(error = search_word(b, -1, true)) && !stop; i++);
-		return stop ? STOPPED : error;
-
-	case PREVWORDEND_A:
-		NORMALIZE(c);
-		for(int64_t i = 0; i < c && !(error = search_word(b, -1, false)) && !stop; i++);
-		return stop ? STOPPED : error;
+	case PREVWORD_A: {
+			/* parse_word_parm(char *p, char *pat_in, int64_t *match) */
+			struct {
+				int64_t c;
+				int64_t left;
+				int64_t right;
+			} params = {-1, 0, 0};
+			error = parse_word_parm(p, "#<>", (int64_t *)&params) || (params.left && params.right);
+			if (!error) {
+				if (!(params.left || params.right)) params.left = 1;
+				fprintf(stderr,"Before NORMALIZE(), params.c=%d, params.left=%d, params.right=%d\n", params.c, params.left, params.right);
+				NORMALIZE(params.c);
+				fprintf(stderr,"After  NORMALIZE(), params.c=%d, params.left=%d, params.right=%d\n", params.c, params.left, params.right);
+				for(int64_t i = 0; i < c && !(error = search_word(b, a==NEXTWORD_A ? 1 : -1, params.left!=0)) && !stop; i++);
+			}
+			if (p) free(p);
+			return stop ? STOPPED : error;
+		}
+	// case NEXTWORDEND_A:
+	// 	NORMALIZE(c);
+	// 	for(int64_t i = 0; i < c && !(error = search_word(b, 1, false)) && !stop; i++);
+	// 	return stop ? STOPPED : error;
+   // 
+	// case PREVWORD_A:
+	// 	NORMALIZE(c);
+	// 	for(int64_t i = 0; i < c && !(error = search_word(b, -1, true)) && !stop; i++);
+	// 	return stop ? STOPPED : error;
+   // 
+	// case PREVWORDEND_A:
+	// 	NORMALIZE(c);
+	// 	for(int64_t i = 0; i < c && !(error = search_word(b, -1, false)) && !stop; i++);
+	// 	return stop ? STOPPED : error;
 
 	case DELETENEXTWORD_A:
 	case DELETEPREVWORD_A:

@@ -1007,6 +1007,7 @@ spot_t *next_spot(const int dir, line_desc * ld, int64_t pos, int64_t y, const e
      T      1       T           2 */
 
 int search_word(buffer * const b, const int dir, const bool start) {
+	fprintf(stderr,"sw(%d) dir:%d\n", __LINE__, dir);
 	assert(dir == -1 || dir == 1);
 
 	line_desc *ld = b->cur_line_desc;
@@ -1022,6 +1023,7 @@ int search_word(buffer * const b, const int dir, const bool start) {
 	}
 	
    bool in_word = ne_isword(pos < ld->line_len ? get_char(&ld->line[pos], b->encoding) : '\0', b->encoding);
+	fprintf(stderr,"sw(%d) in_word:%d, pos:%d\n", __LINE__, in_word, pos);
 
 	int transitions_left;
 	if (start) {
@@ -1042,18 +1044,27 @@ int search_word(buffer * const b, const int dir, const bool start) {
 		}
 	}
 
+	fprintf(stderr,"sw(%d) in_word:%d, pos:%d, y:%d, trans:%d\n", __LINE__, in_word, pos, y, transitions_left);
 	while(y < b->num_lines && y >= 0) {
+		fprintf(stderr,"sw(%d)   in_word:%d, pos:%d, y:%d, trans:%d\n", __LINE__, in_word, pos, y, transitions_left);
 		newspot = next_spot(dir, ld, pos, y, b->encoding);
+		fprintf(stderr,"sw(%d)   in_word:%d, pos:%d, y:%d, trans:%d\n", __LINE__, in_word, pos, y, transitions_left);
 		if (!newspot && dir == 1) return ERROR;
+		fprintf(stderr,"sw(%d)   in_word:%d, pos:%d, y:%d, trans:%d\n", __LINE__, in_word, pos, y, transitions_left);
 		const int c = newspot && newspot->ld->line ? get_char(&newspot->ld->line[newspot->pos], b->encoding) : '\0';
+		fprintf(stderr,"sw(%d)   in_word:%d, pos:%d, y:%d, trans:%d c:%c\n", __LINE__, in_word, pos, y, transitions_left, c);
 		if (ne_isword(c, b->encoding) != in_word) {
+			fprintf(stderr,"sw(%d)     in_word:%d, pos:%d, y:%d, trans:%d c:%c\n", __LINE__, in_word, pos, y, transitions_left, c);
 			if (--transitions_left < 1) {
+				fprintf(stderr,"sw(%d)      in_word:%d, pos:%d, y:%d, trans:%d c:%c\n", __LINE__, in_word, pos, y, transitions_left, c);
 				if (newspot && dir == 1) goto_line_pos(b, newspot->y, newspot->pos);
 				else goto_line_pos(b, y, pos);
+				fprintf(stderr,"sw(%d)      in_word:%d, pos:%d, y:%d, trans:%d c:%c\n", __LINE__, in_word, pos, y, transitions_left, c);
 				return OK;
 			}
 		}
 		if (newspot) {
+			fprintf(stderr,"sw(%d) < > in_word:%d, pos:%d, y:%d, trans:%d c:%c\n", __LINE__, in_word, pos, y, transitions_left, c);
 			pos = newspot->pos;
 			y = newspot->y;
 			ld = newspot->ld;

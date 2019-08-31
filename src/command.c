@@ -135,8 +135,7 @@ static const command commands[ACTION_COUNT] = {
 	{ NAHL(NEWDOC        ), NO_ARGS                                                               },
 	{ NAHL(NEXTDOC       ),0                                                                      },
 	{ NAHL(NEXTPAGE      ),0                                                                      },
-	{ NAHL(NEXTWORD      ),0                                                                      },
-	{ NAHL(NEXTWORDEND   ),0                                                                      },
+	{ NAHL(NEXTWORD      ),           ARG_IS_STRING |                             EMPTY_STRING_OK },
 	{ NAHL(NOFILEREQ     ),                           IS_OPTION                                   },
 	{ NAHL(NOP           ), NO_ARGS                                                               },
 	{ NAHL(OPEN          ),           ARG_IS_STRING                                               },
@@ -153,8 +152,7 @@ static const command commands[ACTION_COUNT] = {
 	{ NAHL(PRESERVECR    ),                           IS_OPTION                                   },
 	{ NAHL(PREVDOC       ),0                                                                      },
 	{ NAHL(PREVPAGE      ),0                                                                      },
-	{ NAHL(PREVWORD      ),0                                                                      },
-	{ NAHL(PREVWORDEND   ),0                                                                      },
+	{ NAHL(PREVWORD      ),           ARG_IS_STRING |                             EMPTY_STRING_OK },
 	{ NAHL(PUSHPREFS     ),                           IS_OPTION                                   },
 	{ NAHL(QUIT          ), NO_ARGS                                                               },
 	{ NAHL(READONLY      ),                           IS_OPTION                                   },
@@ -776,3 +774,50 @@ void help(char *p) {
 	} while(r >= 0);
 	draw_status_bar();
 }
+
+/* Parse string parameter for NextWord, PrevWord, MoveEOW */
+
+int parse_word_parm(char *p, char *pat_in, int64_t *match) {
+	int i, len = strlen(pat_in);
+	char *pat = strntmp(pat_in, len);
+	fprintf(stderr,"pwp: startup; pat='%s'\n", pat);
+	if (p) {
+		fprintf(stderr,"pwp: startup; p='%s'\n", p);
+		while (*p) {
+			fprintf(stderr,"pwp: top; p='%s'\n", p);
+			if (isasciispace(*p)) p++;
+			else if (isdigit((unsigned char)*p)) {
+				fprintf(stderr,"pwp: found digit '%c'\n", *p);
+				for (i=0; i<len; i++) {
+					if (pat[i] == '#') {
+						fprintf(stderr,"pwp:    found '#' in position %d in pattern'\n", i);
+						errno = 0;
+						match[i] = strtoll(p, &p, 10);
+						if (errno) return ERROR;
+						fprintf(stderr,"pwp:    read '#' as %d'\n", match[i]);
+						pat[i] = '\0';
+						break;
+					}
+				}
+				if (i==len) return ERROR;
+			} else {
+				fprintf(stderr,"pwp: pattern for non-digit '%c'\n", *p);
+				for (i=0; i<len; i++) {
+					fprintf(stderr,"pwp:    checking '%c'\n", pat[i]);
+					if (toupper(pat[i]) == toupper(*p)) {
+						match[i] = *p++;
+						fprintf(stderr,"pwp:    bingo!\n", pat[i]);
+						break;
+					}
+				}
+				if (i==len) return ERROR;
+			}
+		}
+	}
+	for (i=0; i<len; i++) {
+		fprintf(stderr,"pwp: match[%d]:%d\n", i, match[i]);
+	}
+	fprintf(stderr,"pwp: returning OK\n\n");
+	return OK;
+}
+

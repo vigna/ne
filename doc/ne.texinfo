@@ -4543,9 +4543,7 @@ to the same position later.
 * PageUp::
 * PageDown::
 * PrevWord::
-* PrevWordEnd::
 * NextWord::
-* NextWordEnd::
 * MoveEOL::
 * MoveSOL::
 * MoveTOS::
@@ -4720,26 +4718,14 @@ assumed to be one.
 @subsection PrevWord
 @cmindex PrevWord
 
-@noindent Syntax: @code{PrevWord [@var{n}]}@*
+@noindent Syntax: @code{PrevWord [@var{n}][<|>]}@*
 @noindent Abbreviation: @code{PW}
 
-@noindent moves the cursor to the first character of the previous word
-@var{n} times. If the optional @var{n} argument is not specified, it is
-assumed to be one (in which case, if the cursor is in the middle of a
-word the effect is just to move it to the start of that word).
-
-
-
-@node PrevWordEnd
-@subsection PrevWordEnd
-@cmindex PrevWordEnd
-
-@noindent Syntax: @code{PrevWordEnd [@var{n}]}@*
-@noindent Abbreviation: @code{PWE}
-
-@noindent moves the cursor just past the last character of the previous word
-@var{n} times. If the optional @var{n} argument is not specified, it is
-assumed to be one.
+@noindent moves the cursor to the left to the @var{n}th word beginning or ending.
+If the optional @var{n} argument is not specified, one is used.
+The optional @samp{<} or @samp{>} determines whether to move to
+the word beginning or ending, respectively. If unspecified, the
+left end (@samp{<}) is used.
 
 
 
@@ -4747,24 +4733,14 @@ assumed to be one.
 @subsection NextWord
 @cmindex NextWord
 
-@noindent Syntax: @code{NextWord [@var{n}]}@*
+@noindent Syntax: @code{NextWord [@var{n}][<|>]}@*
 @noindent Abbreviation: @code{NW}
 
-@noindent moves the cursor to the next word @var{n} times. If the optional
-@var{n} argument is not specified, it is assumed to be one.
-
-
-
-@node NextWordEnd
-@subsection NextWordEnd
-@cmindex NextWordEnd
-
-@noindent Syntax: @code{NextWordEnd [@var{n}]}@*
-@noindent Abbreviation: @code{NWE}
-
-@noindent moves the cursor just past the last character of the next word
-@var{n} times. If the optional @var{n} argument is not specified, it is
-assumed to be one.
+@noindent moves the cursor to the right to the @var{n}th word beginning or ending.
+If the optional @var{n} argument is not specified, one is used.
+The optional @samp{<} or @samp{>} determines whether to move to
+the word beginning or ending, respectively. If unspecified, the
+left end (@samp{<}) is used.
 
 
 

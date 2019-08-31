@@ -96,6 +96,8 @@ int cmdcmp(const char *c, const char *m);
 void unload_macros(void);
 char *find_key_strokes(int c, int n);
 void optimize_macro(char_stream *cs, bool verbose);
+int parse_word_parm(char *p, char *pat, int64_t *match);
+
 
 /* display.c */
 void update_syntax_states(buffer *b, int row, line_desc *ld, line_desc *end_ld);
