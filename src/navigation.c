@@ -1076,7 +1076,7 @@ void move_to_sow(buffer * const b) {
 
 	spot_t *newspot = next_spot(-1, ld, pos, y, b->encoding);
 	if (!newspot || newspot->y != y) return;
-	while (ne_isword(get_char(&newspot->ld->line[newspot->pos], b->encoding), b->encoding)) {
+	while (newspot && newspot->y == y && ne_isword(get_char(&newspot->ld->line[newspot->pos], b->encoding), b->encoding)) {
 		pos = newspot->pos;
 		y = newspot->y;
 		ld = newspot->ld;
