@@ -532,6 +532,12 @@ int play_macro(buffer *b, char_stream *cs) {
 #endif
 				;
 
+		if (b != cur_buffer) {
+			if (is_buffer(b)) b->executing_macro = 0;
+			b = cur_buffer;
+			b->executing_macro = 1;
+		}
+
 #ifdef NE_TEST
 		refresh_window(cur_buffer);
 		draw_status_bar();
