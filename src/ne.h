@@ -510,7 +510,6 @@ typedef struct {
 
 	unsigned int
 		is_modified:1,           /* Buffer has been modified since last save */
-		recording:1,             /* We are recording a macro */
 		marking:1,               /* We are marking a block */
 		x_wanted:1,              /* We're not where we would like to be */
 		y_wanted:1,              /* We've been paging up/down */
@@ -521,8 +520,6 @@ typedef struct {
 		redoing:1,               /* We are currently redoing an action */
 		mark_is_vertical:1,      /* The current marking is vertical */
 		atomic_undo:1,           /* subsequent commands undo as a block */
-		executing_macro:1,       /* We are currently executing a macro. */
-		executing_internal_macro:1,  /* We are currently executing the internal macro of the current buffer */
 		is_CRLF:1;               /* Buffer should be saved with CR/LF terminators */
 
 	unsigned int find_string_changed; /* 0 = unset; 1 = force; else prior search's serial number */
@@ -574,7 +571,7 @@ extern buffer *cur_buffer;
 
 /* These are the global lists. */
 
-extern list buffers, clips, macros;
+extern list buffers, clips;
 
 /* This integer keeps the global turbo parameter. */
 
@@ -649,6 +646,18 @@ extern bool last_replace_empty_match;
    conflicts. */
 
 #define MACRO_HASH_TABLE_SIZE (101)
+
+
+/* When recording a macro, this points to the recording stream.
+   When not recording a macro, this is NULL. */
+
+extern char_stream *recording_macro;
+
+
+/* Whether we're currently executing a macro. */
+
+extern bool executing_macro;
+
 
 /* There are several functions that set the status bar:
    print_message(), print_prompt() and input_refresh(), and
