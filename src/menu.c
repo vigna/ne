@@ -154,6 +154,8 @@ static const menu_item search_item[] =
 static const menu_item macros_item[] =
 	{
 		{ "Start/Stop Rec ^T", RECORD_ABBREV },
+		{ "Record Cancel    ", RECORD_CANCEL_ABBREV },
+		{ "Record Append    ", RECORD_APPEND_ABBREV },
 		{ "Play Once   f9/[M", PLAYONCE_ABBREV },
 		{ "Play Many...     ", PLAY_ABBREV },
 		{ "Play Macro...    ", MACRO_ABBREV },

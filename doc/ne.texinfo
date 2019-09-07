@@ -607,10 +607,10 @@ them to any key. You could even reconfigure each key of your keyboard to
 play a complex macro if you wanted to.
 
 @code{ne} can have any number of named macros loaded at the same time.
-Each document can also have one unnamed macro in its @dfn{current macro} buffer.
-Named macros are typically loaded from files, while the
-unnamed macro buffer is where your recorded macro is held before you
-save it or record over it.
+In addition, each document can also have one unnamed macro in its @dfn{current macro} buffer.
+Named macros are typically loaded from files, while each document's
+current macro buffer is where your recorded macro is held before you
+save it, play it, or record over it.
 
 Recording a macro is very simple. The keystroke @kbd{@key{Control}-T}
 starts and stops recording a macro.  When you start recording a macro,
@@ -730,6 +730,14 @@ Macros can operate across multiple documents, by using the @code{NextDoc} and
 @code{PrevDoc} commands for example. When you stop recording, the unnamed
 macro is associated with the current document, replacing that document's
 prior unnamed macro.
+
+You can cancel in-progress macro recording with the @code{Record 0}
+command, or by selecting @code{Record Cancel} from the @code{Macro} menu.
+
+You can append additional recorded commands to your document's current
+macro with the @code{Record 1} command, or by selecting @code{Record Append}
+from the @code{Macro} menu.
+
 
 
 @node More Advanced Features
@@ -2716,7 +2724,7 @@ The mark and cursor together define the range of text over which clips
 (@code{Cut}, @code{Copy}, @code{Erase}) and left and right shifts operate.
 
 If you invoke @code{Mark} with no arguments, it will set the mark. If you
-specify 0 or 1, the mark will be canceled or set to the current position,
+specify 0 or 1, the mark will be cancelled or set to the current position,
 respectively.  A capital @samp{M} appears on the status bar, if the mark is
 active.
 
@@ -2731,7 +2739,7 @@ active.
 @noindent is the same as @code{Mark}, but the region manipulated by the
 cut/paste commands is the rectangle having as vertices the cursor and the mark.
 If you invoke @code{MarkVert} with no arguments, it will set the mark. If you
-specify 0 or 1, the mark will be canceled or set to the current position,
+specify 0 or 1, the mark will be cancelled or set to the current position,
 respectively. Moreover, a capital @samp{V}, rather than a capital @samp{M},
 will appear on the status bar.
 
@@ -3253,24 +3261,24 @@ or recorded).
 @noindent Syntax: @code{Record [0|1]}@*
 @noindent Abbreviation: @code{REC}
 
-@noindent sets the recording state flag. When this flag becomes true,
-@code{ne} starts recording your actions in a new macro. When it becomes
-false, the macro recording is stopped, and the newly recorded macro
-replaces the current document's unnamed macro. The macro can be played
-or saved via @ref{Play}, or @ref{SaveMacro}.
+@noindent starts, stops, cancels, or resumes macro recording. With no
+arguments, @code{Record} starts recording your commands as a new macro
+unless recording is already underway. In that case, macro recording is
+stopped, and the newly recorded macro replaces the current document's
+unnamed macro. The new macro can be played or saved via @ref{Play},
+or @ref{SaveMacro}. The default key binding for @kbd{@key{Control}-T}
+is @code{Record} with no arguments, and is by far the most common way
+to use the @code{Record} command.
 
-If you invoke @code{Record} with no arguments, it will toggle the flag. If you
-specify 0 or 1, the flag will be set to false or true, respectively. An upper case
-@samp{R} will appear on the status bar if the flag is true.
+If you've started recording a macro and wish to cancel rather than wipe
+out your existing macro, you can cancel the recording by using @code{Record 0}.
+An error will be displayed if you aren't recording already, but it's harmless.
 
-The reason for providing a flag instead of an explicit start/stop
-recording command pair is that this way it is possible to bind both
-starting and stopping macro recording to a single key while still being
-able to specify ``absolute'' menu items (by using @code{Record 0} and
-@code{Record 1}). For instance, the default key binding for
-@kbd{@key{Control}-T} is simply @code{Record}, which means that this
-shortcut can be used both for initiating and for terminating a macro
-recording.
+Sometimes you've got a macro either recorded or loaded from a file
+(see @ref{OpenMacro}), but you'd like to record additional commands onto
+the end of it. @code{Record 1} will do that. It will start recording onto
+the end of a copy of your current document's macro. An error will be displayed
+if you are already recording, but it's otherwise harmless.
 
 
 

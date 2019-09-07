@@ -82,6 +82,21 @@ char_stream *realloc_char_stream(char_stream * const cs, const int64_t size) {
 }
 
 
+/* Duplicates a stream. If cs in NULL, it is equivalent to alloc_char_stream(). */
+
+char_stream *dup_stream(char_stream * const cs) {
+
+	if (!cs) return alloc_char_stream(0);
+
+	assert_char_stream(cs);
+
+	char_stream *cs_new = alloc_char_stream(cs->len);
+	if (cs_new && cs->len) {
+		memcpy(cs_new->stream, cs->stream, cs->len);
+		cs_new->len = cs->len;
+	}
+	return cs_new;
+}
 
 /* Concatenates a block of len bytes pointed to by s to a stream. The stream is
    extended if necessary. Returns an error code. */

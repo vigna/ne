@@ -263,6 +263,7 @@ void handle_winch(int sig);
 char_stream *alloc_char_stream(int64_t size);
 void free_char_stream(char_stream *cs);
 char_stream *realloc_char_stream(char_stream *cs, int64_t size);
+char_stream *dup_stream(char_stream * const cs);
 int add_to_stream(char_stream *cs, const char *s, int64_t len);
 char_stream *reset_stream(char_stream *cs);
 void set_stream_encoding(char_stream *cs, encoding_type source);

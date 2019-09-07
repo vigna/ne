@@ -955,16 +955,18 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 	case OPENNEW_A:
 		if (p || (p = request_file(b, "Filename", b->filename))) {
 			static bool dprompt = false; /* Set to true if we ever respond 'yes' to the prompt. */
-		   if (b = new_buffer()) reset_window();
-		   else {
-			   if (p) free(p);
-			   return OUT_OF_MEMORY;
-		   }
+			if (b = new_buffer()) reset_window();
+			else {
+				if (p) free(p);
+				return OUT_OF_MEMORY;
+			}
 			buffer *dup = get_buffer_named(p);
 			/* 'c' -- flag meaning "Don't prompt if we've ever responded 'yes'." */
 			if (!dup || dup == b || (dprompt && !c) || (dprompt = request_response(b, info_msg[SAME_NAME], false))) {
 				error = load_file_in_buffer(b, p);
-				if (! error || error == FILE_DOES_NOT_EXIST) { /* Keep the new buffer, or delete it? */
+				if (error == FILE_DOES_NOT_EXIST && a == OPEN_A && request_response(b, info_msg[NO_SUCH_FILE_EXISTS], false))
+					error = OK;
+				if (! error || (a == OPENNEW_A && error == FILE_DOES_NOT_EXIST)) { /* Keep the new buffer, or delete it? */
 					change_filename(b, p);
 					p = NULL;
 					b->syn = NULL; /* So that autoprefs will load the right syntax. */
@@ -976,6 +978,19 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 						else if (error == OK) error = FILE_TOO_LARGE_SYNTAX_HIGHLIGHTING_DISABLED;
 					}
 					if (a == OPEN_A) {
+						buffer * old_buffer = (buffer *)cur_buffer->b_node.prev;
+						/* preserve cur_macro, find_string, and replace_string */
+
+						free_char_stream(cur_buffer->cur_macro);
+						cur_buffer->cur_macro = old_buffer->cur_macro;
+						old_buffer->cur_macro = NULL;
+
+						cur_buffer->find_string = old_buffer->find_string;
+						old_buffer->find_string = NULL;
+
+						cur_buffer->replace_string = old_buffer->replace_string;
+						old_buffer->replace_string = NULL;
+						
 						do_action(cur_buffer, PREVDOC_A, 1, NULL);
 						delete_buffer();
 					}
@@ -1407,13 +1422,28 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 	case RECORD_A:
 		if (recording_macro) {
-			free_char_stream(b->cur_macro);
-			b->cur_macro = recording_macro;
-			recording_macro = NULL;
-			print_message(info_msg[MACRO_RECORDING_COMPLETED]);
-		} else {
+			if (c < 0) {           /* normal completion */
+				free_char_stream(b->cur_macro);
+				b->cur_macro = recording_macro;
+				recording_macro = NULL;
+				print_message(info_msg[MACRO_RECORDING_COMPLETED]);
+			} else if (c == 0) {   /* cancel recording */
+				free_char_stream(recording_macro);
+				recording_macro = NULL;
+				print_message(info_msg[MACRO_RECORDING_CANCELLED]);
+			} else {
+				print_message("Invalid argument for 'Record' while recording.");
+				return ERROR;
+			}
+		} else if (c == 1) {  /* resume recording */
+			if (recording_macro = dup_stream(b->cur_macro));
+				print_message(info_msg[MACRO_RECORD_APPENDING_STARTED]);
+		} else if (c < 0) {   /* start recording */
 			recording_macro = alloc_char_stream(0);
 			print_message(info_msg[STARTING_MACRO_RECORDING]);
+		} else {
+			print_message("Invalid argument for 'Record' while not recording.");
+			return ERROR;
 		}
 		return OK;
 
