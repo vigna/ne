@@ -34,7 +34,7 @@
    when ne is called without any specific file name or macro to execute. The
    message disappears as soon as any key is typed. */
 
-char *NO_WARRANTY_msg[] = {	PROGRAM_NAME " " VERSION ".",
+char *NO_WARRANTY_msg[] = {   PROGRAM_NAME " " VERSION ".",
 										"Copyright (C) 1993-1998 Sebastiano Vigna",
 										"Copyright (C) 1999-2018 Todd M. Lewis and Sebastiano Vigna",
 										"",
@@ -90,8 +90,8 @@ char ARG_HELP[] = ABOUT_MSG "\n"
 
 list buffers = { (node *)&buffers.tail, NULL, (node *)&buffers.head };
 list clips = { (node *)&clips.tail, NULL, (node *)&clips.head };
-list macros = { (node *)&macros.tail, NULL, (node *)&macros.head };
-
+char_stream *recording_macro;
+bool executing_macro;
 /* global prefs, only saved in ~/.ne/.default#ap if their
    current settings differ from these defaults. Make sure these
    defaults match the conditionals in prefs.c:save_prefs(). */

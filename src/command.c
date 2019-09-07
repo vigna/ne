@@ -359,7 +359,7 @@ macro_desc *alloc_macro_desc(void) {
 
 
 
-/* Frees a macro descriptors. */
+/* Frees a macro descriptor. */
 
 void free_macro_desc(macro_desc *md) {
 
@@ -437,8 +437,8 @@ static int insertchar_val(const char *p) {
 	return 0;
 }
 
-/* Optimizing macros is not safe if there are any subsequent undo commands
-   calls to macros (which may themselves contain undo commands). This function
+/* Optimizing macros is not safe if there are any subsequent undo commands or
+   calls to other macros (which may themselves contain undo commands). This function
    looks through a stream for undo or non-built in commands, and returns false
    if any are found; returns true otherwise. */
 
@@ -504,7 +504,7 @@ void optimize_macro(char_stream *cs, bool verbose) {
    call to CloseDoc, Record or UnloadMacros could free() the block of memory
    which we are executing. */
 
-int play_macro(buffer *b, char_stream *cs) {
+int play_macro(char_stream *cs) {
 	if (!cs) return ERROR;
 
 	/* If len is 0 or 1, the character stream does not contain anything. */
@@ -519,24 +519,17 @@ int play_macro(buffer *b, char_stream *cs) {
 
 	stop = false;
 
-	b->executing_macro = 1;
 	int error = OK;
 	while(!stop && p - stream < len) {
 #ifdef NE_TEST
 		fprintf(stderr, "%s\n", p); /* During tests, we output to stderr the current command. */
 #endif
 
-		if (error = execute_command_line(b, p))
+		if (error = execute_command_line(cur_buffer, p))
 #ifndef NE_TEST
 			break /* During tests, we never interrupt a macro. */
 #endif
 				;
-
-		if (b != cur_buffer) {
-			if (is_buffer(b)) b->executing_macro = 0;
-			b = cur_buffer;
-			b->executing_macro = 1;
-		}
 
 #ifdef NE_TEST
 		refresh_window(cur_buffer);
@@ -627,14 +620,14 @@ int execute_macro(buffer *b, const char *name) {
 	assert_macro_desc(md);
 
 	if (md) {
-		if (b->recording) {
-			add_to_stream(b->cur_macro, "# include macro ", 16);
-			add_to_stream(b->cur_macro, md->name, strlen(md->name)+1);
+		if (recording_macro) {
+			add_to_stream(recording_macro, "# include macro ", 16);
+			add_to_stream(recording_macro, md->name, strlen(md->name)+1);
 		}
-		h = play_macro(b, md->cs);
-		if (b->recording) {
-			add_to_stream(b->cur_macro, "# conclude macro ", 17);
-			add_to_stream(b->cur_macro, md->name, strlen(md->name)+1);
+		h = play_macro(md->cs);
+		if (recording_macro) {
+			add_to_stream(recording_macro, "# conclude macro ", 17);
+			add_to_stream(recording_macro, md->name, strlen(md->name)+1);
 		}
 		--call_depth;
 		return h;

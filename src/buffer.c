@@ -277,7 +277,7 @@ void free_buffer_contents(buffer * const b) {
 	b->filename = NULL;
 
 	reset_undo_buffer(&b->undo);
-	b->is_modified = b->marking = b->recording = b->x_wanted = 0;
+	b->is_modified = b->marking = b->x_wanted = 0;
 
 	release_signals();
 }

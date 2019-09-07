@@ -220,7 +220,7 @@ int load_prefs(buffer * const b, const char * const name) {
 	int error = OK;
 	char_stream * const cs = load_stream(NULL, name, false, false);
 	if (cs) {
-		error = play_macro(b, cs);
+		error = play_macro(cs);
 		free_char_stream(cs);
 	}
 	else error = CANT_OPEN_FILE;
