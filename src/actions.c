@@ -1450,7 +1450,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 				return ERROR;
 			}
 		} else if (c == 1) {  /* resume recording */
-			if (recording_macro = dup_stream(b->cur_macro));
+			if (recording_macro = dup_stream(b->cur_macro))
 				print_message(info_msg[MACRO_RECORD_APPENDING_STARTED]);
 		} else if (c < 0) {   /* start recording */
 			recording_macro = alloc_char_stream(0);
