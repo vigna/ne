@@ -367,11 +367,24 @@ buffer *get_buffer_named(const char *p) {
 
 
 /* Returns true if the given pointer references an extant buffer. */
+
 bool is_buffer(const buffer * const maybe_buf) {
 	for(buffer *b = (buffer *)buffers.head; b->b_node.next; b = (buffer *)b->b_node.next)
 		if (maybe_buf == b) return true;
 	return false;
 }
+
+
+/* Returns true if the given buffer is empty. */
+
+bool is_buffer_empty(const buffer * const b) {
+	if (b) {
+		if (b->line_desc_list.head->next == NULL ||
+		    b->line_desc_list.head->next->next == NULL && ((line_desc *)b->line_desc_list.head)->line_len == 0) return true;
+	}
+	return false;
+}
+
 
 /* Returns true if any of the buffers has been modified since the last save. */
 

@@ -42,6 +42,7 @@ int64_t calc_lost_chars(const buffer *b);
 buffer *get_nth_buffer(int n);
 buffer *get_buffer_named(const char *p);
 bool is_buffer(const buffer *b);
+bool is_buffer_empty(const buffer * const b);
 int modified_buffers(void);
 int save_all_modified_buffers(void);
 line_desc *alloc_line_desc(buffer *b);

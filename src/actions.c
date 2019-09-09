@@ -969,6 +969,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 	case OPENNEW_A:
 		if (p || (p = request_file(b, "Filename", b->filename))) {
 			static bool dprompt = false; /* Set to true if we ever respond 'yes' to the prompt. */
+			bool empty = is_buffer_empty(b);
 			if (b = new_buffer()) reset_window();
 			else {
 				if (p) free(p);
@@ -978,7 +979,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			/* 'c' -- flag meaning "Don't prompt if we've ever responded 'yes'." */
 			if (!dup || dup == b || (dprompt && !c) || (dprompt = request_response(b, info_msg[SAME_NAME], false))) {
 				error = load_file_in_buffer(b, p);
-				if (error == FILE_DOES_NOT_EXIST && a == OPEN_A && request_response(b, info_msg[NO_SUCH_FILE_EXISTS], false))
+				if (error == FILE_DOES_NOT_EXIST && a == OPEN_A && (empty || request_response(b, info_msg[NO_SUCH_FILE_EXISTS], false)))
 					error = OK;
 				if (! error || (a == OPENNEW_A && error == FILE_DOES_NOT_EXIST)) { /* Keep the new buffer, or delete it? */
 					change_filename(b, p);
