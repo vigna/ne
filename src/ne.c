@@ -34,7 +34,7 @@
    when ne is called without any specific file name or macro to execute. The
    message disappears as soon as any key is typed. */
 
-char *NO_WARRANTY_msg[] = {	PROGRAM_NAME " " VERSION ".",
+char *NO_WARRANTY_msg[] = {   PROGRAM_NAME " " VERSION ".",
 										"Copyright (C) 1993-1998 Sebastiano Vigna",
 										"Copyright (C) 1999-2018 Todd M. Lewis and Sebastiano Vigna",
 										"",
@@ -90,8 +90,8 @@ char ARG_HELP[] = ABOUT_MSG "\n"
 
 list buffers = { (node *)&buffers.tail, NULL, (node *)&buffers.head };
 list clips = { (node *)&clips.tail, NULL, (node *)&clips.head };
-list macros = { (node *)&macros.tail, NULL, (node *)&macros.head };
-
+char_stream *recording_macro;
+bool executing_macro;
 /* global prefs, only saved in ~/.ne/.default#ap if their
    current settings differ from these defaults. Make sure these
    defaults match the conditionals in prefs.c:save_prefs(). */
@@ -276,15 +276,23 @@ int main(int argc, char **argv) {
 
 	if (!new_buffer()) exit(1);
 
-	/* Now that key_bindings are loaded, try to fix up the message for NOT_FOUND. */
+	/* Now that key_bindings are loaded, try to fix up the
+	   NOT_FOUND error_msg and the LONG_INPUT_HELP info_msg. */
 	{
-		char *repeat_last_keystroke, *new_not_found;
-		if ((repeat_last_keystroke = find_key_strokes(REPEATLAST_A, 1))) {
-			if ((new_not_found = malloc(39+strlen(repeat_last_keystroke)))) {
-				strcat(strcat(strcpy(new_not_found, "Not Found. (RepeatLast with "), repeat_last_keystroke), " to wrap.)");
-				error_msg[NOT_FOUND] = new_not_found;
+		char *keystroke_string, *new_msg_text;
+		if ((keystroke_string = find_key_strokes(REPEATLAST_A, 1))) {
+			if ((new_msg_text = malloc(39+strlen(keystroke_string)))) {
+				strcat(strcat(strcpy(new_msg_text, "Not Found. (RepeatLast with "), keystroke_string), " to wrap.)");
+				error_msg[NOT_FOUND] = new_msg_text;
 			}
-			free(repeat_last_keystroke);
+			free(keystroke_string);
+		}
+		if ((keystroke_string = find_key_strokes(FIND_A, 1))) {
+			if ((new_msg_text = malloc(24+strlen(keystroke_string)))) {
+				strcat(strcat(strcpy(new_msg_text, " (browse history with "), keystroke_string), ")");
+				info_msg[LONG_INPUT_HELP] = new_msg_text;
+			}
+			free(keystroke_string);
 		}
 	}
 

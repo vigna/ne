@@ -1,6 +1,6 @@
 /* Main typedefs and defines.
 
-	Copyright (C) 1993-1998 Sebastiano Vigna 
+	Copyright (C) 1993-1998 Sebastiano Vigna
 	Copyright (C) 1999-2018 Todd M. Lewis and Sebastiano Vigna
 
 	This file is part of ne, the nice editor.
@@ -163,15 +163,19 @@ typedef struct {
 		allow_dupes:1,     /* Searches are more efficient if we have no duplicate entries. */
 		allow_reorder:1,   /* Allow NextDoc/PrevDoc keys to re-order entries. */
 		ignore_tab:1,      /* Permits Tab to exit requester. */
-		reordered:1;       /* Indicates whether reordering was done during request. */
+		reordered:1,       /* Indicates whether reordering was done during request. */
+		prune:1,           /* Whether to start off pruning by partial input. */
+		find_quits:1,      /* Map FIND_A to QUIT_A (for long input ^F requester). */
+		help_quits:1,      /* Map HELP_A to QUIT_A (for help requester). */
+		selectdoc_quits:1; /* Map SELECTDOC_A to QUIT_A (for F4 requester). */
 	char suffix;
-	
+
 	int cur_entries;
 	int alloc_entries;
 	int max_entry_len;
 	char **entries;
 	int *orig_order;      /* maps from current order to original order when allow_reorder is true. */
-	
+
 	int cur_chars;
 	int alloc_chars;
 	char *chars;
@@ -434,7 +438,7 @@ typedef struct {
 		binary:1,          /* Load and save in binary mode */
 		utf8auto:1,        /* Try to detect automatically UTF-8 */
 		visual_bell:1;     /* Prefer visible bell to audible */
-  } options_t;
+} options_t;
 
 #ifndef NDEBUG
 #define assert_options(o) {if ((o)) {\
@@ -497,7 +501,7 @@ typedef struct {
 	int cur_bookmark;           /* For Goto(Next|Prev)Bookmark. */
 
 	struct high_syntax *syn;    /* Syntax loaded for this buffer. */
-	uint32_t *attr_buf;              /* If attr_len >= 0, a pointer to the list of *current* attributes of the *current* line. */ 
+	uint32_t *attr_buf;              /* If attr_len >= 0, a pointer to the list of *current* attributes of the *current* line. */
 	int64_t attr_size;              /* attr_buf size. */
 	int64_t attr_len;               /* attr_buf valid number of characters, or -1 to denote that attr_buf is not valid. */
 	HIGHLIGHT_STATE next_state; /* If attr_len >= 0, the state after the *current* line. */
@@ -506,7 +510,6 @@ typedef struct {
 
 	unsigned int
 		is_modified:1,           /* Buffer has been modified since last save */
-		recording:1,             /* We are recording a macro */
 		marking:1,               /* We are marking a block */
 		x_wanted:1,              /* We're not where we would like to be */
 		y_wanted:1,              /* We've been paging up/down */
@@ -517,8 +520,6 @@ typedef struct {
 		redoing:1,               /* We are currently redoing an action */
 		mark_is_vertical:1,      /* The current marking is vertical */
 		atomic_undo:1,           /* subsequent commands undo as a block */
-		executing_macro:1,       /* We are currently executing a macro. */
-		executing_internal_macro:1,  /* We are currently executing the internal macro of the current buffer */
 		is_CRLF:1;               /* Buffer should be saved with CR/LF terminators */
 
 	unsigned int find_string_changed; /* 0 = unset; 1 = force; else prior search's serial number */
@@ -570,7 +571,7 @@ extern buffer *cur_buffer;
 
 /* These are the global lists. */
 
-extern list buffers, clips, macros;
+extern list buffers, clips;
 
 /* This integer keeps the global turbo parameter. */
 
@@ -635,7 +636,7 @@ key combinations required to produce those key codes. */
 
 extern const char *key_stroke[];
 
-/* A boolean recording whether the last replace was for an empty string 
+/* A boolean recording whether the last replace was for an empty string
   (of course, this can happen only with regular expressions). */
 
 extern bool last_replace_empty_match;
@@ -645,6 +646,18 @@ extern bool last_replace_empty_match;
    conflicts. */
 
 #define MACRO_HASH_TABLE_SIZE (101)
+
+
+/* When recording a macro, this points to the recording stream.
+   When not recording a macro, this is NULL. */
+
+extern char_stream *recording_macro;
+
+
+/* Whether we're currently executing a macro. */
+
+extern bool executing_macro;
+
 
 /* There are several functions that set the status bar:
    print_message(), print_prompt() and input_refresh(), and

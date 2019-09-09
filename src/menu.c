@@ -154,6 +154,8 @@ static const menu_item search_item[] =
 static const menu_item macros_item[] =
 	{
 		{ "Start/Stop Rec ^T", RECORD_ABBREV },
+		{ "Record Cancel    ", RECORD_CANCEL_ABBREV },
+		{ "Record Append    ", RECORD_APPEND_ABBREV },
 		{ "Play Once   f9/[M", PLAYONCE_ABBREV },
 		{ "Play Many...     ", PLAY_ABBREV },
 		{ "Play Macro...    ", MACRO_ABBREV },
@@ -575,7 +577,7 @@ char *gen_flag_string(const buffer * const b) {
 	string[i++] = b->opt.del_tabs       ? 'd' : '-';
 	string[i++] = b->opt.binary         ? 'B' : ((line_desc *)b->line_desc_list.tail_pred)->line_len ? '!' : '-';
 	string[i++] = b->marking            ? (b->mark_is_vertical ? 'V' :'M') : '-';
-	string[i++] = b->recording          ? 'R' : '-';
+	string[i++] = recording_macro       ? 'R' : '-';
 	string[i++] = b->opt.preserve_cr    ? 'P' : '-';
 	string[i++] = b->is_CRLF            ? 'C' : '-';
 	string[i++] = io_utf8               ? '@' : '-';

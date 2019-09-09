@@ -2,6 +2,9 @@
 
 unreleased
 
+  * Macros: They now work across multiple documents. You can cancel macro
+    recording, and append new recorded commands to your current macro.
+
   * Saving of read-only documents requires confirmation.
 
   * Word completion now does not consider the word the cursor is currently
@@ -11,6 +14,12 @@ unreleased
     implementing this feature.
 
   * Add asterisk.jsf syntax.
+
+  * FIND in string inputs brings up a requester with your input history.
+    Use Enter to replace, TAB to insert into your input line; Escape to exit.
+
+  * Enhanced commands: MoveEOW, NextWord, and PrevWord can now move to either
+    end of the indicated word via optional '<' and '>' parameter modifiers.
 
 3.1.2 2018-10-06
 

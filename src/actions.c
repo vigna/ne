@@ -172,7 +172,8 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 	static char msg[MAX_MESSAGE_SIZE];
 	line_desc *next_ld;
 	HIGHLIGHT_STATE next_line_state;
-	int error = OK, recording;
+	int error = OK;
+	char_stream *recording;
 	int64_t col;
 	char *q;
 
@@ -193,7 +194,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 	stop = false;
 
-	if (b->recording) record_action(b->cur_macro, a, c, p, verbose_macros);
+	if (recording_macro) record_action(recording_macro, a, c, p, verbose_macros);
 
 	if (perform_wrap > 0) perform_wrap--;
 
@@ -316,20 +317,28 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		return OK;
 
 	case NEXTWORD_A:
-		NORMALIZE(c);
-		for(int64_t i = 0; i < c && !(error = search_word(b, 1)) && !stop; i++);
-		return stop ? STOPPED : error;
-
-	case PREVWORD_A:
-		NORMALIZE(c);
-		for(int64_t i = 0; i < c && !(error = search_word(b, -1)) && !stop; i++);
-		return stop ? STOPPED : error;
+	case PREVWORD_A: {
+			/* parse_word_parm(char *p, char *pat_in, int64_t *match) */
+			struct {
+				int64_t c;
+				int64_t left;
+				int64_t right;
+			} params = {-1, 0, 0};
+			error = parse_word_parm(p, "#<>", (int64_t *)&params) || (params.left && params.right);
+			if (!error) {
+				if (!(params.left || params.right)) params.left = 1;
+				NORMALIZE(params.c);
+				for(int64_t i = 0; i < params.c && !(error = search_word(b, a==NEXTWORD_A ? 1 : -1, params.left!=0)) && !stop; i++);
+			}
+			if (p) free(p);
+			return stop ? STOPPED : error;
+		}
 
 	case DELETENEXTWORD_A:
 	case DELETEPREVWORD_A:
 		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
-		recording = b->recording;
-		b->recording = 0;
+		recording = recording_macro;
+		recording_macro = NULL;
 		NORMALIZE(c);
 		int marking_t = b->marking;
 		int mark_is_vertical_t = b->mark_is_vertical;
@@ -349,11 +358,11 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 				that the cursor ends up here after an undo. */
 			insert_one_char(b, b->cur_line_desc, b->cur_line, b->cur_pos, ' ');
 			delete_stream(b, b->cur_line_desc, b->cur_line, b->cur_pos, 1);
-			for(int64_t i = 0; i < c && !(error = search_word(b, -1)) && !stop; i++);
+			for(int64_t i = 0; i < c && !(error = search_word(b, -1, true)) && !stop; i++);
 		} else if (c > 0) {
 			move_to_eow(b);
 			if (b->block_start_line != b->cur_line || b->block_start_pos != b->cur_pos) c--;
-			for(int64_t i = 0; i < c && !(error = search_word(b, 1)) && !stop; i++);
+			for(int64_t i = 0; i < c && !(error = search_word(b, 1, true)) && !stop; i++);
 			if (c) move_to_eow(b);
 		}
 		const bool line_changed = b->block_start_line != b->cur_line;
@@ -380,11 +389,17 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		b->block_start_line = b->bookmark[WORDWRAP_BOOKMARK].line;
 		b->marking = marking_t;
 		b->mark_is_vertical = mark_is_vertical_t;
-		b->recording = recording;
+		recording_macro = recording;
 		return stop ? STOPPED : error;
 
 	case MOVEEOW_A:
-		move_to_eow(b);
+		if (!p || (p && !strcmp(p,">"))) move_to_eow(b);
+		else if (p && !strcmp(p,"<")) move_to_sow(b);
+		else if (p) {
+			free(p);
+			return SYNTAX_ERROR;
+		}
+		if (p) free(p);
 		return OK;
 
 	case MOVEINCUP_A:
@@ -513,8 +528,8 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 	case INSERTSTRING_A:
 		/* Since we are going to call another action, we do not want to record this insertion twice. */
-		recording= b->recording;
-		b->recording = 0;
+		recording = recording_macro;
+		recording_macro = NULL;
 		error = ERROR;
 		if (p || (p = request_string(b, "String", NULL, false, COMPLETE_NONE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
 			encoding_type encoding = detect_encoding(p, strlen(p));
@@ -530,7 +545,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			end_undo_chain(b);
 			free(p);
 		}
-		b->recording = recording;
+		recording_macro = recording;
 		return error;
 
 	case TABS_A:
@@ -551,8 +566,8 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		return OK;
 
 	case INSERTTAB_A:
-		recording = b->recording;
-		b->recording = 0;
+		recording = recording_macro;
+		recording_macro = NULL;
 		NORMALIZE(c);
 		start_undo_chain(b);
 		if (b->opt.tabs) {
@@ -568,7 +583,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			}
 		}
 		end_undo_chain(b);
-		b->recording = recording;
+		recording_macro = recording;
 		return error;
 
 	case INSERTCHAR_A: {
@@ -954,16 +969,19 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 	case OPENNEW_A:
 		if (p || (p = request_file(b, "Filename", b->filename))) {
 			static bool dprompt = false; /* Set to true if we ever respond 'yes' to the prompt. */
-		   if (b = new_buffer()) reset_window();
-		   else {
-			   if (p) free(p);
-			   return OUT_OF_MEMORY;
-		   }
+			bool empty = is_buffer_empty(b);
+			if (b = new_buffer()) reset_window();
+			else {
+				if (p) free(p);
+				return OUT_OF_MEMORY;
+			}
 			buffer *dup = get_buffer_named(p);
 			/* 'c' -- flag meaning "Don't prompt if we've ever responded 'yes'." */
 			if (!dup || dup == b || (dprompt && !c) || (dprompt = request_response(b, info_msg[SAME_NAME], false))) {
 				error = load_file_in_buffer(b, p);
-				if (! error || error == FILE_DOES_NOT_EXIST) { /* Keep the new buffer, or delete it? */
+				if (error == FILE_DOES_NOT_EXIST && a == OPEN_A && (empty || request_response(b, info_msg[NO_SUCH_FILE_EXISTS], false)))
+					error = OK;
+				if (! error || (a == OPENNEW_A && error == FILE_DOES_NOT_EXIST)) { /* Keep the new buffer, or delete it? */
 					change_filename(b, p);
 					p = NULL;
 					b->syn = NULL; /* So that autoprefs will load the right syntax. */
@@ -975,6 +993,19 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 						else if (error == OK) error = FILE_TOO_LARGE_SYNTAX_HIGHLIGHTING_DISABLED;
 					}
 					if (a == OPEN_A) {
+						buffer * old_buffer = (buffer *)cur_buffer->b_node.prev;
+						/* preserve cur_macro, find_string, and replace_string */
+
+						free_char_stream(cur_buffer->cur_macro);
+						cur_buffer->cur_macro = old_buffer->cur_macro;
+						old_buffer->cur_macro = NULL;
+
+						cur_buffer->find_string = old_buffer->find_string;
+						old_buffer->find_string = NULL;
+
+						cur_buffer->replace_string = old_buffer->replace_string;
+						old_buffer->replace_string = NULL;
+						
 						do_action(cur_buffer, PREVDOC_A, 1, NULL);
 						delete_buffer();
 					}
@@ -1405,21 +1436,38 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		}
 
 	case RECORD_A:
-		recording = b->recording;
-		SET_USER_FLAG(b, c, recording);
-		if (b->recording && !recording) {
-			b->cur_macro = reset_stream(b->cur_macro);
+		if (recording_macro) {
+			if (c < 0) {           /* normal completion */
+				free_char_stream(b->cur_macro);
+				b->cur_macro = recording_macro;
+				recording_macro = NULL;
+				print_message(info_msg[MACRO_RECORDING_COMPLETED]);
+			} else if (c == 0) {   /* cancel recording */
+				free_char_stream(recording_macro);
+				recording_macro = NULL;
+				print_message(info_msg[MACRO_RECORDING_CANCELLED]);
+			} else {
+				print_message("Invalid argument for 'Record' while recording.");
+				return ERROR;
+			}
+		} else if (c == 1) {  /* resume recording */
+			if (recording_macro = dup_stream(b->cur_macro))
+				print_message(info_msg[MACRO_RECORD_APPENDING_STARTED]);
+		} else if (c < 0) {   /* start recording */
+			recording_macro = alloc_char_stream(0);
 			print_message(info_msg[STARTING_MACRO_RECORDING]);
+		} else {
+			print_message("Invalid argument for 'Record' while not recording.");
+			return ERROR;
 		}
-		else if (!b->recording && recording) print_message(info_msg[MACRO_RECORDING_COMPLETED]);
 		return OK;
 
 	case PLAY_A:
-		if (!b->recording && !b->executing_internal_macro) {
+		if (!recording_macro && !executing_macro) {
 			if (c < 0 && (c = request_number(b, "Times", 1))<=0) return NUMERIC_ERROR(c);
-			b->executing_internal_macro = 1;
-			for(int64_t i = 0; i < c && !(error = play_macro(b, b->cur_macro)); i++);
-			b->executing_internal_macro = 0;
+			executing_macro = 1;
+			for(int64_t i = 0; i < c && !(error = play_macro(b->cur_macro)); i++);
+			executing_macro = 0;
 			return print_error(error) ? ERROR : 0;
 		}
 		else return ERROR;
@@ -1471,10 +1519,11 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		keep_cursor_on_screen(cur_buffer);
 		reset_window();
 
-		/* We always return ERROR after a buffer has been deleted. Otherwise,
-		   the calling routines (and macros) could work on an unexisting buffer. */
+		/* We used to return ERROR after a buffer has been deleted to prevent
+		   the calling routines (and macros) attempting to work on an nonexistant buffer,
+		   but that should no longer be an issue. */
 
-		return ERROR;
+		return OK;
 
 	case NEXTDOC_A: /* Was NEXT_BUFFER: */
 		if (b->b_node.next->next) cur_buffer = (buffer *)b->b_node.next;
@@ -1822,7 +1871,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		/* Since we are going to call other actions (INSERTSTRING_A and DELETEPREVWORD_A),
 		   we do not want to record this insertion twice. Also, we are counting on
 		   INSERTSTRING_A to handle character encoding issues. */
-		recording = b->recording;
+		recording = recording_macro;
 
 		int64_t pos = b->cur_pos;
 
@@ -1834,11 +1883,11 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 		int e;
 		if (p = autocomplete(p, msg, true, &e)) {
-			b->recording = 0;
+			recording_macro = NULL;
 			start_undo_chain(b);
 			if (pos >= b->cur_pos || (error = do_action(b, DELETEPREVWORD_A, 1, NULL)) == OK) error = do_action(b, INSERTSTRING_A, 0, p);
 			end_undo_chain(b);
-			b->recording = recording;
+			recording_macro = recording;
 			print_message(info_msg[e]);
 		}
 		else if (stop) error = STOPPED;

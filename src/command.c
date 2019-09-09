@@ -28,7 +28,7 @@
 
 /* The standard macro descriptor allocation dimension. */
 
-#define STD_MACRO_DESC_SIZE	1024
+#define STD_MACRO_DESC_SIZE   1024
 
 
 /* This structure represents a command. It includes a long and a short name,
@@ -122,7 +122,7 @@ static const command commands[ACTION_COUNT] = {
 	{ NAHL(MOVEBOS       ), NO_ARGS                                                               },
 	{ NAHL(MOVEEOF       ), NO_ARGS                                                               },
 	{ NAHL(MOVEEOL       ), NO_ARGS                                                               },
-	{ NAHL(MOVEEOW       ),0                                                                      },
+	{ NAHL(MOVEEOW       ),           ARG_IS_STRING |                             EMPTY_STRING_OK },
 	{ NAHL(MOVEINCDOWN   ), NO_ARGS                                                               },
 	{ NAHL(MOVEINCUP     ), NO_ARGS                                                               },
 	{ NAHL(MOVELEFT      ),0                                                                      },
@@ -132,9 +132,9 @@ static const command commands[ACTION_COUNT] = {
 	{ NAHL(MOVETOS       ), NO_ARGS                                                               },
 	{ NAHL(NAMECONVERT   ),                           IS_OPTION                                   },
 	{ NAHL(NEWDOC        ), NO_ARGS                                                               },
-	{ NAHL(NEXTDOC       ),0                                                                      },
+	{ NAHL(NEXTDOC       ),                                       DO_NOT_RECORD                   },
 	{ NAHL(NEXTPAGE      ),0                                                                      },
-	{ NAHL(NEXTWORD      ),0                                                                      },
+	{ NAHL(NEXTWORD      ),           ARG_IS_STRING |                             EMPTY_STRING_OK },
 	{ NAHL(NOFILEREQ     ),                           IS_OPTION                                   },
 	{ NAHL(NOP           ), NO_ARGS                                                               },
 	{ NAHL(OPEN          ),           ARG_IS_STRING                                               },
@@ -149,11 +149,11 @@ static const command commands[ACTION_COUNT] = {
 	{ NAHL(PLAY          ),0                                                                      },
 	{ NAHL(POPPREFS      ),0                                                                      },
 	{ NAHL(PRESERVECR    ),                           IS_OPTION                                   },
-	{ NAHL(PREVDOC       ),0                                                                      },
+	{ NAHL(PREVDOC       ),                                       DO_NOT_RECORD                   },
 	{ NAHL(PREVPAGE      ),0                                                                      },
-	{ NAHL(PREVWORD      ),0                                                                      },
+	{ NAHL(PREVWORD      ),           ARG_IS_STRING |                             EMPTY_STRING_OK },
 	{ NAHL(PUSHPREFS     ),                           IS_OPTION                                   },
-	{ NAHL(QUIT          ), NO_ARGS                                                               },
+	{ NAHL(QUIT          ),                                       DO_NOT_RECORD                   },
 	{ NAHL(READONLY      ),                           IS_OPTION                                   },
 	{ NAHL(RECORD        ),                           IS_OPTION | DO_NOT_RECORD                   },
 	{ NAHL(REDO          ),0                                                                      },
@@ -359,7 +359,7 @@ macro_desc *alloc_macro_desc(void) {
 
 
 
-/* Frees a macro descriptors. */
+/* Frees a macro descriptor. */
 
 void free_macro_desc(macro_desc *md) {
 
@@ -428,7 +428,7 @@ static int insertchar_val(const char *p) {
 
 	action a;
 	if (((a = hash_table[h]) && !cmdcmp(commands[--a].name, cmd)
-		|| (a = short_hash_table[h]) && !cmdcmp(commands[--a].short_name, cmd))	&& a == INSERTCHAR_A) {
+		|| (a = short_hash_table[h]) && !cmdcmp(commands[--a].short_name, cmd)) && a == INSERTCHAR_A) {
 
 		while(isasciispace(*p)) p++;
 		h = strtol(p, (char **)&cmd, 0);
@@ -437,8 +437,8 @@ static int insertchar_val(const char *p) {
 	return 0;
 }
 
-/* Optimizing macros is not safe if there are any subsequent undo commands
-   calls to macros (which may themselves contain undo commands). This function
+/* Optimizing macros is not safe if there are any subsequent undo commands or
+   calls to other macros (which may themselves contain undo commands). This function
    looks through a stream for undo or non-built in commands, and returns false
    if any are found; returns true otherwise. */
 
@@ -504,7 +504,7 @@ void optimize_macro(char_stream *cs, bool verbose) {
    call to CloseDoc, Record or UnloadMacros could free() the block of memory
    which we are executing. */
 
-int play_macro(buffer *b, char_stream *cs) {
+int play_macro(char_stream *cs) {
 	if (!cs) return ERROR;
 
 	/* If len is 0 or 1, the character stream does not contain anything. */
@@ -519,14 +519,13 @@ int play_macro(buffer *b, char_stream *cs) {
 
 	stop = false;
 
-	b->executing_macro = 1;
 	int error = OK;
-	while(!stop && p - stream < len) {	
+	while(!stop && p - stream < len) {
 #ifdef NE_TEST
 		fprintf(stderr, "%s\n", p); /* During tests, we output to stderr the current command. */
 #endif
 
-		if (error = execute_command_line(b, p))
+		if (error = execute_command_line(cur_buffer, p))
 #ifndef NE_TEST
 			break /* During tests, we never interrupt a macro. */
 #endif
@@ -621,14 +620,14 @@ int execute_macro(buffer *b, const char *name) {
 	assert_macro_desc(md);
 
 	if (md) {
-		if (b->recording) {
-			add_to_stream(b->cur_macro, "# include macro ", 16);
-			add_to_stream(b->cur_macro, md->name, strlen(md->name)+1);
+		if (recording_macro) {
+			add_to_stream(recording_macro, "# include macro ", 16);
+			add_to_stream(recording_macro, md->name, strlen(md->name)+1);
 		}
-		h = play_macro(b, md->cs);
-		if (b->recording) {
-			add_to_stream(b->cur_macro, "# conclude macro ", 17);
-			add_to_stream(b->cur_macro, md->name, strlen(md->name)+1);
+		h = play_macro(md->cs);
+		if (recording_macro) {
+			add_to_stream(recording_macro, "# conclude macro ", 17);
+			add_to_stream(recording_macro, md->name, strlen(md->name)+1);
 		}
 		--call_depth;
 		return h;
@@ -661,13 +660,13 @@ char *find_key_strokes(int c, int n) {
 	for(int i = 0; i < NUM_KEYS && n; i++) {
 		if (key_binding[i]) {
 			if (((!strncasecmp(commands[c].short_name, key_binding[i], strlen(commands[c].short_name))) &&
-				  ((!key_binding[i][strlen(commands[c].short_name)]		) || 
-					(key_binding[i][strlen(commands[c].short_name)] == ' ')
+				  ((!key_binding[i][strlen(commands[c].short_name)]      ) ||
+				   (key_binding[i][strlen(commands[c].short_name)] == ' ')
 				  )
-				 ) || 
+				 ) ||
 				 ((!strncasecmp(commands[c].name, key_binding[i], strlen(commands[c].name))) &&
-				  ((!key_binding[i][strlen(commands[c].name)]		) ||
-					(key_binding[i][strlen(commands[c].name)] == ' ')
+				  ((!key_binding[i][strlen(commands[c].name)]      ) ||
+				   (key_binding[i][strlen(commands[c].name)] == ' ')
 				  )
 				 )
 				) {
@@ -707,7 +706,7 @@ char *bound_keys_string(int c) {
    requester. The help finishes when the user escapes. */
 
 void help(char *p) {
-	req_list rl = { .ignore_tab=true };
+	req_list rl = { .ignore_tab=true, .help_quits=true };
 
 	D(fprintf(stderr, "Help Called with parm %p.\n", p);)
 	int r = 0;
@@ -752,7 +751,7 @@ void help(char *p) {
 				tmphelp[0] = (char *)commands[r].help[0];
 				tmphelp[1] = (char *)commands[r].help[1];
 				tmphelp[2] = key_strokes;
-				memcpy(&tmphelp[3], &commands[r].help[2], sizeof(char *) * (commands[r].help_len-2)); 
+				memcpy(&tmphelp[3], &commands[r].help[2], sizeof(char *) * (commands[r].help_len-2));
 				rl.cur_entries = commands[r].help_len+1;
 				rl.alloc_entries = 0;
 				rl.max_entry_len = ne_columns;
@@ -773,3 +772,37 @@ void help(char *p) {
 	} while(r >= 0);
 	draw_status_bar();
 }
+
+/* Parse string parameters for NextWord, PrevWord, AdjustView, etc. */
+
+int parse_word_parm(char *p, char *pat_in, int64_t *match) {
+	int i, len = strlen(pat_in);
+	char *pat = strntmp(pat_in, len);
+	if (p) {
+		while (*p) {
+			if (isasciispace(*p)) p++;
+			else if (isdigit((unsigned char)*p)) {
+				for (i=0; i<len; i++) {
+					if (pat[i] == '#') {
+						errno = 0;
+						match[i] = strtoll(p, &p, 10);
+						if (errno) return ERROR;
+						pat[i] = '\0';
+						break;
+					}
+				}
+				if (i==len) return ERROR;
+			} else {
+				for (i=0; i<len; i++) {
+					if (toupper(pat[i]) == toupper(*p)) {
+						match[i] = *p++;
+						break;
+					}
+				}
+				if (i==len) return ERROR;
+			}
+		}
+	}
+	return OK;
+}
+

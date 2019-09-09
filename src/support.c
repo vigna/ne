@@ -356,6 +356,37 @@ char *str_dup(const char * const s) {
 	return dup;
 }
 
+/* Copies len chars from s to a buffer, terminated with '\0'.
+   The buffer is reused by strntmp(), so the caller must complete its
+   use of the returned string before the next call to strntmp().
+   If len < 0, the buffer is freed.
+   Returns the address of the buffer. */
+char *strntmp(const char * const s, const int len) {
+	static char *buf = NULL;
+	static uint64_t buflen = 0;
+	char *buf_new;
+	int cplen = len;
+
+	if (len < 1) {
+		if (buf) free(buf);
+		buf = NULL;
+		buflen = 0;
+	} else {
+		if (len >= buflen) {
+			if (buf_new = realloc(buf, len * 2 + 1)) {
+				buflen = len * 2 + 1;
+				buf = buf_new;
+			}
+			else if (buflen)
+				cplen = buflen - 1;
+			else cplen = 0;
+		}
+		if (cplen) strncpy(buf, s, cplen);
+		buf[cplen] = '\0';
+	}
+	return buf;
+}
+
 /* Tries to compute the length as a string of the given pointer,
    but stops after n characters (returning n). */
 

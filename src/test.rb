@@ -56,7 +56,7 @@ ARGV[0].to_i.times do |i|
 		when 6
 			puts("MOVEEOL")
 		when 7
-			puts("MOVEEOW")
+			puts("MOVEEOW " + "<>"[rand(2),1])
 		when 8
 			puts("MOVEINCDOWN")
 		when 9
@@ -74,7 +74,7 @@ ARGV[0].to_i.times do |i|
 		when 15
 			puts("NEXTPAGE")
 		when 16
-			puts("NEXTWORD " + (rand(20)).to_s)
+			puts("NEXTWORD " + (rand(20)).to_s + "<>"[rand(2),1])
 		when 17
 			puts("PAGEDOWN")
 		when 18
@@ -82,7 +82,7 @@ ARGV[0].to_i.times do |i|
 		when 19
 			puts("PREVPAGE")
 		when 20
-			puts("PREVWORD " + (rand(20)).to_s)
+			puts("PREVWORD " + (rand(20)).to_s + "<>"[rand(2),1])
 		when 21
 			puts("SETBOOKMARK")
 		when 22
