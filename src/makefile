@@ -84,7 +84,9 @@ NE_NOWCHAR=
 NE_DEBUG=
 NE_TEST=
 
-CC?=c99
+ifeq ($(origin CC),default)
+CC=c99
+endif
 
 ifeq ($(CC),gcc)
 GCCFLAGS=-std=c99 -Wall -Wno-parentheses
