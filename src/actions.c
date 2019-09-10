@@ -992,20 +992,17 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 						}
 						else if (error == OK) error = FILE_TOO_LARGE_SYNTAX_HIGHLIGHTING_DISABLED;
 					}
-					if (a == OPEN_A) {
-						buffer * old_buffer = (buffer *)cur_buffer->b_node.prev;
-						/* preserve cur_macro, find_string, and replace_string */
+					buffer * old_buffer = (buffer *)cur_buffer->b_node.prev;
+					/* preserve cur_macro, find_string, and replace_string */
 
-						free_char_stream(cur_buffer->cur_macro);
-						cur_buffer->cur_macro = old_buffer->cur_macro;
-						old_buffer->cur_macro = NULL;
-
-						cur_buffer->find_string = old_buffer->find_string;
-						old_buffer->find_string = NULL;
-
-						cur_buffer->replace_string = old_buffer->replace_string;
-						old_buffer->replace_string = NULL;
+					free_char_stream(cur_buffer->cur_macro);
+					cur_buffer->cur_macro = dup_stream(old_buffer->cur_macro);
+					cur_buffer->find_string = str_dup(old_buffer->find_string);
+					cur_buffer->replace_string = str_dup(old_buffer->replace_string);
+					cur_buffer->last_was_replace = old_buffer->last_was_replace;
+					cur_buffer->last_was_regexp = old_buffer->last_was_regexp;
 						
+					if (a == OPEN_A) {
 						do_action(cur_buffer, PREVDOC_A, 1, NULL);
 						delete_buffer();
 					}

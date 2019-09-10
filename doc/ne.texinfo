@@ -2438,8 +2438,11 @@ command is issued).
 @noindent Syntax: @code{Open [@var{filename}]}@*
 @noindent Abbreviation: @code{O}
 
-@noindent loads the file specified by the @var{filename} string into the
-current document.
+@noindent replaces the contents of the current document with that
+of the file specified by the @var{filename} string. (To load @var{filename}'s
+content into a new document without changing the current document,
+see @ref{OpenNew}.) The current document's macro, search, and replace
+strings are preserved.
 
 If the optional @var{filename} argument is not specified, the
 file requester is opened, and you are prompted to select a file. (You
@@ -2462,8 +2465,13 @@ issued, you have to confirm the action.
 @noindent Syntax: @code{OpenNew [@var{filename}]}@*
 @noindent Abbreviation: @code{ON}
 
-@noindent is the same as @code{Open}, but loads the file specified by the
-@var{filename} string into a new document. See @ref{Open}.
+@noindent creates a new document and loads into it the contents of the
+file specified by the optional @var{filename} string. This new document will
+inherit the macro, search, and replace strings from the current
+document.
+
+If @var{filename} is unspecified, the file requester behaves the same as
+for the @code{Open} command; see @ref{Open}.
 
 
 

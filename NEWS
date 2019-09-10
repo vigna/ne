@@ -5,6 +5,9 @@ unreleased
   * Macros: They now work across multiple documents. You can cancel macro
     recording, and append new recorded commands to your current macro.
 
+  * New documents inherit their predecessor's current macro, search, and
+    replace strings.
+
   * Saving of read-only documents requires confirmation.
 
   * Word completion now does not consider the word the cursor is currently
