@@ -684,6 +684,8 @@ static int request_strings_cleanup(bool reordered) {
 	}
 	if (rl.entries) free(rl.entries);
 	rl.entries = NULL;
+	if (rl.lens) free(rl.lens);
+	rl.lens = NULL;
 	rl0->reordered = reordered;
 	req_page_table_free();
 	return n;
