@@ -2,7 +2,7 @@
 
 .PHONY: install
 
-VERSION=3.1.2
+VERSION=3.2.0
 
 # If you change this prefix, you can invoke "make build install" and ne will be compiled
 # and installed under the $(PREFIX) hierarchy. You can even use "make install PREFIX=$HOME/<dir>"

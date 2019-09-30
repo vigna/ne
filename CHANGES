@@ -1,6 +1,6 @@
 (This file, CHANGES, lists fixes. See NEWS for new features and enhancements.)
 
-unreleased
+3.2.0 2019-09-30
 
   * Fixed typo for "Home" key in default.keys.
 
