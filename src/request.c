@@ -198,7 +198,7 @@ static int reset_req_pages(int n0) {
 	if (req_page_table.pages == 0 && req_page_table_expand() == 0) return 0;
 	int cur_page = N2P(n0);
 	int first = cur_page == 0 ? 0 : req_page_table.req_page[cur_page-1].first + req_page_table.req_page[cur_page-1].entries;
-	memset(&req_page_table.req_page[cur_page], 0, req_page_table.pages - cur_page * sizeof(req_page_t));
+	memset(&req_page_table.req_page[cur_page], 0, (req_page_table.pages - cur_page) * sizeof(req_page_t));
 	int max_cols = min(ne_columns / 3, MAX_REQ_COLS);
 	int max_rows = ne_lines - 1;
 	int c;
