@@ -69,7 +69,7 @@ install:
 
 # Creates cygwin package on Windows
 
-cygwin:
+cygwin: version
 ifneq ($(OS), Windows)
 	$(error This target can only be run under Windows)
 endif
@@ -83,7 +83,7 @@ endif
 
 # Creates Mac OS X .dmg
 
-macosx: alldocs
+macosx: version alldocs
 ifneq ($(OS), Darwin)
 	$(error This target can only be run under Mac OS X)
 endif
