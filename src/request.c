@@ -1163,7 +1163,8 @@ static int handle_closedoc(int n) {
 
 	buffer *bp = get_nth_buffer(o);
 
-	if (!bp || bp->is_modified) return n; /* We don't close modified buffers here. */
+	/* We don't close modified buffers here, nor the last buffer. */
+	if (!bp || bp->is_modified || rl0->cur_entries == 1) return n;
 
 	/* We've determined we are going to close document *bp. */
 
@@ -1272,7 +1273,7 @@ int req_list_del(req_list * const rl, int nth) {
 	const int len0 = strlen(str);
 	int len = len0;
 
-	len += str[len + 1] ? 3 : 2;  /* 'a b c \0 Suffix \0' or 'a b c \0 \0' or 'a b c Suffix \0 \0' */
+	len += str[len + 1] ? 2 : 1;  /* 'a b c \0 Suffix \0' or 'a b c \0 \0' or 'a b c Suffix \0 \0' */
 	memmove(str, str + len, sizeof(char)*(rl->cur_chars - ((str + len) - rl->chars)));
 
 	for(int i = 0; i < rl->cur_entries; i++)
@@ -1280,12 +1281,10 @@ int req_list_del(req_list * const rl, int nth) {
 			rl->entries[i] -= len;
 
 	if (rl->orig_order) {
-		int nth0 = rl->orig_order[nth];
-		int skip = 0;
-		for (int i = 0; i < rl->cur_entries; i++) {
-			if (i >= nth) skip = 1;
-			int i0 = rl->orig_order[i+skip];
-			rl->orig_order[i] = (i0 >= nth0) ? i0 - 1 : i0;
+		int val = rl->orig_order[nth];
+		for (int i = 0, j = 0; i < rl->cur_entries; i++, j++) {
+			if (i == nth) j--;
+			else rl->orig_order[j] = rl->orig_order[i] < val ? rl->orig_order[i] : rl->orig_order[i] - 1;
 		}
 	}
 
