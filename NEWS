@@ -1,5 +1,11 @@
 (This file, NEWS, lists new features and enhancements. See CHANGES for fixes.)
 
+Unreleased
+
+  * Warning about opening a document with the same name as an existing
+    document now considers the fully qualified canonical path and name
+    of each rather than just their basenames.
+
 3.2.0 2019-09-30
 
   * Macros: They now work across multiple documents. You can cancel macro

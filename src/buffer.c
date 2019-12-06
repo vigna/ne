@@ -351,17 +351,29 @@ buffer *get_nth_buffer(int n) {
 
 
 
-/* Returns a buffer, given its name (i.e., the name of the file it
-   contains). Note that file_part() is applied *both* to the string passed
-   *and* to the buffer names, so that the path is immaterial. */
+/* Returns the first buffer with a name matching *p.
+   The buffers' names and *p are converted to their fully qualified form
+   for the comparisons.
+     This is a departure from earlier behavior, which only considered the
+   file_part() of either name. */
 
 buffer *get_buffer_named(const char *p) {
+   char *bname=NULL, *pname=NULL, *cwd=NULL;
+   buffer *b;
+   int rc;
 	if (!p) return NULL;
-	p = file_part(p);
-
-	for(buffer *b = (buffer *)buffers.head; b->b_node.next; b = (buffer *)b->b_node.next)
-		if (b->filename && !strcmp(file_part(b->filename), p)) return b;
-
+	cwd = ne_getcwd(CUR_DIR_MAX_SIZE);
+	if (!cwd) return NULL;
+	pname = absolute_file_path(p, cwd);
+	
+	for(rc = 1, b = (buffer *)buffers.head; b->b_node.next; b = (buffer *)b->b_node.next) {
+		if (b->filename && (bname = absolute_file_path(b->filename, cwd)))
+			if (!(rc = strcmp(bname, pname))) break;
+	}
+	free(pname);
+	free(bname);
+	free(cwd);
+	if (!rc)	return b;
 	return NULL;
 }
 
