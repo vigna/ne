@@ -367,11 +367,14 @@ buffer *get_buffer_named(const char *p) {
 	pname = absolute_file_path(p, cwd);
 	
 	for(rc = 1, b = (buffer *)buffers.head; b->b_node.next; b = (buffer *)b->b_node.next) {
-		if (b->filename && (bname = absolute_file_path(b->filename, cwd)))
+		if (b->filename && (bname = absolute_file_path(b->filename, cwd))) {
 			if (!(rc = strcmp(bname, pname))) break;
+			free(bname);
+			bname = NULL;
+		}
 	}
-	free(pname);
 	free(bname);
+	free(pname);
 	free(cwd);
 	if (!rc)	return b;
 	return NULL;
