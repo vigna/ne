@@ -711,7 +711,6 @@ void help(char *p) {
 		print_message(info_msg[HELP_KEYS]);
 		rl.cur_entries = ACTION_COUNT;
 		rl.alloc_entries = 0;
-		rl.max_entry_len = MAX_COMMAND_WIDTH;
 		rl.entries = (char **)command_names;
 		rl.lens = realloc(rl.lens, sizeof(int) * rl.cur_entries);
 		width = 0;
@@ -758,7 +757,6 @@ void help(char *p) {
 				memcpy(&tmphelp[3], &commands[r].help[2], sizeof(char *) * (commands[r].help_len-2));
 				rl.cur_entries = commands[r].help_len+1;
 				rl.alloc_entries = 0;
-				rl.max_entry_len = ne_columns;
 				rl.entries = tmphelp;
 				rl.lens = realloc(rl.lens, sizeof(int) * rl.cur_entries);
 				width = 0;
@@ -774,7 +772,6 @@ void help(char *p) {
 			} else {
 				rl.cur_entries = commands[r].help_len;
 				rl.alloc_entries = 0;
-				rl.max_entry_len = ne_columns;
 				rl.entries = (char **)commands[r].help;
 				rl.lens = realloc(rl.lens, sizeof(int) * rl.cur_entries);
 				width = 0;

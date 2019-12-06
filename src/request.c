@@ -301,7 +301,6 @@ int common_prefix_len(req_list *rlp) {
    strings from the entries array existing in "page". */
 
 static void print_strings() {
-	const int dx = rl.max_entry_len + 1 + (rl.suffix ? 1 : 0);
 
 	set_attr(0);
 	req_page_t *pp = &req_page_table.req_page[page];
@@ -645,7 +644,6 @@ static void fuzz_forward(const int c) {
 
 static int request_strings_init(req_list *rlp0) {
 	rl.cur_entries = rlp0->cur_entries;
-	rl.max_entry_len = rlp0->max_entry_len;
 	rl.suffix = rlp0->suffix;
 	if (!(rl.entries = calloc(rlp0->cur_entries, sizeof(char *)))) return 0;
 	if (!(rl.lens = calloc(rlp0->cur_entries, sizeof(int)))) {
@@ -1295,14 +1293,7 @@ int req_list_del(req_list * const rl, int nth) {
 	memmove(&rl->entries[nth], &rl->entries[nth+1], sizeof(char *) * (rl->cur_entries - nth));
 	memmove(&rl->lens[nth],    &rl->lens[nth+1],    sizeof(int) *    (rl->cur_entries - nth));
 	rl->cur_entries--;
-	/* did we just delete longest string? */
 
-	if (len0 == rl->max_entry_len) {
-		for (int i = rl->max_entry_len = 0; i < rl->cur_entries; i++) {
-			if ((len = strlen(rl->entries[i])) > rl->max_entry_len)
-				rl->max_entry_len = len;
-		}
-	}
 	return rl->cur_entries;
 }
 
@@ -1317,7 +1308,7 @@ void req_list_free(req_list * const rl) {
 	if (rl->lens) free(rl->lens);
 	rl->lens = NULL;
 	rl->allow_reorder = false;
-	rl->cur_entries = rl->alloc_entries = rl->max_entry_len = 0;
+	rl->cur_entries = rl->alloc_entries = 0;
 	rl->cur_chars = rl->alloc_chars = 0;
 }
 
@@ -1341,7 +1332,7 @@ int req_list_init( req_list * const rl, int cmpfnc(const char *, const char *), 
 	rl->help_quits = false;
 	rl->selectdoc_quits = false;
 	rl->suffix = suffix;
-	rl->cur_entries = rl->alloc_entries = rl->max_entry_len = 0;
+	rl->cur_entries = rl->alloc_entries = 0;
 	rl->cur_chars = rl->alloc_chars = 0;
 	if (rl->entries = malloc(sizeof(char *) * DEF_ENTRIES_ALLOC_SIZE)) {
 		if (rl->chars = malloc(sizeof(char) * DEF_CHARS_ALLOC_SIZE)) {
@@ -1435,8 +1426,6 @@ char *req_list_add(req_list * const rl, char * const str, const int suffix) {
 				if(!strcmp(rl->entries[i], str)) return rl->entries[i];
 		}
 	}
-
-	if (len > rl->max_entry_len) rl->max_entry_len = len;
 
 	/* make enough space to store the new string */
 	if (rl->cur_chars + lentot > rl->alloc_chars) {
