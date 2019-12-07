@@ -1,6 +1,6 @@
 /* Buffer handling functions, including allocation, deallocation, and I/O.
 
-   Copyright (C) 1993-1998 Sebastiano Vigna 
+   Copyright (C) 1993-1998 Sebastiano Vigna
    Copyright (C) 1999-2019 Todd M. Lewis and Sebastiano Vigna
 
    This file is part of ne, the nice editor.
@@ -19,7 +19,7 @@
    along with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
 
-#include "ne.h" 
+#include "ne.h"
 #include "support.h"
 #include <sys/mman.h>
 
@@ -147,7 +147,7 @@ line_desc_pool *alloc_line_desc_pool(int64_t pool_size, int force) {
 			ldp->mapped = force;
 			ldp->size = pool_size;
 			new_list(&ldp->free_list);
-			for(int64_t i = 0; i < pool_size; i++) 
+			for(int64_t i = 0; i < pool_size; i++)
 				if (do_syntax) add_tail(&ldp->free_list, &((line_desc *)ldp->pool)[i].ld_node);
 				else add_tail(&ldp->free_list, &((no_syntax_line_desc *)ldp->pool)[i].ld_node);
 			return ldp;
@@ -365,7 +365,7 @@ buffer *get_buffer_named(const char *p) {
 	cwd = ne_getcwd(CUR_DIR_MAX_SIZE);
 	if (!cwd) return NULL;
 	pname = absolute_file_path(p, cwd);
-	
+
 	for(rc = 1, b = (buffer *)buffers.head; b->b_node.next; b = (buffer *)b->b_node.next) {
 		if (b->filename && (bname = absolute_file_path(b->filename, cwd)))
 			if (!(rc = strcmp(bname, pname))) break;
@@ -439,7 +439,7 @@ int save_all_modified_buffers(void) {
 
 line_desc *alloc_line_desc(buffer * const b) {
 	block_signals();
-	
+
 	line_desc_pool *ldp;
 	for(ldp = (line_desc_pool *)b->line_desc_pool_list.head; ldp->ldp_node.next; ldp = (line_desc_pool *)ldp->ldp_node.next) {
 
@@ -497,7 +497,7 @@ void free_line_desc(buffer * const b, line_desc * const ld) {
 	for(ldp = (line_desc_pool *)b->line_desc_pool_list.head; ldp->ldp_node.next; ldp = (line_desc_pool *)ldp->ldp_node.next) {
 		assert_line_desc_pool(ldp);
 		if (do_syntax && ld >= (line_desc *)ldp->pool && ld < (line_desc *)ldp->pool + ldp->size
-			|| !do_syntax && (no_syntax_line_desc *)ld >= (no_syntax_line_desc *)ldp->pool 
+			|| !do_syntax && (no_syntax_line_desc *)ld >= (no_syntax_line_desc *)ldp->pool
 				&& (no_syntax_line_desc *)ld < (no_syntax_line_desc *)ldp->pool + ldp->size) break;
 	}
 
@@ -692,7 +692,7 @@ void free_chars(buffer *const b, char *const p, const int64_t len) {
    a stream containing one NULL. */
 
 
-int insert_one_line(buffer * const b, line_desc * const ld, const int64_t line, const int64_t pos) {	
+int insert_one_line(buffer * const b, line_desc * const ld, const int64_t line, const int64_t pos) {
 	return insert_stream(b, ld, line, pos, "", 1);
 }
 
@@ -726,7 +726,7 @@ int undelete_line(buffer * const b) {
 	line_desc * const ld = b->cur_line_desc;
 	if (!b->last_deleted) return ERROR;
 	start_undo_chain(b);
-	if (b->cur_pos > ld->line_len) 
+	if (b->cur_pos > ld->line_len)
 		insert_spaces(b, ld, b->cur_line, ld->line_len, b->win_x + b->cur_x - calc_width(ld, ld->line_len, b->opt.tab_size, b->encoding));
 
 	insert_one_line(b, ld, b->cur_line, b->cur_pos);
@@ -817,7 +817,7 @@ int insert_stream(buffer * const b, line_desc * ld, int64_t line, int64_t pos, c
 					if (len - result) memmove(ld->line - (len - result), ld->line, pos);
 					if (result) memmove(ld->line + pos + result, ld->line + pos, ld->line_len - pos);
 					memcpy(ld->line - (len - result) + pos, s, len);
-	
+
 					ld->line -= (len - result);
 					ld->line_len += len;
 				}
@@ -827,7 +827,7 @@ int insert_stream(buffer * const b, line_desc * ld, int64_t line, int64_t pos, c
 			/* We just inserted len chars at (line,pos); adjust bookmarks and mark accordingly. */
 			if (b->marking && b->block_start_line == line && b->block_start_pos > pos) b->block_start_pos += len;
 
-			for (int i = 0, mask = b->bookmark_mask; mask; i++, mask >>= 1) 
+			for (int i = 0, mask = b->bookmark_mask; mask; i++, mask >>= 1)
 				if ((mask & 1) && b->bookmark[i].line == line && b->bookmark[i].pos > pos) b->bookmark[i].pos += len;
 		}
 
@@ -911,7 +911,7 @@ int insert_one_char(buffer * const b, line_desc * const ld, const int64_t line, 
 /* Inserts a number of spaces. */
 
 int insert_spaces(buffer * const b, line_desc * const ld, const int64_t line, const int64_t pos, int64_t n) {
-	
+
 	static char spaces[MAX_STACK_SPACES];
 	int result = OK, i;
 
@@ -1108,7 +1108,7 @@ int delete_one_char(buffer * const b, line_desc * const ld, const int64_t line, 
 	return delete_stream(b, ld, line, pos, b->encoding == ENC_UTF8 && pos < ld->line_len ? utf8len(ld->line[pos]) : 1);
 }
 
-/* Returns the line descriptor for line n of buffer b, or NULL if n is out of range. 
+/* Returns the line descriptor for line n of buffer b, or NULL if n is out of range.
    We assume that cur_line and cur_line_desc are coherent, and try to use the
    faster way (i.e., relative or absolute). */
 
@@ -1137,7 +1137,7 @@ line_desc *nth_line_desc(const buffer *b, const int64_t n) {
 		if (n < b->cur_line) for(int64_t i = 0; i < b->cur_line - n; i++) ld = (line_desc *)ld->ld_node.prev;
 		else for(int64_t i = 0; i < n - b->cur_line; i++) ld = (line_desc *)ld->ld_node.next;
 	}
-	
+
 	return ld;
 }
 
@@ -1300,7 +1300,7 @@ int load_fd_mmap(buffer * const b, const int fd, const size_t len, char * const 
 			(*ldp)->mapped = true;
 			b->allocated_chars = len;
 
-			/* We replace the offsets from the start of the file with actual memory 
+			/* We replace the offsets from the start of the file with actual memory
 			   pointers, while adding the line descriptors to the buffer list. */
 			if (do_syntax) {
 				for(line_desc *ld = (line_desc *)ld_p, *ld_end = ld + b->num_lines; ld < ld_end; ld++) {
@@ -1404,7 +1404,7 @@ int load_fd_in_buffer(buffer *b, int fd) {
 			pool = new_pool;
 			memset(pool + len, 0, curr_size - len);
 		}
-		
+
 		cp = alloc_char_pool_from_memory(pool, curr_size);
 		if (!cp) {
 			free(pool);
@@ -1520,7 +1520,7 @@ void reset_syntax_states(buffer *b) {
 		}
 
 		b->attr_len = -1;
-	}	
+	}
 }
 
 
@@ -1531,7 +1531,7 @@ void ensure_attr_buf(buffer * const b, const int64_t capacity) {
 	/* attr_buf already exists? */
 	if (!b->attr_buf) {
 		b->attr_size = capacity;
-		b->attr_buf = malloc(b->attr_size * sizeof *b->attr_buf); 
+		b->attr_buf = malloc(b->attr_size * sizeof *b->attr_buf);
 	}
 	else if (capacity > b->attr_size) {
 		b->attr_size = capacity;

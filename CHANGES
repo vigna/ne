@@ -1,5 +1,10 @@
 (This file, CHANGES, lists fixes. See NEWS for new features and enhancements.)
 
+Unreleased
+
+  * Fixed possible crash when closing documents from within the SelectDoc
+    requester.
+
 3.2.1 2019-10-02
 
   * Fixed reordering items on multi-page requesters.

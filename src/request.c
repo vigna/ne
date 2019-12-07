@@ -201,12 +201,12 @@ static int reset_req_pages(int n0) {
 	memset(&req_page_table.req_page[cur_page], 0, (req_page_table.pages - cur_page) * sizeof(req_page_t));
 	int max_cols = min(ne_columns / 3, MAX_REQ_COLS);
 	int max_rows = ne_lines - 1;
-	int c;
+	int cols;
 	while (first < rl.cur_entries) {
 		if (cur_page >= req_page_table.pages && req_page_table_expand() == 0) return 0;
-		for (c = max_cols; c > 0; c--)
-			if (fit_page(first, min(c*max_rows, rl.cur_entries - first), c, max_rows, &req_page_table.req_page[cur_page])) break;
-		if (c==0) return 0; /* This should never happen. */
+		for (cols = max_cols; cols > 0; cols--)
+			if (fit_page(first, min(cols*max_rows, rl.cur_entries - first), cols, max_rows, &req_page_table.req_page[cur_page])) break;
+		if (cols==0) return 0; /* This should never happen. */
 		first += req_page_table.req_page[cur_page].entries;
 		cur_page++;
 	}
@@ -219,10 +219,14 @@ static int reset_req_pages(int n0) {
 		int first = pp->first;
 
 		for (int rows = 1; rows <= max_rows; rows++) {
-			c = needed_entries / rows + (needed_entries % rows ? 1 : 0);
-			if (c >= MAX_REQ_COLS) continue;
-			if (fit_page(first, needed_entries, c, rows, pp)) {
+			cols = needed_entries / rows + (needed_entries % rows ? 1 : 0);
+			if (cols >= MAX_REQ_COLS) continue;
+			if (fit_page(first, needed_entries, cols, rows, pp)) {
 				if (rows == max_rows || sum_ints(pp->cols, pp->col_width) * 1000 / pp->rows < ne_columns * 1000 / (ne_lines - 1)) {
+					int good_rows = rows, good_cols = cols;
+					while (good_rows > 1 && cols * (good_rows - 1) >= needed_entries && fit_page(first, needed_entries, cols, good_rows - 1, pp))
+						good_rows--;
+					fit_page(first, needed_entries, cols, good_rows, pp);
 					return cur_page;
 				}
 			}
@@ -296,12 +300,33 @@ int common_prefix_len(req_list *rlp) {
 	return len;
 }
 
+#if 0
+void dump_rl_chars(req_list * const rl) {
+	char *c = rl->chars;
+	int entry;
+	fprintf(stderr,"===================================\n");
+	for (entry = 0; entry < rl->cur_entries; entry++) {
+		char *p = rl->entries[entry];
+		if (c != p) {
+			fprintf(stderr,"dump_rl_chars: c != p(%s); aborting\n", p);
+			return;
+		}
+		fprintf(stderr, "dump_rl_chars: ");
+		while (*c) fprintf(stderr," %c", *c++);
+		fprintf(stderr, " \\0"); c++;
+		while (*c) fprintf(stderr," %c", *c++);
+		fprintf(stderr, " \\0\n"); c++;
+	}
+	fprintf(stderr,"-----------------------------------\n");
+	fflush(NULL);
+}
+#endif
+
 
 /* This is the printing function used by the requester. It prints the
    strings from the entries array existing in "page". */
 
 static void print_strings() {
-
 	set_attr(0);
 	req_page_t *pp = &req_page_table.req_page[page];
 	for(int row = 0; row < ne_lines - 1; row++) {
@@ -1152,7 +1177,7 @@ char *request_file(const buffer *b, const char *prompt, const char *default_name
 
 static int handle_closedoc(int n) {
 
-	const char * const p = rl.entries[n];
+	const char *p = rl.entries[n];
 
 	int o;
 	for (o = 0; o < rl0->cur_entries && rl0->entries[o] != p; o++) /* empty loop */ ;
@@ -1170,18 +1195,28 @@ static int handle_closedoc(int n) {
 
 	if (rl.cur_entries == 1 && rl0->cur_entries > 1) {
 		/* Ensure we'll still have an entry in view after closing *bp. */
-		fuzz_back(); /* "n" is no longer valid. */
+		fuzz_back(); /* *p is still valid! */
 	}
 
-	/* Normally when we close the indicated buffer, we advance the indicator to the next
-	   buffer. But "wrapping around" when deleting the last entry is very jarring in a
-	   requester, so in that case we back up one before closing the buffer. */
+	for (int j = i = 0; j < rl.cur_entries; j++) {
+		char * const entry = rl.entries[j];
+		int len = rl.lens[j];
+		if (p == entry) n = i;
+		else {
+			rl.entries[i] = entry;
+			rl.lens[i++] = len;
+		}
+	}
+	rl.cur_entries--;
+	fuzz_len = common_prefix_len(&rl);
+	reset_req_pages(0);
+	n = min(n, rl.cur_entries - 1);
+	normalize(n);
 
-	if (PCR2N(page, C, R) == rl.cur_entries - 1 && rl.cur_entries > 1)
-		normalize(rl.cur_entries - 2);
-
-	req_list_del(rl0, o);
-	n = reset_rl_entries();
+	int shift_len = req_list_del(rl0, o);
+	for (int i = 0; i < rl.cur_entries; i++)
+		if (rl.entries[i] >= p)
+			rl.entries[i] -= shift_len;
 
 	buffer *nextb = (buffer *)bp->b_node.next;
 
@@ -1262,9 +1297,9 @@ int request_document(void) {
 #define DEF_ENTRIES_ALLOC_SIZE     256
 #define DEF_CHARS_ALLOC_SIZE  (4*1024)
 
-
 /* Delete the nth string from the given request list.
-   This will work regardless of whether the req_list has been finalized. */
+   This will work regardless of whether the req_list has been finalized.
+   Returns the length of the shift. */
 
 int req_list_del(req_list * const rl, int nth) {
 
@@ -1273,11 +1308,14 @@ int req_list_del(req_list * const rl, int nth) {
 	const int len0 = strlen(str);
 	int len = len0;
 
-	len += str[len + 1] ? 2 : 1;  /* 'a b c \0 Suffix \0' or 'a b c \0 \0' or 'a b c Suffix \0 \0' */
-	memmove(str, str + len, sizeof(char)*(rl->cur_chars - ((str + len) - rl->chars)));
+	len += str[len + 1] ? 3 : 2;  /* 'a b c \0  * \0' or
+	                                 'a b c \0 \0'    or
+	                                 'a b * \0 \0'    depending on whether req_list_finalize() has been called. */
+	memmove(str, str + len, sizeof(char)*(rl->alloc_chars - (str + len - rl->chars)));
+	rl->cur_chars -= len;
 
 	for(int i = 0; i < rl->cur_entries; i++)
-		if (rl->entries[i] > str )
+		if (rl->entries[i] >= str )
 			rl->entries[i] -= len;
 
 	if (rl->orig_order) {
@@ -1288,14 +1326,12 @@ int req_list_del(req_list * const rl, int nth) {
 		}
 	}
 
-	rl->cur_chars -= len;
 	memmove(&rl->entries[nth], &rl->entries[nth+1], sizeof(char *) * (rl->cur_entries - nth));
-	memmove(&rl->lens[nth],    &rl->lens[nth+1],    sizeof(int) *    (rl->cur_entries - nth));
+	memmove(&rl->lens[nth],    &rl->lens[nth+1],    sizeof(int)    * (rl->cur_entries - nth));
 	rl->cur_entries--;
 
-	return rl->cur_entries;
+	return len;
 }
-
 
 void req_list_free(req_list * const rl) {
 	if (rl->entries) free(rl->entries);
@@ -1354,7 +1390,7 @@ int req_list_init( req_list * const rl, int cmpfnc(const char *, const char *), 
 
 /* req_list strings are stored with a trailing '\0', followed by an optional suffix
    character, and an additional trailing '\0'. This allows comparing strings w/o
-   having to consider the optional suffexes. Finalizing the req_list effectively
+   having to consider the optional suffixes. Finalizing the req_list effectively
    shifts the suffixes left, exchanging them for the preceeding '\0'. After this
    operation, all the strings will be just strings, some of which happen to end
    with the suffix character, and all of which are followed by two null bytes.
