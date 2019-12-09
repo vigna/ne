@@ -230,6 +230,7 @@ bool  request_response(const buffer *b, const char *prompt, bool default_value);
 char  request_char(const buffer *b, const char *prompt, const char default_value);
 int64_t request_number(const buffer *b, const char *prompt, int64_t default_value);
 char *request_string(const buffer *b, const char *prompt, const char *default_string, bool accept_null_string, int completion_type, bool prefer_utf8);
+/* char *complete_filename(const char *start_prefix); */
 char *request(const buffer *b, const char *prompt, const char *default_string, bool alpha_allowed, int completion_type, bool prefer_utf8);
 
 /* request.c */
@@ -238,7 +239,6 @@ char *request_syntax();
 char *request_files(const char *filename, bool use_prefix);
 char *request_file(const buffer *b, const char *prompt, const char *default_name);
 int   request_document(void);
-char *complete_filename(const char *start_prefix);
 int   req_list_del(req_list * const rl, int nth);
 void  req_list_free(req_list * const rl);
 int   req_list_init(req_list * const rl, int cmpfnc(const char *, const char *), const bool allow_dupes, const bool allow_reorder, const char suffix);

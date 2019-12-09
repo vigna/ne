@@ -712,12 +712,12 @@ void help(char *p) {
 		rl.cur_entries = ACTION_COUNT;
 		rl.alloc_entries = 0;
 		rl.entries = (char **)command_names;
-		rl.lens = realloc(rl.lens, sizeof(int) * rl.cur_entries);
+		rl.lengths = realloc(rl.lengths, sizeof(int) * rl.cur_entries);
 		width = 0;
 		for (int i=0,w; i<rl.cur_entries; i++)
 			if ((w=strlen(rl.entries[i])) > width) width = w;
 		for (int i=0; i<rl.cur_entries; i++)
-			rl.lens[i] = width + 2;
+			rl.lengths[i] = width + 2;
 		req_order = request_order_orig;
 		if (p || (r = request_strings(&rl, r)) >= 0) {
 			D(fprintf(stderr, "Help check #2: p=%p, r=%d\n", p, r);)
@@ -758,12 +758,12 @@ void help(char *p) {
 				rl.cur_entries = commands[r].help_len+1;
 				rl.alloc_entries = 0;
 				rl.entries = tmphelp;
-				rl.lens = realloc(rl.lens, sizeof(int) * rl.cur_entries);
+				rl.lengths = realloc(rl.lengths, sizeof(int) * rl.cur_entries);
 				width = 0;
 				for (int i=0,w; i<rl.cur_entries; i++)
 					if ((w=strlen(rl.entries[i])) > width) width = w;
 				for (int i=0; i<rl.cur_entries; i++)
-					rl.lens[i] = width + 2;
+					rl.lengths[i] = width + 2;
 				req_order = true;
 				const int s = request_strings(&rl, 0);
 				req_order = request_order_orig;
@@ -773,12 +773,12 @@ void help(char *p) {
 				rl.cur_entries = commands[r].help_len;
 				rl.alloc_entries = 0;
 				rl.entries = (char **)commands[r].help;
-				rl.lens = realloc(rl.lens, sizeof(int) * rl.cur_entries);
+				rl.lengths = realloc(rl.lengths, sizeof(int) * rl.cur_entries);
 				width = 0;
 				for (int i=0,w; i<rl.cur_entries; i++)
 					if ((w=strlen(rl.entries[i])) > width) width = w;
 				for (int i=0; i<rl.cur_entries; i++)
-					rl.lens[i] = width + 2;
+					rl.lengths[i] = width + 2;
 				req_order = true;
 				const int s = request_strings(&rl, 0);
 				req_order = request_order_orig;
@@ -787,7 +787,7 @@ void help(char *p) {
 			if (key_strokes) free(key_strokes);
 		}
 	} while(r >= 0);
-	free(rl.lens);
+	free(rl.lengths);
 	draw_status_bar();
 }
 

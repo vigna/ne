@@ -22,6 +22,7 @@
 #include "ne.h"
 #include "support.h"
 #include "termchar.h"
+#include <dirent.h>
 
 /* This is the maximum number of bytes which can be typed on the input
    line. The actual number of characters depends on the line encoding. */
@@ -580,6 +581,64 @@ static int request_history(void) {
 	strntmp(NULL, -1);
 	return i >= 0 && i < history_buff->num_lines;
 }
+
+/* The filename completion function. Returns NULL if no file matches start_prefix,
+   or the longest prefix common to all files extending start_prefix. */
+
+static char *complete_filename(const char *start_prefix) {
+
+	/* This might be NULL if the current directory has been unlinked, or it is not readable.
+	   In that case, we end up moving to the completion directory. */
+	char * const cur_dir_name = ne_getcwd(CUR_DIR_MAX_SIZE);
+
+	char * const dir_name = str_dup(start_prefix);
+	if (dir_name) {
+		char * const p = (char *)file_part(dir_name);
+		*p = 0;
+		if (p != dir_name && chdir(tilde_expand(dir_name)) == -1) {
+			free(dir_name);
+			return NULL;
+		}
+	}
+
+	start_prefix = file_part(start_prefix);
+	bool is_dir, unique = true;
+	char *cur_prefix = NULL;
+	DIR * const d = opendir(CURDIR);
+
+	if (d) {
+		for(struct dirent * de; !stop && (de = readdir(d)); ) {
+			if (is_prefix(start_prefix, de->d_name))
+				if (cur_prefix) {
+					cur_prefix[max_prefix(cur_prefix, de->d_name)] = 0;
+					unique = false;
+				}
+				else {
+					cur_prefix = str_dup(de->d_name);
+					is_dir = is_directory(de->d_name);
+				}
+		}
+
+		closedir(d);
+	}
+
+	char * result = NULL;
+
+	if (cur_prefix) {
+		result = malloc(strlen(dir_name) + strlen(cur_prefix) + 2);
+		strcat(strcat(strcpy(result, dir_name), cur_prefix), unique && is_dir ? "/" : "");
+	}
+
+	if (cur_dir_name != NULL) {
+		chdir(cur_dir_name);
+		free(cur_dir_name);
+	}
+	free(dir_name);
+	free(cur_prefix);
+
+	return result;
+}
+
 
 char *request(const buffer * const b, const char *prompt, const char * const default_string, const bool alpha_allowed, const int completion_type, const bool prefer_utf8) {
 

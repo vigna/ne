@@ -84,10 +84,11 @@ static void search_buff(const buffer *b, char * p, const int encoding, const boo
 
 char *autocomplete(char *p, char *req_msg, const int ext, int * const error) {
 	int max_len = 0, min_len = INT_MAX, prefix_len = strlen(p);
-
+	static int ac_prune = true;
 	assert(p);
 
 	req_list_init(&rl, (cur_buffer->opt.case_search ? strcmp : strdictcmp), false, false, EXTERNAL_FLAG_CHAR);
+	rl.prune = ac_prune;
 	count_scanned = 0;
 
 	search_buff(cur_buffer, p, cur_buffer->encoding, cur_buffer->opt.case_search, false);
@@ -158,6 +159,7 @@ char *autocomplete(char *p, char *req_msg, const int ext, int * const error) {
 		else {
 			if (req_msg) print_message(req_msg);
 			int result = request_strings(&rl, 0);
+			ac_prune = rl.prune;
 			if (result != ERROR) {
 				result = result >= 0 ? result : -result - 2;
 				/* Delete EXTERNAL_FLAG_CHAR at the end of the strings if necessary. */

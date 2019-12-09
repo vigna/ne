@@ -23,27 +23,39 @@
 #include "termchar.h"
 #include <dirent.h>
 
-/* request_strings() prompts the user to choose one between several (cur_entries) strings,
-   contained in the entries array. The maximum string width is given as
-   max_name_len. The strings are displayed as an array. More than one page will
-   be available if there are many strings. If string n was selected with
-   RETURN, n is returned; if string n was selected with TAB, -n-2 is returned.
-   On escaping, ERROR is returned.
+/* How to build and use a req_list:
+     req_list_init()
+       loop:  req_list_add()
+              req_list_del()
+       req_list_finalize()
+       request_strings()
+     req_list_free()
 
-   We rely on a series of auxiliary functions and a few static variables. */
+   req_list_init()     initializes a req_list structure.
 
-#define BY_COLUMN         (req_order)
-#define BY_ROW            (!BY_COLUMN)
+   req_list_add()      is called once for every string you wish to include in
+                       the request. If during the process of adding entries to
+                       the req_list you decide to remove any previously added
+                       entry, you should use req_list_del() to remove it.
 
-/* X and Y constitute a screen coordinate derived from (C,R) which varies from page to page.
-     (Y, being a synonym for R, is implemented as a macro.)
-   R and C are the row and column of the currently selected entry.
-   page is the index into req_page_table.req_page.
-   fuzz_len is the length of the matching prefix into our current entry. */
-static int X, R, C, page, fuzz_len;
-#define Y (R)
+   req_list_finalize() must be called after all the entries have been added to
+                       the req_list but before request_strings(). It takes care
+                       of some final housekeeping duties to prepare the
+                       req_list for use by request_strings();
 
-static bool prune;
+   request_strings()   prompts the user to choose one from among possibly many
+                       strings in the req_list. If string n was selected with
+                       RETURN, n is returned; if string n was selected with
+                       TAB, -n-2 is returned. On escaping, ERROR is returned.
+
+   req_list_free()     must be called on any req_list that has been initialized
+                       with req_list_init().
+
+   We rely on a set of auxiliary functions and a few static variables:
+     req_order
+     X, R, C, page, fuzz_len
+     rl, rl0
+*/
 
 /* Traditionally ne has displayed request entries BY_ROW (req_order==0):
       a   b   c   d
@@ -60,6 +72,17 @@ static bool prune;
    and attempts to consolidate as many of those tricky expressions
    into one small set of macros and functions. */
 
+#define BY_COLUMN         (req_order)
+#define BY_ROW            (!BY_COLUMN)
+
+/* X and Y constitute a screen coordinate derived from (C,R) which varies from page to page.
+     (Y, being a synonym for R, is implemented as a macro.)
+   R and C are the row and column of the currently selected entry.
+   page is the index into req_page_table.req_page.
+   fuzz_len is the length of the matching prefix into our current entry. */
+static int X, R, C, page, fuzz_len;
+#define Y (R)
+
 #define NAMES_PER_ROW(p)     (req_page_table.req_page[(p)].cols)
 #define NAMES_PER_COL(p)     (req_page_table.req_page[(p)].rows)
 #define N2PCRX(n,p,c,r,x)    (n2pcrx((n),&(p),&(c),&(r),&(x)))
@@ -68,6 +91,31 @@ static bool prune;
 #define PCR2N(p,c,r)         (pcr2n((p),(c),(r)))
 #define DX(d)                (dxd((d)))
 #define DY(d)                (dyd((d)))
+
+
+/* The master req_list that gets built prior to calling request_strings() has its own
+   copy of each of the strings. request() builds a working copy of the master
+   req_list. This working req_list doesn't duplicate the master's strings, but
+   it does have an array of pointers to some of those strings. The working
+   req_list's array may exclude some entries if progressive search (rl.prune) is
+   turned on (via the Insert key), and some entries may be out of order
+   relative to those in the master req_list because of F2/F3 reordering during
+   SelectDoc, in which case the master req_list keeps a mapping between the
+   original order and the displayed order.
+
+   The req_list_del() function removes an item from the req_list. It is the
+   counterpart to req_list_add() which we use for building the master req_list
+   one item at a time. req_list_del() can be called either while building the
+   req_list, or after the req_list has been finalized. It's used when we close
+   a document with the SelectDoc req_list showing to remove that closed
+   document's entry from the master req_list. Coordinating changes between the
+   working req_list and the master req_list when deleting an entry from the
+   master req_list requires some of the string data of the master req_list to be
+   shifted. Because the working list doesn't have its own copy of the strings,
+   there's no character data that needs shifting for the working req_list.
+   However, the working req_list does have its own list of pointers into that
+   data, and any of them pointing into the shifted character memory needs to be
+   adjusted appropriately. */
 
 static req_list rl, *rl0; /* working req_list and pointer to the original req_list */
 
@@ -104,9 +152,9 @@ static bool fit_page(int n0, int entries, int cols, int rows, req_page_t * page)
 	for (i=0, combined_col_widths=0; i<entries && (cols == 1 || combined_col_widths <= ne_columns); i++) {
 		int row = req_order ? i % rows : i / cols;
 		int col = req_order ? i / rows : i % cols;
-		if (page->col_width[col] < rl.lens[n0 + i]) {
-			combined_col_widths += rl.lens[n0 + i] - page->col_width[col];
-			page->col_width[col] = rl.lens[n0 + i];
+		if (page->col_width[col] < rl.lengths[n0 + i]) {
+			combined_col_widths += rl.lengths[n0 + i] - page->col_width[col];
+			page->col_width[col] = rl.lengths[n0 + i];
 		}
 		page->entries++;
 		if (page->cols < col+1) page->cols = col+1;
@@ -289,26 +337,49 @@ static int dyd(int dir) {
 }
 
 
-int common_prefix_len(req_list *rlp) {
-	char * const p0 = rlp->entries[0];
+static int common_prefix_len(req_list *cpl_rl) {
+	char * const p0 = cpl_rl->entries[0];
 	int len = strlen(p0);
-	for (int i = 0; len && i < rlp->cur_entries; i++) {
-		char * const p1 = rlp->entries[i];
+	for (int i = 0; len && i < cpl_rl->cur_entries; i++) {
+		char * const p1 = cpl_rl->entries[i];
 		for ( ; len && strncasecmp(p0, p1, len); len--)
 			;
 	}
 	return len;
 }
 
-#if 0
-void dump_rl_chars(req_list * const rl) {
-	char *c = rl->chars;
+
+/* Given that the req_list entries in rl may be reordered WRT *rl0,
+   return the original index corresponding to the new index "n". */
+static int reverse_reorder(const int n) {
+	if (!rl0->allow_reorder) return n;
+	for (int i = 0; i < rl0->cur_entries; i++)
+		if (rl0->reorder[i] == n) return i;
+	return n; /* Should never happen! */
+}
+
+#ifdef DEBUGPRINTF
+static void dump_reorder() {
+	if (rl0->allow_reorder) {
+		fprintf(stderr,"===================================\n");
+		for (int i = 0; i < rl0->cur_entries; i++) {
+			fprintf(stderr,"%d:%d %s | %s\n", i, rl0->reorder[i],
+			   rl0->entries[i],
+			   i < rl.cur_entries ? rl.entries[i] : "");
+		}
+		fprintf(stderr,"-----------------------------------\n");
+		fflush(NULL);
+	}
+}
+
+static void dump_rl_chars(req_list * const drc_rl) {
+	char *c = drc_rl->chars;
 	int entry;
 	fprintf(stderr,"===================================\n");
-	for (entry = 0; entry < rl->cur_entries; entry++) {
-		char *p = rl->entries[entry];
+	for (entry = 0; entry < drc_rl->cur_entries; entry++) {
+		char *p = drc_rl->entries[entry];
 		if (c != p) {
-			fprintf(stderr,"dump_rl_chars: c != p(%s); aborting\n", p);
+			fprintf(stderr,"dump_rl_chars: c(%s) != p(%s); aborting\n", c, p);
 			return;
 		}
 		fprintf(stderr, "dump_rl_chars: ");
@@ -356,6 +427,7 @@ static bool normalize(int n) {
 	if (n < 0 ) n = 0;
 	if (n >= rl.cur_entries ) n = rl.cur_entries - 1;
 	N2PCRX(n, page, C, R, X);
+	D(dump_reorder();)
 	if ( p != page ) {
 		print_strings();
 		return true;
@@ -433,7 +505,7 @@ static void request_move_down(void) {
 }
 
 
-void request_move_inc_down(void) {
+static void request_move_inc_down(void) {
 	if (C == NAMES_PER_ROW(page) - 1) {
 		if (R == NAMES_PER_COL(page) - 1) request_move_to_eof();
 		else request_next_page();
@@ -463,17 +535,25 @@ static void request_move_right(void) {
 
 
 /* Reorder (i.e. swap) the current entry n with entry n+dir.
-   dir should be either 1 or -1. */
+   dir should be either 1 or -1.
+   Rearranges pointers in rl.cur_entries, and
+   updates the reorder array in *rl0.
+   Note: under no circumstances do the original rl0->entries[] change order. */
 
 static bool request_reorder(const int dir) {
 	if (! rl0->allow_reorder || rl.cur_entries < 2) return false;
 
+	/* p0 and p1 point to the strings we want to swap */
+	/* n0 and n1 are the indicies in   rl.entries[] for p0 and p1. (Also for rl.lengths[].) */
+	/* i0 and i1 are the indicies in rl0->entries[] for p0 and p1 */
 	const int n0 = PCR2N(page, C, R);
 	const int n1 = (n0 + dir + rl.cur_entries ) % rl.cur_entries; /* Allows wrap around. */
+
 	char * const p0 = rl.entries[n0];
 	char * const p1 = rl.entries[n1];
+
 	int i0, i1, i;
-	for (i=0, i0=-1, i1=-1; i<rl0->cur_entries && (i0<0 || i1<0); i++) {
+	for (i = 0, i0 = i1 = -1; i < rl0->cur_entries && (i0 < 0 || i1 < 0); i++) {
 		if (i0 < 0 && p0 == rl0->entries[i] ) {
 			i0 = i;
 		}
@@ -482,20 +562,18 @@ static bool request_reorder(const int dir) {
 		}
 	}
 
-	i = rl0->orig_order[i0];
-	rl0->orig_order[i0] = rl0->orig_order[i1];
-	rl0->orig_order[i1] = i;
+   i = rl0->reorder[i0];
+	rl0->reorder[i0] = rl0->reorder[i1];
+	rl0->reorder[i1] = i;
 
 	rl.entries[n0] = p1;
 	rl.entries[n1] = p0;
 
-	i = rl.lens[n0];
-	rl.lens[n0] = rl.lens[n1];
-	rl.lens[n1] = i;
+	i = rl.lengths[n0];
+	rl.lengths[n0] = rl.lengths[n1];
+	rl.lengths[n1] = i;
 
-	rl0->entries[i0] = p1;
-	rl0->entries[i1] = p0;
-
+	rl0->reordered = rl.reordered = true;
 	reset_req_pages(min(n0,n1));
 	page = -1; /* causes normalize() to call print_strings() */
 	normalize(n1);
@@ -503,24 +581,32 @@ static bool request_reorder(const int dir) {
 }
 
 
-/* rebuild rl.entries[] from rl0.entries[].
-   If prune is true, include only those entries from rl0 which match the currently
+/* rebuild rl.entries[] from rl0->entries[].
+   If rl.prune is true, include only those entries from rl0 which match the currently
    highlighted rl entry up through fuzz_len characters.
-   If prune is false, include all entries from rl0.
+   If rl.prune is false, include all entries from rl0.
    In any case, return the (possibly new) index of the highlighted entry in rl. */
 
-static int reset_rl_entries() {
+static int rebuild_rl_entries() {
 	const char * const p0 = rl.entries[PCR2N(page, C, R)];
-	int i, n;
-	for (int j = n = i = 0; j < rl0->cur_entries; j++) {
-		char * const p1 = rl0->entries[j];
-		if ( ! prune || ! strncasecmp(p0, p1, fuzz_len) ) {
-			if (p1 == p0) n = i;
-			rl.entries[i] = p1;
-			rl.lens[i++] = rl0->lens[j];
+	int i, j, n;
+	for (i = j = n = 0; i < rl0->cur_entries; i++) {
+		int orig = reverse_reorder(i);
+		char * const p1 = rl0->entries[orig];
+		D(fprintf(stderr, "rre: i:%d, j:%d, n:%d p0:%x p1:%x fuzz_len:%d rl.prune:%d\n",
+		       i, j, n, p0, p1, fuzz_len, rl.prune);)
+		if ( ! rl.prune || ! strncasecmp(p0, p1, fuzz_len) ) {
+			if (p1 == p0) {
+				n = j;
+				D(fprintf(stderr, "rre: set n <- j (%d)\n", j);)
+			}
+			rl.entries[j] = p1;
+			rl.lengths[j++] = rl0->lengths[orig];
+			D(fprintf(stderr, "rre: set rl.entries[%d] <- %x ('%s')\n", j-1, p1, p1);)
+			D(fprintf(stderr, "rre: set rl.lengths[%d] <- rl0->lengths[%d] (%d)\n", j-1, orig, rl0->lengths[orig]);)
 		}
 	}
-	rl.cur_entries = i;
+	rl.cur_entries = j;
 	reset_req_pages(0);
 	return n;
 }
@@ -531,25 +617,31 @@ static int reset_rl_entries() {
 static int count_fuzz_matches(const int len) {
 	const int n0 = PCR2N(page, C, R);
 	const char * const p0 = rl.entries[n0];
-	if (len <= 0) return rl.cur_entries;
+	if (len <= 0) return rl0->cur_entries;
 	if (len > strlen(p0)) return 1;
-	int c;
-	for (int i = c = 0; i < rl.cur_entries; i++) {
-		if ( ! strncasecmp(p0, rl.entries[i], len)) c++;
+	int i, c;
+	for (i = c = 0; i < rl0->cur_entries; i++) {
+		if (p0 == rl0->entries[i] || ! strncasecmp(p0, rl0->entries[i], len)) c++;
 	}
 	return c;
 }
 
 
-/* Shift fuzz_len by +1 or -1 until the matching count changes or we run out of string. */
+/* Shift fuzz_len by +1 or -1 until the matching count changes or we run out of string.
+   It's more subtle than that actually. Going left (-1), we want to stop on the first
+   fuzz_len that has a different count_fuzz_matches() than the initial position. But
+   going right (+1), we want to stop on the last fuzz_len that has the same
+   count_fuzz_matches() as the initial position. In either case, the "gap" to the right
+   of fuzz_len constitutes a transition. */
 
 static void shift_fuzz(const int d) {
 	const char * const p0 = rl.entries[PCR2N(page, C, R)];
-	assert(d==1||d==-1);
-	if (d==-1) {
-		while(fuzz_len > 0 && count_fuzz_matches(fuzz_len+1) == count_fuzz_matches(fuzz_len)) fuzz_len--;
+	assert(d == 1 || d == -1);
+	int initial_fuzz_matches = count_fuzz_matches(fuzz_len);
+	if (d == -1) {
+		while(fuzz_len > 0 && count_fuzz_matches(fuzz_len) == initial_fuzz_matches) fuzz_len--;
 	} else {
-		while (fuzz_len < strlen(p0) && count_fuzz_matches(fuzz_len) == count_fuzz_matches(fuzz_len+1)) fuzz_len++;
+		while (fuzz_len < strlen(p0) + 1 && count_fuzz_matches(fuzz_len + 1) == initial_fuzz_matches) fuzz_len++;
 	}
 }
 
@@ -557,52 +649,19 @@ static void shift_fuzz(const int d) {
 /* Back up one or more chars from fuzz_len, possibly pulling in
    matching entries from the original req_list *rl0 in such a way as
    to preserve original order. This can behave quite differently
-   depending on the value of 'prune'. If true, we disregard the
+   depending on the value of 'rl.prune'. If true, we disregard the
    current subset of entries and rely only on matching fuzz_len
    characters. If false, we keep the current subset while still
-   pulling in matches from rl0.  */
+   pulling in matches from rl0. */
 
 static void fuzz_back() {
-	const int orig_entries = rl.cur_entries;
 	const int n0 = PCR2N(page, C, R);
 	const char * const p0 = rl.entries[n0];
-	int n1 = n0;
+	N2PCRX(n0, page, C, R, X);
 	if (fuzz_len == 0) return;
-	if (prune) {
-		while (rl.cur_entries == orig_entries && fuzz_len > 0) {
-			fuzz_len = max(0, fuzz_len-1);
-			n1 = reset_rl_entries();
-		}
-	} else {
-		fuzz_len--;
+	shift_fuzz(-1);
 
-		int shiftsize = rl.alloc_entries - rl.cur_entries;
-
-		if (shiftsize) {
-			/* shift our current entries to the end of their buffer */
-			memmove(rl.entries + shiftsize, rl.entries, rl.cur_entries * sizeof(char *));
-			memmove(rl.lens    + shiftsize, rl.lens,    rl.cur_entries * sizeof(int));
-
-			int rldest, rl0src, rlsrc, n0shifted = n0 + shiftsize;
-
-			for (rldest = rl0src = 0, rlsrc = shiftsize; rl0src < rl0->cur_entries; rl0src++) {
-
-				if (rl0->entries[rl0src] == rl.entries[rlsrc]) {
-					/* This was in our old list, so we keep it */
-					if (n0shifted == rlsrc) n1 = rldest;  /* it was our marked entry */
-					rl.entries[rldest] = rl.entries[rlsrc];
-					rl.lens[rldest++] = rl.lens[rlsrc++];
-
-				} else if ( ! strncasecmp(p0, rl0->entries[rl0src], fuzz_len) ) {
-					/* Wasn't in our old list due to prior purning, but should be */
-					rl.entries[rldest] = rl0->entries[rl0src];
-					rl.lens[rldest++] = rl0->lens[rl0src];
-				}
-			}
-			rl.cur_entries = rldest;
-		}
-		shift_fuzz(-1);
-	}
+	int n1 = rebuild_rl_entries();
 	reset_req_pages(0);
 	page = -1; /* causes normalize() to call print_strings() */
 	normalize(n1);
@@ -611,7 +670,7 @@ static void fuzz_back() {
 
 /* given a localised_up_case character c, find the next entry that
    matches our current fuzz_len chars plus this new character. The
-   behavior is quite different depending on 'prune'. If true, we keep
+   behavior is quite different depending on 'rl.prune'. If true, we keep
    only entries that match our current fuzz_len prefix plus this
    additional character while preserving the relative order of
    rl.entries[]. If false, we keep all the current entries, and only
@@ -623,17 +682,17 @@ static void fuzz_forward(const int c) {
 
 	assert(fuzz_len >= 0);
 
-	if (prune) {
+	if (rl.prune) {
 		int i = 0, n1 = 0;
 		for (int j = 0; j < rl.cur_entries; j++) {
 			char * const p1 = rl.entries[j];
-			int len = rl.lens[j];
+			int len = rl.lengths[j];
 			const int cmp = strncasecmp(p0, p1, fuzz_len);
 			if (! cmp && strlen(p1) > fuzz_len && localised_up_case[(unsigned char)p1[fuzz_len]] == c) {
 				if (p1 == p0)
 					n1 = i;
 				rl.entries[i] = p1;
-				rl.lens[i++] = len;
+				rl.lengths[i++] = len;
 			}
 		}
 		if (i) {
@@ -645,39 +704,43 @@ static void fuzz_forward(const int c) {
 		}
 	} else {
 		/* find the next matching string, possibly wrapping around */
-		for (int n=n0, i=rl.cur_entries; i; i--, n=(n+1)%rl.cur_entries) {
+		for (int n = n0, i = rl.cur_entries; i; i--, n = (n + 1) % rl.cur_entries) {
 			char * const p1 = rl.entries[n];
 			const int cmp = strncasecmp(p0, p1, fuzz_len);
 			if (!cmp && strlen(p1) > fuzz_len && localised_up_case[(unsigned char)p1[fuzz_len]] == c) {
+				N2PCRX(n, page, C, R, X);
 				fuzz_len++;
+				shift_fuzz(1);
 				page = -1;
 				normalize(n);
 				break;
 			}
 		}
-		shift_fuzz(1);
 	}
 }
 
 
-/* The original master list of strings is described by *rlp0. We make a working copy
-   described by rl, which has an allocated buffer large enough to hold all the
-   original char pointers, but may at any time have fewer entries due to fuzzy
-   matching. request_strings_init() sets up this copy, and request_strings_cleanup()
-   cleans up the allocations. A small handful of static variables keep up with
-   common prefix size, default entry index, etc. */
+/* request_strings_init() is only ever called by request_strings().
+
+   request_strings_init() takes the original master list of strings, described
+   by *rlp0, and makes a working copy described by the static rl. This working
+   copy has an allocated buffer large enough to hold a copy of all the master's
+   original char pointers, but at any time may have fewer entries due to fuzzy
+   matching (prune) and entry deletions. The counterpart to
+   request_strings_init() is request_strings_cleanup() which cleans up the
+   allocations. It too is only ever called by request_strings(). */
 
 static int request_strings_init(req_list *rlp0) {
 	rl.cur_entries = rlp0->cur_entries;
 	rl.suffix = rlp0->suffix;
 	if (!(rl.entries = calloc(rlp0->cur_entries, sizeof(char *)))) return 0;
-	if (!(rl.lens = calloc(rlp0->cur_entries, sizeof(int)))) {
+	if (!(rl.lengths = calloc(rlp0->cur_entries, sizeof(int)))) {
 		free(rl.entries);
 		return 0;
 	}
 	rl.alloc_entries = rlp0->cur_entries;
 	memcpy(rl.entries, rlp0->entries, rl.cur_entries * sizeof(char *));
-	memcpy(rl.lens,    rlp0->lens,    rl.cur_entries * sizeof(int));
+	memcpy(rl.lengths, rlp0->lengths, rl.cur_entries * sizeof(int));
 	rl0 = rlp0;
 	rl.allow_dupes     = rl0->allow_dupes;
 	rl.allow_reorder   = rl0->allow_reorder;
@@ -686,9 +749,9 @@ static int request_strings_init(req_list *rlp0) {
 	rl.find_quits      = rl0->find_quits;
 	rl.help_quits      = rl0->help_quits;
 	rl.selectdoc_quits = rl0->selectdoc_quits;
-	prune = rl.prune   = rl0->prune;
+	rl.prune           = rl0->prune;
 	/* rl doesn't have its own allocated characters; critically, its entries point
-	   to allocations that belong to rlp0. */
+	   to allocations that belong to *rlp0, a.k.a the static *rl0. */
 	rl.cur_chars = rl.alloc_chars = 0;
 	rl.chars = NULL;
 	fuzz_len = common_prefix_len(&rl);
@@ -696,7 +759,7 @@ static int request_strings_init(req_list *rlp0) {
 }
 
 
-static int request_strings_cleanup(bool reordered) {
+static int request_strings_cleanup() {
 	int n = PCR2N(page, C, R);
 	const char * const p0 = rl.entries[n];
 	for (int i = 0; i<rl0->cur_entries; i++) {
@@ -707,9 +770,8 @@ static int request_strings_cleanup(bool reordered) {
 	}
 	if (rl.entries) free(rl.entries);
 	rl.entries = NULL;
-	if (rl.lens) free(rl.lens);
-	rl.lens = NULL;
-	rl0->reordered = reordered;
+	if (rl.lengths) free(rl.lengths);
+	rl.lengths = NULL;
 	req_page_table_free();
 	return n;
 }
@@ -720,30 +782,36 @@ static int request_strings_cleanup(bool reordered) {
 static int (*rs_closedoc)(int n) = NULL;
 
 /* indicates the correct function to call to restore the status bar after
-   suspend/resume, particularly during requesters. */
+   suspend/resume, particularly during requesters. Note: not static, as
+   this is used by interrupt handlers elsewhere in the source code. */
 
 void (*resume_status_bar)(const char *message);
 static bool resume_bar = false;
 
 
-/* Given a list of strings, let the user pick one. If _rl->suffix is not '\0', bold names ending with it.
-   The integer returned is one of the following:
-   n >= 0  User selected string n with the enter key.
-   -1      Error or abort; no selection made.
-   -n - 2  User selected string n with the TAB key.
-   (Yes, it's kind of evil, but it's nothing compared to what request() does!) */
+/* Present a list of strings for the user to select one from. If _rl->suffix is
+   not '\0', bold names ending with it. The integer returned is one of the
+   following:
+
+     n >= 0  User selected string n with the enter key.
+     -1      Error or abort; no selection made.
+     n < -1  User selected string -n - 2 with the TAB key.
+
+   (Yes, it's kind of evil, but it's nothing compared to what request() does!)
+   If reordering occurred, the indicated number is the original index of the
+   entry (modulo deletions). The index into the reordered entries would be
+   rlp0->reorder[n]. */
 
 int request_strings(req_list *rlp0, int n) {
 
 	assert(rlp0->cur_entries > 0);
 
 	int ne_lines0 = 0, ne_columns0 = 0;
-	bool reordered = false;
 	X = R = C = page = fuzz_len = 0;
 	if ( ! request_strings_init(rlp0) ) return ERROR;
 
-   if ( ! reset_req_pages(0) ) {
-		request_strings_cleanup(reordered);
+	if ( ! reset_req_pages(0) ) {
+		request_strings_cleanup();
 		return ERROR;
 	}
 
@@ -798,14 +866,14 @@ int request_strings(req_list *rlp0, int n) {
 
 			case TAB:
 				if (! rlp0->ignore_tab) {
-					n = request_strings_cleanup(reordered);
+					n = request_strings_cleanup();
 					if (n >= rlp0->cur_entries) return ERROR;
 					else return -n - 2;
 				}
 				break;
 
 			case RETURN:
-				n = request_strings_cleanup(reordered);
+				n = request_strings_cleanup();
 				if (n >= rlp0->cur_entries) return ERROR;
 				else return n;
 
@@ -891,17 +959,17 @@ int request_strings(req_list *rlp0, int n) {
 						break;
 
 					case NEXTDOC_A:
-						reordered |= request_reorder(1);
+						request_reorder(1);
 						break;
 
 					case PREVDOC_A:
-						reordered |= request_reorder(-1);
+						request_reorder(-1);
 						break;
 
 					case INSERT_A:
 					case DELETECHAR_A:
-						prune = !prune;
-						int n1 = reset_rl_entries();
+						rl0->prune = rl.prune = !rl.prune;
+						int n1 = rebuild_rl_entries();
 						page = -1;
 						normalize(n1);
 						break;
@@ -923,7 +991,7 @@ int request_strings(req_list *rlp0, int n) {
 						if (a == SELECTDOC_A && !rl.selectdoc_quits) break;
 					case ESCAPE_A:
 					case QUIT_A:
-						request_strings_cleanup(reordered);
+						request_strings_cleanup();
 						return -1;
 					}
 				}
@@ -936,66 +1004,7 @@ int request_strings(req_list *rlp0, int n) {
 }
 
 
-
-/* The filename completion function. Returns NULL if no file matches start_prefix,
-   or the longest prefix common to all files extending start_prefix. */
-
-char *complete_filename(const char *start_prefix) {
-
-	/* This might be NULL if the current directory has been unlinked, or it is not readable.
-	   In that case, we end up moving to the completion directory. */
-	char * const cur_dir_name = ne_getcwd(CUR_DIR_MAX_SIZE);
-
-	char * const dir_name = str_dup(start_prefix);
-	if (dir_name) {
-		char * const p = (char *)file_part(dir_name);
-		*p = 0;
-		if (p != dir_name && chdir(tilde_expand(dir_name)) == -1) {
-			free(dir_name);
-			return NULL;
-		}
-	}
-
-	start_prefix = file_part(start_prefix);
-	bool is_dir, unique = true;
-	char *cur_prefix = NULL;
-	DIR * const d = opendir(CURDIR);
-
-	if (d) {
-		for(struct dirent * de; !stop && (de = readdir(d)); ) {
-			if (is_prefix(start_prefix, de->d_name))
-				if (cur_prefix) {
-					cur_prefix[max_prefix(cur_prefix, de->d_name)] = 0;
-					unique = false;
-				}
-				else {
-					cur_prefix = str_dup(de->d_name);
-					is_dir = is_directory(de->d_name);
-				}
-		}
-
-		closedir(d);
-	}
-
-	char * result = NULL;
-
-	if (cur_prefix) {
-		result = malloc(strlen(dir_name) + strlen(cur_prefix) + 2);
-		strcat(strcat(strcpy(result, dir_name), cur_prefix), unique && is_dir ? "/" : "");
-	}
-
-	if (cur_dir_name != NULL) {
-		chdir(cur_dir_name);
-		free(cur_dir_name);
-	}
-	free(dir_name);
-	free(cur_prefix);
-
-	return result;
-}
-
-
-static void load_syntax_names(req_list *rl, DIR *d, int flag) {
+static void load_syntax_names(req_list *lsn_rl, DIR *d, int flag) {
 
 	const int extlen = strlen(SYNTAX_EXT);
 	stop = false;
@@ -1006,7 +1015,7 @@ static void load_syntax_names(req_list *rl, DIR *d, int flag) {
 		if (len > extlen && !strcmp(de->d_name+len - extlen, SYNTAX_EXT)) {
 			char ch = de->d_name[len-extlen];
 			de->d_name[len-extlen] = '\0';
-			if (!req_list_add(rl, de->d_name, flag)) break;
+			if (!req_list_add(lsn_rl, de->d_name, flag)) break;
 			de->d_name[len-extlen] = ch;
 		}
 	}
@@ -1024,51 +1033,51 @@ static void load_syntax_names(req_list *rl, DIR *d, int flag) {
 char *request_syntax() {
 	char syn_dir_name[512];
 	char *p;
-	req_list rl;
+	req_list rs_rl;
 	DIR *d;
 
-	if (req_list_init(&rl, filenamecmp, false, false, '*') != OK) return NULL;
+	if (req_list_init(&rs_rl, filenamecmp, false, false, '*') != OK) return NULL;
 	if ((p = exists_prefs_dir()) && strlen(p) + 2 + strlen(SYNTAX_DIR) < sizeof syn_dir_name) {
 		strcat(strcpy(syn_dir_name, p), SYNTAX_DIR);
 		if (d = opendir(syn_dir_name)) {
-			load_syntax_names(&rl, d, true);
+			load_syntax_names(&rs_rl, d, true);
 			closedir(d);
 		}
 	}
 	if ((p = exists_gprefs_dir()) && strlen(p) + 2 + strlen(SYNTAX_DIR) < sizeof syn_dir_name) {
 		strcat(strcpy(syn_dir_name, p), SYNTAX_DIR);
 		if (d = opendir(syn_dir_name)) {
-			load_syntax_names(&rl, d, false);
+			load_syntax_names(&rs_rl, d, false);
 			closedir(d);
 		}
 	}
-	req_list_finalize(&rl);
+	req_list_finalize(&rs_rl);
 	p = NULL;
 	int result;
-	if (rl.cur_entries && (result = request_strings(&rl, 0)) != ERROR) {
-		char * const q = rl.entries[result >= 0 ? result : -result - 2];
+	if (rs_rl.cur_entries && (result = request_strings(&rs_rl, 0)) != ERROR) {
+		char * const q = rs_rl.entries[result >= 0 ? result : -result - 2];
 		if (p = malloc(strlen(q)+3)) {
 			strcpy(p, q);
-			if (p[strlen(p)-1] == rl.suffix) p[strlen(p)-1] = '\0';
+			if (p[strlen(p)-1] == rs_rl.suffix) p[strlen(p)-1] = '\0';
 			if (result < 0) {
 				memmove(p + 1, p, strlen(p) + 1);
 				p[0] = '\0';
 			}
 		}
 	}
-	req_list_free(&rl);
+	req_list_free(&rs_rl);
 	return p;
 }
 
 
 /* This is the file requester. It reads the directory in which the filename
-   lives, builds an array of strings and calls request_strings(). If a directory
-   name is returned, it enters the directory. Returns NULL on error or escaping, a
-   pointer to the selected filename if RETURN is pressed, or a pointer to the
-   selected filename (or directory) preceeded by a NUL if TAB is pressed (so by
-   checking whether the first character of the returned string is NUL you can
-   check which key the user pressed). */
-
+   lives, builds an array of strings and calls request_strings(). If a
+   directory name is returned, it enters the directory and the process just
+   described is repeated for that directory. Returns NULL on error or escaping,
+   a pointer to the selected filename if RETURN is pressed, or a pointer to a
+   NUL char '\0' followed by the selected filename (or directory) if TAB is
+   pressed (so by checking whether the first character of the returned string
+   is NUL you can check which key the user pressed). */
 
 char *request_files(const char * const filename, bool use_prefix) {
 
@@ -1089,12 +1098,12 @@ char *request_files(const char * const filename, bool use_prefix) {
 		if (result == -1) return NULL;
 	}
 
-	req_list rl;
+	req_list rf_rl;
 	bool next_dir;
 	char *result = NULL;
 	do {
 		next_dir = false;
-		if (req_list_init(&rl, filenamecmp, true, false, '/') != OK) break;
+		if (req_list_init(&rf_rl, filenamecmp, true, false, '/') != OK) break;
 
 		DIR * const d = opendir(CURDIR);
 		if (d) {
@@ -1103,15 +1112,15 @@ char *request_files(const char * const filename, bool use_prefix) {
 			for(struct dirent * de; !stop && (de = readdir(d)); ) {
 				const bool is_dir = is_directory(de->d_name);
 				if (use_prefix && !is_prefix(file_part(filename), de->d_name)) continue;
-				if (!req_list_add(&rl, de->d_name, is_dir)) break;
+				if (!req_list_add(&rf_rl, de->d_name, is_dir)) break;
 			}
 
-			req_list_finalize(&rl);
+			req_list_finalize(&rf_rl);
 
-			if (rl.cur_entries) {
-				const int t = request_strings(&rl, 0);
+			if (rf_rl.cur_entries) {
+				const int t = request_strings(&rf_rl, 0);
 				if (t != ERROR) {
-					char * const p = rl.entries[t >= 0 ? t : -t - 2];
+					char * const p = rf_rl.entries[t >= 0 ? t : -t - 2];
 					if (p[strlen(p) - 1] == '/' && t >= 0) {
 						p[strlen(p) - 1] = 0;
 						if (chdir(p)) alert();
@@ -1137,7 +1146,7 @@ char *request_files(const char * const filename, bool use_prefix) {
 			closedir(d);
 		}
 		else alert();
-		req_list_free(&rl);
+		req_list_free(&rf_rl);
 	} while(next_dir);
 
 	chdir(cur_dir_name);
@@ -1170,10 +1179,9 @@ char *request_file(const buffer *b, const char *prompt, const char *default_name
 
 
 /* This is the callback function for the SelectDoc requester's CloseDoc action.
-   "n" is the index into rl.entries of the "char *p" corresponding to an
-   entry in rl0->entries, the index "o" of which -- possibly via
-   rl0->orig_order -- corresponds to the index of the buffer we want
-   to close if it is unmodified. */
+   "n" is the index into rl.entries of the "char *p" corresponding to an entry
+   in rl0->entries, the index "o" of which corresponds to the index of the
+   buffer we want to close IFF it is unmodified. */
 
 static int handle_closedoc(int n) {
 
@@ -1184,8 +1192,6 @@ static int handle_closedoc(int n) {
 
 	if (o == rl0->cur_entries) return n; /* This should never happen. */
 
-	if (rl0->orig_order) o = rl0->orig_order[o];
-
 	buffer *bp = get_nth_buffer(o);
 
 	/* We don't close modified buffers here, nor the last buffer. */
@@ -1193,30 +1199,39 @@ static int handle_closedoc(int n) {
 
 	/* We've determined we are going to close document *bp. */
 
+	/* Ensure we'll still have an entry in view after closing *bp. */
 	if (rl.cur_entries == 1 && rl0->cur_entries > 1) {
-		/* Ensure we'll still have an entry in view after closing *bp. */
-		fuzz_back(); /* *p is still valid! */
+		fuzz_back(); /* "*p" is still valid, but "n" isn't.*/
 	}
 
-	for (int j = i = 0; j < rl.cur_entries; j++) {
-		char * const entry = rl.entries[j];
-		int len = rl.lens[j];
+	for (int i = 0, j = 0; i < rl.cur_entries; i++) {
+		char * const entry = rl.entries[i];
+		int len = rl.lengths[i];
 		if (p == entry) n = i;
 		else {
-			rl.entries[i] = entry;
-			rl.lens[i++] = len;
+			rl.entries[j] = entry;
+			rl.lengths[j++] = len;
 		}
 	}
+	/* n is valid again as the index in rl.entries[] that we just dropped.
+	   If it was the last entry, n == rl.cur_entries. */
 	rl.cur_entries--;
 	fuzz_len = common_prefix_len(&rl);
-	reset_req_pages(0);
-	n = min(n, rl.cur_entries - 1);
-	normalize(n);
 
+	/* This is the only time we change rl0->entries[] or the character buffer rl0->chars.
+	   shift_len will be the number of bytes by which the end of rl0->chars was shifted
+	   to remove entry o. */
 	int shift_len = req_list_del(rl0, o);
+
 	for (int i = 0; i < rl.cur_entries; i++)
 		if (rl.entries[i] >= p)
 			rl.entries[i] -= shift_len;
+
+	/* rebuild_rl_entries() is not necessary, as dropping an entry will never
+	   necessitate pulling in new entries into rl.entries[] from rl0->entries[]. */
+	reset_req_pages(0);
+	n = min(n, rl.cur_entries - 1);
+	normalize(n);
 
 	buffer *nextb = (buffer *)bp->b_node.next;
 
@@ -1224,11 +1239,17 @@ static int handle_closedoc(int n) {
 	free_buffer(bp);
 
 	if (! nextb->b_node.next) nextb = (buffer *)buffers.head;
+
+#if 0
+	/* As we don't close the last remaining document through this requester,
+	   this code is irrelevant. But leave it here in the quite likely event that
+	   decision is revisited. */
 	if (nextb == (buffer *)&buffers.tail) {
 		close_history();
 		unset_interactive_mode();
 		exit(0);
 	}
+#endif
 
 	if (bp == cur_buffer) cur_buffer = nextb;
 
@@ -1237,57 +1258,74 @@ static int handle_closedoc(int n) {
 
 
 /* Presents to the user a list of the documents currently available.  It
-   returns the number of the document selected, or -1 on escape or error. */
+   returns the number of the document selected, or -1 on escape or error.
+   It may reorder the document list, and may close any unmodified document
+   up to but not including the last remaining document. */
 
 int request_document(void) {
-
+	static int rd_prune = false;
 	int i = -1;
-	req_list rl;
+	req_list rd_rl;
 	buffer *b = (buffer *)buffers.head;
 
-	if (b->b_node.next && req_list_init(&rl, NULL, true, true, '*')==OK) {
+	if (b->b_node.next && req_list_init(&rd_rl, NULL, true, true, '*')==OK) {
 		i = 0;
 		int cur_entry = 0;
 		while(b->b_node.next) {
 			if (b == cur_buffer) cur_entry = i;
-			req_list_add(&rl, b->filename ? b->filename : UNNAMED_NAME, b->is_modified);
+			req_list_add(&rd_rl, b->filename ? b->filename : UNNAMED_NAME, b->is_modified);
 			b = (buffer *)b->b_node.next;
 			i++;
 		}
-		rl.ignore_tab = true;
-		rl.selectdoc_quits = true;
-		req_list_finalize(&rl);
+		rd_rl.ignore_tab = true;
+		rd_rl.selectdoc_quits = true;
+		rd_rl.prune = rd_prune;
+		req_list_finalize(&rd_rl);
 		print_message(info_msg[SELECT_DOC]);
 		rs_closedoc = &handle_closedoc;
-		i = request_strings(&rl, cur_entry);
+
+		i = request_strings(&rd_rl, cur_entry);
+		/* i is the index into the local rd_rl.entries[] array, which may be shorter
+		   than it started due to closing documents, and the remaining document
+		   names may have been reordered. */
+
 		rs_closedoc = NULL;
-		reset_window();
-		draw_status_bar();
-		if (i >= 0 && rl.reordered) {
-			/* We're going to cheat big time here. We have an array of pointers
-			   at rl.entries that's big enough to hold all the buffer pointers,
-			   and that's exactly what we're going to use it for now. */
+		rd_prune = rd_rl.prune;
+		if (i >= 0 && rd_rl.reordered) {
+			/* The array of pointers at rd_rl.entries[] is no longer needed to
+			   reference strings, but as it's large enough to hold all the buffer
+			   pointers, and we need a place to temporary store these buffer
+			   pointers while we reorder them, we repurpose rd_rl.entries as a
+			   buffer pointer array. */
 			b = (buffer *)buffers.head;
 			for (int j = 0; b->b_node.next; j++ ) {
-				rl.entries[j] = (char *)b;
+				D(fprintf(stderr,"rqd: j:%d '%s'\n", j, b->filename ? b->filename : UNNAMED_NAME);)
+				rd_rl.entries[rd_rl.reorder[j]] = (char *)b;
 				b = (buffer *)b->b_node.next;
 				rem(b->b_node.prev);
 			}
-			/* Ack! We're removed all our buffers! */
-			for (int j = 0; j < rl.cur_entries; j++) {
-				add_tail(&buffers, (node *)rl.entries[rl.orig_order[j]]);
+			/* We're rem()'d all our buffers from the buffer list. rd_rl.entries[]
+			   now contains pointers to each buffer in their intended final order. */
+			for (int j = 0; j < rd_rl.cur_entries; j++) {
+				b = (buffer *)rd_rl.entries[j];
+				D(fprintf(stderr,"rqd: add_tail %d ('%s')\n", j, b->filename ? b->filename : UNNAMED_NAME);)
+				add_tail(&buffers, (node *)rd_rl.entries[j]);
 			}
+			D(fprintf(stderr,"i:%d -> %d\n", i, rd_rl.reorder[i]);)
+			i = rd_rl.reorder[i];
 		}
+		reset_window();
+		draw_status_bar();
 
-		req_list_free(&rl);
+		req_list_free(&rd_rl);
 	}
 
 	return i;
 }
 
 
-/* The req_list_* functions below provide a simple mechanism suitable for building
-   request lists for directory entries, syntax recognizers, etc. */
+/* The req_list_* functions below provide a mechanism suitable for building
+   request lists for directory entries, syntax recognizers, autocompletions, etc. */
 
 /* These are the default allocation sizes for the entry array and for the
    name array when reading a directory. The allocation sizes start with these
@@ -1295,148 +1333,164 @@ int request_document(void) {
    reasonable number of retries. */
 
 #define DEF_ENTRIES_ALLOC_SIZE     256
-#define DEF_CHARS_ALLOC_SIZE  (4*1024)
+#define DEF_CHARS_ALLOC_SIZE   (4*1024)
 
-/* Delete the nth string from the given request list.
-   This will work regardless of whether the req_list has been finalized.
-   Returns the length of the shift. */
+/* Delete the nth string from the given request list. This will work regardless
+   of whether the req_list has been finalized. Returns the length of the shift.
 
-int req_list_del(req_list * const rl, int nth) {
+   Note: should not be called on the working static req_list lr, as it doesn't
+   contain it's own character buffer. */
 
-	if (nth < 0 || nth >= rl->cur_entries ) return ERROR;
-	char * const str = rl->entries[nth];
+int req_list_del(req_list * const rld, int nth) {
+
+	if (nth < 0 || nth >= rld->cur_entries ) return ERROR;
+	char * const str = rld->entries[nth];
 	const int len0 = strlen(str);
 	int len = len0;
 
 	len += str[len + 1] ? 3 : 2;  /* 'a b c \0  * \0' or
 	                                 'a b c \0 \0'    or
 	                                 'a b * \0 \0'    depending on whether req_list_finalize() has been called. */
-	memmove(str, str + len, sizeof(char)*(rl->alloc_chars - (str + len - rl->chars)));
-	rl->cur_chars -= len;
+	memmove(str, str + len, sizeof(char)*(rld->alloc_chars - (str + len - rld->chars)));
+	rld->cur_chars -= len;
 
-	for(int i = 0; i < rl->cur_entries; i++)
-		if (rl->entries[i] >= str )
-			rl->entries[i] -= len;
+	for(int i = 0; i < rld->cur_entries; i++)
+		if (rld->entries[i] >= str )
+			rld->entries[i] -= len;
 
-	if (rl->orig_order) {
-		int val = rl->orig_order[nth];
-		for (int i = 0, j = 0; i < rl->cur_entries; i++, j++) {
+	if (rld->reorder) {
+		int val = rld->reorder[nth];
+		for (int i = 0, j = 0; i < rld->cur_entries; i++, j++) {
 			if (i == nth) j--;
-			else rl->orig_order[j] = rl->orig_order[i] < val ? rl->orig_order[i] : rl->orig_order[i] - 1;
+			else rld->reorder[j] = (rld->reorder[i] < val) ? rld->reorder[i] : rld->reorder[i] - 1;
 		}
 	}
 
-	memmove(&rl->entries[nth], &rl->entries[nth+1], sizeof(char *) * (rl->cur_entries - nth));
-	memmove(&rl->lens[nth],    &rl->lens[nth+1],    sizeof(int)    * (rl->cur_entries - nth));
-	rl->cur_entries--;
+	memmove(&rld->entries[nth], &rld->entries[nth+1], sizeof(char *) * (rld->cur_entries - nth));
+	memmove(&rld->lengths[nth], &rld->lengths[nth+1], sizeof(int)    * (rld->cur_entries - nth));
+	rld->cur_entries--;
 
 	return len;
 }
 
-void req_list_free(req_list * const rl) {
-	if (rl->entries) free(rl->entries);
-	rl->entries = NULL;
-	if (rl->chars) free(rl->chars);
-	rl->chars = NULL;
-	if (rl->allow_reorder && rl->orig_order) free(rl->orig_order);
-	rl->orig_order = NULL;
-	if (rl->lens) free(rl->lens);
-	rl->lens = NULL;
-	rl->allow_reorder = false;
-	rl->cur_entries = rl->alloc_entries = 0;
-	rl->cur_chars = rl->alloc_chars = 0;
+void req_list_free(req_list * const rlf) {
+	if (rlf->entries) free(rlf->entries);
+	rlf->entries = NULL;
+	if (rlf->chars) free(rlf->chars);
+	rlf->chars = NULL;
+	if (rlf->reorder) free(rlf->reorder);
+	rlf->reorder = NULL;
+	if (rlf->lengths) free(rlf->lengths);
+	rlf->lengths = NULL;
+	rlf->allow_reorder = false;
+	rlf->cur_entries = rlf->alloc_entries = 0;
+	rlf->cur_chars = rlf->alloc_chars = 0;
 }
 
 
-/* Initialize a request list. A comparison function may be provided; if it is provided,
-   that function will be used to keep the entries sorted. If NULL is provided instead,
-   entries are kept in the order they are added. The boolean allow_dupes determines
-   whether duplicate entries are allowed. If not, and if cmpfnc is NULL, then each
-   addition requires a linear search over the current entries. If a suffix character is
-   provided, it can optionally be added to individual entries as they are added, in which
-   case req_list_finalize() should be called before the entries are used in a
-   request_strings() call. */
+/* Initialize a request list.
 
-int req_list_init( req_list * const rl, int cmpfnc(const char *, const char *), const bool allow_dupes, const bool allow_reorder, const char suffix) {
-	rl->cmpfnc = cmpfnc;
-	rl->allow_dupes = allow_dupes;
-	rl->allow_reorder = allow_reorder;
-	rl->ignore_tab = false;
-	rl->prune = false;
-	rl->find_quits = false;
-	rl->help_quits = false;
-	rl->selectdoc_quits = false;
-	rl->suffix = suffix;
-	rl->cur_entries = rl->alloc_entries = 0;
-	rl->cur_chars = rl->alloc_chars = 0;
-	if (rl->entries = malloc(sizeof(char *) * DEF_ENTRIES_ALLOC_SIZE)) {
-		if (rl->chars = malloc(sizeof(char) * DEF_CHARS_ALLOC_SIZE)) {
-			if (rl->lens = malloc(sizeof(int) * DEF_ENTRIES_ALLOC_SIZE)) {
-				/* lens will track alloc_entries, so we don't have to track it separately. */
-				rl->alloc_entries = DEF_ENTRIES_ALLOC_SIZE;
-				rl->alloc_chars = DEF_CHARS_ALLOC_SIZE;
+   A comparison function cmpfnc may be provided; if it is provided, that
+   function will be used to keep the entries sorted. If NULL is provided
+   instead, entries are kept in the order they are added.
+
+   The boolean allow_dupes determines whether duplicate entries are allowed. If
+   not, and if cmpfnc is NULL, then each addition requires a linear search over
+   the current entries.
+
+   The boolean allow_reorder, when set, enables the user to move the highlighted
+   entry forward or backward in the list of entries by use of the NextDoc and
+   PrevDoc commands (invoked normally by the F2 and F3 keys). In this case, you
+   will need to consult the rl->reorder map upon return to determine the
+   indicated new order for entries.
+
+   If a suffix character is provided, it can optionally be added to individual
+   entries as they are added to the req_list. Entries thus marked will be
+   highlighted when displayed. Choose carefully, as entries which naturally end
+   with said character are indistinguishable from marked entries. */
+
+int req_list_init( req_list * const rli, int cmpfnc(const char *, const char *), const bool allow_dupes, const bool allow_reorder, const char suffix) {
+	rli->cmpfnc = cmpfnc;
+	rli->allow_dupes = allow_dupes;
+	rli->allow_reorder = allow_reorder;
+	rli->ignore_tab = false;
+	rli->prune = false;
+	rli->find_quits = false;
+	rli->help_quits = false;
+	rli->selectdoc_quits = false;
+	rli->suffix = suffix;
+	rli->cur_entries = rli->alloc_entries = 0;
+	rli->cur_chars = rli->alloc_chars = 0;
+	if (rli->entries = malloc(sizeof(char *) * DEF_ENTRIES_ALLOC_SIZE)) {
+		if (rli->chars = malloc(sizeof(char) * DEF_CHARS_ALLOC_SIZE)) {
+			if (rli->lengths = malloc(sizeof(int) * DEF_ENTRIES_ALLOC_SIZE)) {
+				/* lengths will track alloc_entries, so we don't have to track it separately. */
+				rli->alloc_entries = DEF_ENTRIES_ALLOC_SIZE;
+				rli->alloc_chars = DEF_CHARS_ALLOC_SIZE;
 				return OK;
 			}
-			free(rl->chars);
+			free(rli->chars);
 		}
-		free(rl->entries);
+		free(rli->entries);
 	}
-	rl->chars = NULL;
-	rl->entries = NULL;
-	rl->lens = NULL;
+	rli->chars = NULL;
+	rli->entries = NULL;
+	rli->lengths = NULL;
 	return OUT_OF_MEMORY;
 }
 
 
-/* req_list strings are stored with a trailing '\0', followed by an optional suffix
-   character, and an additional trailing '\0'. This allows comparing strings w/o
-   having to consider the optional suffixes. Finalizing the req_list effectively
-   shifts the suffixes left, exchanging them for the preceeding '\0'. After this
-   operation, all the strings will be just strings, some of which happen to end
-   with the suffix character, and all of which are followed by two null bytes.
+/* req_list strings are stored with a trailing '\0', followed by an optional
+   suffix character, and an additional trailing '\0'. This allows comparing
+   strings w/o having to consider the optional suffixes while adding entries to
+   the req_list. Finalizing the req_list effectively shifts the suffixes left,
+   exchanging them for the preceeding '\0'. After this operation, all the
+   strings will be just normal C strings, some of which happen to end with the
+   suffix character, and all of which are followed by two null bytes.
 
-   req_list_finalize() also initializes the orig_order array if allow_reorder
+   req_list_finalize() also initializes the reorder array IFF allow_reorder
    is true. If the array cannot be allocated, allow_reorder is simply reset to
-   false rather than returning an error. */
+   false rather than returning an error. But if your system is this tight on
+   RAM, you've got bigger problems on the way. */
 
-void req_list_finalize(req_list * const rl) {
+void req_list_finalize(req_list * const rlf) {
 	/* until now, entries and suffixes have been stored as: 'a' 'b' 'c' '\0' suffix '\0'
 	   Morph that into                                      'a' 'b' 'c' suffix '\0' '\0' */
-	for (int i = 0; i < rl->cur_entries; i++) {
-		const int len = strlen(rl->entries[i]);
-		*(rl->entries[i]+len) = *(rl->entries[i]+len+1);
-		*(rl->entries[i]+len+1) = '\0';
+	for (int i = 0; i < rlf->cur_entries; i++) {
+		const int len = strlen(rlf->entries[i]);
+		*(rlf->entries[i]+len) = *(rlf->entries[i]+len+1);
+		*(rlf->entries[i]+len+1) = '\0';
 	}
-	rl->orig_order = NULL;
-	if (rl->allow_reorder ) {
-		if ( rl->orig_order = malloc(sizeof(int) * rl->cur_entries)) {
-			for (int i = 0; i < rl->cur_entries; i++)
-				rl->orig_order[i] = i;
+	rlf->reorder = NULL;
+	if (rlf->allow_reorder ) {
+		if ( rlf->reorder = malloc(sizeof(int) * rlf->cur_entries)) {
+			for (int i = 0; i < rlf->cur_entries; i++)
+				rlf->reorder[i] = i;
 		}
-		else rl->allow_reorder = false;
+		else rlf->allow_reorder = false;
 	}
 }
 
 
-/* Add a string plus an optional suffix to a request list.
-   We really add two null-terminated strings: the actual entry, and a
-   possibly empty suffix. These pairs should be merged later by
-   req_list_finalize(). If duplicates are not allowed (see req_list_init()) and
-   the str already exists in the table (according to the comparison function or
-   by strcmp if there is no comparison function), then the conflicting entry
-   is returned. Otherwise, the new entry is returned. On error, NULL is returned.*/
+/* Add a string plus an optional suffix to a request list. We really add two
+   null-terminated strings: the actual entry, and a possibly empty suffix.
+   These pairs should be merged later by req_list_finalize(). If duplicates are
+   not allowed (see req_list_init()) and the str already exists in the table
+   (according to the comparison function or by strcmp if there is no comparison
+   function), then the conflicting entry is returned. Otherwise, the new entry
+   is returned. On error, NULL is returned.*/
 
-char *req_list_add(req_list * const rl, char * const str, const int suffix) {
+char *req_list_add(req_list * const rla, char * const str, const int suffix) {
 	const int len = strlen(str);
-	const int lentot = len + ((rl->suffix && suffix) ? 3 : 2); /* 'a b c \0 Suffix \0' or 'a b c \0 \0' */
+	const int lentot = len + ((rla->suffix && suffix) ? 3 : 2); /* 'a b c \0 Suffix \0' or 'a b c \0 \0' */
 
 	int ins;
-	if (rl->cmpfnc) { /* implies the entries are sorted */
+	if (rla->cmpfnc) { /* implies the entries are sorted */
 		int l = 0, m = 0;
-		int r = rl->cur_entries - 1;
+		int r = rla->cur_entries - 1;
 		while(l <= r) {
 			m = (r + l)/2;
-			const int cmp = (*rl->cmpfnc)(str, rl->entries[m]);
+			const int cmp = (*rla->cmpfnc)(str, rla->entries[m]);
 			if (cmp < 0 )
 				r = m - 1;
 			else if (cmp > 0)
@@ -1447,65 +1501,65 @@ char *req_list_add(req_list * const rl, char * const str, const int suffix) {
 			}
 		}
 		if (m < 0) { /* found a match at -m - 1 */
-			if (!rl->allow_dupes) return rl->entries[-m - 1];
+			if (!rla->allow_dupes) return rla->entries[-m - 1];
 			ins = -m;
 		}
 		else if (r < m) { ins = m; /* insert at i */ }
 		else if (l > m) { ins = m + 1; /* insert at i + 1 */ }
-		else { /* impossible! */ ins = rl->cur_entries; }
+		else { /* impossible! */ ins = rla->cur_entries; }
 	}
 	else {/* not ordered */
-		ins = rl->cur_entries; /* append to end */
-		if (!rl->allow_dupes) {
-			for(int i = 0; i < rl->cur_entries; i++)
-				if(!strcmp(rl->entries[i], str)) return rl->entries[i];
+		ins = rla->cur_entries; /* append to end */
+		if (!rla->allow_dupes) {
+			for(int i = 0; i < rla->cur_entries; i++)
+				if(!strcmp(rla->entries[i], str)) return rla->entries[i];
 		}
 	}
 
 	/* make enough space to store the new string */
-	if (rl->cur_chars + lentot > rl->alloc_chars) {
-		char * p0 = rl->chars;
+	if (rla->cur_chars + lentot > rla->alloc_chars) {
+		char * p0 = rla->chars;
 		char * p1;
-		p1 = realloc(rl->chars, sizeof(char) * (rl->alloc_chars * 2 + lentot));
+		p1 = realloc(rla->chars, sizeof(char) * (rla->alloc_chars * 2 + lentot));
 		if (!p1) return NULL;
-		rl->alloc_chars = rl->alloc_chars * 2 + lentot;
-		rl->chars = p1;
+		rla->alloc_chars = rla->alloc_chars * 2 + lentot;
+		rla->chars = p1;
 		/* all the strings just moved from *p0 to *p1, so adjust accordingly */
-		for (int i = 0; i < rl->cur_entries; i++)
-			rl->entries[i] += ( p1 - p0 );
+		for (int i = 0; i < rla->cur_entries; i++)
+			rla->entries[i] += ( p1 - p0 );
 	}
 
 	/* make enough slots to hold the string pointer and lengths */
-	if (rl->cur_entries >= rl->alloc_entries) {
+	if (rla->cur_entries >= rla->alloc_entries) {
 		char **newentries;
-		int *newlens, orig_alloc_entries = rl->alloc_entries;
-		if (newentries = realloc(rl->entries, sizeof(char *) * (rl->alloc_entries * 2 + 1))) {
-			rl->alloc_entries = rl->alloc_entries * 2 + 1;
-			rl->entries = newentries;
-			if (newlens = realloc(rl->lens, sizeof(int) * (orig_alloc_entries * 2 + 1))) {
-				rl->lens = newlens;
-			} else if (newentries = realloc(rl->entries, sizeof(char *) * orig_alloc_entries)) {
-				rl->entries = newentries;
-				rl->alloc_entries = orig_alloc_entries;
+		int *newlens, orig_alloc_entries = rla->alloc_entries;
+		if (newentries = realloc(rla->entries, sizeof(char *) * (rla->alloc_entries * 2 + 1))) {
+			rla->alloc_entries = rla->alloc_entries * 2 + 1;
+			rla->entries = newentries;
+			if (newlens = realloc(rla->lengths, sizeof(int) * (orig_alloc_entries * 2 + 1))) {
+				rla->lengths = newlens;
+			} else if (newentries = realloc(rla->entries, sizeof(char *) * orig_alloc_entries)) {
+				rla->entries = newentries;
+				rla->alloc_entries = orig_alloc_entries;
 				return NULL;
 			} else {
-				rl->alloc_entries = orig_alloc_entries; /* not true, but it's the min(entries,lens) */
+				rla->alloc_entries = orig_alloc_entries; /* not true, but it's the min(entries,lengths) */
 				return NULL;
 			}
 		} else return NULL;
 	}
 
-	char * const newstr = &rl->chars[rl->cur_chars];
+	char * const newstr = &rla->chars[rla->cur_chars];
 	char * p = strcpy(newstr, str)+len+1;
-	if (rl->suffix && suffix) *p++ = rl->suffix;
+	if (rla->suffix && suffix) *p++ = rla->suffix;
 	*p = '\0';
-	rl->cur_chars += lentot;
-	if (ins < rl->cur_entries) {
-		memmove(&rl->entries[ins+1], &rl->entries[ins], sizeof(char *) * (rl->cur_entries - ins));
-		memmove(&rl->lens[ins+1],    &rl->lens[ins],    sizeof(int)    * (rl->cur_entries - ins));
+	rla->cur_chars += lentot;
+	if (ins < rla->cur_entries) {
+		memmove(&rla->entries[ins+1], &rla->entries[ins], sizeof(char *) * (rla->cur_entries - ins));
+		memmove(&rla->lengths[ins+1], &rla->lengths[ins], sizeof(int)    * (rla->cur_entries - ins));
 	}
-	rl->entries[ins] = newstr;
-	rl->lens[ins] = lentot;
-	rl->cur_entries++;
+	rla->entries[ins] = newstr;
+	rla->lengths[ins] = lentot;
+	rla->cur_entries++;
 	return newstr;
 }

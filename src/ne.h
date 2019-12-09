@@ -172,8 +172,8 @@ typedef struct {
 	int cur_entries;      /* count of entries */
 	int alloc_entries;    /* allocated slots in **entries */
 	char **entries;       /* The array of alloc_entries string pointers pointing into *chars */
-	int *lens;            /* When set, the column width needed to display corresponding entry (strlen() + suffix + blank) */
-	int *orig_order;      /* maps from current order to original order when allow_reorder is true. */
+	int *lengths;         /* When set, the column width needed to display corresponding entry (strlen() + suffix + blank) */
+	int *reorder;         /* maps from original order to new order when allow_reorder is true. */
 
 	int cur_chars;        /* count of used characters */
 	int alloc_chars;      /* allocated characters in *chars */
