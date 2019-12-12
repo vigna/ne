@@ -5,6 +5,9 @@ Unreleased
   * Fixed possible crash when closing documents from within the SelectDoc
     requester.
 
+  * Fixed adjusted position of mark, bookmark on same line as and to the right
+    of multi-line pastes.
+
 3.2.1 2019-10-02
 
   * Fixed reordering items on multi-page requesters.

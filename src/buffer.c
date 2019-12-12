@@ -750,7 +750,7 @@ void delete_to_eol(buffer * const b, line_desc * const ld, const int64_t line, c
 /* Inserts a stream in a line at a given position.  The position has to be
    smaller or equal to the line length. Since the stream can contain many
    lines, this function can be used for manipulating all insertions. It also
-   record the inverse operation in the undo buffer if b->opt.do_undo is
+   records the inverse operation in the undo buffer if b->opt.do_undo is
    true. */
 
 int insert_stream(buffer * const b, line_desc * ld, int64_t line, int64_t pos, const char * const stream, const int64_t stream_len) {
@@ -856,7 +856,7 @@ int insert_stream(buffer * const b, line_desc * ld, int64_t line, int64_t pos, c
 				   adjust the buffer bookmarks and mark accordingly. */
 				if (b->marking) {
 					if (b->block_start_line == line && b->block_start_pos > pos) {
-						b->block_start_pos -= pos;
+						b->block_start_pos -= pos + len;
 						b->block_start_line++;
 					}
 					else if (b->block_start_line > line) b->block_start_line++;
@@ -864,7 +864,7 @@ int insert_stream(buffer * const b, line_desc * ld, int64_t line, int64_t pos, c
 				for (int i = 0, mask=b->bookmark_mask; mask; i++, mask >>= 1) {
 					if (mask & 1) {
 						if (b->bookmark[i].line == line && b->bookmark[i].pos > pos) {
-							b->bookmark[i].pos -= pos;
+							b->bookmark[i].pos -= pos + len;
 							b->bookmark[i].line++;
 						}
 						else if (b->bookmark[i].line > line) b->bookmark[i].line++;
