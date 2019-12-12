@@ -271,7 +271,7 @@ static int reset_req_pages(int n0) {
 			if (cols >= MAX_REQ_COLS) continue;
 			if (fit_page(first, needed_entries, cols, rows, pp)) {
 				if (rows == max_rows || sum_ints(pp->cols, pp->col_width) * 1000 / pp->rows < ne_columns * 1000 / (ne_lines - 1)) {
-					int good_rows = rows, good_cols = cols;
+					int good_rows = rows;
 					while (good_rows > 1 && cols * (good_rows - 1) >= needed_entries && fit_page(first, needed_entries, cols, good_rows - 1, pp))
 						good_rows--;
 					fit_page(first, needed_entries, cols, good_rows, pp);
@@ -656,7 +656,6 @@ static void shift_fuzz(const int d) {
 
 static void fuzz_back() {
 	const int n0 = PCR2N(page, C, R);
-	const char * const p0 = rl.entries[n0];
 	N2PCRX(n0, page, C, R, X);
 	if (fuzz_len == 0) return;
 	shift_fuzz(-1);
