@@ -1,5 +1,8 @@
 (This file, CHANGES, lists fixes. See NEWS for new features and enhancements.)
 
+  * Fixed adjusted position of mark, bookmark on same line as and to the right
+    of multi-line pastes.
+
 3.2.1 2019-10-02
 
   * Fixed reordering items on multi-page requesters.
