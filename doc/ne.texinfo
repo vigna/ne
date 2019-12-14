@@ -466,7 +466,7 @@ If you want to copy, cut, paste, shift or erase a block of text, you have to
 set a mark. This is done via the @code{Mark} command, activated by
 choosing the @samp{Mark Block} item of the @samp{Edit} menu, or by
 pressing @kbd{@key{Control}-B} (think ``block''). This command
-sets the invisible mark at the current cursor position. Whenever the mark is set, the text
+sets the mark at the current cursor position. Whenever the mark is set, the text
 between the mark and the cursor can be cut, copied or erased. Note that
 by using @kbd{@key{Control}-@@} you can set a @emph{vertical} mark
 instead, which allows you to mark rectangles of text. Whenever a mark
