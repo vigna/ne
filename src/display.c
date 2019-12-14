@@ -829,7 +829,7 @@ void automatch_bracket(buffer * const b, const bool show) {
 					tmp_attr = tmp_attr ^ UNDERLINE;
 
 				output_char(c, tmp_attr, b->encoding == ENC_UTF8);
-				b->automatch.shown = 1;
+				b->automatch.shown = true;
 			}
 		}
 	} else {
@@ -838,7 +838,7 @@ void automatch_bracket(buffer * const b, const bool show) {
 				move_cursor(b->automatch.y, b->automatch.x);
 				output_char(c, orig_attr, b->encoding == ENC_UTF8);
 			}
-			b->automatch.shown = 0;
+			b->automatch.shown = false;
 		}
 	}
 }
