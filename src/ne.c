@@ -455,6 +455,7 @@ int main(int argc, char **argv) {
 		   window now */
 		if (!displaying_info) {
 			refresh_window(cur_buffer);
+			highlight_mark(cur_buffer, true);
 			if (cur_buffer->opt.automatch) automatch_bracket(cur_buffer, true);
 		}
 
@@ -466,7 +467,7 @@ int main(int argc, char **argv) {
 		if (window_changed_size) {
 			print_error(do_action(cur_buffer, REFRESH_A, 0, NULL));
 			window_changed_size = displaying_info = false;
-			cur_buffer->automatch.shown = 0;
+			cur_buffer->automatch.shown = false;
 		}
 
 		if (c == INVALID_CHAR) continue; /* Window resizing. */
@@ -478,6 +479,7 @@ int main(int argc, char **argv) {
 		}
 
 		if (cur_buffer->automatch.shown) automatch_bracket(cur_buffer, false);
+		highlight_mark(cur_buffer, false);
 
 		switch(ic) {
 		case INVALID:

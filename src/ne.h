@@ -483,7 +483,7 @@ typedef struct {
 	int64_t num_lines;
 	int64_t block_start_line, block_start_pos;
 	struct {
-		int shown;
+		bool shown;
 		int x;                 /* Visual (on-screen) coordinates of the highlighted bracket, if shown is true. */
 		int y;
 	} automatch;

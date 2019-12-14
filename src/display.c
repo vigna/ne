@@ -1,6 +1,6 @@
 /* Display handling functions with optional update delay
 
-   Copyright (C) 1993-1998 Sebastiano Vigna 
+   Copyright (C) 1993-1998 Sebastiano Vigna
    Copyright (C) 1999-2019 Todd M. Lewis and Sebastiano Vigna
 
    This file is part of ne, the nice editor.
@@ -91,7 +91,7 @@ could be invalidated. */
 void update_syntax_states(buffer *b, int row, line_desc *ld, line_desc *end_ld) {
 
 	if (b->syn && need_attr_update) {
- 		bool got_end_ld = end_ld == NULL;
+		bool got_end_ld = end_ld == NULL;
 		bool invalidate_attr_buf = false;
 		HIGHLIGHT_STATE next_line_state = b->attr_len < 0 ? parse(b->syn, ld, ld->highlight_state, b->encoding == ENC_UTF8) : b->next_state;
 		assert(b->attr_len < 0 || b->attr_len == calc_char_len(ld, ld->line_len, b->encoding));
@@ -242,7 +242,7 @@ void output_line_desc(const int row, const int col, const line_desc *ld, const i
 }
 
 /* Updates part of a line given its number, its line descriptor and a starting
-	column. It can handle lines after the end of the buffer (just pass the
+   column. It can handle lines after the end of the buffer (just pass the
    tail of the line list). It checks for updated_lines bypassing TURBO, in
    which case it simply updates first_line and last_line. Note that the
    starting column is ignored in case b->syn is not NULL.
@@ -745,8 +745,53 @@ void store_attributes(buffer *b, line_desc *ld) {
 	if (b->attr_len = attr_len) memcpy(b->attr_buf, attr_buf, attr_len * sizeof *b->attr_buf);
 }
 
+static uint32_t invert_boldness(uint32_t orig_attr) {
+	uint32_t tmp_attr = orig_attr;
+	switch (orig_attr & BG_MASK) {
+		case BG_BLACK:    tmp_attr = (tmp_attr & ~BG_MASK ) | BG_BBLACK;     break;
+		case BG_RED:      tmp_attr = (tmp_attr & ~BG_MASK ) | BG_BRED;       break;
+		case BG_GREEN:    tmp_attr = (tmp_attr & ~BG_MASK ) | BG_BGREEN;     break;
+		case BG_YELLOW:   tmp_attr = (tmp_attr & ~BG_MASK ) | BG_BYELLOW;    break;
+		case BG_BLUE:     tmp_attr = (tmp_attr & ~BG_MASK ) | BG_BBLUE;      break;
+		case BG_MAGENTA:  tmp_attr = (tmp_attr & ~BG_MASK ) | BG_BMAGENTA;   break;
+		case BG_CYAN:     tmp_attr = (tmp_attr & ~BG_MASK ) | BG_BCYAN;      break;
+		case BG_WHITE:    tmp_attr = (tmp_attr & ~BG_MASK ) | BG_BWHITE;     break;
+		case BG_BBLACK:   tmp_attr = (tmp_attr & ~BG_MASK ) | BG_BLACK;      break;
+		case BG_BRED:     tmp_attr = (tmp_attr & ~BG_MASK ) | BG_RED;        break;
+		case BG_BGREEN:   tmp_attr = (tmp_attr & ~BG_MASK ) | BG_GREEN;      break;
+		case BG_BYELLOW:  tmp_attr = (tmp_attr & ~BG_MASK ) | BG_YELLOW;     break;
+		case BG_BBLUE:    tmp_attr = (tmp_attr & ~BG_MASK ) | BG_BLUE;       break;
+		case BG_BMAGENTA: tmp_attr = (tmp_attr & ~BG_MASK ) | BG_MAGENTA;    break;
+		case BG_BCYAN:    tmp_attr = (tmp_attr & ~BG_MASK ) | BG_CYAN;       break;
+		case BG_BWHITE:   tmp_attr = (tmp_attr & ~BG_MASK ) | BG_WHITE;      break;
+		default:          tmp_attr = (tmp_attr & ~BG_MASK ) | BG_BWHITE;     break;
+		}
+
+	switch (orig_attr & FG_MASK) {
+		case FG_BLACK:    tmp_attr = (tmp_attr & ~FG_MASK) | FG_BBLACK;      break;
+		case FG_RED:      tmp_attr = (tmp_attr & ~FG_MASK) | FG_BRED;        break;
+		case FG_GREEN:    tmp_attr = (tmp_attr & ~FG_MASK) | FG_BGREEN;      break;
+		case FG_YELLOW:   tmp_attr = (tmp_attr & ~FG_MASK) | FG_BYELLOW;     break;
+		case FG_BLUE:     tmp_attr = (tmp_attr & ~FG_MASK) | FG_BBLUE;       break;
+		case FG_MAGENTA:  tmp_attr = (tmp_attr & ~FG_MASK) | FG_BMAGENTA;    break;
+		case FG_CYAN:     tmp_attr = (tmp_attr & ~FG_MASK) | FG_BCYAN;       break;
+		case FG_WHITE:    tmp_attr = (tmp_attr & ~FG_MASK) | FG_BWHITE;      break;
+		case FG_BBLACK:   tmp_attr = (tmp_attr & ~FG_MASK) | FG_BLACK;       break;
+		case FG_BRED:     tmp_attr = (tmp_attr & ~FG_MASK) | FG_RED;         break;
+		case FG_BGREEN:   tmp_attr = (tmp_attr & ~FG_MASK) | FG_GREEN;       break;
+		case FG_BYELLOW:  tmp_attr = (tmp_attr & ~FG_MASK) | FG_YELLOW;      break;
+		case FG_BBLUE:    tmp_attr = (tmp_attr & ~FG_MASK) | FG_BLUE;        break;
+		case FG_BMAGENTA: tmp_attr = (tmp_attr & ~FG_MASK) | FG_MAGENTA;     break;
+		case FG_BCYAN:    tmp_attr = (tmp_attr & ~FG_MASK) | FG_CYAN;        break;
+		case FG_BWHITE:   tmp_attr = (tmp_attr & ~FG_MASK) | FG_WHITE;       break;
+		default:          tmp_attr = (tmp_attr & ~FG_MASK) | FG_BBLACK;      break;
+		}
+	return tmp_attr;
+}
+
+
 /* (Un)highlights (depending on the value of show) the bracket matching
-the one under the cursor (if any). */
+   the one under the cursor (if any). */
 
 void automatch_bracket(buffer * const b, const bool show) {
 	static int c;
@@ -767,68 +812,87 @@ void automatch_bracket(buffer * const b, const bool show) {
 				if (b->syn) {
 					parse(b->syn, matching_ld, matching_ld->highlight_state, b->encoding == ENC_UTF8);
 					orig_attr = attr_buf[match_pos];
-				}
-				else orig_attr = 0; /* That's a stretch. FIX_ME */
-				tmp_attr = orig_attr;
-				if (b->opt.automatch & 1 ) { /* invert boldness of FG, BG */
-					switch (orig_attr & BG_MASK) {
-					case BG_BLACK:    tmp_attr = (tmp_attr & ~BG_MASK ) | BG_BBLACK;       break;
-					case BG_RED:      tmp_attr = (tmp_attr & ~BG_MASK ) | BG_BRED;         break;
-					case BG_GREEN:    tmp_attr = (tmp_attr & ~BG_MASK ) | BG_BGREEN;       break;
-					case BG_YELLOW:   tmp_attr = (tmp_attr & ~BG_MASK ) | BG_BYELLOW;      break;
-					case BG_BLUE:     tmp_attr = (tmp_attr & ~BG_MASK ) | BG_BBLUE;        break;
-					case BG_MAGENTA:  tmp_attr = (tmp_attr & ~BG_MASK ) | BG_BMAGENTA;     break;
-					case BG_CYAN:     tmp_attr = (tmp_attr & ~BG_MASK ) | BG_BCYAN;        break;
-					case BG_WHITE:    tmp_attr = (tmp_attr & ~BG_MASK ) | BG_BWHITE;       break;
-					case BG_BBLACK:   tmp_attr = (tmp_attr & ~BG_MASK ) | BG_BLACK;        break;
-					case BG_BRED:     tmp_attr = (tmp_attr & ~BG_MASK ) | BG_RED;          break;
-					case BG_BGREEN:   tmp_attr = (tmp_attr & ~BG_MASK ) | BG_GREEN;        break;
-					case BG_BYELLOW:  tmp_attr = (tmp_attr & ~BG_MASK ) | BG_YELLOW;       break;
-					case BG_BBLUE:    tmp_attr = (tmp_attr & ~BG_MASK ) | BG_BLUE;         break;
-					case BG_BMAGENTA: tmp_attr = (tmp_attr & ~BG_MASK ) | BG_MAGENTA;      break;
-					case BG_BCYAN:    tmp_attr = (tmp_attr & ~BG_MASK ) | BG_CYAN;         break;
-					case BG_BWHITE:   tmp_attr = (tmp_attr & ~BG_MASK ) | BG_WHITE;        break;
-					default:          tmp_attr = (tmp_attr & ~BG_MASK ) | BG_BWHITE;       break;
-					}
+				} else orig_attr = 0; /* That's a stretch. FIX_ME */
 
-					switch (orig_attr & FG_MASK) {
-					case FG_BLACK:    tmp_attr = (tmp_attr & ~FG_MASK) | FG_BBLACK;      break;
-					case FG_RED:      tmp_attr = (tmp_attr & ~FG_MASK) | FG_BRED;        break;
-					case FG_GREEN:    tmp_attr = (tmp_attr & ~FG_MASK) | FG_BGREEN;      break;
-					case FG_YELLOW:   tmp_attr = (tmp_attr & ~FG_MASK) | FG_BYELLOW;     break;
-					case FG_BLUE:     tmp_attr = (tmp_attr & ~FG_MASK) | FG_BBLUE;       break;
-					case FG_MAGENTA:  tmp_attr = (tmp_attr & ~FG_MASK) | FG_BMAGENTA;    break;
-					case FG_CYAN:     tmp_attr = (tmp_attr & ~FG_MASK) | FG_BCYAN;       break;
-					case FG_WHITE:    tmp_attr = (tmp_attr & ~FG_MASK) | FG_BWHITE;      break;
-					case FG_BBLACK:   tmp_attr = (tmp_attr & ~FG_MASK) | FG_BLACK;       break;
-					case FG_BRED:     tmp_attr = (tmp_attr & ~FG_MASK) | FG_RED;         break;
-					case FG_BGREEN:   tmp_attr = (tmp_attr & ~FG_MASK) | FG_GREEN;       break;
-					case FG_BYELLOW:  tmp_attr = (tmp_attr & ~FG_MASK) | FG_YELLOW;      break;
-					case FG_BBLUE:    tmp_attr = (tmp_attr & ~FG_MASK) | FG_BLUE;        break;
-					case FG_BMAGENTA: tmp_attr = (tmp_attr & ~FG_MASK) | FG_MAGENTA;     break;
-					case FG_BCYAN:    tmp_attr = (tmp_attr & ~FG_MASK) | FG_CYAN;        break;
-					case FG_BWHITE:   tmp_attr = (tmp_attr & ~FG_MASK) | FG_WHITE;       break;
-					default:          tmp_attr = (tmp_attr & ~FG_MASK) | FG_BBLACK;      break;
-					}
-				}
-				if (b->opt.automatch & 2 ) {
+				tmp_attr = orig_attr;
+
+				if (b->opt.automatch & 1 ) /* invert boldness of FG, BG */
+					tmp_attr = invert_boldness(tmp_attr);
+
+				if (b->opt.automatch & 2 )
 					tmp_attr = tmp_attr ^ INVERSE;
-				}
-				if (b->opt.automatch & 4 ) {
+
+				if (b->opt.automatch & 4 )
 					tmp_attr = tmp_attr ^ BOLD;
-				}
-				if (b->opt.automatch & 8 ) {
+
+				if (b->opt.automatch & 8 )
 					tmp_attr = tmp_attr ^ UNDERLINE;
-				}
+
 				output_char(c, tmp_attr, b->encoding == ENC_UTF8);
 				b->automatch.shown = 1;
 			}
 		}
 	} else {
 		if (b->automatch.shown) {
-			move_cursor(b->automatch.y, b->automatch.x);
-			output_char(c, orig_attr, b->encoding == ENC_UTF8);
+			if (b->automatch.x >= 0 && b->automatch.x < ne_columns && b->automatch.y >= 0 && b->automatch.y < ne_lines - 1) {
+				move_cursor(b->automatch.y, b->automatch.x);
+				output_char(c, orig_attr, b->encoding == ENC_UTF8);
+			}
 			b->automatch.shown = 0;
 		}
 	}
 }
+
+void highlight_mark(buffer * const b, const bool show) {
+	static int c;
+	static uint32_t orig_attr;
+	static int64_t x, y;
+	static bool shown;
+
+	if (show) {
+		uint32_t tmp_attr;
+		if (b->marking && b->opt.automatch) {
+			y = b->block_start_line - b->win_y;
+			if (y >= 0 && y < ne_lines - 1) {
+				line_desc *ld = nth_line_desc(b, b->block_start_line);
+				x = calc_width(ld, b->block_start_pos, b->opt.tab_size, b->encoding) - b->win_x;
+				if (x >= 0 && x < ne_columns) {
+					move_cursor(y, x);
+					if (b->syn && b->block_start_pos < ld->line_len) {
+						parse(b->syn, ld, ld->highlight_state, b->encoding == ENC_UTF8);
+						orig_attr = attr_buf[b->block_start_pos];
+					} else orig_attr = 0;
+					if (b->block_start_pos < ld->line_len) {
+						c = ld->line[b->block_start_pos];
+					} else c = ' ';
+
+					tmp_attr = orig_attr;
+					unsigned int mark_style = (b->opt.automatch == 0 || b->opt.automatch == 0x0f ) ? 1+2 : b->opt.automatch ^ 0x07;
+					if (mark_style & 1 ) /* invert boldness of FG, BG */
+						tmp_attr = invert_boldness(tmp_attr);
+
+					if (mark_style & 2 )
+						tmp_attr = tmp_attr ^ INVERSE;
+
+					if (mark_style & 4 )
+						tmp_attr = tmp_attr ^ BOLD;
+
+					if (mark_style & 8 )
+						tmp_attr = tmp_attr ^ UNDERLINE;
+
+					output_char(c, tmp_attr, b->encoding == ENC_UTF8);
+					shown = true;
+				}
+			}
+		}
+	} else {
+		if (shown) {
+			if (x >= 0 && x < ne_columns && y >= 0 && y < ne_lines - 1) {
+				move_cursor(y, x);
+				output_char(c, orig_attr, b->encoding == ENC_UTF8);
+			}
+			shown = false;
+		}
+	}
+}
+
