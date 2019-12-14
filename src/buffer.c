@@ -47,7 +47,7 @@ pool dimension, with respect to the number of lines of the given file. */
 
 /* The length of the block used in order to optimize saves. */
 
-#define SAVE_BLOCK_LEN	(16 * 1024 - 1)
+#define SAVE_BLOCK_LEN  (16 * 1024 - 1)
 
 /* The length of a half of the circular buffer used for memory mapping. */
 
@@ -358,22 +358,24 @@ buffer *get_nth_buffer(int n) {
    file_part() of either name. */
 
 buffer *get_buffer_named(const char *p) {
-   char *bname=NULL, *pname=NULL, *cwd=NULL;
-   buffer *b;
-   int rc;
+	char *bname=NULL, *pname=NULL, *cwd=NULL;
+	buffer *b;
+	int rc;
 	if (!p) return NULL;
 	cwd = ne_getcwd(CUR_DIR_MAX_SIZE);
 	if (!cwd) return NULL;
-	pname = absolute_file_path(p, cwd);
 
-	for(rc = 1, b = (buffer *)buffers.head; b->b_node.next; b = (buffer *)b->b_node.next) {
-		if (b->filename && (bname = absolute_file_path(b->filename, cwd)))
-			if (!(rc = strcmp(bname, pname))) break;
-	}
+	if (pname = absolute_file_path(p, cwd))
+		for(rc = 1, b = (buffer *)buffers.head; b->b_node.next; b = (buffer *)b->b_node.next) {
+			if (b->filename && (bname = absolute_file_path(b->filename, cwd)))
+				if (!(rc = strcmp(bname, pname))) break;
+				free(bname);
+				bname = NULL;
+		}
 	free(pname);
 	free(bname);
 	free(cwd);
-	if (!rc)	return b;
+	if (!rc) return b;
 	return NULL;
 }
 
@@ -901,7 +903,7 @@ int insert_one_char(buffer * const b, line_desc * const ld, const int64_t line, 
 	assert(c != 0);
 
 	if (b->encoding == ENC_UTF8) t[utf8str(c, t)] = 0;
-	else t[0] = c,	t[1] = 0;
+	else t[0] = c, t[1] = 0;
 
 	return insert_stream(b, ld, line, pos, t, strlen(t));
 }
