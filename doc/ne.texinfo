@@ -1085,6 +1085,7 @@ off the status bar using either the @samp{Status Bar} menu item of the
 command. @xref{StatusBar}. Alternatively you can turn on the fast GUI
 mode using either the @samp{Fast GUI} menu item of the @samp{Prefs} menu
 or the @code{FastGUI} command (@pxref{FastGUI}). In fast GUI mode the
+location of the mark is not highlighted, and 
 status bar is not draw in reverse, so some additional optimization can
 be done when refreshing it.
 
@@ -3898,9 +3899,10 @@ case @samp{i} will appear on the status bar if the flag is true.
 true, @code{ne} tries to print as little as possible while displaying
 menus and the status bar. In particular, menu items are highlighted by
 the cursor only, the status bar is not highlighted (which allows
-printing it with fewer characters) and the hexadecimal code is not
-displayed. This option is only (but very) useful if you are using
-@code{ne} through a slow connection.
+printing it with fewer characters), the current position of the mark is not
+highlighted, and the hexadecimal code for the character under the cursor is not
+displayed. This option is only (but very) useful if you are using @code{ne}
+through a slow connection.
 
 If you invoke @code{FastGUI} with no arguments, it will toggle the flag. If you
 specify 0 or 1, the flag will be set to false or true, respectively.

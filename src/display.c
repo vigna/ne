@@ -846,18 +846,16 @@ void automatch_bracket(buffer * const b, const bool show) {
 void highlight_mark(buffer * const b, const bool show) {
 	static int c;
 	static uint32_t orig_attr;
-	static int64_t x, y;
-	static bool shown;
 
 	if (show) {
 		uint32_t tmp_attr;
 		if (b->marking && b->opt.automatch) {
-			y = b->block_start_line - b->win_y;
-			if (y >= 0 && y < ne_lines - 1) {
+			b->visible_mark.y = b->block_start_line - b->win_y;
+			if (b->visible_mark.y >= 0 && b->visible_mark.y < ne_lines - 1) {
 				line_desc *ld = nth_line_desc(b, b->block_start_line);
-				x = calc_width(ld, b->block_start_pos, b->opt.tab_size, b->encoding) - b->win_x;
-				if (x >= 0 && x < ne_columns) {
-					move_cursor(y, x);
+				b->visible_mark.x = calc_width(ld, b->block_start_pos, b->opt.tab_size, b->encoding) - b->win_x;
+				if (b->visible_mark.x >= 0 && b->visible_mark.x < ne_columns) {
+					move_cursor(b->visible_mark.y, b->visible_mark.x);
 					if (b->syn && b->block_start_pos < ld->line_len) {
 						parse(b->syn, ld, ld->highlight_state, b->encoding == ENC_UTF8);
 						orig_attr = attr_buf[b->block_start_pos];
@@ -881,17 +879,17 @@ void highlight_mark(buffer * const b, const bool show) {
 						tmp_attr = tmp_attr ^ UNDERLINE;
 
 					output_char(c, tmp_attr, b->encoding == ENC_UTF8);
-					shown = true;
+					b->visible_mark.shown = true;
 				}
 			}
 		}
 	} else {
-		if (shown) {
-			if (x >= 0 && x < ne_columns && y >= 0 && y < ne_lines - 1) {
-				move_cursor(y, x);
+		if (b->visible_mark.shown) {
+			if (b->visible_mark.x >= 0 && b->visible_mark.x < ne_columns && b->visible_mark.y >= 0 && b->visible_mark.y < ne_lines - 1) {
+				move_cursor(b->visible_mark.y, b->visible_mark.x);
 				output_char(c, orig_attr, b->encoding == ENC_UTF8);
 			}
-			shown = false;
+			b->visible_mark.shown = false;
 		}
 	}
 }
