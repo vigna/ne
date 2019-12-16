@@ -88,35 +88,42 @@ void normalize_path(char *c) {
    The returned string has at least one extra char so it can be shifted
    if necessary as per relative_file_path(). */
 
-char *absolute_file_path(const char *a, const char *b) {
-	char *c = malloc(strlen(a)+strlen(b)+2);
+char *absolute_file_path(const char *a0, const char *b) {
+	char *a, *c;
 	char *cc;
 	const char *aa;
-	if (!a || !b || !c || a[0] == '/' || b[0] != '/') {
-		if (c) free(c);
-		return NULL;
-	}
-	strcpy(c, b);
-	normalize_path(c);
-	cc = c+strlen(c);
-	aa = a;
-	while (*aa) {
-		if (aa[0] == '.' && aa[1] == '.' && aa[2] == '/') {
-			aa += 3;
-			while (cc > c && *--cc != '/')
-				;
-		} else if (aa[0] == '.' && aa[1] == '/') {
-			aa += 2;
-		} else {
-			*cc++ = '/';
-			do {
-				*cc++ = *aa++;
-			} while (*aa && *aa != '/');
-			if (*aa == '/') aa++;
+	if (!a0 || !b || b[0] != '/') return NULL;
+
+	/* If *a is already an absolute path, get its relative equivalent first. */
+	if (a0[0] == '/') {
+		a = relative_file_path(a0, b);
+		if (!a) return NULL;
+	} else a = (char *)a0;
+
+	if ((c = malloc(strlen(a) + strlen(b) + 2))) {
+		strcpy(c, b);
+		normalize_path(c);
+		cc = c + strlen(c);
+		aa = a;
+		while (*aa) {
+			if (aa[0] == '.' && aa[1] == '.' && aa[2] == '/') {
+				aa += 3;
+				while (cc > c && *--cc != '/')
+					;
+			} else if (aa[0] == '.' && aa[1] == '/') {
+				aa += 2;
+			} else {
+				*cc++ = '/';
+				do {
+					*cc++ = *aa++;
+				} while (*aa && *aa != '/');
+				if (*aa == '/') aa++;
+			}
 		}
+		*cc = '\0';
+		normalize_path(c);
 	}
-	*cc = '\0';
-	normalize_path(c);
+	if (a != a0) free (a);
 	return c;
 }
 
@@ -130,14 +137,18 @@ char *relative_file_path(const char *aa, const char *b) {
 	int common_dirs=0, up_dirs=0, i, j=0;
 	char *a, *c;
 	if (!aa || !b) return NULL;
+
 	a = str_dup(aa);
 	if (!a) return NULL;
 	normalize_path(a);
+
 	int match = max_prefix(a, b);
 	if (a[0] != '/' || b[0] != '/') {
 		if (a) free(a);
 		return NULL;
 	}
+
+
 	for (i=1; i<match; i++) {  /* skip initial '/' */
 		if (a[i] == '/') {
 			common_dirs++;
@@ -151,6 +162,7 @@ char *relative_file_path(const char *aa, const char *b) {
 	for (i=j; i<=strlen(b); i++) {
 		if (b[i] == '/' || b[i] == '\0') up_dirs++;
 	}
+
 	int newlen = 3 * up_dirs + (strlen(a+j) ) + 2; /* 3 for each "../" and two trailing '\0' */
 	c = malloc(newlen);
 	if (c) {
@@ -160,6 +172,7 @@ char *relative_file_path(const char *aa, const char *b) {
 		strcat(c, a + j);
 		normalize_path(c);
 	}
+
 	return c;
 }
 

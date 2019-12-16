@@ -360,18 +360,20 @@ buffer *get_nth_buffer(int n) {
 buffer *get_buffer_named(const char *p) {
 	char *bname=NULL, *pname=NULL, *cwd=NULL;
 	buffer *b;
-	int rc;
+	int rc = 1;
 	if (!p) return NULL;
 	cwd = ne_getcwd(CUR_DIR_MAX_SIZE);
 	if (!cwd) return NULL;
 
-	if (pname = absolute_file_path(p, cwd))
-		for(rc = 1, b = (buffer *)buffers.head; b->b_node.next; b = (buffer *)b->b_node.next) {
-			if (b->filename && (bname = absolute_file_path(b->filename, cwd)))
-				if (!(rc = strcmp(bname, pname))) break;
+	if ((pname = absolute_file_path(p, cwd))) {
+		for(b = (buffer *)buffers.head; b->b_node.next; b = (buffer *)b->b_node.next) {
+			if (b->filename && (bname = absolute_file_path(b->filename, cwd))) {
+					if (!(rc = strcmp(bname, pname))) break;
+				}
 				free(bname);
 				bname = NULL;
 		}
+	} 
 	free(pname);
 	free(bname);
 	free(cwd);
