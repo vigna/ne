@@ -455,7 +455,7 @@ int main(int argc, char **argv) {
 		   window now */
 		if (!displaying_info) {
 			refresh_window(cur_buffer);
-			if (!fast_gui) highlight_mark(cur_buffer, true);
+			if (!cur_buffer->visible_mark.shown) highlight_mark(cur_buffer, true);
 			if (cur_buffer->opt.automatch) automatch_bracket(cur_buffer, true);
 		}
 

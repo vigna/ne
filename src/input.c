@@ -135,6 +135,7 @@ char request_char(const buffer * const b, const char * const prompt, const char 
 	print_prompt(prompt, false);
 
 	if (default_value) output_char(default_value, 0, false);
+	highlight_mark((buffer * const)b, true);
 	move_cursor(b->cur_y, b->cur_x);
 
 	while(true) {
@@ -644,6 +645,7 @@ char *request(const buffer * const b, const char *prompt, const char * const def
 
 	ib.buf[ib.pos = ib.len = ib.offset = 0] = 0;
 	ib.encoding = ENC_ASCII;
+	highlight_mark((buffer * const)b, true);
 	ib.x = ib.start_x = print_prompt(prompt, true);
 
 	init_history();

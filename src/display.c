@@ -682,6 +682,7 @@ void refresh_window(buffer * const b) {
 		line_desc *ld = b->top_line_desc;
 		for(int i = first_line; i-- != 0 && (line_desc *)ld->ld_node.next;) ld = (line_desc *)ld->ld_node.next;
 		if (ld->ld_node.next) update_window_lines(b, ld, first_line, last_line, true);
+		highlight_mark(b, true);
 		updated_lines = 0;
 	}
 }
@@ -847,7 +848,7 @@ void highlight_mark(buffer * const b, const bool show) {
 	static int c;
 	static uint32_t orig_attr;
 
-	if (show) {
+	if (show && !fast_gui) {
 		uint32_t tmp_attr;
 		if (b->marking && b->opt.automatch) {
 			b->visible_mark.y = b->block_start_line - b->win_y;

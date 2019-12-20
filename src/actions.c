@@ -1034,9 +1034,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 	case FIND_A:
 	case FINDREGEXP_A:
-		if (!p && !fast_gui) highlight_mark(cur_buffer, true);
 		if (p || (p = request_string(b, a == FIND_A ? "Find" : "Find RegExp", b->find_string, false, COMPLETE_NONE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
-			if (cur_buffer->visible_mark.shown) highlight_mark(cur_buffer, false);
 
 			const encoding_type encoding = detect_encoding(p, strlen(p));
 
@@ -1065,9 +1063,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			return DOCUMENT_IS_READ_ONLY;
 		}
 
-		if (!(q = b->find_string) && !fast_gui) highlight_mark(cur_buffer, true);
-		if (q || (q = request_string(b, b->last_was_regexp ? "Find RegExp" : "Find", NULL, false, COMPLETE_NONE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
-			if (cur_buffer->visible_mark.shown) highlight_mark(cur_buffer, false);
+		if ((q = b->find_string) || (q = request_string(b, b->last_was_regexp ? "Find RegExp" : "Find", NULL, false, COMPLETE_NONE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
 
 			const encoding_type search_encoding = detect_encoding(q, strlen(q));
 
@@ -1083,9 +1079,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 				b->find_string_changed = 1;
 			}
 
-			if (!p && !fast_gui) highlight_mark(cur_buffer, true);
 			if (p || (p = request_string(b, b->last_was_regexp ? "Replace RegExp" : "Replace", b->replace_string, true, COMPLETE_NONE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
-				if (cur_buffer->visible_mark.shown) highlight_mark(cur_buffer, false);
 				const encoding_type replace_encoding = detect_encoding(p, strlen(p));
 				bool first_search = true;
 				int64_t num_replace = 0;
@@ -1619,11 +1613,9 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		return ERROR;
 
 	case EXEC_A:
-		if (!p && !fast_gui) highlight_mark(cur_buffer, true);
 		if (p || (p = request_string(b, "Command", b->command_line, false, COMPLETE_FILE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto))) {
 			free(b->command_line);
 			b->command_line = p;
-			if (cur_buffer->visible_mark.shown) highlight_mark(cur_buffer, false);
 			return print_error(execute_command_line(b, p)) ? ERROR : 0;
 		}
 		return ERROR;
