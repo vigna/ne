@@ -276,7 +276,7 @@ int word_wrap2(buffer * const b) {
 	b->bookmark[WORDWRAP_BOOKMARK].line  = original_line = b->cur_line;
 	b->bookmark[WORDWRAP_BOOKMARK].cur_y = b->cur_y;
 	b->bookmark_mask |= (1 << WORDWRAP_BOOKMARK);
-	paragraph(b);
+	paragraph(b, false);
 	goto_line_pos(b, b->bookmark[WORDWRAP_BOOKMARK].line, b->bookmark[WORDWRAP_BOOKMARK].pos);
 	line = b->cur_line_desc->line;
 	b->bookmark[WORDWRAP_BOOKMARK].cur_y += b->bookmark[WORDWRAP_BOOKMARK].line - original_line;
@@ -377,9 +377,15 @@ static int is_part_of_paragraph(const line_desc * const ld, const int tab_size, 
      * on the last line of the paragraph.
 
    paragraph() returns OK unless the cursor ends up on the last line of the
-   file, in which case it returns ERROR. */
+   file, in which case it returns ERROR. It may return STOPPED if the user
+   interrupts a long-running operation.
+   
+   mark_for_undo indicates whether to do an otherwise useless insertion and
+   deletion of a single character to ensure the cursor ends up at its initial
+   position after an undo. If performing a series of paragraph() calls within
+   an undo chain, it's only useful to do this on the first call. */
 
-int paragraph(buffer * const b) {
+int paragraph(buffer * const b, const bool mark_for_undo) {
 	line_desc *ld = b->cur_line_desc, *start_line_desc = ld;
 
 	if (!ld->line) return line_down(b);
@@ -397,11 +403,13 @@ int paragraph(buffer * const b) {
 
 	start_undo_chain(b);
 
-	/* This insertion and deletion of a single character ensures
-	   that the cursor ends up here after an undo. */
 	int64_t line = b->cur_line;
-	insert_one_char(b, ld, line, 0, ' ');
-	delete_stream(b, ld, line, 0, 1);
+	if (mark_for_undo) {
+		/* This insertion and deletion of a single character ensures
+		   that the cursor ends up here after an undo. */
+		insert_one_char(b, ld, line, 0, ' ');
+		delete_stream(b, ld, line, 0, 1);
+	}
 
 	const int right_margin = b->opt.right_margin ? b->opt.right_margin : ne_columns;
 	bool done;
