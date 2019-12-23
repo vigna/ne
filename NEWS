@@ -2,6 +2,8 @@
 
 Unreleased
 
+  * The mark, if set, is visible.
+
   * Warning about opening a document with the same name as an existing
     document now considers the fully qualified canonical path and name
     of each rather than just their basenames.

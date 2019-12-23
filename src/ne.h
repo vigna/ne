@@ -483,10 +483,10 @@ typedef struct {
 	int64_t num_lines;
 	int64_t block_start_line, block_start_pos;
 	struct {
-		int shown;
-		int x;                 /* Visual (on-screen) coordinates of the highlighted bracket, if shown is true. */
-		int y;
-	} automatch;
+		bool shown;
+		int x;                 /* screen x coordinate of the highlighted bracket or mark if shown is true. */
+		int y;                 /* screen y coordinate of the highlighted bracket or mark if shown is true. */
+	} automatch, visible_mark;
 	int64_t allocated_chars;
 	int64_t free_chars;
 	encoding_type encoding;

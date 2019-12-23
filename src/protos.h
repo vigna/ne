@@ -119,6 +119,7 @@ void scroll_window(buffer *b, line_desc *ld, int line, int n);
 void ensure_attributes(buffer *b);
 void store_attributes(buffer *b, line_desc *ld);
 void automatch_bracket(buffer * const b, const bool show);
+void highlight_mark(buffer * const b, const bool show);
 
 /* edit.c */
 int to_upper(buffer *b);
