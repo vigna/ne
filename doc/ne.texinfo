@@ -3583,10 +3583,20 @@ formatted relatively to the value of the right margin as set by the
 (regardless of its leading white space) and all subsequent non-blank lines
 that have identical (to each other's---not to the first line's) leading
 white space. Therefore your paragraphs can have various first line
-indentations and left margins. @code{Paragraph} also takes into account
+indentations and left margins.
+
+@ignore
+
+Note: the following was true, briefly, but was removed because it
+sometimes broke "normal" text that contained certain characters.
+I'm leaving this here in case someday we reimplement this feature.
+
+@code{Paragraph} also takes into account
 characters commonly used at the left edge of block comments (@samp{/},
 @samp{*}, @samp{#}, spaces, and tabs) or quoted email (@samp{>}), and
 attempts to preserve those on the left edge when possible.
+
+@end ignore
 
 After the @code{Paragraph} command completes, your cursor will be
 positioned on the first non-blank character after the last reformatted
@@ -3671,9 +3681,16 @@ the current screen width as right margin.
 
 @noindent sets the word wrap flag. When this flag is true, @code{ne} will
 automatically break lines of text when you attempt to insert characters beyond
-the right margin. See @ref{RightMargin}. @code{ne} will attempt to preserve
+the right margin. See @ref{RightMargin}.
+
+@ignore
+
+See ignored section in "paragraph" discussion.
+@code{ne} will attempt to preserve
 certain invariant characters at the left edge of paragraphs typically used to
 indicate comments in source code or quoted passages in email text. See @ref{Paragraph}.
+
+@end ignore
 
 If you invoke @code{WordWrap} with no arguments, it will toggle the flag. If you
 specify 0 or 1, the flag will be set to false or true, respectively. A lower

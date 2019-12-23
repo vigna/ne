@@ -1761,7 +1761,9 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 	case PARAGRAPH_A:
 		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 		NORMALIZE(c);
+		if (c > 1) start_undo_chain(b);
 		for(int64_t i = 0; i < c && !(error = paragraph(b)) && !stop; i++);
+		if (c > 1) end_undo_chain(b);
 		if (stop) error = STOPPED;
 		if (error == STOPPED) reset_window();
 		assert(b->cur_pos >= 0);

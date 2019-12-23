@@ -8,6 +8,10 @@ Unreleased
   * Fixed adjusted position of mark, bookmark on same line as and to the right
     of multi-line pastes.
 
+  * Fixed cursor position after reformatting a document's final paragraph.
+
+  * Paragraph n where n>1 is atomic; i.e. a single Undo reverts changes.
+
 3.2.1 2019-10-02
 
   * Fixed reordering items on multi-page requesters.

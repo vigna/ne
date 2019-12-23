@@ -483,7 +483,7 @@ int paragraph(buffer * const b) {
 	}
 	update_window_lines(b, b->cur_line_desc, b->cur_y, ne_lines - 2, false);
 
-	goto_line_pos(b, line, pos);
+	goto_line_pos(b, line, ld->line_len);
 	if (stop || line_down(b) == ERROR) return stop ? STOPPED : ERROR;
 
 	/* Try to find the first non-blank starting with this line. */
@@ -491,8 +491,9 @@ int paragraph(buffer * const b) {
 	line = b->cur_line;
 
 	do {
+		pos = 0;
 		if (ld->line) {
-			for (pos = 0; pos < ld->line_len; pos = next_pos(ld->line, pos, b->encoding)) {
+			for (; pos < ld->line_len; pos = next_pos(ld->line, pos, b->encoding)) {
 				if (!isasciispace(ld->line[pos])) {
 					goto_line_pos(b, line, pos);
 					return ld->ld_node.next ? OK : ERROR;
@@ -502,8 +503,8 @@ int paragraph(buffer * const b) {
 		ld = (line_desc *)ld->ld_node.next;
 		line++;
 	} while (ld->ld_node.next);
-
-	return b->cur_line_desc->ld_node.next ? OK : ERROR;
+	goto_line_pos(b, line - 1, pos);
+	return ERROR;
 }
 
 
