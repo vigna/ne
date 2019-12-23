@@ -25,6 +25,10 @@ const char *input_class_names[INPUT_CLASS_COUNT] = {
 	"ALPHA", "COMMAND", "RETURN", "TAB", "IGNORE", "INVALID"
 }; 
 
+const char *config_source_names[CONFIG_SOURCE_COUNT] = {
+	"Built In", "Global Prefs", "User Prefs", "Current Directory"
+}; 
+
 /* This vector contains all key bindings. Each entry points to a command line
    to be executed when the corresponding keystroke is input. The index
    correspond to the ASCII code, and to the codes defined in keycodes.h for the
@@ -36,6 +40,9 @@ const char *input_class_names[INPUT_CLASS_COUNT] = {
 #else
   #define PICK(A,B) B
 #endif
+
+config_source key_binding_source[NUM_KEYS];
+
 
 const char *key_binding[NUM_KEYS] = {
 
@@ -399,7 +406,6 @@ const input_class char_class[256] = {
 	ALPHA, ALPHA, ALPHA, ALPHA, ALPHA, ALPHA, ALPHA, ALPHA, ALPHA, ALPHA, ALPHA, ALPHA, ALPHA, ALPHA, ALPHA, ALPHA,
 	ALPHA, ALPHA, ALPHA, ALPHA, ALPHA, ALPHA, ALPHA, ALPHA, ALPHA, ALPHA, ALPHA, ALPHA, ALPHA, ALPHA, ALPHA, ALPHA
 };
-
 
 const char meta_prefixed[128][3] = {
 	{ '\x1b', 0 },

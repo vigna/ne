@@ -258,10 +258,19 @@ int main(int argc, char **argv) {
 	}
 
 #ifdef NE_TEST
-	/* Dump the builtin menu and key bindings to compare to
-	   doc/default.menus and doc/default.keys. */
-	int dump_config(void);
-	dump_config();
+	{
+		/* Dump the builtin menu and key bindings to compare to
+		   doc/default.menus and doc/default.keys. */
+		int dump_menu_config(FILE *f);
+		int dump_key_config(FILE *f);
+		FILE *f;
+
+		if ((f = fopen("ne_test_dump_default_config", "w")) ) {
+			dump_menu_config(f);
+			dump_key_config(f);
+			fclose(f);
+		}
+	}
 #endif
 
 	/* Unless --noconfig was specified, we try to configure the
@@ -271,6 +280,22 @@ int main(int argc, char **argv) {
 		get_menu_configuration(menu_conf_name);
 		get_key_bindings(key_bindings_name);
 	}
+
+#ifdef NE_TEST
+	{
+		/* Dump the builtin menu and key bindings to compare to
+		   doc/default.menus and doc/default.keys. */
+		int dump_menu_config(FILE *f);
+		int dump_key_config(FILE *f);
+		FILE *f;
+
+		if ((f = fopen("ne_test_dump_loaded_config", "w")) ) {
+			dump_menu_config(f);
+			dump_key_config(f);
+			fclose(f);
+		}
+	}
+#endif
 
 	/* If we cannot even create a buffer, better go... */
 

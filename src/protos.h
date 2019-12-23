@@ -156,7 +156,8 @@ const char *ext2syntax(const char * const ext);
 void read_key_capabilities(void);
 void set_escape_time(int new_escape_time);
 int get_key_code(void);
-int key_may_set(const char * const cap_string, int code);
+int key_may_set(const char * const cap_string, int code, config_source source);
+void get_key_bindings(const char *);
 
 /* menu.c */
 void print_message(const char *message);
@@ -170,7 +171,6 @@ void print_info(int info_num);
 void alert(void);
 void handle_menus(void);
 void get_menu_configuration(const char *);
-void get_key_bindings(const char *);
 
 /* names.c */
 

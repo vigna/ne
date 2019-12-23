@@ -48,17 +48,11 @@
 
 #define MENU_CONF_NAME ".menus"
 
-/* The name of the key bindings file. */
-
-#define KEY_BINDINGS_NAME ".keys"
-
 
 /* The keywords used in the configuration files. */
 
 #define MENU_KEYWORD "MENU"
 #define ITEM_KEYWORD "ITEM"
-#define KEY_KEYWORD "KEY"
-#define SEQ_KEYWORD "SEQ"
 
 
 /* This structure defines a menu item. command_line points to
@@ -315,11 +309,8 @@ static menu *menus = def_menus;
 
 
 #ifdef NE_TEST
-int dump_config(void) {
-	int menu, item, key;
-	FILE *f;
-
-	if (!(f = fopen("ne_test_dump_config", "w")) ) return ERROR;
+void dump_menu_config(FILE *f) {
+	int menu, item, keynum;
 
 	for (menu = 0; menu < menu_num; menu++) {
 		fprintf(f, "%s \"%s\"\n", MENU_KEYWORD, menus[menu].text );
@@ -330,13 +321,6 @@ int dump_config(void) {
 		}
 		fprintf(f, "\n");
 	}
-
-	for (key = 0; key < NUM_KEYS; key++) {
-		if (key_binding[key] && key_binding[key][0])
-			fprintf(f, "%s\t%4x\t%s\n", KEY_KEYWORD, key, key_binding[key] );
-	}
-	fclose(f);
-	return OK;
 }
 #endif
 
@@ -930,7 +914,7 @@ static void error_in_menu_configuration(const int line, const char * const s) {
 }
 
 
-static void get_menu_conf(const char * menu_conf_name, char * (exists_prefs_func)()) {
+static void get_menu_conf(const char * menu_conf_name, char * (exists_prefs_func)(), config_source source) {
 	if (!menu_conf_name) menu_conf_name = MENU_CONF_NAME;
 
 	menu *new_menus = NULL;
@@ -1037,92 +1021,8 @@ static void get_menu_conf(const char * menu_conf_name, char * (exists_prefs_func
 /* Menu configs are all or nothing, so if the user has one,
    skip any global one. */
 void get_menu_configuration(const char * menu_conf_name) {
-	get_menu_conf(menu_conf_name, exists_prefs_dir);
-	if (menus == def_menus) get_menu_conf(menu_conf_name, exists_gprefs_dir);
-}
-
-
-static void error_in_key_bindings(const int line, const char * const s) {
-	fprintf(stderr, "Error in key bindings file at line %d: %s\n", line, s);
-	exit(0);
-}
-
-static void get_key_bind(const char * key_bindings_name, char * (exists_prefs_func)()) {
-	if (!key_bindings_name) key_bindings_name = KEY_BINDINGS_NAME;
-
-	char * const prefs_dir = exists_prefs_func();
-	if (prefs_dir) {
-		char * const key_bindings = malloc(strlen(prefs_dir) + strlen(key_bindings_name) + 1);
-		if (key_bindings) {
-			strcat(strcpy(key_bindings, prefs_dir), key_bindings_name);
-			char_stream * const cs = load_stream(NULL, key_bindings, false, false);
-			if (cs) {
-				char * p = cs->stream;
-				int line = 1;
-
-				while(p - cs->stream < cs->len) {
-					if (*p && !cmdcmp(KEY_KEYWORD, p)) {
-						while(*p && !isasciispace(*p)) p++;
-
-						int c;
-						if (sscanf(p, "%x %*s", &c) == 1) {
-							if (c >= 0 && c < NUM_KEYS) {
-								if (c != 27 && c != 13) {
-									while(isasciispace(*p)) p++;
-									while(*p && !isasciispace(*p)) p++;
-									while(isasciispace(*p)) p++;
-									if (*p) key_binding[c] = p;
-									else error_in_key_bindings(line, "no command specified.");
-								}
-								else error_in_key_bindings(line, "you cannot redefine ESCAPE and RETURN.");
-							}
-							else error_in_key_bindings(line, "key code out of range.");
-						}
-						else error_in_key_bindings(line, "can't read key code.");
-					}
-					else if (*p && !cmdcmp(SEQ_KEYWORD, p)) {
-						char *buf;
-						while(*p && !isasciispace(*p)) p++;	 /* skip past SEQ */
-						while(isasciispace(*p)) p++;			  /* skip to quoted sequence, like  "\x1b[A" */
-						buf = p;	/* Risky: we're replacing the double-quoted string with its parsed equivalent in situ. */
-						if (parse_string((unsigned char **)&p, (unsigned char *)buf, strlen(p)) > 0) {  /* parse_string() expects double-quoted string. */
-							while(*p && isasciispace(*p)) p++;  /* skip to key code */
-							int c;
-							if (*p && sscanf(p, "%x %*s", &c) == 1) {	 /* convert key code */
-								if (c >= 0 && c < NUM_KEYS) {
-									if (c != 27 && c != 13) {
-										if (key_may_set(buf, -c - 1) == 0)
-											error_in_key_bindings(line, "sequence table full." );
-									}
-									else error_in_key_bindings(line, "you cannot redefine ESCAPE and RETURN.");
-								}
-								else error_in_key_bindings(line, "key code out of range.");
-							}
-							else error_in_key_bindings(line, "can't read key code.");
-						}
-						else error_in_key_bindings(line, "can't read double quoted character sequence.");
-					}
-					line++;
-					p += strlen(p) + 1;
-				}
-			}
-
-			free(key_bindings);
-		}
-	}
-}
-
-char *cur_dir(void) {
-	static char *cur_dir = "./";
-	return cur_dir;
-}
-
-/* Key bindings override easily, so pull in any global bindings
-   first, then override with the users bindings. */
-void get_key_bindings(const char * key_bindings_name) {
-	get_key_bind(key_bindings_name, exists_gprefs_dir);
-	get_key_bind(key_bindings_name, exists_prefs_dir);
-	get_key_bind(key_bindings_name, cur_dir);
+	get_menu_conf(menu_conf_name, exists_prefs_dir, USER_PREFS);
+	if (menus == def_menus) get_menu_conf(menu_conf_name, exists_gprefs_dir, GLOBAL_PREFS);
 }
 
 

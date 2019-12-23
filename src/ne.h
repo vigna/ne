@@ -78,6 +78,12 @@ typedef enum {
 
 extern const char *input_class_names[];
 
+typedef enum {
+	BUILT_IN, GLOBAL_PREFS, USER_PREFS, CUR_DIR, CONFIG_SOURCE_COUNT
+} config_source;
+
+extern const char *config_source_names[];
+
 /* This is the expected max length of the current directory name. */
 
 #define CUR_DIR_MAX_SIZE    (16*1024)
@@ -565,6 +571,8 @@ typedef struct {
 #include "syntax.h"
 
 extern const char *key_binding[];
+
+extern config_source key_binding_source[NUM_KEYS];
 
 extern buffer *cur_buffer;
 
