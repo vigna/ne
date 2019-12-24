@@ -401,8 +401,6 @@ int paragraph(buffer * const b, const bool mark_for_undo) {
 	int64_t pos = b->cur_pos;
 	b->cur_pos = -1;
 
-	start_undo_chain(b);
-
 	int64_t line = b->cur_line;
 	if (mark_for_undo) {
 		/* This insertion and deletion of a single character ensures
@@ -476,8 +474,6 @@ int paragraph(buffer * const b, const bool mark_for_undo) {
 			}
 		}
 	} while (!stop && !done);
-
-	end_undo_chain(b);
 
 	if (pa_space) {
 		free(pa_space);
