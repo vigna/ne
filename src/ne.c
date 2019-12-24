@@ -77,7 +77,7 @@ char ARG_HELP[] = ABOUT_MSG "\n"
 						"--prefs EXT   set autoprefs for the provided extension before loading the first file.\n"
 						"--keys FILE   use this file for keyboard configuration.\n"
 						"--menus FILE  use this file for menu configuration.\n"
-						"--macro FILE  exec this macro after start.\n\n"
+						"--macro FILE  exec this macro on the next file or first buffer after start.\n\n"
 						"             *These options may appear multiple times.\n";
 
 
@@ -236,12 +236,6 @@ int main(int argc, char **argv) {
 				io_utf8 = false;
 				skiplist[i] = 1; /* argv[i] = NULL; */
 			}
-			else if (!strcmp(&argv[i][2], "macro")) {
-				if (i < argc-1) {
-					macro_name = argv[i+1];
-					skiplist[i] = skiplist[i+1] = 1; /* argv[i] = argv[i+1] = NULL; */
-				}
-			}
 			else if (!strcmp(&argv[i][2], "keys")) {
 				if (i < argc-1) {
 					key_bindings_name = argv[i+1];
@@ -356,6 +350,11 @@ int main(int argc, char **argv) {
 
 	set_fatal_code();
 
+	/* We delay updates. In this way the macro activity does not cause display activity. */
+
+	reset_window();
+	delay_update();
+
 	if (argc > 1) {
 
 		/* The first file opened does not need a NEWDOC_A action. Note that
@@ -402,12 +401,17 @@ int main(int argc, char **argv) {
 				else if (!strcmp(argv[i], "--read-only") || !strcmp(argv[i], "--readonly") || !strcmp(argv[i], "--ro")) {
 					read_only = true;
 				}
+				else if (!strcmp(argv[i], "--macro")) {
+					macro_name = argv[i+1];
+					skiplist[i+1] = 1;
+				}
 				else {
 					if (!strcmp(argv[i], "-") && stdin_buffer) {
 						stdin_buffer->opt.binary = binary;
 						if (read_only) stdin_buffer->opt.read_only = read_only;
 						if (first_line) do_action(stdin_buffer, GOTOLINE_A, first_line, NULL);
 						if (first_col)  do_action(stdin_buffer, GOTOCOLUMN_A, first_col, NULL);
+						if (macro_name) do_action(stdin_buffer, MACRO_A, -1, str_dup(macro_name));
 						stdin_buffer = NULL;
 					}
 					else {
@@ -419,12 +423,14 @@ int main(int argc, char **argv) {
 						if (first_line) do_action(cur_buffer, GOTOLINE_A, first_line, NULL);
 						if (first_col)  do_action(cur_buffer, GOTOCOLUMN_A, first_col, NULL);
 						if (read_only) cur_buffer->opt.read_only = read_only;
+						if (macro_name) do_action(cur_buffer, MACRO_A, -1, str_dup(macro_name));
 					}
 					first_line =
 					first_col  = 0;
 					skip_plus  =
 					binary    =
 					read_only  = false;
+					macro_name = NULL;
 				}
 			}
 		}
@@ -437,11 +443,6 @@ int main(int argc, char **argv) {
 		if (get_nth_buffer(1)) do_action(cur_buffer, NEXTDOC_A, -1, NULL);
 
 	}
-
-	/* We delay updates. In this way the macro activity does not cause display activity. */
-
-	reset_window();
-	delay_update();
 
 	if (macro_name) do_action(cur_buffer, MACRO_A, -1, str_dup(macro_name));
 	else if (first_file) {
