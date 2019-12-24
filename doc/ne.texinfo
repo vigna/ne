@@ -2835,22 +2835,22 @@ copied into any clip.
 @subsection Shift
 @cmindex Shift
 
-@noindent Syntax: @code{Shift [<|>][n][t|s]]}@*
+@noindent Syntax: @code{Shift [<|>][n][t|s]}@*
 @noindent Abbreviation: @code{SH}
 
 @noindent shifts the text on lines between the mark and the cursor either
-right (@samp{>}, the default) or left (@samp{<}) by adding or removing
+right (@samp{>}) or left (@samp{<}) by adding or removing
 white space on each line. The adjustment size, specified as an unsigned
 integer @samp{n}, is in units of the current tab size (@samp{t}) or spaces
-(@samp{s}). The default is 1. Adjustments start at the left edge of a
-vertical mark, or column 1 otherwise. If the mark is not currently set, only
-the current line is affected.
+(@samp{s}). The defaults are @samp{>}, @samp{1}, and @samp{t}. Adjustments
+start at the left edge of a vertical mark, or column 1 otherwise. If the mark
+is not currently set, only the current line is affected.
 
-@code{Shift} will insert tab characters only if the document's @code{Tabs}
-flag and the @code{ShiftTabs} flag are both set---in which case an upper case
-@samp{T} will appear in the status bar. If either of the @code{Tabs} or
-@code{ShiftTabs} flags is unset (i.e there is no upper case @samp{T} in the
-status bar) @code{Shift} will only insert spaces.
+@code{Shift} will insert tab characters only if @samp{s} is not used, and both
+of the document's @code{Tabs} and @code{ShiftTabs} flags are set---in which
+case an upper case @samp{T} will appear in the status bar. If either of the
+@code{Tabs} or @code{ShiftTabs} flags is unset (i.e there is no upper case
+@samp{T} in the status bar) @code{Shift} will only insert spaces.
 
 In the case of left shifts, if any indicated line has insufficient leading
 white space for the requested adjustment to be made, then @code{Shift}
