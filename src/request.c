@@ -779,6 +779,7 @@ static int request_strings_cleanup() {
 /* indicates the function which request_strings() should call upon CLOSEDOC_A */
 
 static int (*rs_closedoc)(int n) = NULL;
+static int handle_savedoc(int n);
 
 /* indicates the correct function to call to restore the status bar after
    suspend/resume, particularly during requesters. Note: not static, as
@@ -814,6 +815,7 @@ int request_strings(req_list *rlp0, int n) {
 		return ERROR;
 	}
 
+	char * bar_msg_after_keystroke = NULL;
 	while(true) {
 		if (ne_lines0 != ne_lines || ne_columns0 != ne_columns || resume_bar) {
 			if (ne_lines0 && ne_columns0 ) {
@@ -842,6 +844,11 @@ int request_strings(req_list *rlp0, int n) {
 		int c;
 		input_class ic;
 		do c = get_key_code(); while((ic = CHAR_CLASS(c)) == IGNORE);
+
+		if (bar_msg_after_keystroke) {
+			print_message(bar_msg_after_keystroke);
+			bar_msg_after_keystroke = NULL;
+		}
 
 		if (window_changed_size) {
 			window_changed_size = false;
@@ -971,6 +978,16 @@ int request_strings(req_list *rlp0, int n) {
 						int n1 = rebuild_rl_entries();
 						page = -1;
 						normalize(n1);
+						break;
+
+					case SAVE_A:
+						if (rs_closedoc) { /* we allow save if we allow closedoc */
+							int n0 = PCR2N(page, C, R);
+							handle_savedoc(n0);
+							page = -1;
+							normalize(n0);
+							bar_msg_after_keystroke = info_msg[SELECT_DOC];
+						}
 						break;
 
 					case CLOSEDOC_A:
@@ -1176,6 +1193,31 @@ char *request_file(const buffer *b, const char *prompt, const char *default_name
 	return NULL;
 }
 
+
+/* Save the document referenced by index "n".
+   If successful, clear the mark for this document. */
+
+static int handle_savedoc(int n) {
+
+	char *p = rl.entries[n];
+
+	int o;
+	for (o = 0; o < rl0->cur_entries && rl0->entries[o] != p; o++) /* empty loop */ ;
+
+	if (o == rl0->cur_entries) return n; /* This should never happen. */
+
+	buffer *bp = get_nth_buffer(o);
+
+	int error = save_buffer_to_file(bp, NULL);
+	if (error != OK) print_error(DOCUMENT_NOT_SAVED);
+	else {
+		print_info(SAVED);
+		if (rl.suffix && p[strlen(p) - 1] == rl.suffix)
+			p[strlen(p) - 1] = '\0';
+	}
+
+	return n;
+}
 
 /* This is the callback function for the SelectDoc requester's CloseDoc action.
    "n" is the index into rl.entries of the "char *p" corresponding to an entry
