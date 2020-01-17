@@ -1348,16 +1348,20 @@ currently have open. This requester is displayed when you use the
 @code{Select...} entry from the @code{Documents} menu, or invoke the
 @code{SelectDoc} command with the @key{f4} key. Documents with unsaved
 changes will be bold (if your terminal supports bold) and marked with
-an asterisk. These documents are generally listed in the order they
+an asterisk.
+
+These documents are generally listed in the order they
 were opened. However, in this requester you can reorder these documents
 by using the keys bound to the @code{NextDoc} and @code{PrevDoc}
 commands, usually @key{f2} and @key{f3}. Any document reordering and
 selection will only take effect if you exit the requester with the
 @key{Return} key. 
-You can also close unmodified documents without leaving the @code{SelectDoc}
-requester by using the key bound to the @code{CloseDoc} command,
-usually @kbd{@key{Control}-Q}. Closing the last document this way will
-cause @code{ne} to exit.
+
+You can also save named documents and close unmodified documents without
+leaving the @code{SelectDoc} requester by using the key bound to the
+@code{Save} and @code{CloseDoc} commands respectively, usually
+@kbd{@key{Control}-S} and @kbd{@key{Control}-Q}. You can't close the last
+document this way because it would cause @code{ne} to exit.
 
 Regardless of the type of requester, you can confirm your selection
 with @key{Return} just as with the input line (@pxref{The Input Line}), or
@@ -2670,11 +2674,12 @@ whichever document you want to become the current document by moving
 your cursor to its name and hitting @key{Return}..
 
 While the list of documents is displayed, you can close unmodified
-documents with your @code{CloseDoc} key (@kbd{@key{Control}-Q}), and
-you can alter their relative order
-using your @code{NextDoc} and @code{PrevDoc} keys (@key{f2} and @key{f3}),
-which have the effect of swapping your currently selected document with
-the next or previous document in the list, respectively.
+documents with your @code{CloseDoc} key (@kbd{@key{Control}-Q}), save
+named documents with your @code{Save} key (@kbd{@key{Control}-S}), and
+you can alter their relative order using your @code{NextDoc} and
+@code{PrevDoc} keys (@key{f2} and @key{f3}), which have the effect of
+swapping your currently selected document with the next or previous
+document in the list, respectively.
 
 If you escape from the requester, the requester goes away, you are
 returned to your original current document (unless you closed it!),
