@@ -198,6 +198,8 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 	if (perform_wrap > 0) perform_wrap--;
 
+	if (cur_buffer->visible_mark.shown) highlight_mark(cur_buffer, false);
+
 	switch(a) {
 
 	case EXIT_A:
@@ -1001,7 +1003,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 					cur_buffer->replace_string = str_dup(old_buffer->replace_string);
 					cur_buffer->last_was_replace = old_buffer->last_was_replace;
 					cur_buffer->last_was_regexp = old_buffer->last_was_regexp;
-						
+
 					if (a == OPEN_A) {
 						do_action(cur_buffer, PREVDOC_A, 1, NULL);
 						delete_buffer();

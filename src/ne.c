@@ -505,7 +505,6 @@ int main(int argc, char **argv) {
 		}
 
 		if (cur_buffer->automatch.shown) automatch_bracket(cur_buffer, false);
-		if (cur_buffer->visible_mark.shown) highlight_mark(cur_buffer, false);
 
 		switch(ic) {
 		case INVALID:
