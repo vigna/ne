@@ -566,7 +566,7 @@ char *gen_flag_string(const buffer * const b) {
 	string[i++] = b->is_CRLF            ? 'C' : '-';
 	string[i++] = io_utf8               ? '@' : '-';
 	string[i++] = b->encoding != ENC_8_BIT? (b->encoding == ENC_UTF8 ? 'U' : 'A') : '8';
-	string[i++] = b->is_modified        ? '*' : '-';
+	string[i++] = "-*+#"[(b->is_modified ? 1 : 0) + (buffer_file_modified(b, NULL) ? 2 : 0)];
 
 	if (b->opt.hex_code && !fast_gui) {
 		string[i++] = ' ';

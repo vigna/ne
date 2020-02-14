@@ -302,7 +302,7 @@ numbers, respectively, whereas the percentage indicates approximately
 your position in the file. The small letters represent user flags that
 you can turn on and off. In particular, @samp{i} tells you that insert
 mode is on, while @samp{p} tells that the automatic preferences system
-is activated. The @samp{*} means this buffer has not been saved. For a
+is activated. The @samp{*} means this document has not been saved. For a
 thorough explanation of the meaning of the flags on the status bar, see
 @ref{The Status Bar}.
 
@@ -1052,7 +1052,7 @@ stealing precious editing space.
 The status bar looks more or less like this:
 
 @example
-L:      31  C:      25   12% iabcwfpvurtBMRPC*@@8       20 /foo/bar
+L:      31  C:      25   12% iabcwfpvurt!MRPC@@8*       20 /foo/bar
 @end example
 
 The numbers after @samp{L:} and @samp{C:} are the line and column of the
@@ -1127,14 +1127,14 @@ appears if the undo flag is true. @xref{DoUndo}.
 @item r
 appears if the read only flag is true. @xref{ReadOnly}.
 
-@item t/T
+@item t or T
 appears as @samp{t} if the tabs flag is true, @samp{T} if
 the shifttabs flag is also true. @xref{Tabs}, @ref{ShiftTabs}.
 
 @item d
 appears if the deltabs flag is true. @xref{DelTabs}.
 
-@item B
+@item B or !
 appears if the binary flag is true. @xref{Binary}.
 
 @item !
@@ -1142,7 +1142,7 @@ appears in place of @samp{B} when not in binary mode
 and the last line of the document is not empty (i.e. the last line of the
 saved file would not be terminated).
 
-@item M
+@item M or V
 appears if you are currently marking a block. @xref{Mark}.
 
 @item V
@@ -1164,9 +1164,13 @@ appears if UTF-8 I/O is enabled. @xref{UTF8IO}.
 @item A/8/U
 denotes the current document encoding---US-ASCII, 8-bit or UTF-8. @xref{UTF8}.
 
-@item *
+@item * or #
 appears if the document has been modified since the last save, or if
 the @code{Modified} command was issued to set this flag. @xref{Modified}.
+
+@item + or #
+can appear in place of @samp{*} if the corresponding file's modification
+time has changed since the current document was loaded from or saved to that file.
 
 @end table
 
@@ -3829,9 +3833,10 @@ FLAG COMMAND      ABBR  DESCRIPTION
   R   Record        REC  actions are being recorded in a macro
   P   PreserveCR    PCR  affects how <CR> chars are loaded from files
   C   CRLF          CRLF use CR/LF as line terminator
-  *   Modified      MOD  document has been modified since last saved
   @@   UTF8IO        U8IO I/O (keyboard and terminal) are UTF-8 encoded
 A/8/U UTF8          U8   the document encoding (ASCII, 8-bit or UTF-8)
+  */# Modified      MOD  document has been modified since last saved
+  +/# (none)             file's modtime changed since doc was loaded/saved
 @end example
 
 The @code{RequestOrder} and @code{AutoMatchBracket} flags' states are not indicated on the status bar.
@@ -4425,15 +4430,17 @@ This file is always loaded by @code{ne} at startup.
 
 @noindent sets the modified flag.  This flag is set automatically
 whenever a document is modified, and is used to determine which documents
-need to be saved when @code{ne} exits.  Normally you would not alter
+need to be saved by @code{SaveAll} or when @code{ne} exits.  Normally you would not alter
 this flag, but when a document is inadvertently modified and you don't
 want the changes saved, @code{Modified} provides a way to make
 @code{ne} consider the document unchanged.
 
 If you invoke @code{Modified} with no arguments, it will toggle the flag.
 If you specify 0 or 1, the flag will be set to false or true,
-respectively. An asterisk (@samp{*}) will appear on the status bar if the
-flag is true.
+respectively. If the flag is true, either an asterisk (@samp{*}) or an
+octothorpe (@samp{#}) will appear on the status bar, the latter indicating
+the corresponding file's modification time has changed since the document
+was loaded or saved.
 
 
 

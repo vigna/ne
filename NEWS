@@ -11,6 +11,11 @@ Unreleased
     document now considers the fully qualified canonical path and name
     of each rather than just their basenames.
 
+  * Status bar Modified flag (*) also indicates the corresponding file's
+    modification time has changed since the document was loaded or saved.
+    - Document modified: * or #
+    - File's modtime changed: + or #
+
 3.2.0 2019-09-30
 
   * Macros: They now work across multiple documents. You can cancel macro
