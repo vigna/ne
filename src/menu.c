@@ -217,7 +217,7 @@ static const menu_item prefs_item[] =
 		{ "Fast GUI        ", FASTGUI_ABBREV },
 		{ "Word Wrap     [W", WORDWRAP_ABBREV },
 		{ "Right Margin    ", RIGHTMARGIN_ABBREV },
-		{ "Auto Indent     ", AUTOINDENT_ABBREV },
+PICK(   "Auto Indent     ", AUTOINDENT_ABBREV  , "Auto Indent [Del", AUTOINDENT_ABBREV)
 		{ "Request Order   ", REQUESTORDER_ABBREV },
 		{ "Preserve CR     ", PRESERVECR_ABBREV },
 		{ "Save CR/LF    [Z", CRLF_ABBREV },

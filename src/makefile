@@ -20,6 +20,7 @@
 # - PageUp and ^p map to PageUp (rather than PrevPage)
 # - PageDown and ^n map to PageDown (rather than NextPage)
 # - Home and End map to MoveSOL and MoveEOL (rather than MoveIncUp and MoveIncDown)
+# - Key 1FF ("Esc Del", "[Del", or "Alt-Del")  maps to AutoIndent
 # - (Shift-,Ctrl-)(F5,F6) shift left and right by (tabs,spaces)
 # - RequestOrder is set, so requesters display in column major order.
 # Some users may prefer this to the historical settings.
