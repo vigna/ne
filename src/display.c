@@ -862,7 +862,7 @@ void highlight_mark(buffer * const b, const bool show) {
 						orig_attr = attr_buf[b->block_start_pos];
 					} else orig_attr = 0;
 					if (b->block_start_pos < ld->line_len && ld->line[b->block_start_pos] != '\t') {
-						c = ld->line[b->block_start_pos];
+						c = get_char( &ld->line[b->block_start_pos], b->encoding);
 					} else c = ' ';
 
 					tmp_attr = orig_attr;

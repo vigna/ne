@@ -236,7 +236,7 @@ typedef struct {
 
 /* This structure defines a line descriptor; it is a node containing a pointer
    to the line text, and an integer containing the line length in bytes. The
-   line pointer by ld_text is NOT NULL-terminated. line_len is zero iff line
+   line pointed to line is NOT NULL-terminated. line_len is zero iff line
    is NULL, in which case we are representing an empty line. ld_node->next
    is NULL iff this node is free for use. */
 

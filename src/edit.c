@@ -86,6 +86,7 @@ static int to_something(buffer *b, int (to_first)(int), int (to_rest)(int)) {
 		start_undo_chain(b);
 
 		delete_stream(b, b->cur_line_desc, b->cur_line, b->cur_pos, len);
+
 		if (new_len) insert_stream(b, b->cur_line_desc, b->cur_line, b->cur_pos, word, new_len);
 
 		free(word);
@@ -379,7 +380,7 @@ static int is_part_of_paragraph(const line_desc * const ld, const int tab_size, 
    paragraph() returns OK unless the cursor ends up on the last line of the
    file, in which case it returns ERROR. It may return STOPPED if the user
    interrupts a long-running operation.
-   
+
    mark_for_undo indicates whether to do an otherwise useless insertion and
    deletion of a single character to ensure the cursor ends up at its initial
    position after an undo. If performing a series of paragraph() calls within

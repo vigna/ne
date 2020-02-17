@@ -373,7 +373,7 @@ buffer *get_buffer_named(const char *p) {
 				free(bname);
 				bname = NULL;
 		}
-	} 
+	}
 	free(pname);
 	free(bname);
 	free(cwd);

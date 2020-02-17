@@ -994,7 +994,7 @@ spot_t *next_spot(const int dir, line_desc * ld, int64_t pos, int64_t y, const e
 
 /* Searches for the start or end of the next or previous word, depending on the value
    of dir and start.
-   
+
    Start   Dir   in Word    Transitions
    -----   ---   -------    -----------
      F     -1       F           1
@@ -1020,7 +1020,7 @@ int search_word(buffer * const b, const int dir, const bool start) {
 		y = newspot->y;
 		ld = newspot->ld;
 	}
-	
+
    bool in_word = ne_isword(pos < ld->line_len ? get_char(&ld->line[pos], b->encoding) : '\0', b->encoding);
 
 	int transitions_left;
@@ -1045,7 +1045,7 @@ int search_word(buffer * const b, const int dir, const bool start) {
 	while(y < b->num_lines && y >= 0) {
 		newspot = next_spot(dir, ld, pos, y, b->encoding);
 		if (!newspot && dir == 1) return ERROR;
-		const int c = newspot && newspot->ld->line ? get_char(&newspot->ld->line[newspot->pos], b->encoding) : '\0';
+		const int c = (newspot && newspot->pos < newspot->ld->line_len) ? get_char(&newspot->ld->line[newspot->pos], b->encoding) : '\0';
 		if (ne_isword(c, b->encoding) != in_word) {
 			if (--transitions_left < 1) {
 				if (newspot && dir == 1) goto_line_pos(b, newspot->y, newspot->pos);
@@ -1085,7 +1085,7 @@ void move_to_sow(buffer * const b) {
 	if (pos < b->cur_pos && y == b->cur_line)	goto_pos(b, pos);
 }
 
-	
+
 
 /* Moves to the character after the end of the current word. It doesn't move at
    all on US-ASCII spaces and punctuation. */
@@ -1096,7 +1096,7 @@ void move_to_eow(buffer * const b) {
 	int64_t pos = b->cur_pos;
 	if (pos >= ld->line_len || !ne_isword(get_char(&ld->line[pos], b->encoding), b->encoding)) return;
 
-	for(pos = b->cur_pos; pos < ld->line_len; pos += b->encoding == ENC_UTF8 ? utf8len(ld->line[pos]) : 1) 
+	for(pos = b->cur_pos; pos < ld->line_len; pos += b->encoding == ENC_UTF8 ? utf8len(ld->line[pos]) : 1)
 		if (!ne_isword(get_char(&ld->line[pos], b->encoding), b->encoding)) break;
 
 	goto_pos(b, pos);
