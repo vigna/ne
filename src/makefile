@@ -133,7 +133,7 @@ version.texinfo: ../doc/version.texinfo
 	-ln -sf ../doc/version.texinfo
 
 SYNH = syn_types.h syn_hash.h syn_regex.h syn_utf8.h syn_utils.h
-MAINH = ne.h enums.h utf8.h syntax.h termchar.h info2cap.h $(SYNH)
+MAINH = ne.h debug.h enums.h errors.h utf8.h syntax.h keycodes.h termchar.h info2cap.h $(SYNH)
 
 ext.c: ext.c.in
 
@@ -166,13 +166,13 @@ hash.o: hash.h
 
 info2cap.o: info2cap.h
 
-input.o: $(MAINH) support.h keycodes.h names.h errors.h protos.h
+input.o: $(MAINH) support.h term.h keycodes.h names.h errors.h protos.h
 
 inputclass.o: $(MAINH) keycodes.h names.h errors.h protos.h
 
 keys.o: $(MAINH) keycodes.h names.h errors.h protos.h
 
-menu.o: $(MAINH) support.h keycodes.h names.h errors.h protos.h
+menu.o: $(MAINH) support.h term.h keycodes.h names.h errors.h protos.h
 
 navigation.o: $(MAINH) support.h keycodes.h names.h errors.h protos.h
 
@@ -203,7 +203,7 @@ syn_utf8.o: $(SYNH)
 
 syn_utils.o: $(SYNH)
 
-term.o: termchar.h cm.h ansi.h
+term.o: termchar.h term.h cm.h ansi.h
 
 termcap.o: termcap.h
 

@@ -94,6 +94,8 @@ extern bool scroll_region_ok;   /* Terminal supports setting the scroll window *
 
 extern bool standout_ok;        /* Terminal supports standout without magic cookies */
 
+extern bool underline_ok;       /* Terminal supports underline without magic cookies */
+
 extern bool cursor_on_off_ok;   /* Terminal can make the cursor visible or invisible */
 
 extern bool ansi_color_ok;      /* Terminal supports ANSI color */
@@ -195,3 +197,5 @@ extern char *ne_clr_eol;
 extern bool ne_transparent_underline;
 
 extern bool io_utf8;
+
+extern uint32_t curr_attr;

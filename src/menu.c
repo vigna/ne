@@ -539,6 +539,7 @@ the flags are updated the cursor does not need to be moved after
 printing the numbers (an operation which usually needs the output
 of several characters). */
 
+static int mod_flag_index;
 char *gen_flag_string(const buffer * const b) {
 
 	static char string[MAX_FLAG_STRING_SIZE];
@@ -566,7 +567,8 @@ char *gen_flag_string(const buffer * const b) {
 	string[i++] = b->is_CRLF            ? 'C' : '-';
 	string[i++] = io_utf8               ? '@' : '-';
 	string[i++] = b->encoding != ENC_8_BIT? (b->encoding == ENC_UTF8 ? 'U' : 'A') : '8';
-	string[i++] = "-*+#"[(b->is_modified ? 1 : 0) + (buffer_file_modified(b, NULL) ? 2 : 0)];
+	mod_flag_index = i;
+	string[i++] = b->is_modified        ? '*' : '-';
 
 	if (b->opt.hex_code && !fast_gui) {
 		string[i++] = ' ';
@@ -663,6 +665,12 @@ void draw_status_bar(void) {
 			strcpy(flag_string, p);
 			move_cursor(ne_lines - 1, offset + 31);
 			output_string(flag_string, true);
+			if (buffer_file_modified(cur_buffer, NULL) && !fast_gui && underline_ok) {
+				underline_on();
+				move_cursor(ne_lines - 1, offset + 31 + mod_flag_index);
+				output_char(p[mod_flag_index], -1, false);
+				underline_off();
+			}
 		}
 
 		if (!fast_gui && standout_ok) standout_off();
@@ -709,6 +717,16 @@ void draw_status_bar(void) {
 			standout_off();
 		}
 		else clear_to_eol();
+
+		if (ne_columns > 55 && buffer_file_modified(cur_buffer, NULL) && !fast_gui && underline_ok) {
+			move_cursor(ne_lines - 1, 54);
+			standout_on();
+			underline_on();
+			output_char(flag_string[mod_flag_index], -1, false);
+			underline_off();
+			standout_off();
+		}
+
 	}
 	else if (bar_gone) {
 		move_cursor(ne_lines - 1, 0);

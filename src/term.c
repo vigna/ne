@@ -2,7 +2,7 @@
    Originally part of GNU Emacs. Vastly edited and modified for use within ne.
 
    Copyright (C) 1985, 1986, 1987 Free Software Foundation, Inc.
-   Copyright (C) 1993-1998 Sebastiano Vigna 
+   Copyright (C) 1993-1998 Sebastiano Vigna
    Copyright (C) 1999-2020 Todd M. Lewis and Sebastiano Vigna
 
    This file is part of ne, the nice editor.
@@ -191,7 +191,7 @@ char *ne_exit_attribute_mode;
 
 
 /* This is the real instantiation of the cm structure used by cm.c to hold
-the cursor motion strings. */
+   the cursor motion strings. */
 
 struct cm Wcm;
 
@@ -207,41 +207,51 @@ struct cm Wcm;
 /* Terminal charateristics that higher levels want to look at.
    These are all extern'd in termchar.h */
 
-bool	line_ins_del_ok;		/* Terminal can insert and delete lines */
-bool	char_ins_del_ok;		/* Terminal can insert and delete chars */
-bool	scroll_region_ok;		/* Terminal supports setting the scroll window */
-bool	standout_ok;			/* Terminal supports standout without magic cookies */
-bool	cursor_on_off_ok;		/* Terminal can make the cursor visible or invisible */
-bool	ansi_color_ok;			/* Terminal supports ANSI color */
-bool	color_ok;				/* Terminal supports color */
+bool line_ins_del_ok;   /* Terminal can insert and delete lines */
+bool char_ins_del_ok;   /* Terminal can insert and delete chars */
+bool scroll_region_ok;  /* Terminal supports setting the scroll window */
+bool standout_ok;       /* Terminal supports standout without magic cookies */
+bool underline_ok;      /* Terminal supports standout without magic cookies */
+bool cursor_on_off_ok;  /* Terminal can make the cursor visible or invisible */
+bool ansi_color_ok;     /* Terminal supports ANSI color */
+bool color_ok;          /* Terminal supports color */
+uint32_t curr_attr;     /* The current video attributes. */
 
 
-static int	RPov;		/* Least number of chars to start a TS_repeat.
-								Less wouldn't be worth. */
+static int  RPov;  /* Least number of chars to start a TS_repeat.
+                      Less wouldn't be worth. */
 
-static bool	delete_in_insert_mode;	/* True if delete mode == insert mode */
-static bool	se_is_so;					/* True if same string both enters and leaves standout mode */
-static bool	esm_is_eam;					/* True if exiting standout mode turns off all attributes */
+static bool delete_in_insert_mode; /* True if delete mode == insert mode */
+static bool se_is_so;              /* True if same string both enters and leaves standout mode */
+static bool esm_is_eam;            /* True if exiting standout mode turns off all attributes */
 
-static bool	insert_mode;			/* True when in insert mode. */
-static bool	standout_mode;			/* True when in standout mode. */
-static bool	standout_wanted;		/* True if we should be writing in standout mode. */
-static uint32_t curr_attr;			/* The current video attributes. */
+static bool insert_mode;           /* True when in insert mode. */
+static bool standout_mode;         /* True when in standout mode. */
+static bool standout_wanted;       /* True if we should be writing in standout mode. */
+static bool underline_mode;        /* True when in underline mode. */
+static bool underline_wanted;      /* True if we should be writing in underline mode. */
 
 /* Size of window specified by higher levels. This is the number of lines,
-starting from top of screen, to participate in ins/del line operations.
-Effectively it excludes the bottom lines - specified_window_size lines from
-those operations.  */
+   starting from top of screen, to participate in ins/del line operations.
+   Effectively it excludes the bottom lines - specified_window_size lines from
+   those operations.  */
 
-int	specified_window;
+int  specified_window;
 
 /* If true, then all I/O is to be performed in UTF-8. */
 
-bool	io_utf8;
+bool io_utf8;
+
+void dump_term_state(char *heading) {
+	fprintf(stderr, "======== %s =======\n", heading);
+	fprintf(stderr, "curr_attr: %ld\n", curr_attr);
+	fprintf(stderr, "standout_mode: %d\n", standout_mode);
+	fprintf(stderr, "standout_wanted: %d\n", standout_wanted);
+}
 
 /* Returns the output width of the given character. It is maximised with 1
- w.r.t. wcwidth(), so its result is equivalent to the width of the character
- that will be output by out(). */
+   w.r.t. wcwidth(), so its result is equivalent to the width of the character
+   that will be output by out(). */
 
 int output_width(const int c) {
 	const int width = wcwidth(c);
@@ -249,9 +259,9 @@ int output_width(const int c) {
 }
 
 /* Returns the output width of the given string. If s is NULL, returns len.  If
-the width of the string exceeds maxWidth, modifies len so that it contains the
-longest prefix of s whose width is not greater than maxWidth, and returns the
-corresponding width. */
+   the width of the string exceeds maxWidth, modifies len so that it contains the
+   longest prefix of s whose width is not greater than maxWidth, and returns the
+   corresponding width. */
 
 static int string_output_width(const char *s, int *len, int maxWidth, bool utf8) {
 	if (s == NULL) {
@@ -290,7 +300,7 @@ static int joe2color(const int joe_color) {
 	switch(joe_color & 7) {
 		case 0: return 0; /* BLACK */
 		case 1: return 4; /* RED */
-		case 2: return 2; /* GREEN	*/
+		case 2: return 2; /* GREEN            */
 		case 3: return 6; /* YELLOW */
 		case 4: return 1; /* BLUE */
 		case 5: return 5; /* MAGENTA */
@@ -315,7 +325,7 @@ static int joe2color(const int joe_color) {
 void set_attr(const uint32_t attr) {
 	OUTPUT1(ne_exit_attribute_mode);
 
-	if (attr & INVERSE) OUTPUT1(ne_enter_reverse_mode); 
+	if (attr & INVERSE) OUTPUT1(ne_enter_reverse_mode);
 	if (attr & BOLD) OUTPUT1(ne_enter_bold_mode);
 	if (attr & UNDERLINE) OUTPUT1(ne_enter_underline_mode);
 	if (attr & DIM) OUTPUT1(ne_enter_dim_mode);
@@ -331,7 +341,7 @@ void set_attr(const uint32_t attr) {
 			OUTPUT1(buf);
 		}
 	}
-} 
+}
 
 #else
 
@@ -340,10 +350,10 @@ void set_attr(const uint32_t attr) {
 	bool attr_reset = false;
 
 	/* If we have to set a different subset of attributes, or if we have to
-		set to the default at least one of the colors
-		(background/foreground) we must necessarily reset all attributes. */
-	if ((curr_attr & AT_MASK) != (attr & AT_MASK) 
-			|| (!(attr & FG_NOT_DEFAULT) && (curr_attr & FG_NOT_DEFAULT)) 
+	   set to the default at least one of the colors
+	   (background/foreground) we must necessarily reset all attributes. */
+	if ((curr_attr & AT_MASK) != (attr & AT_MASK)
+			|| (!(attr & FG_NOT_DEFAULT) && (curr_attr & FG_NOT_DEFAULT))
 			|| (!(attr & BG_NOT_DEFAULT) && (curr_attr & BG_NOT_DEFAULT))) {
 
 		OUTPUT1_IF(ne_exit_attribute_mode)
@@ -358,7 +368,7 @@ void set_attr(const uint32_t attr) {
 
 	if (color_ok) {
 		/* Colors must be set if attributes have been reset and the required
-			color is not default, or in any case if the color has changed. */
+		   color is not default, or in any case if the color has changed. */
 
 		if (attr_reset && (attr & FG_NOT_DEFAULT) || (attr & FG_MASK) != (curr_attr & FG_MASK)) {
 			if (attr & FG_NOT_DEFAULT) {
@@ -381,7 +391,7 @@ void set_attr(const uint32_t attr) {
 
 static void turn_off_standout(void) {
 	OUTPUT1(ne_exit_standout_mode);
-	/* We exiting standout mode deletes all attributes, we update curr_attr. */
+	/* If exiting standout mode deletes all attributes, we update curr_attr. */
 	if (esm_is_eam) curr_attr = 0;
 	standout_mode = false;
 }
@@ -396,6 +406,21 @@ static void standout_if_wanted(void) {
 	}
 }
 
+static void turn_off_underline(void) {
+	OUTPUT1(ne_exit_underline_mode);
+	underline_mode = false;
+}
+
+static void underline_if_wanted(void) {
+	if (underline_mode != underline_wanted) {
+		if (underline_wanted) {
+			OUTPUT1(ne_enter_underline_mode);
+			underline_mode = true;
+		}
+		else turn_off_underline();
+	}
+}
+
 /* These functions are called on all terminals in order to handle highlighting,
    but do nothing on terminals with a magic cookie (or without standout).  */
 
@@ -407,20 +432,28 @@ void standout_off (void) {
 	standout_wanted = false;
 }
 
+void underline_on (void) {
+	if (underline_ok) underline_wanted = true;
+}
+
+void underline_off (void) {
+	underline_wanted = false;
+}
+
 
 /* Depending on the value of io_utf8, this function will do a simple putchar(),
-   or a series of putchar() that expand the given character in UTF-8 encoding. 
+   or a series of putchar() that expand the given character in UTF-8 encoding.
    If attr is -1, no attribute will be set. */
 
 static void out(int c, const uint32_t attr) {
 	uint32_t add_attr = 0;
 
 	/* PORTABILITY PROBLEM: this code is responsible for filtering nonprintable
-		characters. On systems with a wider system character set, it could be
-		redefined, for instance, in order to allow characters between 128 and 160 to
-		be printed. Currently, it returns '?' on all control characters (and
-		non-ISO-8859-1 characters, if io_utf8 is false), space on 160, and the
-		obvious capital letter for control characters below 32. */
+	   characters. On systems with a wider system character set, it could be
+	   redefined, for instance, in order to allow characters between 128 and 160 to
+	   be printed. Currently, it returns '?' on all control characters (and
+	   non-ISO-8859-1 characters, if io_utf8 is false), space on 160, and the
+	   obvious capital letter for control characters below 32. */
 
 	if (c >= 127 && c < 160) {
 		c = '?';
@@ -443,7 +476,7 @@ static void out(int c, const uint32_t attr) {
 	}
 
 	/* If io_utf8 is off, we consider all characters in the range of ISO-8859-x
-	encoding schemes as printable. */
+	   encoding schemes as printable. */
 
 	if (io_utf8 && wcwidth(c) <= 0) {
 		c = '?';
@@ -546,17 +579,19 @@ static void turn_off_insert (void) {
 void set_terminal_modes(void) {
 
 	/* Note that presently we do not support if and iprog, the program
-	and the file which should be used, if present, to initialize the
-	terminal. */
+	   and the file which should be used, if present, to initialize the
+	   terminal. */
 
 	OUTPUT1_IF(ne_exit_attribute_mode);
 	OUTPUT1_IF(ne_exit_alt_charset_mode);
 	OUTPUT1_IF(ne_exit_standout_mode);
+	OUTPUT1_IF(ne_exit_underline_mode);
 	OUTPUT1_IF(ne_enter_ca_mode);
 	OUTPUT1_IF(ne_keypad_xmit);
 
 	if (ne_has_meta_key) OUTPUT1_IF(ne_meta_on);
-   turn_off_standout();
+		turn_off_standout();
+	turn_off_underline();
 	losecursor();
 }
 
@@ -568,6 +603,7 @@ void reset_terminal_modes (void) {
 	OUTPUT1_IF(ne_exit_attribute_mode);
 	OUTPUT1_IF(ne_exit_alt_charset_mode);
 	turn_off_standout();
+	turn_off_underline();
 	OUTPUT1_IF(ne_keypad_local);
 	OUTPUT1_IF(ne_exit_ca_mode);
 }
@@ -577,9 +613,7 @@ void reset_terminal_modes (void) {
    will be limited to lines 0 to (size-1). */
 
 void set_terminal_window(const int size) {
-
 	specified_window = size ? size : ne_lines;
-
 }
 
 
@@ -624,7 +658,7 @@ void clear_end_of_line(const int first_unused_hpos) {
 
 
 /* Shorthand; use this if you don't know anything about the state
-of the line. */
+   of the line. */
 
 void clear_to_eol(void) {
 	clear_end_of_line(ne_columns);
@@ -666,19 +700,20 @@ void clear_entire_screen (void) {
    truncated to the end of the current line. Passing a NULL for string
    results in outputting spaces. A len of 0 causes no action. If utf8 is
    true, the string is UTF-8 encoded. */
-  
+
 void output_chars(const char *string, const uint32_t *attr, const int raw_len, const bool utf8) {
 	if (raw_len == 0) return;
 
 	turn_off_insert();
 	standout_if_wanted();
+	underline_if_wanted();
 
 	/* If the string is UTF-8 encoded, compute its real length. */
 	int len = utf8 && string != NULL ? utf8strlen(string, raw_len) : raw_len;
 
 	/* If the width of the string exceeds the remaining columns, we reduce
-		len. Moreover, we don't dare write in last column of bottom line, if
-		AutoWrap, since that would scroll the whole screen on some terminals. */
+	   len. Moreover, we don't dare write in last column of bottom line, if
+	   AutoWrap, since that would scroll the whole screen on some terminals. */
 
 	cmplus(string_output_width(string, &len, ne_columns - curX - (AutoWrap && !MagicWrap && curY == ne_lines - 1), utf8));
 
@@ -703,7 +738,7 @@ void output_chars(const char *string, const uint32_t *attr, const int raw_len, c
 				out(c, attr ? attr[i] : -1);
 			}
 		}
-	} 
+	}
 	else
 		for(int i = 0; i < len; i++) {
 			if (attr) set_attr(attr[i]);
@@ -764,6 +799,7 @@ void insert_chars(const char * start, const uint32_t * const attr, const int raw
 	if (raw_len == 0) return;
 
 	standout_if_wanted();
+	underline_if_wanted();
 
 	/* If the string is non-NULL and UTF-8 encoded, compute its real length. */
 	int len = utf8 && start != NULL ? utf8strlen(start, raw_len) : raw_len;
@@ -788,9 +824,9 @@ void insert_chars(const char * start, const uint32_t * const attr, const int raw
 	turn_on_insert ();
 
 	/* If the width of the string exceeds the remaining columns, we reduce
-		len. Moreovero, we don't dare to write in the last column of the
-		bottom line, if AutoWrap, since that would scroll the whole screen
-		on some terminals. */
+	   len. Moreovero, we don't dare to write in the last column of the
+	   bottom line, if AutoWrap, since that would scroll the whole screen
+	   on some terminals. */
 
 	cmplus(string_output_width(start, &len, ne_columns - curX - (AutoWrap && !MagicWrap && curY == ne_lines - 1), utf8));
 
@@ -860,6 +896,7 @@ void delete_chars (int n) {
 	if (n == 0) return;
 
 	standout_if_wanted();
+	underline_if_wanted();
 	if (delete_in_insert_mode) turn_on_insert();
 	else {
 		turn_off_insert();
@@ -877,8 +914,8 @@ void delete_chars (int n) {
 
 
 /* This internal function will do an insertion or deletion
-for n lines, given a parametrized and/or a one-line capability
-for that purpose. */
+   for n lines, given a parametrized and/or a one-line capability
+   for that purpose. */
 
 static void do_multi_ins_del(char * const multi, const char * const single, int n) {
 	if (multi) {
@@ -906,6 +943,7 @@ int ins_del_lines (const int vpos, const int n) {
 	if (!ne_memory_below && vpos + i >= ne_lines) return false;
 
 	standout_if_wanted();
+	underline_if_wanted();
 
 	if (scroll_region_ok) {
 		if (specified_window != ne_lines) set_scroll_region(vpos, specified_window - 1);
@@ -950,7 +988,7 @@ int ins_del_lines (const int vpos, const int n) {
 }
 
 
-extern int cost;		/* In cm.c */
+extern int cost;  /* In cm.c */
 extern int evalcost(int);
 
 
@@ -1003,7 +1041,7 @@ int ttysize(void) {
 #endif
 	D(fprintf(stderr,"ttysize:...size is (%d,%d)\n", l, c);)
 	if (((ne_lines != l) || (ne_columns != c)) && l > 0 && c > 0) {
-		ScreenRows = ne_lines	 = l;
+		ScreenRows = ne_lines    = l;
 		ScreenCols = ne_columns  = c;
 		set_terminal_window(ne_lines - 1);
 		if (scroll_region_ok) set_scroll_region(0, ne_lines - 1);
@@ -1135,9 +1173,9 @@ void copy_caps(void) {
 
 
 /* This is the main terminal initialization function. It sets up Wcm,
-patches here and there the terminfo database, calculates the costs, and
-initializes the terminal characteristics variables. Note that this function
-can exit(). */
+   patches here and there the terminfo database, calculates the costs, and
+   initializes the terminal characteristics variables. Note that this function
+   can exit(). */
 
 void term_init (void) {
 
@@ -1148,10 +1186,10 @@ void term_init (void) {
 	if (ansi) setup_ansi_term();
 	else if (setupterm(0, 1, &errret) == ERR) {
 		printf("There are problems in finding your terminal in the database.\n"
-				 "Please check that the variable TERM is set correctly, and that\n"
-				 "your " DATABASE_NAME " database is up to date.\n"
-				 "If your terminal is ANSI-compatible, you can also try to use\n"
-				 "the --ansi switch.\n");
+		       "Please check that the variable TERM is set correctly, and that\n"
+		       "your " DATABASE_NAME " database is up to date.\n"
+		       "If your terminal is ANSI-compatible, you can also try to use\n"
+		       "the --ansi switch.\n");
 		exit(1);
 	}
 #ifndef TERMCAP
@@ -1193,19 +1231,19 @@ void term_init (void) {
 
 		if (ne_generic_type) {
 			printf("Your terminal type is a generic terminal, not a real\n"
-					 "terminal, and it lacks the ability to position the cursor.\n"
-					 "Please check that the variable TERM is set correctly, and that\n"
-					 "your " DATABASE_NAME " database is up to date.\n");
+			       "terminal, and it lacks the ability to position the cursor.\n"
+			       "Please check that the variable TERM is set correctly, and that\n"
+			       "your " DATABASE_NAME " database is up to date.\n");
 		}
 		else {
 			printf("Your terminal type is not powerful enough to run ne:\n"
-					 "it lacks the ability to position the cursor.\n"
-					 "Please check that the variable TERM is set correctly, and that\n"
-					 "your " DATABASE_NAME "database is up to date.\n");
+			       "it lacks the ability to position the cursor.\n"
+			       "Please check that the variable TERM is set correctly, and that\n"
+			       "your " DATABASE_NAME "database is up to date.\n");
 		}
 
 		printf("If your terminal is ANSI-compatible, you can also try to use\n"
-				 "the --ansi switch.\n");
+		       "the --ansi switch.\n");
 
 		exit(1);
 	}
@@ -1235,6 +1273,8 @@ void term_init (void) {
 		  && (ne_delete_character || ne_parm_dch));
 
 	standout_ok = (ne_enter_standout_mode && ne_exit_standout_mode && ne_magic_cookie_glitch < 0);
+
+	underline_ok = (ne_enter_underline_mode && ne_exit_underline_mode && ne_magic_cookie_glitch < 0);
 
 	cursor_on_off_ok = (ne_cursor_invisible && ne_cursor_normal);
 

@@ -1164,13 +1164,12 @@ appears if UTF-8 I/O is enabled. @xref{UTF8IO}.
 @item A/8/U
 denotes the current document encoding---US-ASCII, 8-bit or UTF-8. @xref{UTF8}.
 
-@item * or #
+@item *
 appears if the document has been modified since the last save, or if
 the @code{Modified} command was issued to set this flag. @xref{Modified}.
-
-@item + or #
-can appear in place of @samp{*} if the corresponding file's modification
-time has changed since the current document was loaded from or saved to that file.
+This @samp{-} or @samp{*} may be underlined, which indicates the
+corresponding file's modification time has changed since the current
+document was loaded from or saved to that file.
 
 @end table
 
@@ -2593,7 +2592,7 @@ is issued and no documents are closed. Note that only named documents can be
 saved, so @code{Exit} will report an error if you have any modified unnamed
 documents. Like @code{SaveAll}, @code{Exit} will not save a document if its
 corresponding file has been modified since the document was loaded or last
-saved, or if its read only flag is set, in which case an error is reported
+saved, or if its read only flag is set, in which cases an error is reported
 and no documents are closed.
 
 
@@ -3835,8 +3834,8 @@ FLAG COMMAND      ABBR  DESCRIPTION
   C   CRLF          CRLF use CR/LF as line terminator
   @@   UTF8IO        U8IO I/O (keyboard and terminal) are UTF-8 encoded
 A/8/U UTF8          U8   the document encoding (ASCII, 8-bit or UTF-8)
-  */# Modified      MOD  document has been modified since last saved
-  +/# (none)             file's modtime changed since doc was loaded/saved
+  */_ Modified      MOD  document has been modified since last saved
+  _   (none)             file's modtime changed since doc was loaded/saved
 @end example
 
 The @code{RequestOrder} and @code{AutoMatchBracket} flags' states are not indicated on the status bar.
@@ -4437,10 +4436,10 @@ want the changes saved, @code{Modified} provides a way to make
 
 If you invoke @code{Modified} with no arguments, it will toggle the flag.
 If you specify 0 or 1, the flag will be set to false or true,
-respectively. If the flag is true, either an asterisk (@samp{*}) or an
-octothorpe (@samp{#}) will appear on the status bar, the latter indicating
-the corresponding file's modification time has changed since the document
-was loaded or saved.
+respectively. An asterisk (@samp{*}) will appear on the status bar when
+this flag is set. If your terminal supports underlining, it will be underlined
+if the corresponding file's modification time has changed since the document
+was loaded or saved (perhaps by another user).
 
 
 
@@ -5604,7 +5603,7 @@ This is the approach used by default in @code{ne}: this way,
 @key{Control} with @key{Meta} plus a letter should always work, and
 @key{Meta} should work sometimes (of course, if you're sure to use
 always the same kind of emulator you can bind more features). Again, the
-best place to look at it's @file{default.keys}.
+best place to look is the @file{default.keys} file.
 
 As stated above, each line starting with @samp{SEQ} binds a character sequence
 to a key code. The format for a @samp{SEQ} binding is
@@ -5980,7 +5979,7 @@ reliability. For the same reasons, the availability of an @sc{ansi} C
 (C99) compiler is assumed.
 
 If the system has a @code{terminfo} database and the related functions
-(which are usually contained in @code{curses} library), @code{ne} will
+(which are usually contained in the @code{curses} library), @code{ne} will
 use them. The need for a terminal capability database is clear, and the
 choice of @code{terminfo} (with respect to @code{termcap}) is compulsory
 if you want to support a series of features (such as more than ten
@@ -6073,7 +6072,7 @@ More precisely, @emph{any} piece of text in @code{ne} is classified as
 US-ASCII, 8-bit or UTF-8. A US-ASCII text contains only US-ASCII
 characters. An 8-bit text sports a one-to-one correspondence between
 characters and bytes, whereas an UTF-8 text is interpreted in UTF-8.  Of
-course, this rises a difficult question: @emph{when} should a document be
+course, this raises a difficult question: @emph{when} should a document be
 classified as UTF-8?
 
 Character encodings are a mess. There is nothing we can do to change

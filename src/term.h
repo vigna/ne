@@ -29,6 +29,8 @@ void reset_terminal_modes(void);
 void set_terminal_window(int size);
 void standout_on(void);
 void standout_off(void);
+void underline_on(void);
+void underline_off(void);
 void cursor_on(void);
 void cursor_off(void);
 void move_cursor(int row, int col);

@@ -39,7 +39,7 @@ static void add_string(const char * const s, const int len, const int ext) {
 static void search_buff(const buffer *b, char * p, const int encoding, const bool case_search, const int ext) {
 	assert(p);
 	const int p_len = strlen(p);
-	const int (*cmp)(const char *, const char *, size_t) = case_search ? strncmp : strncasecmp;
+	const int (*cmp)(const char *, const char *, size_t) = (const int (*)(const char *, const char *, size_t))(case_search ? strncmp : strncasecmp);
 	for(line_desc *ld = (line_desc *)b->line_desc_list.head, *next; next = (line_desc *)ld->ld_node.next; ld = next) {
 		int64_t l = 0, r = 0;
 		do {
