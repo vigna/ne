@@ -4,7 +4,7 @@
 # filename, or introduce ne options (e.g., --no-syntax).
 
 # Run this file only if you have built ne with NE_TEST=1
-if ! grep -q ne_test_dump_config ./ne ; then
+if ! grep -q ne_test_dump_default_config ./ne ; then
 	echo "Warning: ./ne apparently not built with NE_TEST=1 NE_DEBUG=1."
 	echo "Enter to continue or ^C to stop."
 	read
