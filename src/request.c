@@ -804,7 +804,7 @@ static bool resume_bar = false;
 
 int request_strings(req_list *rlp0, int n) {
 
-	assert(rlp0->cur_entries > 0);
+	if (rlp0->cur_entries < 1) return ERROR;
 
 	int ne_lines0 = 0, ne_columns0 = 0;
 	X = R = C = page = fuzz_len = 0;
