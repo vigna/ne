@@ -242,13 +242,6 @@ int  specified_window;
 
 bool io_utf8;
 
-void dump_term_state(char *heading) {
-	fprintf(stderr, "======== %s =======\n", heading);
-	fprintf(stderr, "curr_attr: %ld\n", curr_attr);
-	fprintf(stderr, "standout_mode: %d\n", standout_mode);
-	fprintf(stderr, "standout_wanted: %d\n", standout_wanted);
-}
-
 /* Returns the output width of the given character. It is maximised with 1
    w.r.t. wcwidth(), so its result is equivalent to the width of the character
    that will be output by out(). */
