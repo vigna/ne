@@ -43,7 +43,7 @@ source: version alldocs
 	ne-$(VERSION)/macros/* \
 	ne-$(VERSION)/syntax/*.jsf \
 	ne-$(VERSION)/src/makefile ne-$(VERSION)/src/ne.texinfo ne-$(VERSION)/doc/ne.1 \
-	ne-$(VERSION)/doc/makefile ne-$(VERSION)/doc/ne.texinfo ne-$(VERSION)/doc/ne.info* ne-$(VERSION)/doc/version.*  \
+	ne-$(VERSION)/doc/makefile ne-$(VERSION)/doc/ne.texinfo ne-$(VERSION)/doc/texinfo.cnf.in ne-$(VERSION)/doc/ne.info* ne-$(VERSION)/doc/version.*  \
 	ne-$(VERSION)/doc/html/*.html \
 	ne-$(VERSION)/doc/ne.pdf ne-$(VERSION)/doc/ne.txt ne-$(VERSION)/doc/default*
 	-rm -f ne-*.tar.gz
