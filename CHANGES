@@ -1,6 +1,6 @@
 (This file, CHANGES, lists fixes. See NEWS for new features and enhancements.)
 
-Unreleased
+3.3.0 2020-02-27
 
   * Fixed possible crash when closing documents from within the SelectDoc
     requester.

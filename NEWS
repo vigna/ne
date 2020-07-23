@@ -1,6 +1,6 @@
 (This file, NEWS, lists new features and enhancements. See CHANGES for fixes.)
 
-Unreleased
+3.3.0 2020-02-27
 
   * You can now Save (^A) named documents from within the
     SelectDoc (F4) requester.
