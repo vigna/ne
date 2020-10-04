@@ -80,6 +80,8 @@
 	"and"		kw
 	"as"		kw
 	"assert"	kw
+	"async"		kw
+	"await"		kw
 	"break"		kw
 	"class"		declkw
 	"continue"	kw
@@ -88,7 +90,6 @@
 	"elif"		kw
 	"else"		kw
 	"except"	kw
-	"exec"		kw
 	"finally"	kw
 	"for"		kw
 	"from"		kw
@@ -102,7 +103,6 @@
 	"not"		kw
 	"or"		kw
 	"pass"		kw
-	"print"		kw
 	"raise"		kw
 	"return"	kw
 	"try"		kw
