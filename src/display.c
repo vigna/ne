@@ -809,11 +809,10 @@ void automatch_bracket(buffer * const b, const bool show) {
 			b->automatch.y = match_line - b->win_y;
 			b->automatch.x = calc_width(matching_ld, match_pos, b->opt.tab_size, b->encoding) - b->win_x;
 			if (b->automatch.x >= 0 && b->automatch.x < ne_columns ) {
-				move_cursor(b->automatch.y, b->automatch.x);
 				if (b->syn) {
 					parse(b->syn, matching_ld, matching_ld->highlight_state, b->encoding == ENC_UTF8);
-					orig_attr = attr_buf[match_pos];
-				} else orig_attr = 0; /* That's a stretch. FIX_ME */
+					orig_attr = attr_buf[calc_char_len(matching_ld, match_pos, b->encoding == ENC_UTF8)];
+				} else orig_attr = -1;
 
 				tmp_attr = orig_attr;
 
@@ -829,6 +828,7 @@ void automatch_bracket(buffer * const b, const bool show) {
 				if (b->opt.automatch & 8 )
 					tmp_attr = tmp_attr ^ UNDERLINE;
 
+				move_cursor(b->automatch.y, b->automatch.x);
 				output_char(c, tmp_attr, b->encoding == ENC_UTF8);
 				b->automatch.shown = true;
 			}
