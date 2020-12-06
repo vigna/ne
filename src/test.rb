@@ -1,4 +1,4 @@
-#!/usr/bin/ruby
+#!/usr/bin/env ruby
 
 # test.rb creates a roughly N step random macro for ne to
 # run on a text file. Only an ne built with NE_TEST
