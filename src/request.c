@@ -1149,8 +1149,10 @@ char *request_files(const char * const filename, bool use_prefix) {
 						strcat(result, p);
 						if (!absolute) {
 							char *rp = relative_file_path(result, cur_dir_name);
-							free(result);
-							result = rp;
+							if (rp) {
+								free(result);
+								result = rp;
+							}
 						}
 						if (t < 0) {
 							memmove(result + 1, result, strlen(result) + 1);
