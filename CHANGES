@@ -1,5 +1,10 @@
 (This file, CHANGES, lists fixes. See NEWS for new features and enhancements.)
 
+unreleased
+
+  * Fix java syntax highlighting for strings containing percent
+    signs not in a format specifier context.
+
 3.3.0 2020-02-27
 
   * Fixed possible crash when closing documents from within the SelectDoc

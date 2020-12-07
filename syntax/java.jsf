@@ -152,6 +152,7 @@
 :string_control Escape
 	*		string_control
 	"\n"		reset
+	"\""		string		noeat
 	"diouxXeEfFgGaAcspn%SC"	string
 
 :char Constant
