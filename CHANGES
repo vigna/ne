@@ -5,6 +5,9 @@ unreleased
   * Fix java syntax highlighting for strings containing percent
     signs not in a format specifier context.
 
+  * Fixed possible document name issue with docs from similarly named
+    directories.
+
 3.3.0 2020-02-27
 
   * Fixed possible crash when closing documents from within the SelectDoc

@@ -134,7 +134,7 @@ char *absolute_file_path(const char *a0, const char *b) {
    The returned string has one extra '\0' so request_files() can shift it. */
 
 char *relative_file_path(const char *aa, const char *b) {
-	int common_dirs=0, up_dirs=0, i, j=0;
+	int up_dirs=0, i, j=0;
 	char *a, *c;
 	if (!aa || !b) return NULL;
 
@@ -148,19 +148,14 @@ char *relative_file_path(const char *aa, const char *b) {
 		return NULL;
 	}
 
-
-	for (i=1; i<match; i++) {  /* skip initial '/' */
+	for (i=0; i<=match; i++) {
 		if (a[i] == '/') {
-			common_dirs++;
-			j = i + 1;
-		} else if (b[i+1] == '\0') {
-			common_dirs++;
-			j = i + 2;
+			j = i;
 		}
 	}
 
-	for (i=j; i<=strlen(b); i++) {
-		if (b[i] == '/' || b[i] == '\0') up_dirs++;
+	for (i=j; i<strlen(b); i++) {
+		if (b[i] == '/') up_dirs++;
 	}
 
 	int newlen = 3 * up_dirs + (strlen(a+j) ) + 2; /* 3 for each "../" and two trailing '\0' */
@@ -169,7 +164,7 @@ char *relative_file_path(const char *aa, const char *b) {
 		*c = '\0';
 		for (i=0; i<up_dirs; i++)
 			strcat(c, "../");
-		strcat(c, a + j);
+		strcat(c, a + j + 1);
 		normalize_path(c);
 	}
 
