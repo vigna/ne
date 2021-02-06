@@ -5027,7 +5027,7 @@ a key to @samp{SetBookmark ?}.
 @noindent moves the cursor to the designated bookmark if that bookmark is
 set; see @ref{SetBookmark}. Each document has 10 available bookmarks
 designated @samp{0} to @samp{9}, plus the automatic bookmark designated by
-@samp{-}. If no option is given, @samp{0} is assumed. The optons @samp{+1}
+@samp{-}. If no option is given, @samp{0} is assumed. The options @samp{+1}
 and @samp{-1} indicate respectively the next and previous set bookmarks,
 so that repeated @code{GotoBookmark +1} commands will cycle through all
 currently set bookmarks. When successful, the @samp{-} automatic bookmark
