@@ -27,7 +27,7 @@
 	"\\"		escape		recolor=-1
 	"$"		subst		recolor=-1
 	"'"		string_sq	recolor=-1
-	"\""		string_dq	recolor=-1
+	"\""		idle call=.string_dq()	recolor=-1
 	"<"		maybe_inc
 	"0-9"		maybe_base	recolor=-1
 	"a-zA-Z{}![_"	ident		buffer
@@ -132,7 +132,7 @@ done
 :subst Var
 	*		idle noeat
 	"("		idle	recolor=-2 # don't try for now
-	"\""		string_dq	recolor=-2
+	"\""		string_dq call=.string_dq()	recolor=-2
 	"\'"		string_sq	recolor=-2
 	"{"		subst_brack
 	"a-zA-Z_"	subst_name
@@ -151,12 +151,12 @@ done
 	*		string_sq
 	"\'"		idle
 
-
+.subr string_dq
 # double-quote: quoting, backqoutes and substitution allowed
 :string_dq Constant
 	*		string_dq
 	"$"		string_dq_subst	recolor=-1
-	"\""		idle
+	"\""		idle		return
 	"\\"		string_dq_esc	recolor=-1
 	"`"		string_dq_bq	recolor=-1
 
@@ -172,6 +172,7 @@ done
 
 :string_dq_subst_brack Var
 	*		string_dq_subst_brack
+	"\""		string_dq_subst_brack call=.string_dq() recolor=-2
 	"}"		string_dq
 
 :string_dq_esc Escape
@@ -197,13 +198,14 @@ done
 
 :string_dq_bq_subst_brack Var
 	*		string_dq_bq_subst_brack
+	"\""		string_dq_bq_subst_brack call=.string_dq()
 	"}"		string_dq_bq
 
 :string_dq_bq_esc Escape
 	*		string_dq_bq	recolor=-2
 	"$`\"\\"	string_dq_bq
 	"\n"		string_dq_bq	recolor=-2
-
+.end
 
 # backquote
 :string_bq Constant

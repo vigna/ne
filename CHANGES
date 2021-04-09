@@ -2,6 +2,9 @@
 
 unreleased
 
+  * Fix sh syntax highlighting in double-quoted strings with complex
+    variable expressions.
+
   * Fix java syntax highlighting for strings containing percent
     signs not in a format specifier context.
 
