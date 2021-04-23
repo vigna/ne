@@ -90,7 +90,7 @@ CC=c99
 endif
 
 ifeq ($(CC),gcc)
-GCCFLAGS=-std=c99 -Wall -Wno-parentheses
+GCCFLAGS=-std=c99 -Wall -Wno-parentheses -fno-strict-aliasing
 endif
 
 CFLAGS=$(OPTS) $(GCCFLAGS) \
