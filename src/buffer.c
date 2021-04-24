@@ -1130,10 +1130,7 @@ line_desc *nth_line_desc(const buffer *b, const int64_t n) {
 		}
 		else {
 			ld = (line_desc *)b->line_desc_list.tail_pred;
-			for(int64_t i = 0; i < b->num_lines - 1 - n; i++) {
-				if ( i == -1 ) fputc('.', stderr); /* This is a nop that's here just to avoid a gcc bug. */
-				ld = (line_desc *)ld->ld_node.prev;
-			}
+			for(int64_t i = 0; i < b->num_lines - 1 - n; i++) ld = (line_desc *)ld->ld_node.prev;
 		}
 	}
 	else {

@@ -89,7 +89,8 @@ ifeq ($(origin CC),default)
 CC=c99
 endif
 
-ifeq ($(CC),gcc)
+# Test for GCC
+ifneq (,$(findstring gcc,$(shell $(CC) 2>&1)))
 GCCFLAGS=-std=c99 -Wall -Wno-parentheses -fno-strict-aliasing
 endif
 
