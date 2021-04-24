@@ -3,7 +3,8 @@ Welcome to ne, the nice editor.
 ne is a free (GPL'd) text editor based on the POSIX standard that runs (we
 hope) on almost any UN*X machine. ne is easy to use for the beginner, but
 powerful and fully configurable for the wizard, and most sparing in its
-resource usage. See the manual for some highlights of ne's features.
+resource usage. See the [manual](https://ne.di.unimi.it/docs/index.html)
+for some highlights of ne's features.
 
 ne is distributed under the GNU Public License (see COPYING). The
 INSTALL.md file contains detailed installation instructions. The version
