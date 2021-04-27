@@ -19,8 +19,7 @@ resource usage.
 %setup -q
 
 %build
-
-cd src; make NE_GLOBAL_DIR=%{_datadir}/ne LIBS=-lncurses
+cd src; make NE_GLOBAL_DIR=%{_datadir}/ne LIBS=-lncurses OPTS=-g
 
 %install
 mkdir -p $RPM_BUILD_ROOT%{_bindir}
@@ -39,7 +38,7 @@ rm INSTALL.md
 mv doc/html .
 
 %files
-/usr/bin/ne
+%{_bindir}/ne
 %{_datadir}/ne/
 %{_mandir}/man1/ne.1*
 %{_infodir}/ne.info*
@@ -62,5 +61,5 @@ if [ "$1" = 0 ]; then
 fi
 
 %changelog
-* Fri Apr 23 2021 Sebastiano Vigna <sebastiano.vigna@gmail.com> - 3.3.1-1
+* Wed Apr 28 2021 Sebastiano Vigna <sebastiano.vigna@gmail.com> - 3.3.0-1
 - First release
