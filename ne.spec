@@ -5,13 +5,9 @@ Release: 1%{?dist}
 License: GPLv3+
 Source0: http://ne.di.unimi.it/ne-%{version}.tar.gz
 URL: http://ne.di.unimi.it/
-Buildroot: /tmp/ne-%{version}
-AutoReqProv: no
 Requires: info
 Requires: ncurses
 BuildRequires: ncurses-devel, make, bash, perl, texinfo, sed
-
-%global debug_package %{nil}
 
 %description 
 ne is a free (GPL'd) text editor based on the POSIX standard that runs (we
@@ -27,14 +23,13 @@ resource usage.
 cd src; make NE_GLOBAL_DIR=%{_datadir}/ne LIBS=-lncurses
 
 %install
-rm -rf $RPM_BUILD_ROOT
-mkdir -p $RPM_BUILD_ROOT/usr/bin
+mkdir -p $RPM_BUILD_ROOT%{_bindir}
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/ne/syntax
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/ne/macros
 mkdir -p $RPM_BUILD_ROOT%{_infodir}
 mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1
 mkdir -p $RPM_BUILD_ROOT%{_docdir}/ne-%{version}/html
-install -m 755 ./src/ne $RPM_BUILD_ROOT/usr/bin/ne
+install -m 755 ./src/ne $RPM_BUILD_ROOT%{_bindir}/ne
 install -m 644 ./extensions $RPM_BUILD_ROOT%{_datadir}/ne/extensions
 install -m 644 ./syntax/*.jsf $RPM_BUILD_ROOT%{_datadir}/ne/syntax
 install -m 644 ./macros/* $RPM_BUILD_ROOT%{_datadir}/ne/macros
@@ -44,11 +39,8 @@ rm INSTALL.md
 mv doc/html .
 
 %files
-%defattr(-,root,root)
 /usr/bin/ne
-%{_datadir}/ne/extensions
-%{_datadir}/ne/syntax/*.jsf
-%{_datadir}/ne/macros/*
+%{_datadir}/ne/
 %{_mandir}/man1/ne.1*
 %{_infodir}/ne.info*
 %doc html
