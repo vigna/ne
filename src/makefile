@@ -94,14 +94,14 @@ ifneq (,$(findstring gcc,$(shell $(CC) 2>&1)))
 GCCFLAGS=-std=c99 -Wall -Wno-parentheses -fno-strict-aliasing
 endif
 
-CFLAGS=$(OPTS) $(GCCFLAGS) \
+CFLAGS=$(GCCFLAGS) \
 	-D_REGEX_LARGE_OFFSETS -D_GNU_SOURCE -DSTDC_HEADERS -Dinline=__inline__ \
 	$(if $(NE_NOWCHAR), -DNOWCHAR,) \
 	$(if $(NE_TEST),    -DNE_TEST -coverage,) \
 	$(if $(NE_DEBUG),   -g -fsanitize=address -fsanitize=undefined,-O3 -DNDEBUG) \
 	$(if $(NE_TERMCAP), -DTERMCAP,) \
-	$(if $(NE_ANSI),    -DTERMCAP -DANSI,)
-
+	$(if $(NE_ANSI),    -DTERMCAP -DANSI,) \
+	$(OPTS)
 
 LIBS=$(if $(NE_TERMCAP)$(NE_ANSI),,-lcurses)
 
