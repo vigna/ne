@@ -19,7 +19,7 @@ resource usage.
 %setup -q
 
 %build
-cd src; make NE_GLOBAL_DIR=%{_datadir}/ne LIBS=-lncurses OPTS="%{optflags}"
+cd src; make NE_GLOBAL_DIR=%{_datadir}/ne LIBS=-lncurses OPTS="%{optflags} -fno-strict-aliasing -Wno-parentheses"
 
 %install
 mkdir -p $RPM_BUILD_ROOT%{_bindir}
