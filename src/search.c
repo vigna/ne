@@ -48,9 +48,9 @@ static unsigned int d[256];
 static unsigned int search_serial_num = 2;
 
 /* This macro upper cases a character or not, depending on the boolean
-sense_case. It is used in find(). Note that the argument *MUST* be unsigned. */
+sense_case. It is used in find(). The result is always unsigned. */
 
-#define CONV(c) (sense_case ? c : up_case[c])
+#define CONV(c) (sense_case ? (unsigned char)c : up_case[(unsigned char)c])
 
 
 /* This vector is a translation table for the regex library which maps
@@ -122,12 +122,12 @@ int find(buffer * const b, const char *pattern, const bool skip_first, bool wrap
 	if (! b->opt.search_back) {
 
 		if (recompile_string) {
-			for(int i = 0; i < m - 1; i++) d[CONV((unsigned char)pattern[i])] = m - i-1;
+			for(int i = 0; i < m - 1; i++) d[CONV(pattern[i])] = m - i-1;
 			b->find_string_changed = search_serial_num;
 		}
 
 		char * p = ld->line + b->cur_pos + m - 1 + (skip_first ? 1 : 0);
-		const unsigned char first_char = CONV((unsigned char)pattern[m - 1]);
+		const unsigned char first_char = CONV(pattern[m - 1]);
 		int64_t wrap_lines_left = b->num_lines + 1;
 
 		while(y < b->num_lines && !stop && wrap_lines_left--) {
@@ -137,12 +137,12 @@ int find(buffer * const b, const char *pattern, const bool skip_first, bool wrap
 			if (ld->line_len >= m) {
 
 				while((p - ld->line) < ld->line_len) {
-					const unsigned char c = CONV((unsigned char)*p);
+					const unsigned char c = CONV(*p);
 					if (c != first_char) p += d[c];
 					else {
 						int i;
 						for (i = 1; i < m; i++)
-							if (CONV((unsigned char)*(p - i)) != CONV((unsigned char)pattern[m - i-1])) {
+							if (CONV(*(p - i)) != CONV(pattern[m - i-1])) {
 								p += d[c];
 								break;
 							}
@@ -168,12 +168,12 @@ int find(buffer * const b, const char *pattern, const bool skip_first, bool wrap
 	else {
 
 		if (recompile_string) {
-			for(int i = m - 1; i > 0; i--) d[CONV((unsigned char)pattern[i])] = i;
+			for(int i = m - 1; i > 0; i--) d[CONV(pattern[i])] = i;
 			b->find_string_changed = search_serial_num;
 		}
 
 		char * p = ld->line + (b->cur_pos > ld->line_len - m ? ld->line_len - m : b->cur_pos + (skip_first ? -1 : 0));
-		const unsigned char first_char = CONV((unsigned char)pattern[0]);
+		const unsigned char first_char = CONV(pattern[0]);
 		int64_t wrap_lines_left = b->num_lines + 1;
 
 		while(y >= 0 && !stop && wrap_lines_left--) {
@@ -184,12 +184,12 @@ int find(buffer * const b, const char *pattern, const bool skip_first, bool wrap
 
 				while((p - ld->line) >= 0) {
 
-					const unsigned char c = CONV((unsigned char)*p);
+					const unsigned char c = CONV(*p);
 					if (c != first_char) p -= d[c];
 					else {
 						int i;
 						for (i = 1; i < m; i++)
-							if (CONV((unsigned char)*(p + i)) != CONV((unsigned char)pattern[i])) {
+							if (CONV(*(p + i)) != CONV(pattern[i])) {
 								p -= d[c];
 								break;
 							}
