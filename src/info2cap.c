@@ -159,7 +159,7 @@ char *tparm(const char * const cap_string,...) {
 
 /* This is a real fake. We already know all the parameters. */
 
-int setupterm(const char * const dummy1, const int dunmmy2, const int * const dummy3) {
+int setupterm(const char * const dummy1, const int dummy2, const int * const dummy3) {
 	char * const term_name = getenv("TERM"), *s;
 	if (!term_name) return ERR;
 
