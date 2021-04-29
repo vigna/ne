@@ -465,6 +465,7 @@ int main(int argc, char **argv) {
 
 	/* We delay updates. In this way the macro activity does not cause display activity. */
 
+	ttysize();
 	reset_window();
 	delay_update();
 

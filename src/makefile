@@ -91,16 +91,17 @@ endif
 
 # Test for GCC
 ifneq (,$(findstring gcc,$(shell $(CC) 2>&1)))
-GCCFLAGS=-std=c99 -Wall -Wno-parentheses -fno-strict-aliasing
+GCCFLAGS=-std=c99 -Wall -Wno-parentheses -fno-strict-aliasing -flto=auto -ffat-lto-objects -Wp,-D_FORTIFY_SOURCE=2
+LDFLAGS=-flto=auto
 endif
 
 CFLAGS=$(GCCFLAGS) \
-	-D_REGEX_LARGE_OFFSETS -D_GNU_SOURCE -DSTDC_HEADERS -Dinline=__inline__ \
+	-D_REGEX_LARGE_OFFSETS -D_GNU_SOURCE -DSTDC_HEADERS -DHAVE_SNPRINTF \
 	$(if $(NE_NOWCHAR), -DNOWCHAR,) \
 	$(if $(NE_TEST),    -DNE_TEST -coverage,) \
 	$(if $(NE_DEBUG),   -g -fsanitize=address -fsanitize=undefined,-O3 -DNDEBUG) \
-	$(if $(NE_TERMCAP), -DTERMCAP,) \
-	$(if $(NE_ANSI),    -DTERMCAP -DANSI,) \
+	$(if $(NE_TERMCAP), -DNE_TERMCAP,) \
+	$(if $(NE_ANSI),    -DNE_TERMCAP -DNE_ANSI,) \
 	$(OPTS)
 
 LIBS=$(if $(NE_TERMCAP)$(NE_ANSI),,-lcurses)

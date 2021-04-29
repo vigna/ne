@@ -25,7 +25,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#ifndef TERMCAP
+#ifndef NE_TERMCAP
 #include <curses.h>
 #include <term.h>
 #else

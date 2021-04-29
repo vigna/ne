@@ -19,7 +19,7 @@
 
 
 #include "ne.h"
-#ifdef TERMCAP
+#ifdef NE_TERMCAP
 #include "info2cap.h"
 #endif
 
@@ -31,8 +31,7 @@
 */
 
 void setup_ansi_term(void) {
-
-#ifdef TERMCAP
+#ifndef NE_TERMCAP
 	ne_cursor_address = "\x1b[%i%d;%dH";
 	ne_set_background = "\x1b[4%dm";
 	ne_set_foreground = "\x1b[3%dm";

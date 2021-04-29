@@ -40,7 +40,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#ifndef TERMCAP
+#ifndef NE_TERMCAP
 #include <curses.h>
 #include <term.h>
 #else

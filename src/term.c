@@ -26,7 +26,7 @@
 #include <ctype.h>
 #include <string.h>
 
-#ifndef TERMCAP
+#ifndef NE_TERMCAP
 #include <curses.h>
 #include <term.h>
 #else
@@ -46,7 +46,7 @@
 /* When displaying errors about the terminal database, we try to print the
 correct name. */
 
-#ifdef TERMCAP
+#ifdef NE_TERMCAP
 #define DATABASE_NAME "termcap"
 #else
 #define DATABASE_NAME "terminfo"
@@ -54,7 +54,7 @@ correct name. */
 
 /* If true, we want the use the built-in ANSI terminal, not a real one. */
 
-#ifdef ANSI
+#ifdef NE_ANSI
 bool ansi = true;
 #else
 bool ansi = false;
@@ -1046,7 +1046,7 @@ int ttysize(void) {
 }
 
 
-#ifndef TERMCAP
+#ifndef NE_TERMCAP
 
 /* If we get capabilities from the database, then we copy them into our
    internal counterparts. */
@@ -1185,7 +1185,7 @@ void term_init (void) {
 		       "the --ansi switch.\n");
 		exit(1);
 	}
-#ifndef TERMCAP
+#ifndef NE_TERMCAP
 	else copy_caps();
 #endif
 

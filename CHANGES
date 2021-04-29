@@ -2,6 +2,9 @@
 
 unreleased
 
+  * ttysize() is now invoked at start, improving user experience
+    in the termcap/ANSI versions.
+
   * Fix sh syntax highlighting in double-quoted strings with complex
     variable expressions.
 
