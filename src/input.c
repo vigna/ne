@@ -157,9 +157,11 @@ char request_char(const buffer * const b, const char * const prompt, const char 
 
 		switch(ic) {
 			case ALPHA:
+				highlight_mark((buffer * const)b, false);
 				return (char)localised_up_case[(unsigned char)c];
 
 			case RETURN:
+				highlight_mark((buffer * const)b, false);
 				return (char)localised_up_case[(unsigned char)default_value];
 
 			case COMMAND:
@@ -184,6 +186,7 @@ char request_char(const buffer * const b, const char * const prompt, const char 
 				break;
 		}
 	}
+	highlight_mark((buffer * const)b, false);
 }
 
 
@@ -970,6 +973,7 @@ char *request(const buffer * const b, const char *prompt, const char * const def
 					break;
 
 				case ESCAPE_A:
+					highlight_mark((buffer * const)b, false);
 					return NULL;
 
 				default:
@@ -986,9 +990,11 @@ char *request(const buffer * const b, const char *prompt, const char * const def
 			const line_desc * const last = (line_desc *)history_buff->line_desc_list.tail_pred->prev;
 			assert(ib.buf[ib.len] == 0);
 			if (history_buff->num_lines == 0 || ib.len != last->line_len || strncmp(ib.buf, last->line, last->line_len)) add_to_history(ib.buf);
+			highlight_mark((buffer * const)b, false);
 			return ib.buf;
 		}
 
 		first_char_typed = false;
 	}
+	highlight_mark((buffer * const)b, false);
 }
