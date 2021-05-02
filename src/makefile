@@ -16,6 +16,11 @@
 # calls to wide character versions of toupper(), tolower(), isspace(), etc.,
 # and also calls to wcwidth().
 #
+# The OPTS make parameter can be used to add options to the compilation
+# and linking phases. The options are added in the last position, so
+# they will override ne's default options, making the inclusion of 
+# distribution-specific options easy for distro packagers.
+#
 # Defining ALTPAGING will create an ne with slightly different configuration:
 # - PageUp and ^p map to PageUp (rather than PrevPage)
 # - PageDown and ^n map to PageDown (rather than NextPage)
@@ -107,7 +112,7 @@ CFLAGS=$(GCCFLAGS) \
 LIBS=$(if $(NE_TERMCAP)$(NE_ANSI),,-lcurses)
 
 ne:	$(OBJS) $(if $(NE_TERMCAP)$(NE_ANSI),$(TERMCAPOBJS),)
-	$(CC) $(OPTS) $(LDFLAGS) $(if $(NE_TEST), -coverage,) $(if $(NE_DEBUG), -fsanitize=address -fsanitize=undefined,) $^ -lm $(LIBS) -o $(PROGRAM)
+	$(CC) $(LDFLAGS) $(if $(NE_TEST), -coverage,) $(if $(NE_DEBUG), -fsanitize=address -fsanitize=undefined,) $^ $(LIBS) $(OPTS) -lm -o $(PROGRAM)
 
 clean:
 	rm -f ne *.o *.gcda *.gcda.info *.gcno core

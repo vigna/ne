@@ -4,9 +4,14 @@
 
 VERSION=3.3.1
 
-# If you change this prefix, you can invoke "make build install" and ne will be compiled
-# and installed under the $(PREFIX) hierarchy. You can even use "make install PREFIX=$HOME/<dir>"
-# to install ne locally into the directory <dir>.
+# If you change this prefix, you can invoke "make build install" and ne will
+# be compiled and installed under the $(PREFIX) hierarchy. You can even use
+# "make install PREFIX=$HOME/<dir>" to install ne locally into the directory
+# <dir>.
+#
+# Note that the build target uses ne's default compilation options. More
+# options can be passed to the build process by running directly make in
+# the "src" directory.
 
 PREFIX?=/usr/local
 
