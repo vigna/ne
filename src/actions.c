@@ -413,9 +413,9 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		return OK;
 
 	case UNSETBOOKMARK_A:
-		if (p && p[0]=='*' && !p[1]) { /* Special parm "*" for UNSETBOOKMARK_A */
+		if (p && p[0] == '*' && !p[1]) { /* Special parm "*" for UNSETBOOKMARK_A */
 			b->bookmark_mask = b->cur_bookmark = 0;
-			print_message("All BookMarks cleared.");
+			print_message(info_msg[ALL_BOOKMARKS_CLEARED]);
 			free(p);
 			return OK;
 		} /* Intentionally fall through to regular BOOKMARK parm parsing. */
@@ -429,7 +429,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			if (p) {
 				if (p[0] == '?') {
 					free(p);
-					snprintf(msg, MAX_MESSAGE_SIZE, "Cur Bookmarks: [%s] %s (0-9, -1, +1, or '-')", cur_bookmarks_string(b), a==SETBOOKMARK_A?"SetBookmark":"GotoBookmark");
+					snprintf(msg, MAX_MESSAGE_SIZE, "Cur Bookmarks: [%s] %s (0-9, -1, +1, or '-')", cur_bookmarks_string(b), a == SETBOOKMARK_A ? "SetBookmark" : "GotoBookmark");
 					p = request_string(b, msg, NULL, true, COMPLETE_NONE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto);
 					if (!p) {
 						return INVALID_BOOKMARK_DESIGNATION;
@@ -438,17 +438,17 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			}
 			if (p) {
 				if ((p[0]=='+' || p[0]=='-') && p[1]=='1') {
-					if (b->cur_bookmark<0 || b->cur_bookmark>MAX_USER_BOOKMARK) b->cur_bookmark = 0;
+					if (b->cur_bookmark < 0 || b->cur_bookmark > MAX_USER_BOOKMARK) b->cur_bookmark = 0;
 					int i;
-					for(i = 0; i<=MAX_USER_BOOKMARK; i++) {
-						b->cur_bookmark = (b->cur_bookmark+MAX_USER_BOOKMARK+1+(p[0]=='+'?1:-1))%(MAX_USER_BOOKMARK+1);
-						if ((a==SETBOOKMARK_A?~b->bookmark_mask:b->bookmark_mask) & (1<<b->cur_bookmark)) {
+					for(i = 0; i <= MAX_USER_BOOKMARK; i++) {
+						b->cur_bookmark = (b->cur_bookmark + MAX_USER_BOOKMARK + 1 + (p[0] == '+' ? 1 : -1)) % (MAX_USER_BOOKMARK + 1);
+						if ((a == SETBOOKMARK_A ? ~b->bookmark_mask : b->bookmark_mask) & (1 << b->cur_bookmark)) {
 							c = b->cur_bookmark;
 							relative = true;
 							break;
 						}
 					}
-					if (i==MAX_USER_BOOKMARK+1) {
+					if (i==MAX_USER_BOOKMARK + 1) {
 						free(p);
 						switch (a) {
 						case SETBOOKMARK_A:
@@ -920,7 +920,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		if (p || (q = p = request_file(b, "Filename", b->filename))) {
 			print_info(SAVING);
 
-			if (buffer_file_modified(b, p) && !request_response(b, info_msg[a==SAVE_A ? FILE_HAS_BEEN_MODIFIED : FILE_ALREADY_EXISTS], false)) {
+			if (buffer_file_modified(b, p) && !request_response(b, info_msg[a == SAVE_A ? FILE_HAS_BEEN_MODIFIED : FILE_ALREADY_EXISTS], false)) {
 				free(p);
 				return DOCUMENT_NOT_SAVED;
 			}
@@ -1446,7 +1446,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 				recording_macro = NULL;
 				print_message(info_msg[MACRO_RECORDING_CANCELLED]);
 			} else {
-				print_message("Invalid argument for 'Record' while recording.");
+				print_message(info_msg[INVALID_ARGUMENT_WHILE_RECORDING]);
 				return ERROR;
 			}
 		} else if (c == 1) {  /* resume recording */
@@ -1456,7 +1456,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			recording_macro = alloc_char_stream(0);
 			print_message(info_msg[STARTING_MACRO_RECORDING]);
 		} else {
-			print_message("Invalid argument for 'Record' while not recording.");
+			print_message(info_msg[INVALID_ARGUMENT_WHILE_RECORDING]);
 			return ERROR;
 		}
 		return OK;
@@ -1557,7 +1557,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		if (c < 0) c = 1;
 		SET_USER_FLAG(b, c, marking);
 		if (!b->marking) return(OK);
-		print_message(info_msg[a==MARK_A ? BLOCK_START_MARKED : VERTICAL_BLOCK_START_MARKED]);
+		print_message(info_msg[a == MARK_A ? BLOCK_START_MARKED : VERTICAL_BLOCK_START_MARKED]);
 		b->mark_is_vertical = (a == MARKVERT_A);
 		b->block_start_line = b->cur_line;
 		b->block_start_pos = b->cur_pos;
@@ -1764,7 +1764,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		if (b->opt.read_only) return DOCUMENT_IS_READ_ONLY;
 		NORMALIZE(c);
 		start_undo_chain(b);
-		for(int64_t i = 0; i < c && !(error = paragraph(b, i==0)) && !stop; i++);
+		for(int64_t i = 0; i < c && !(error = paragraph(b, i == 0)) && !stop; i++);
 		end_undo_chain(b);
 		if (stop) error = STOPPED;
 		if (error == STOPPED) reset_window();
@@ -1828,7 +1828,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		if (b->atomic_undo) {
 			b->atomic_undo = 0;
 			while (b->link_undos) end_undo_chain(b);
-			print_message("AtomicUndo level: 0");
+			print_message(info_msg[ATOMIC_UNDO_LEVEL_0]);
 		}
 
 		for(int64_t i = 0; i < c && !(error = undo(b)) && !stop; i++);

@@ -85,15 +85,15 @@ char *error_msg[ERROR_COUNT] = {
 	/* 57 */ "This replacement string cannot be used in this buffer (incompatible encoding).",
 	/* 58 */ "UTF-8 character classes in regular expressions are not supported.",
 	/* 59 */ "Character classes cannot be complemented when matching against UTF-8 text.",
-	/* 60 */ "The specified regex replacement group is not available in UTF-8 mode",
-	/* 61 */ "Syntax highlighting is not enabled",
-	/* 62 */ "There is no syntax for that extension",
+	/* 60 */ "The specified regex replacement group is not available in UTF-8 mode.",
+	/* 61 */ "Syntax highlighting is not enabled.",
+	/* 62 */ "There is no syntax for that extension.",
 	/* 63 */ "Invalid Shift specified (use [<|>][#][s|t]; default is \">1t\").",
 	/* 64 */ "Insufficient white space for requested left shift.",
 	/* 65 */ "Document not saved.",
-	/* 66 */	"File is too large--syntax highlighting disabled (use SYNTAX to reactivate).",
-	/* 67 */	"Cannot save: disk full.",
-	/* 68 */	"Out of memory (insufficient disk space?). DANGER!"
+	/* 66 */ "File is too large--syntax highlighting disabled (use SYNTAX to reactivate).",
+	/* 67 */ "Cannot save: disk full.",
+	/* 68 */ "Out of memory (insufficient disk space?). DANGER!"
 };
 
 char *info_msg[INFO_COUNT] = {
@@ -122,5 +122,8 @@ char *info_msg[INFO_COUNT] = {
 	"No such file exists; blank out current document?",
 	"HELP cursor/Enter QUIT F1/Esc-Esc/Esc",
 	"BACK Enter QUIT F1/Esc-Esc/Esc",
-	" (browse history with ^F)"
+	" (browse history with ^F)",
+	"Invalid argument for 'Record' while recording.",
+	"All Bookmarks cleared.",
+	"AtomicUndo level: 0"
 };

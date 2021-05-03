@@ -1,6 +1,6 @@
 (This file, CHANGES, lists fixes. See NEWS for new features and enhancements.)
 
-unreleased
+3.3.1 unreleased
 
   * ttysize() is now invoked at start, improving user experience
     in the termcap/ANSI versions.
