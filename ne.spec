@@ -5,7 +5,6 @@ Release: 1%{?dist}
 License: GPLv3+
 Source0: http://ne.di.unimi.it/ne-%{version}.tar.gz
 URL: http://ne.di.unimi.it/
-Requires: info
 Requires: ncurses
 BuildRequires: gcc, ncurses-devel, make, bash, perl, texinfo, sed
 
@@ -27,7 +26,6 @@ mkdir -p $RPM_BUILD_ROOT%{_datadir}/ne/syntax
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/ne/macros
 mkdir -p $RPM_BUILD_ROOT%{_infodir}
 mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1
-mkdir -p $RPM_BUILD_ROOT%{_docdir}/ne-%{version}/html
 install -p -m 755 ./src/ne $RPM_BUILD_ROOT%{_bindir}/ne
 install -p -m 644 ./extensions $RPM_BUILD_ROOT%{_datadir}/ne/extensions
 install -p -m 644 ./syntax/*.jsf $RPM_BUILD_ROOT%{_datadir}/ne/syntax
@@ -50,15 +48,7 @@ mv doc/html .
 %doc ./README.md
 %doc ./NEWS
 %doc ./CHANGES
-%doc ./COPYING
-
-%post
-/sbin/install-info %{_infodir}/ne.info.gz %{_infodir}/dir
-
-%preun
-if [ "$1" = 0 ]; then
-    /sbin/install-info --delete %{_infodir}/ne.info.gz %{_infodir}/dir
-fi
+%license ./COPYING
 
 %changelog
 * Wed Apr 28 2021 Sebastiano Vigna <sebastiano.vigna@gmail.com> - 3.3.0-1
