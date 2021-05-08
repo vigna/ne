@@ -6,7 +6,13 @@ License: GPLv3+
 Source0: http://ne.di.unimi.it/ne-%{version}.tar.gz
 URL: http://ne.di.unimi.it/
 Requires: ncurses
-BuildRequires: gcc, ncurses-devel, make, bash, perl, texinfo, sed
+BuildRequires: gcc
+BuildRequires: ncurses-devel
+BuildRequires: make
+BuildRequires: bash
+BuildRequires: perl
+BuildRequires: texinfo
+BuildRequires: sed
 
 %description 
 ne is a free (GPL'd) text editor based on the POSIX standard that runs (we
