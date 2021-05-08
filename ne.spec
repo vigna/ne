@@ -10,7 +10,7 @@ BuildRequires: gcc, ncurses-devel, make, bash, perl, texinfo, sed
 
 %description 
 ne is a free (GPL'd) text editor based on the POSIX standard that runs (we
-hope) on almost any UN*X machine. ne is easy to use for the beginner, but
+hope) on almost every UN*X machine. ne is easy to use for the beginner, but
 powerful and fully configurable for the wizard, and most sparing in its
 resource usage.
 
@@ -18,7 +18,8 @@ resource usage.
 %setup -q
 
 %build
-cd src; make NE_GLOBAL_DIR=%{_datadir}/ne LIBS=-lncurses OPTS="%{optflags} -fno-strict-aliasing -Wno-parentheses"
+cd src
+make NE_GLOBAL_DIR=%{_datadir}/ne LIBS=-lncurses OPTS="%{optflags} -fno-strict-aliasing -Wno-parentheses"
 
 %install
 mkdir -p $RPM_BUILD_ROOT%{_bindir}
@@ -51,5 +52,5 @@ mv doc/html .
 %license ./COPYING
 
 %changelog
-* Wed Apr 28 2021 Sebastiano Vigna <sebastiano.vigna@gmail.com> - 3.3.0-1
+* Sat May 8 2021 Sebastiano Vigna <sebastiano.vigna@gmail.com> - 3.3.0-1
 - First release
