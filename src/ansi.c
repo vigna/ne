@@ -36,6 +36,11 @@ void setup_ansi_term(void) {
 	ne_set_background = "\x1b[4%dm";
 	ne_set_foreground = "\x1b[3%dm";
 #else
+	/* This call to tgetent() is necessary due to changes to ncurses that
+	   made tgoto() stop working if setupterm()/tgetent() are not invoked
+	   first. Unfortunately, this means that if this call does not succeed
+	   ANSI mode will not work. */
+	tgetent(NULL, "vt100");
 	ne_cursor_address = "\x1b[%i%p1%d;%p2%dH";
 	ne_set_background = "\x1b[4%p1%dm";
 	ne_set_foreground = "\x1b[3%p1%dm";

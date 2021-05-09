@@ -5,6 +5,10 @@
   * The makefile has been made more distro friendly by making it possible
     to override all compiler and linker options.
 
+  * A workaround has been implemented to make --ansi (mostly) work when
+    compiling with ncurses. A change to ncurses in 2012 made tgoto() not
+    working unless tgetent()/setupterm() are called first.
+
 3.3.0 2020-02-27
 
   * You can now Save (^A) named documents from within the
