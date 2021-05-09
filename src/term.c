@@ -1177,7 +1177,7 @@ void term_init (void) {
 	/* First of all we initialize the terminfo database. */
 
 	if (ansi) setup_ansi_term();
-	else if (setupterm(0, 1, &errret) == ERR) {
+	else if (setupterm(NULL, 1, &errret) == ERR) {
 		printf("There are problems in finding your terminal in the database.\n"
 		       "Please check that the variable TERM is set correctly, and that\n"
 		       "your " DATABASE_NAME " database is up to date.\n"
