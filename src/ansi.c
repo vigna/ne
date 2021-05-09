@@ -31,7 +31,7 @@
 */
 
 void setup_ansi_term(void) {
-#ifndef NE_TERMCAP
+#ifdef NE_TERMCAP
 	ne_cursor_address = "\x1b[%i%d;%dH";
 	ne_set_background = "\x1b[4%dm";
 	ne_set_foreground = "\x1b[3%dm";
