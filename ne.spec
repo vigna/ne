@@ -3,8 +3,8 @@ Name: ne
 Version: 3.3.0
 Release: 1%{?dist}
 License: GPLv3+
-Source0: http://ne.di.unimi.it/ne-%{version}.tar.gz
-URL: http://ne.di.unimi.it/
+Source0: https://ne.di.unimi.it/ne-%{version}.tar.gz
+URL: https://ne.di.unimi.it/
 Requires: ncurses
 BuildRequires: gcc
 BuildRequires: ncurses-devel
