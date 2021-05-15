@@ -25,7 +25,7 @@ resource usage.
 
 %build
 cd src
-make NE_GLOBAL_DIR=%{_datadir}/ne LIBS=-lncurses OPTS="%{optflags} -fno-strict-aliasing -Wno-parentheses"
+%make_build NE_GLOBAL_DIR=%{_datadir}/ne LIBS=-lncurses OPTS="%{optflags} -fno-strict-aliasing -Wno-parentheses"
 
 %install
 mkdir -p $RPM_BUILD_ROOT%{_bindir}
@@ -46,16 +46,25 @@ mv doc/html .
 %{_bindir}/ne
 %{_datadir}/ne/
 %{_mandir}/man1/ne.1*
-%{_infodir}/ne.info*
+%doc ./README.md
+%doc ./NEWS
+%doc ./CHANGES
+
+%package doc
+Summary: Documentation for ne, the nice editor
+BuildArch: noarch
+
+%description doc
+Documentation for ne, the nice editor.
+
+%files doc
+%license ./COPYING
+%doc %{_infodir}/ne.info*
 %doc html
 %doc ./doc/ne.texinfo
 %doc ./doc/ne.pdf
 %doc ./doc/ne.txt
 %doc ./doc/default.*
-%doc ./README.md
-%doc ./NEWS
-%doc ./CHANGES
-%license ./COPYING
 
 %changelog
 * Sat May 8 2021 Sebastiano Vigna <sebastiano.vigna@gmail.com> - 3.3.0-1
