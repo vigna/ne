@@ -46,6 +46,7 @@ mv doc/html .
 %{_bindir}/ne
 %{_datadir}/ne/
 %{_mandir}/man1/ne.1*
+%doc %{_infodir}/ne.info*
 %doc ./README.md
 %doc ./NEWS
 %doc ./CHANGES
@@ -59,7 +60,6 @@ Documentation for ne, the nice editor.
 
 %files doc
 %license ./COPYING
-%doc %{_infodir}/ne.info*
 %doc html
 %doc ./doc/ne.texinfo
 %doc ./doc/ne.pdf
