@@ -465,6 +465,9 @@ int main(int argc, char **argv) {
 
 	/* We delay updates. In this way the macro activity does not cause display activity. */
 
+	#ifndef NE_TERMCAP
+	if (ansi)
+	#endif
 	ttysize();
 	reset_window();
 	delay_update();
