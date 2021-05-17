@@ -1,6 +1,6 @@
 (This file, NEWS, lists new features and enhancements. See CHANGES for fixes.)
 
-3.3.1 2020-05-16
+3.3.1 2021-05-16
 
   * The makefile has been made more distro friendly by making it possible
     to override all compiler and linker options.
