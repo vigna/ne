@@ -1,6 +1,6 @@
 (This file, CHANGES, lists fixes. See NEWS for new features and enhancements.)
 
-3.3.1 2020-05-16
+3.3.1 2021-05-16
 
   * ttysize() is now invoked at start, improving user experience
     in the termcap/ANSI versions.
