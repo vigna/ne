@@ -67,5 +67,5 @@ Documentation for ne, the nice editor.
 %doc ./doc/default.*
 
 %changelog
-* Sat May 8 2021 Sebastiano Vigna <sebastiano.vigna@gmail.com> - 3.3.0-1
+* Tue May 18 2021 Sebastiano Vigna <sebastiano.vigna@gmail.com> - 3.3.1-1
 - First release
