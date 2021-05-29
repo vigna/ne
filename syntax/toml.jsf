@@ -1,0 +1,321 @@
+# JOE syntax highlight file for TOML files
+
+# This file comes from https://github.com/iarna/jsf-toml with the following notices:
+
+# iarna/jsf-toml is licensed under the ISC License - A permissive license lets
+# people do anything with your code with proper attribution and without
+# warranty. The ISC license is functionally equivalent to the BSD 2-Clause and
+# MIT licenses, removing some language that is no longer necessary.
+
+# Copyright (c) 2016, Rebecca Turner <me@re-becca.org>
+# 
+# Permission to use, copy, modify, and/or distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+
+=Idle
+=Comment	green
+=Boolean	magenta
+=Number		yellow
+=Numbit		bold yellow
+=String		yellow
+=StringEscape	yellow bold
+=Bad		bold red bg_yellow
+
+=Key		blue
+=KeyEscape	bold blue
+=Separator	bold blue
+=Section	yellow
+=Object		bold yellow
+=Array		bold yellow
+
+:line_start Idle
+	*		key_pre		noeat
+	"\n"		line_start
+	" \t\r"		line_start # leading spaces
+	";#"		line_start	noeat call=.eol_comment()
+	"["		section_start		recolor=-1
+	"="		missing_key	recolor=-1
+
+:section_start Section
+	*		presection		noeat
+	"["		arraysection	recolor=-2
+	"\n"		section_unexp_end	recolor=-2
+
+:arraysection Array
+	*		arraysection
+	"]"		arraysection_end
+	"\n"		section_unexp_end	recolor=-2
+
+:arraysection_end Array
+	*		maybe_comment		noeat
+	"]"		maybe_comment
+	"\n"		section_unexp_end
+
+:presection Section
+	*		section			noeat
+	" \t"		presection
+	"\""		postsection	call=.quoted_key()
+
+
+:section Section
+	*		section
+	" \t"		postsection
+	"]"		maybe_comment
+	"\n"		section_unexp_end	recolor=-2
+
+:postsection Section
+	*		key_error
+	" \t"		postsection
+	"]"		maybe_comment
+	"\n"		section_unexp_end	recolor=-2
+
+:section_unexp_end Bad
+	*		line_start	noeat
+
+:missing_key Bad
+	*		key_post	noeat
+
+:key_pre Idle
+	*		sep		noeat call=.key()
+	" \t\r"		key_pre
+	"\n"		key_error	noeat
+
+:sep Separator
+	*		key_post	noeat
+	"="		key_post
+
+:key_post Idle
+	*		maybe_comment	noeat call=.value()
+	" \t\r"		key_post
+	";#"		key_error	recolor=-1
+	"="		key_error	recolor=-1
+
+:key_error Bad
+	*		key		noeat
+	"\n"		line_start
+
+:maybe_comment Idle
+	*		bad		recolor=-1
+ 	" \t"		maybe_comment
+	"\n"		line_start
+	";#"		line_start	noeat call=.eol_comment()
+
+:bad Bad
+	*		maybe_comment	noeat
+
+.subr value
+
+:pre Idle
+	*		end
+	"\""		end		recolor=-1 save_c call=.qq()
+	"'"		end		recolor=-1 save_c call=.q()
+	"["		end		recolor=-1 call=.inline_arr()
+	"{"		end		recolor=-1 call=.inline_obj()
+	"tf"		booleanmatch	noeat buffer
+	"-+0-9"		numthing	noeat
+	" \t\r"		pre
+
+:numthing Number
+	*		end		noeat
+	"0-9"		numthing
+	"-+_eZT.:"	numbit		recolor=-1
+
+:numbit Numbit
+	*		numthing	noeat
+
+:booleanmatch Bad
+	*			end		noeat markend strings
+	"true"			boolean
+	"false"			boolean
+done
+	"truefals"		booleanmatch
+
+:boolean Boolean
+	*			end		noeat
+
+:end Idle
+	*		NULL		noeat return
+
+.end
+
+.subr qq
+:start String
+	*		body	noeat
+	&		start2
+
+:start2 String
+	*		body	noeat
+	&		multiline
+
+:body String
+	*		body
+	&		end
+	"\\"		esc	recolor=-1
+	"\n"		error	recolor=-1
+
+:esc StringEscape
+	*		body	recolor=-2
+	"btnfr\"\\"	body
+	"\n"		error	recolor=-2
+
+:error Bad
+	*		line_start	noeat
+
+:multiline String
+	*		multiline
+	"\\"		multiline_esc	recolor=-1
+	&		multiline_end1
+
+:multiline_esc StringEscape
+	*		multiline
+	"btnfr\"\\"	multiline	recolor=-2
+
+:multiline_end1 String
+	*		multiline
+	&		multiline_end2
+
+:multiline_end2 String
+	*		multiline
+	&		end
+
+:end Idle
+	*		NULL		noeat return
+
+.end
+
+.subr q
+
+:start String
+	*		body	noeat
+	&		start2
+
+:start2 String
+	*		body	noeat
+	&		multiline
+
+:body String
+	*		body
+	&		end
+	"\n"		error	recolor=-1
+
+:error Bad
+	*		line_start	noeat
+
+:multiline String
+	*		multiline
+	&		multiline_end1
+
+:multiline_end1 String
+	*		multiline
+	&		multiline_end2
+
+:multiline_end2 String
+	*		multiline
+	&		end
+
+:end Idle
+	*		NULL		noeat return
+
+.end
+
+.subr eol_comment
+:comment Comment
+	*		comment
+	"\n"		NULL		return
+.end
+
+.subr quoted_key
+:qq	Key
+	*		qq
+	"\""		end
+	"\\"		esc		recolor=-1
+
+:esc	KeyEscape
+	*		qq		recolor=-2
+	"\""		qq
+:end	Idle
+	*		NULL		noeat return
+.end
+
+.subr key
+:prekey Key
+	*		key		noeat
+	"\""		post_key	call=.quoted_key()
+
+:key		Key
+	*		end		noeat
+	" \t="		post_key	noeat
+	"-.A-Za-z0-9_"	key
+
+:post_key	Idle
+	*		end		noeat
+	"="		sep		noeat
+	" \t"		post_key
+
+:sep	Separator
+	*		end		noeat
+
+:end	Idle
+	*		NULL		noeat return
+.end
+
+.subr inline_obj
+:pre_key	Object
+	*		sep		noeat call=.key()
+	"}"		normal_end	recolor=-1
+	" \t"		pre_key
+	"\n"		error		recolor=-2
+
+:sep	Separator
+	*		error
+	"="		post_value	noeat call=.value()
+
+:post_value	Idle
+	*		error		recolor=-2
+	","		pre_key
+	" \t"		post_value
+	"}"		normal_end	recolor=-1
+
+:error		Bad
+	*	end	noeat
+
+:normal_end	Object
+	*	end	noeat
+
+:end		Idle
+	*	NULL	noeat return
+
+.end
+
+.subr inline_arr
+
+:value_start	Array
+	*		value_end	noeat call=.value()
+	" \t\n"		value_start
+	";#"		value_start	noeat call=.eol_comment()
+	"]"		end
+
+:value_end	Array
+	*		bad
+	";#"		value_end	noeat call=.eol_comment()
+	","		value_start
+	" \t\n"		value_end
+	"]"		end
+
+:bad Bad
+	*		value_end	noeat
+
+:end Idle
+	*		NULL		noeat return
+
+.end
