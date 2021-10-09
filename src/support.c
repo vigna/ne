@@ -150,6 +150,7 @@ char *relative_file_path(const char *aa, const char *b) {
 
 	for (i=0; i<=match; i++) {
 		if (a[i] == '/') {
+			if (i == match && b[i]) break;
 			j = i;
 		}
 	}
