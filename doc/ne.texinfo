@@ -5505,7 +5505,7 @@ ASCII characters between 128 and 159, and will be parsed as shortcuts by
 @cindex Configuring the keyboard
 
 @code{ne} allows you to associate any keystroke with any command. To
-accomplish this task, you have to create a (possibly UTf-8) file named
+accomplish this task, you have to create a (possibly UTF-8) file named
 @file{.keys} in your @file{~/.ne} directory. You can change
 the default name (possibly specifying a complete path) using the
 @code{--keys} argument (@pxref{Arguments}).
@@ -5633,7 +5633,7 @@ KEY  14A          HELP
 
 Sequences are inherently terminal- or terminal emulator-specific, so
 their utility will vary depending on how many emulators you use. At least
-they give you the posibility to use keys or key combinations that aren't
+they give you the possibility to use keys or key combinations that aren't
 covered by @code{curses}.
 
 The key binding file is parsed at startup. If something does not work,
