@@ -15,8 +15,8 @@
 #
 #
 # For 16 color and 256 color xterms: "export TERM=xterm-16color", the following
-# brighter than normal colors are available ( Note that you need an xterm which 
-# was compiled to support 16 or 256 colors and a matching termcap/terminfo entry 
+# brighter than normal colors are available ( Note that you need an xterm which
+# was compiled to support 16 or 256 colors and a matching termcap/terminfo entry
 # for it.)
 #
 # Foreground:
@@ -37,7 +37,8 @@
 
 =Idle
 =Error          red bold
-=Comment        green #bold green
+=ErrorDigit     yellow bold bg_red
+=Comment        green
 =SingleQuoted   cyan
 =DoubleQuoted   cyan
 =BackQuoted     cyan
@@ -45,7 +46,7 @@
 =Operator       bold cyan
 =Parentheses    #bold yellow
 =Brackets       yellow
-=Brace          magenta #bold magenta
+=Brace          magenta
 =Semicolon      #bold yellow
 =Period         bold
 =PeriodDecimal  red
@@ -72,10 +73,10 @@
   "[]"          brackets      noeat
   "{}"          curlies       noeat
   ";"           semicolon     noeat
-  ","           comma         noeat  
+  ","           comma         noeat
   "."           period
   "0"           number0       recolor=-1
-  "1-9"         float         recolor=-1
+  "1-9"         float         noeat
   "#$@~"        error         noeat
 
 #################### error ##########################
@@ -99,10 +100,10 @@
   *             line_comment
   "\n"          main
 
-:block_comment Comment  
+:block_comment Comment
   *            block_comment
   "*"          maybe_end_block_comment
-  
+
 :maybe_end_block_comment Comment
   *            block_comment noeat
   "/"          main
@@ -149,17 +150,45 @@
   *            period_other    noeat recolor=-2
   "0-9"        period_decimal  noeat recolor=-2
 
-:period_other Period  
+:period_other Period
   *            main noeat
 
 :period_decimal PeriodDecimal
   *            float_no_period noeat
 
+###### START .subr for underscores in decimal, hexadecimal, octal, and binary constants ######
+.subr uscore_num
+:uscore_num Number
+  *            error_digit     noeat recolor=-2
+.ifdef dec
+  "0-9"        uscore_num_end  return noeat
+.endif
+.ifdef hex
+  "0-9a-fA-F"  uscore_num_end  return noeat
+.endif
+.ifdef oct
+  "0-7"        uscore_num_end  return noeat
+.endif
+.ifdef bin
+  "01"         uscore_num_end  return noeat
+.endif
+
+:error_digit ErrorDigit
+  *            uscore_num_end  noeat
+  "0-9a-fA-F_" error_digit
+
+:uscore_num_end Number
+  *            main            return noeat
+
+.end
+###### END .subr for underscores in decimal, hexadecimal, octal, and binary constants ######
 
 ################### numbers ####################
+
 :float_no_period Number
   *            end_of_number   noeat
   "0-9"        float_no_period
+  "_"          float_no_period call=.uscore_num(dec)
   "eE"         integer
 
 :integer Number
@@ -170,10 +199,12 @@
 :unsigned Number
   *            error     noeat
   "0-9"        unsigned_or_end
+  "_"          float_no_period call=.uscore_num(dec)
 
 :unsigned_or_end Number
   *            end_of_number noeat
   "0-9"        unsigned_or_end
+  "_"          unsigned_or_end call=.uscore_num(dec)
 
 :end_of_number Number
   *            main  noeat
@@ -182,22 +213,68 @@
 :number0 Number
   *            end_of_number  noeat
   "xX"         hex
+  "oO"         oct
+  "bB"         bin
   "."          period_decimal recolor=-1
     # 099i is a valid imaginary number, 099.0 is a valid float,
-    # but 099 is an invalid octal. 
+    # but 099 is an invalid octal.
     #We don't check for this and simply lump both cases together.
-  "0-9"        float
+  "0-9"        imaginary_or_octal
+   "_"         imaginary_or_octal call=.uscore_num(dec)
+
+:imaginary_or_octal Number
+  *            float          noeat
+  "i"          end_of_number  noeat
+  "0-7"        imaginary_or_octal
+  "8-9"        imaginary_or_float mark
+  "_"          imaginary_or_octal call=.uscore_num(dec)
+
+:imaginary_or_float Number
+  *            broken_octal   noeat
+  "."          period_decimal recolor=-1
+  "i"          end_of_number  noeat
+  "0-9"        imaginary_or_float
+  "_"          imaginary_or_octal call=.uscore_num(dec)
+
+:broken_octal ErrorDigit
+  *            broken_octal_2 noeat recolormark
+
+:broken_octal_2 ErrorDigit
+  *            end_of_number  noeat call=.uscore_num()
 
 :hex Number
-  *            main  noeat
+  *            end_of_number  noeat
+  "pP"         integer
   "0-9a-fA-F"  hex
+  "_"          hex            call=.uscore_num(hex)
+  "."          maybe_radix    mark
+
+:maybe_radix Number
+  *            end_of_number  noeat
+  "0-9a-fA-F"  hex
+  "_"          hex            call=.uscore_num(hex)
+  "pP"         integer        call=.uscore_num(dec)
+
+:oct Number
+  *            end_of_number  noeat
+  "0-7"        oct
+  "8-9a-fA-F"  end_of_number  call=.uscore_num()
+  "_"          oct            call=.uscore_num(oct)
+
+:bin Number
+  *            end_of_number  noeat
+  "01"         bin
+  "2-9a-fA-F"  end_of_number  call=.uscore_num()
+  "_"          bin            call=.uscore_num(bin)
 
 :float Number
   *            end_of_number  noeat
   "0-9"        float
+  "_"          float          call=.uscore_num(dec)
   "."          period_decimal recolor=-1
-  "eE"         integer
-  
+  "eEpP"       integer
+  "a-dfA-DF"   end_of_number  call=.uscore_num()
+
 ################# keywords and identifiers ##########################
 :keyword_or_identifier Identifier
   *            identifier
@@ -242,12 +319,12 @@
       "import"      keyword
       "return"      keyword
       "var"         keyword
-      
+
       "true"        constant
       "false"       constant
       "nil"         constant
       "iota"        constant
-      
+
       "byte"        type
       "rune"        type
       "int"         type
@@ -268,7 +345,7 @@
       "bool"        type
       "string"      type
       "error"       type
-      
+
       "delete"      builtin
       "make"        builtin
       "len"         builtin
@@ -294,11 +371,11 @@
 
 :type Type
   *            main  noeat
-  
+
 :builtin BuiltinFunction
   *            main  noeat
-  
-  
+
+
 
 
 ########################## .subr escape START ######################################
@@ -360,7 +437,7 @@
 
 :esc_err_newline Error
   *              esc_err return noeat
-  
+
 
 .end
 ########################## .subr escape END ######################################

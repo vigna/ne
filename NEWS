@@ -4,6 +4,9 @@ unreleased
 
   * Added toml.jsf syntax.
 
+  * Support '_' in numeric constants, binary and hex constants, imaginary
+    numbers in go.jsf syntax.
+
 3.3.1 2021-05-16
 
   * The makefile has been made more distro friendly by making it possible
