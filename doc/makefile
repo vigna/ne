@@ -15,7 +15,7 @@ install: docs
 	cp * ../../../doc
 
 version.texinfo:
-	( cd .. ; make version )
+	( cd .. ; $(MAKE) version )
 
 ne.txt: ne.texinfo version.texinfo
 	(makeinfo --plaintext --no-headers ne.texinfo -o ne.txt || makeinfo --no-headers ne.texinfo -o ne.txt)
