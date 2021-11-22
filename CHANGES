@@ -5,6 +5,9 @@ unreleased
   * Fixed issue where file requester could return incorrect path
     to the selected file.
 
+  * Fixed makefile so that it supports correctly parallel builds. Thanks
+    to Emily Lucy Ishikawa for contributing this fix.
+
 3.3.1 2021-05-16
 
   * ttysize() is now invoked at start, improving user experience

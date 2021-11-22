@@ -7,6 +7,8 @@ unreleased
   * Support '_' in numeric constants, binary and hex constants, imaginary
     numbers in go.jsf syntax.
 
+  * Now there is an uninstall target that uninstalls ne.
+
 3.3.1 2021-05-16
 
   * The makefile has been made more distro friendly by making it possible
