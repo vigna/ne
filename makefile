@@ -72,6 +72,28 @@ install:
 	cp -p doc/ne.info.gz $(DESTDIR)$(PREFIX)/share/info
 	-install-info --dir-file=$(DESTDIR)$(PREFIX)/share/info/dir $(DESTDIR)$(PREFIX)/share/info/ne.info.gz
 
+
+directory = $(DESTDIR)$(PREFIX)/share/ne
+dir_target = $(directory)-$(wildcard $(directory))
+dir_present = $(directory)-$(directory)
+dir_absent = $(directory)-
+
+uninstall: | $(dir_target)
+
+$(dir_present):
+	-rm -fr $(DESTDIR)$(PREFIX)/share/ne 
+	-rm -fr $(DESTDIR)$(PREFIX)/doc/ne 
+	-rm -fr $(DESTDIR)$(PREFIX)/bin/ne
+	-rm -fr $(DESTDIR)$(PREFIX)/bin/ne.exe
+	-rm -f $(DESTDIR)$(PREFIX)/share/man/man1/ne.1
+	-install-info --delete --dir-file=$(DESTDIR)$(PREFIX)/share/info/dir $(DESTDIR)$(PREFIX)/share/info/ne.info.gz
+	-rm -f $(DESTDIR)$(PREFIX)/share/info/ne.info.gz
+	@echo "ne uninstalled."
+
+$(dir_absent):
+	@echo "Cannot uninstall: folder $(directory) does not exist; please check the DESTDIR (\"$(DESTDIR)\") and PREFIX (\"$(PREFIX)\") make variables."
+
+
 # Creates cygwin package on Windows
 
 cygwin: version
