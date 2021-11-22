@@ -131,7 +131,7 @@ coverage:
 ###
 
 version.h ../doc/version.texinfo:
-	(cd .. ; make version)
+	(cd .. ; $(MAKE) version)
 
 ne.texinfo:
 	-ln -sf ../doc/ne.texinfo

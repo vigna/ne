@@ -27,19 +27,19 @@ endif
 
 
 build: docs
-	( cd src; make clean; make NE_GLOBAL_DIR=$(PREFIX)/share/ne; $(STRIP) ne )
+	( cd src; $(MAKE) clean; $(MAKE) NE_GLOBAL_DIR=$(PREFIX)/share/ne; $(STRIP) ne )
 
 docs:
-	( cd doc; make )
+	( cd doc; $(MAKE) )
 
 alldocs: docs
-	( cd doc; make pdf )
+	( cd doc; $(MAKE) pdf )
 
 version:
 	./version.pl VERSION=$(VERSION)
 
 source: version alldocs
-	( cd src; make clean; make )
+	( cd src; $(MAKE) clean; $(MAKE) )
 	-rm -f ne-$(VERSION)
 	ln -s . ne-$(VERSION)
 	tar cvf ne-$(VERSION).tar ne-$(VERSION)/version.pl ne-$(VERSION)/makefile ne-$(VERSION)/COPYING ne-$(VERSION)/INSTALL.md ne-$(VERSION)/README.md ne-$(VERSION)/NEWS ne-$(VERSION)/CHANGES \
@@ -78,11 +78,11 @@ cygwin: version
 ifneq ($(OS), Windows)
 	$(error This target can only be run under Windows)
 endif
-	( cd src; make clean; make NE_GLOBAL_DIR=/usr/share/ne NE_TERMCAP=1 NE_ANSI=1 OPTS=-U__STRICT_ANSI__ )
-	make install PREFIX=/usr CMDSUFFIX=.exe
+	( cd src; $(MAKE) clean; $(MAKE) NE_GLOBAL_DIR=/usr/share/ne NE_TERMCAP=1 NE_ANSI=1 OPTS=-U__STRICT_ANSI__ )
+	$(MAKE) install PREFIX=/usr CMDSUFFIX=.exe
 	tar zcvf ne-cygwin-ansi-$(VERSION)-$(shell uname -m).tar.gz /usr/share/ne /usr/bin/ne.exe /usr/share/doc/ne /usr/share/info/ne.info.gz /usr/share/man/man1/ne.1
-	( cd src; make clean; make NE_GLOBAL_DIR=/usr/share/ne OPTS=-U__STRICT_ANSI__ )
-	make install PREFIX=/usr CMDSUFFIX=.exe
+	( cd src; $(MAKE) clean; $(MAKE) NE_GLOBAL_DIR=/usr/share/ne OPTS=-U__STRICT_ANSI__ )
+	$(MAKE) install PREFIX=/usr CMDSUFFIX=.exe
 	tar zcvf ne-cygwin-$(VERSION)-$(shell uname -m).tar.gz /usr/share/ne /usr/bin/ne.exe /usr/share/doc/ne /usr/share/info/ne.info.gz /usr/share/man/man1/ne.1
 
 
@@ -92,9 +92,9 @@ macosx: version alldocs
 ifneq ($(OS), Darwin)
 	$(error This target can only be run under Mac OS X)
 endif
-	( cd src; make clean; make NE_GLOBAL_DIR=/usr/local/share/ne; strip ne )
+	( cd src; $(MAKE) clean; $(MAKE) NE_GLOBAL_DIR=/usr/local/share/ne; strip ne )
 	-rm -fr /tmp/package-ne-$(VERSION)
-	make install DESTDIR=/tmp/package-ne-$(VERSION)
+	$(MAKE) install DESTDIR=/tmp/package-ne-$(VERSION)
 	pkgbuild --root /tmp/package-ne-$(VERSION) --install-location "/" --version $(VERSION) --identifier ne-$(VERSION) ne-$(VERSION).pkg
 	-rm -f ne-$(VERSION).dmg
 	hdiutil create -fs HFS+ -srcfolder ne-$(VERSION).pkg -volname ne-$(VERSION) ne-$(VERSION).dmg
@@ -104,5 +104,5 @@ clean:
 	-rm -f ne-*.tar*
 
 really-clean: clean
-	(cd src; make clean)
-	(cd doc; make clean)
+	(cd src; $(MAKE) clean)
+	(cd doc; $(MAKE) clean)
