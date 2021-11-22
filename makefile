@@ -81,8 +81,8 @@ dir_absent = $(directory)-
 uninstall: | $(dir_target)
 
 $(dir_present):
-	-rm -fr $(DESTDIR)$(PREFIX)/share/ne 
-	-rm -fr $(DESTDIR)$(PREFIX)/doc/ne 
+	-rm -fr $(DESTDIR)$(PREFIX)/share/ne
+	-rm -fr $(DESTDIR)$(PREFIX)/doc/ne
 	-rm -fr $(DESTDIR)$(PREFIX)/bin/ne
 	-rm -fr $(DESTDIR)$(PREFIX)/bin/ne.exe
 	-rm -f $(DESTDIR)$(PREFIX)/share/man/man1/ne.1
