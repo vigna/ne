@@ -859,7 +859,7 @@ built-in commands (with or without parameters) and macros. These associations
 are refered to as @dfn{key bindings}, which you define in your
 @code{~/.ne/.keys} file. The @code{KeyCode} command allows you to see the key
 code @code{ne} sees in response to any key or key combination on your
-keyboard. It also shows the command string currently associated with that key
+keyboard. It also shows the command string currently bound to that key
 code. This is described in @ref{Key Bindings}.
 
 
@@ -955,9 +955,21 @@ typical macro would move the cursor to a certain line.
 The @code{--keys @var{filename}} option and the @code{--menus
 @var{filename}} option specify a name different from the default one
 (@file{.keys} and @file{.menus}, respectively) for the key bindings and
-the menu configuration files. Note that @code{ne} searches for these
-files first in the current directory, and then in your @file{~/.ne}
-directory.
+the menu configuration files.
+
+For key bindings, @code{ne} loads system wide files first, then those in your
+@file{~/.ne} directory, and finally those in the current directory. Key
+bindings loaded later may override those loaded previously. In each location,
+@file{~/.ne} will first look for a file named @file{.keys} (or whatever base
+name you specify with the @code{--keys} option), then a file with the same name
+followed by a dash and the value of your @code{TERM} environment variable.
+This is how you can create key bindings specifically for different terminals
+on a single system.
+
+Menu configuration, unlike key bindings, is not cumulative; @code{ne} looks
+first in your @file{~/.ne} directory possibly followed by the system wide
+global directory for a menu configuration file and loads only the first one it
+finds, if any.
 
 The @code{--ansi} and the @code{--no-ansi}/@code{--noansi} options manage
 @code{ne}'s built-in ANSI sequences. Usually @code{ne} tries to retrieve
@@ -5504,13 +5516,27 @@ ASCII characters between 128 and 159, and will be parsed as shortcuts by
 @cindex Key bindings
 @cindex Configuring the keyboard
 
-@code{ne} allows you to associate any keystroke with any command. To
-accomplish this task, you have to create a (possibly UTF-8) file named
-@file{.keys} in your @file{~/.ne} directory. You can change
-the default name (possibly specifying a complete path) using the
-@code{--keys} argument (@pxref{Arguments}).
+@code{ne} allows you to associate any keystroke with any command. These
+associations are referred to as key bindings. You define your key
+bindings in a (possibly UTF-8) file named @file{.keys} in your
+@file{~/.ne} directory. You could additionally create a @file{.keys} file in
+your current directory, any your system administrator might also place a
+@file{.keys} file in your system's global directory. These will always be
+loaded each time you start @code{ne}, but you can also create key binding
+files with the same base name (@file{.keys}) followed by a dash and some
+string. Such a file will only be loaded when the string matches the value of
+your @code{TERM} environment variable. For example, you might have files
+named @file{~/.ne/.keys}, @file{~/.ne/.keys-xterm}, and
+@file{~/.ne/.keys-vt102}. The first file's key bindings will always be
+loaded, while at most one of the latter two files will be loaded, depending
+on your @code{TERM} environment variable.
 
-The format of the file is very simple: each line starting with the @samp{KEY}
+You can change your key binding files' default base name from @file{.keys} by
+passing an argument to the @code{--keys} option when you start @code{ne}, and
+you can prevent any configuration from being loaded with the
+@code{--no-config} option (@pxref{Arguments}).
+
+The format of key binding files is simple: each line starting with the @samp{KEY}
 sequence of capital characters is considered the description of a key binding.
 Each line starting with @samp{SEQ} binds a character sequence to a key.
 All other lines are considered comments. The format of a key binding
@@ -5716,7 +5742,7 @@ Note that by default @code{ne} does not override a file's
 given extension. However, you can specify any number of extensions that
 you would like to allow to be overridden by including lines in your
  @file{~/.ne/extensions} containing only a dot followed by a single extension or
-shell ``glob pattern''. In particular, @code{.*"} would
+shell ``glob pattern''. In particular, ``@code{.*}'' would
 allow overriding all extensions.
 
 @noindent Here's an example @file{~/.ne/.extensions} file:
