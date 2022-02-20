@@ -26,7 +26,10 @@ const char *input_class_names[INPUT_CLASS_COUNT] = {
 }; 
 
 const char *config_source_names[CONFIG_SOURCE_COUNT] = {
-	"Built In", "Global Prefs", "User Prefs", "Current Directory"
+	"Built In",
+	"Global Prefs",      "Global Perfs (terminal)",
+	"User Prefs",        "User Prefs (terminal)",
+	"Current Directory", "Current Directory (terminal)"
 }; 
 
 /* This vector contains all key bindings. Each entry points to a command line
