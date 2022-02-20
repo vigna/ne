@@ -27,7 +27,7 @@ const char *input_class_names[INPUT_CLASS_COUNT] = {
 
 const char *config_source_names[CONFIG_SOURCE_COUNT] = {
 	"Built In",
-	"Global Prefs",      "Global Perfs (terminal)",
+	"Global Prefs",      "Global Prefs (terminal)",
 	"User Prefs",        "User Prefs (terminal)",
 	"Current Directory", "Current Directory (terminal)"
 }; 
