@@ -79,7 +79,11 @@ typedef enum {
 extern const char *input_class_names[];
 
 typedef enum {
-	BUILT_IN, GLOBAL_PREFS, USER_PREFS, CUR_DIR, CONFIG_SOURCE_COUNT
+	BUILT_IN,
+	GLOBAL_PREFS, GLOBAL_PREFS_TERM,
+	USER_PREFS, USER_PREFS_TERM,
+	CUR_DIR, CUR_DIR_TERM,
+	CONFIG_SOURCE_COUNT
 } config_source;
 
 extern const char *config_source_names[];

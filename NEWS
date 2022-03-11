@@ -9,6 +9,8 @@ unreleased
 
   * Now there is an uninstall target that uninstalls ne.
 
+  * Additionally load key bindings from ~/.ne/.keys-${TERM}
+
 3.3.1 2021-05-16
 
   * The makefile has been made more distro friendly by making it possible

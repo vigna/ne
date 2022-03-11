@@ -689,10 +689,26 @@ char *cur_dir(void) {
 /* Key bindings override easily, so pull in any global bindings
    first, then override with the users bindings. */
 void get_key_bindings(const char * key_bindings_name) {
+   char * const term_name = getenv("TERM"), *key_bindings_term_name = NULL;
+
+	if (!key_bindings_name) key_bindings_name = KEY_BINDINGS_NAME;
+	key_bindings_term_name = malloc(strlen(key_bindings_name) + strlen(term_name) + 2);
+
+	if (key_bindings_term_name)
+		strcat(strcat(strcpy(key_bindings_term_name, key_bindings_name), "-"), term_name);
+
 	for (int i = 0; i < NUM_KEYS; i++) key_binding_source[i] = BUILT_IN;
-	get_key_bind(key_bindings_name, exists_gprefs_dir, GLOBAL_PREFS);
-	get_key_bind(key_bindings_name, exists_prefs_dir, USER_PREFS);
-	get_key_bind(key_bindings_name, cur_dir, CUR_DIR);
+
+	get_key_bind(key_bindings_name,      exists_gprefs_dir, GLOBAL_PREFS);
+	get_key_bind(key_bindings_term_name, exists_gprefs_dir, GLOBAL_PREFS_TERM);
+
+	get_key_bind(key_bindings_name,      exists_prefs_dir,  USER_PREFS);
+	get_key_bind(key_bindings_term_name, exists_prefs_dir,  USER_PREFS_TERM);
+
+	get_key_bind(key_bindings_name,      cur_dir,           CUR_DIR);
+	get_key_bind(key_bindings_term_name, cur_dir,           CUR_DIR_TERM);
+
+	free(key_bindings_term_name);
 }
 
 
