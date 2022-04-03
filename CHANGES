@@ -2,6 +2,8 @@
 
 unreleased
 
+  * Fixed issue where autocomplete could fail/crash with UTF-8 characters.
+
   * Fixed issue where file requester could return incorrect path
     to the selected file.
 

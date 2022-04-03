@@ -44,18 +44,18 @@ static void search_buff(const buffer *b, char * p, const int encoding, const boo
 		int64_t l = 0, r = 0;
 		do {
 			/* find left edge of word */
-			while (l < ld->line_len - p_len && !ne_isword(get_char(&ld->line[l], b->encoding), b->encoding)) l += get_char_width(&ld->line[l], b->encoding);
+			while (l < ld->line_len - p_len && !ne_isword(get_char(&ld->line[l], b->encoding), b->encoding)) l = next_pos(ld->line, l, b->encoding);
 			if (l < ld->line_len - p_len ) {
 				int ch;
 				/* find right edge of word */
-				r = l + get_char_width(&ld->line[l], b->encoding);
+				r = next_pos(ld->line, l, b->encoding);
 				/* accept "'" as a word character if it is followed by another word character, so that
 				   words like "don't" are not broken into "don" and "t". */
 				while (r < ld->line_len
-				       && (    ne_isword(ch=get_char(&ld->line[r], b->encoding), b->encoding)
+				       && ( ne_isword(ch=get_char(&ld->line[r], b->encoding), b->encoding)
 				            || ( r+1 < ld->line_len && ch == '\'' && ne_isword(get_char(&ld->line[r+1], b->encoding), b->encoding))
 				          )
-				      ) r += get_char_width(&ld->line[r], b->encoding);
+				      ) r = next_pos(ld->line, r, b->encoding);
 				if ((b != cur_buffer || ld != b->cur_line_desc || b->cur_pos < l || r < b->cur_pos)
 				     && r - l > p_len && (b->encoding == encoding || is_ascii(&ld->line[l], r - l))
 				     && !cmp(p, &ld->line[l], p_len))
@@ -79,7 +79,7 @@ static void search_buff(const buffer *b, char * p, const int encoding, const boo
    if it is non-NULL (a returned NULL means that no completion is available).
 
    If there is more than one completion, this function will invoke request_strings()
-   (and subsequently reset_window()) after displaying req_msg. In any case, error 
+   (and subsequently reset_window()) after displaying req_msg. In any case, error
    will contain a value out of those in the enum info that start with AUTOCOMPLETE_. */
 
 char *autocomplete(char *p, char *req_msg, const int ext, int * const error) {
@@ -143,13 +143,13 @@ char *autocomplete(char *p, char *req_msg, const int ext, int * const error) {
 		if (rl.entries[0][m-1] == EXTERNAL_FLAG_CHAR) m--;
 		for(int i = 1; i < rl.cur_entries; i++) {
 			int j;
-			for(j = 0; j < m; j++) 
+			for(j = 0; j < m; j++)
 				if (rl.entries[i][j] != rl.entries[0][j]) break;
 			m = j;
 		}
 
 		/* If we can output more characters than the prefix len, we do so without
-			starting the requester. */
+		   starting the requester. */
 		if (m > prefix_len) {
 			p = malloc(m + 1);
 			strncpy(p, rl.entries[0], m);

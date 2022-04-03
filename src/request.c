@@ -593,8 +593,10 @@ static int rebuild_rl_entries() {
 	for (i = j = n = 0; i < rl0->cur_entries; i++) {
 		int orig = reverse_reorder(i);
 		char * const p1 = rl0->entries[orig];
-		D(fprintf(stderr, "rre: i:%d, j:%d, n:%d p0:%x p1:%x fuzz_len:%d rl.prune:%d\n",
-		       i, j, n, p0, p1, fuzz_len, rl.prune);)
+		D(fprintf(stderr, "rre: i:%d, j:%d, n:%d p0:%lx p1:%lx fuzz_len:%d rl.prune:%d\n",
+		                          i,    j,    n,
+		                            (unsigned long) p0,
+		                                   (unsigned long) p1,          fuzz_len,  rl.prune);)
 		if ( ! rl.prune || ! strncasecmp(p0, p1, fuzz_len) ) {
 			if (p1 == p0) {
 				n = j;
@@ -602,7 +604,7 @@ static int rebuild_rl_entries() {
 			}
 			rl.entries[j] = p1;
 			rl.lengths[j++] = rl0->lengths[orig];
-			D(fprintf(stderr, "rre: set rl.entries[%d] <- %x ('%s')\n", j-1, p1, p1);)
+			D(fprintf(stderr, "rre: set rl.entries[%d] <- %lx ('%s')\n", j-1, (unsigned long) p1, p1);)
 			D(fprintf(stderr, "rre: set rl.lengths[%d] <- rl0->lengths[%d] (%d)\n", j-1, orig, rl0->lengths[orig]);)
 		}
 	}
