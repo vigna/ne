@@ -1964,7 +1964,7 @@ simple regular expression which matches that character and nothing else. The
 special characters are @samp{$}, @samp{^}, @samp{.}, @samp{*}, @samp{+},
 @samp{?}, @samp{[}, @samp{]} , @samp{(}, @samp{)} and @samp{\}.  Any other
 character appearing in a regular expression is ordinary, unless a @samp{\}
-precedes it.@refill
+precedes it.
 
 For example, @samp{f} is not a special character, so it is ordinary,
 and therefore @samp{f} is a regular expression that matches the string @samp{f}
@@ -2056,7 +2056,7 @@ US-ASCII characters only.
 character except the ones specified.  Thus, @samp{[^a-z0-9A-Z]} matches
 all characters @emph{except} letters and digits. Also in this case, when
 searching in UTF-8 text a complemented character set may contain US-ASCII
-characters only. @refill
+characters only.
 
 @samp{^} is not special in a character set unless it is the first character.
 The character following the @samp{^} is treated as if it were first (it may
@@ -2075,7 +2075,7 @@ line.
 
 @item \
 has two functions: it quotes the above special characters (including
-@samp{\}), and it introduces additional special constructs.@refill
+@samp{\}), and it introduces additional special constructs.
 
 Because @samp{\} quotes special characters, @samp{\$} is a regular
 expression that matches only @samp{$}, and @samp{\[} is a regular
