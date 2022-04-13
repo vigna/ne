@@ -28,6 +28,10 @@
    *    comment
    "\n"   idle
 
+:keyword_obsolete Error
+	*      idle noeat
+	"{"    parms noeat
+
 :keyword Keyword
 	*      idle noeat
 	"{"    parms noeat
@@ -280,7 +284,7 @@
    "quotation"                      keyword
    "raggedright"                    keyword
    "raisesections"                  keyword
-   "refill"                         keyword
+   "refill"                         keyword_obsolete recolormark
    "ref"                            keyword
    "r"                              keyword
    "samp"                           keyword
@@ -288,10 +292,10 @@
    "sc"                             keyword
    "section"                        keyword
    "setchapternewpage"              keyword
-   "setcontentsaftertitlepage"      keyword
+   "setcontentsaftertitlepage"      keyword_obsolete recolormark
    "setfilename"                    keyword
    "set"                            keyword
-   "setshortcontentsaftertitlepage" keyword
+   "setshortcontentsaftertitlepage" keyword_obsolete recolormark
    "settitle"                       keyword
    "shortcaption"                   keyword
    "shortcontens"                   keyword
