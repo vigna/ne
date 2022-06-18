@@ -330,7 +330,7 @@ int main(int argc, char **argv) {
 
 	add_head(&clips, &cd->cd_node);
 
-	/* General terminfo and cursor motion initalization. From here onwards,
+	/* General terminfo and cursor motion initialization. From here onwards,
 	   we cannot exit() lightly. */
 
 	term_init();

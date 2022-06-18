@@ -247,7 +247,7 @@ int replace(buffer * const b, const int n, const char * const string) {
 
 
 /* The following variables are used by regex. In particular, re_reg holds
-the stard/end of the extended replacement registers. */
+the start/end of the extended replacement registers. */
 
 static struct re_pattern_buffer re_pb;
 static struct re_registers re_reg;

@@ -390,7 +390,7 @@ static char *virtual_extension(buffer * const b) {
 
 	for(int i = 0; earliest_found_line > 0 && i < num_virt_ext && !stop; i++) {
 		int64_t min_line = -1; /* max_line is 1-based, but internal line numbers (min_line) are 0-based. */
-		/* Search backwards in b from max_line for the first occurance of regex. */
+		/* Search backwards in b from max_line for the first occurrence of regex. */
 		b->opt.case_search = virt_ext[i].case_sensitive;
 		const int64_t max_line = min(virt_ext[i].max_line, line_limit);
 		goto_line(b, max_line - 1);

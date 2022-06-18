@@ -697,7 +697,7 @@ void draw_status_bar(void) {
 		if (len < ne_columns - 1) {
 			if (cur_buffer->filename) {
 	 			/* This is a bit complicated because we have to compute the width of the filename first, and then
-				discard initial characters until the remaning part will fit. */
+				discard initial characters until the remaining part will fit. */
 
 				const int encoding = detect_encoding(cur_buffer->filename, strlen(cur_buffer->filename));
 				int pos = 0, width = get_string_width(cur_buffer->filename, strlen(cur_buffer->filename), encoding);

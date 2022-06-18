@@ -481,7 +481,7 @@ void optimize_macro(char_stream *cs, bool verbose) {
 				const int64_t len  = strlen(insert);
 				insert_in_stream(cs, "\"",   pos, 2);   /* Closing quote */
 				insert_in_stream(cs, two,    pos, 1);   /* The character itself */
-				insert_in_stream(cs, " \"",  pos, 2);   /* space and openning quote */
+				insert_in_stream(cs, " \"",  pos, 2);   /* space and opening quote */
 				insert_in_stream(cs, insert, pos, len); /* The command itself */
 				building = pos + len + 2;               /* This is where the char is now */
 			}
