@@ -1519,7 +1519,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		reset_window();
 
 		/* We used to return ERROR after a buffer has been deleted to prevent
-		   the calling routines (and macros) attempting to work on an nonexistant buffer,
+		   the calling routines (and macros) attempting to work on an nonexistent buffer,
 		   but that should no longer be an issue. */
 
 		return OK;

@@ -57,7 +57,7 @@ void free_char_stream(char_stream * const cs) {
 
 /* Reallocates a stream. If cs is NULL, it is equivalent to
    alloc_char_stream(). Otherwise, the memory pointed by stream is
-   realloc()ated to size bytes. If the reallocation is successfull, cs is
+   realloc()ated to size bytes. If the reallocation is successful, cs is
    returned, otherwise NULL. */
 
 char_stream *realloc_char_stream(char_stream * const cs, const int64_t size) {
@@ -163,7 +163,7 @@ int delete_from_stream(char_stream * const cs, const int64_t pos, int64_t len) {
 /* Resets a character stream. If cs is NULL, an empty character stream is
    returned. If it is non-NULL, everything inside it is freed. The stream
    memory is deallocated, unless its size is smaller or equal to
-   2*CHAR_STREAM_SIZE_INC (so that we won't continously allocate and deallocate
+   2*CHAR_STREAM_SIZE_INC (so that we won't continuously allocate and deallocate
    small streams). */
 
 char_stream *reset_stream(char_stream * const cs) {

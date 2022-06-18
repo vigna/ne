@@ -126,7 +126,7 @@ typedef struct {
 	int entries;   /* how many entries on this page */
 	int cols;      /* columns fitting onto this page */
 	int rows;      /* rows fitting onto this page */
-	int col_width[MAX_REQ_COLS]; /* array of ints with width of each colummn */
+	int col_width[MAX_REQ_COLS]; /* array of ints with width of each column */
 } req_page_t;
 
 
@@ -544,8 +544,8 @@ static bool request_reorder(const int dir) {
 	if (! rl0->allow_reorder || rl.cur_entries < 2) return false;
 
 	/* p0 and p1 point to the strings we want to swap */
-	/* n0 and n1 are the indicies in   rl.entries[] for p0 and p1. (Also for rl.lengths[].) */
-	/* i0 and i1 are the indicies in rl0->entries[] for p0 and p1 */
+	/* n0 and n1 are the indices in   rl.entries[] for p0 and p1. (Also for rl.lengths[].) */
+	/* i0 and i1 are the indices in rl0->entries[] for p0 and p1 */
 	const int n0 = PCR2N(page, C, R);
 	const int n1 = (n0 + dir + rl.cur_entries ) % rl.cur_entries; /* Allows wrap around. */
 
@@ -1489,7 +1489,7 @@ int req_list_init( req_list * const rli, int cmpfnc(const char *, const char *),
    suffix character, and an additional trailing '\0'. This allows comparing
    strings w/o having to consider the optional suffixes while adding entries to
    the req_list. Finalizing the req_list effectively shifts the suffixes left,
-   exchanging them for the preceeding '\0'. After this operation, all the
+   exchanging them for the preceding '\0'. After this operation, all the
    strings will be just normal C strings, some of which happen to end with the
    suffix character, and all of which are followed by two null bytes.
 

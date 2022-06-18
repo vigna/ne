@@ -83,7 +83,7 @@ If b->syn or need_attr_update are false, this function does nothing.
 The state update (and the screen update, if requested) continues until we get to a line whose
 initial state concides with the final state of the previous line; in case you want to force
 more lines to be updated, you can provide a non-NULL end_ld. Note that, in any case, we
-update only visibile lines (albeit initial states will be updated as necessary).
+update only visible lines (albeit initial states will be updated as necessary).
 
 This function uses the local attribute buffer: thus, after a call the local attribute buffer
 could be invalidated. */
@@ -216,7 +216,7 @@ void output_line_desc(const int row, const int col, const line_desc *ld, const i
 				}
 			}
 			else if (output_col + c_width > col) {
-				/* The caracter is only partially displayed. We can only output spaces. */
+				/* The character is only partially displayed. We can only output spaces. */
 				const int output_width = output_col + c_width - col;
 				for(int i = 0; i < output_width; i++) {
 					move_cursor(row, col + i);
@@ -585,7 +585,7 @@ void update_overwritten_char(buffer * const b, const int old_char, const int new
 				/* We found a TAB. Previously, this TAB was tab_width character
 				wide. If width_delta + tab_width does not exceed the width of a
 				TAB, we just add width_delta characters to the expansion of the
-				curren TAB. Otherwise, we first delete width_delta
+				current TAB. Otherwise, we first delete width_delta
 				characters. Then, if width_delta was not a full TAB we delete the
 				remaining characters from the TAB we found. */
 

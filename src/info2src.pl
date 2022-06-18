@@ -213,7 +213,7 @@ sub gen_hash_tables
 # Syntax filename Extension mapping
 #
 # The Syntax command docs contain a map of filename extensions to
-# .jsf file stems for commonly occuring real life files. We'll use that
+# .jsf file stems for commonly occurring real life files. We'll use that
 # to create the ext.c file, which contains that map in C.
 {
   my $state = 'searching';

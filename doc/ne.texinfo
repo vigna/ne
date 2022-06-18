@@ -856,7 +856,7 @@ return to your command shell. @xref{Suspend}.
 @subsection Advanced key bindings
 @code{ne} allows you to associate any keystroke with any command, both
 built-in commands (with or without parameters) and macros. These associations
-are refered to as @dfn{key bindings}, which you define in your
+are referred to as @dfn{key bindings}, which you define in your
 @code{~/.ne/.keys} file. The @code{KeyCode} command allows you to see the key
 code @code{ne} sees in response to any key or key combination on your
 keyboard. It also shows the command string currently bound to that key
@@ -1491,7 +1491,7 @@ use the @code{--no-syntax} parameter, the additional memory is not
 allocated at all, and syntax highlighting cannot be enabled without
 restarting @code{ne}. On the contrary, the automatic disabling for long
 files keeps only @code{ne} from computing the actual highlighting, and it
-can be overriden as explained above.
+can be overridden as explained above.
 
 @code{ne} uses code from another editor---the GPL-licensed
 @code{joe}---for its syntax highlighting capabilities. Because of this fact, the
@@ -2187,7 +2187,7 @@ Another example: if you search for @samp{(a+)(b+)}, replacing with
 @samp{\2x\1}, you will match any string composed by a series of @samp{a}'s
 followed by a series of @samp{b}'s, and you will replace it with the
 string obtained by moving the @samp{a} in front of the @samp{b}'s, adding
-moreover @samp{x} inbetween. For instance, @samp{aaaab} will be matched and
+moreover @samp{x} in between. For instance, @samp{aaaab} will be matched and
 replaced by @samp{bxaaaa}.
 
 Note that the backslash character can escape itself. Thus, to put a
@@ -3559,7 +3559,7 @@ were single commands---should begin with @code{AtomicUndo +} and end with
 
 The following commands allow simple formatting operations on the text. Note
 that for @code{ne} a paragraph is delimited by an empty line or a line with
-leading white space incongruous with that of preceeding lines.
+leading white space incongruous with that of preceding lines.
 
 @menu
 * Center::
