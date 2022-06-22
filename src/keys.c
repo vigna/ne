@@ -347,21 +347,25 @@ void read_key_capabilities(void) {
 	key_may_set("\x1b?x",	NE_KEY_UP, BUILT_IN);
 	/*	key_may_set("\x1b" "A",	NE_KEY_UP, BUILT_IN);*/
 	key_may_set("\x1bOA",	NE_KEY_UP, BUILT_IN);
+	key_may_set("\x9b""A",	NE_KEY_UP, BUILT_IN);
 
 	key_may_set("\x1b[B",	NE_KEY_DOWN, BUILT_IN);
 	key_may_set("\x1b?r",	NE_KEY_DOWN, BUILT_IN);
 	/* key_may_set("\x1b" "B",	NE_KEY_DOWN, BUILT_IN);*/
 	key_may_set("\x1bOB",	NE_KEY_DOWN, BUILT_IN);
+	key_may_set("\x9b""B",	NE_KEY_DOWN, BUILT_IN);
 
 	key_may_set("\x1b[D",	NE_KEY_LEFT, BUILT_IN);
 	key_may_set("\x1b?t",	NE_KEY_LEFT, BUILT_IN);
 	/*key_may_set("\x1b" "D",	NE_KEY_LEFT, BUILT_IN);*/
 	key_may_set("\x1bOD",	NE_KEY_LEFT, BUILT_IN);
+	key_may_set("\x9b""D",	NE_KEY_LEFT, BUILT_IN);
 
 	key_may_set("\x1b[C",	NE_KEY_RIGHT, BUILT_IN);
 	key_may_set("\x1b?v",	NE_KEY_RIGHT, BUILT_IN);
 	/*key_may_set("\x1b" "C",	NE_KEY_RIGHT, BUILT_IN);*/
 	key_may_set("\x1bOC",	NE_KEY_RIGHT, BUILT_IN);
+	key_may_set("\x9b""C",	NE_KEY_RIGHT, BUILT_IN);
 
 	key_may_set("\x1b[1~",  NE_KEY_HOME, BUILT_IN);
 	key_may_set("\x1b[4~",  NE_KEY_END, BUILT_IN);
