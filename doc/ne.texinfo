@@ -5463,6 +5463,8 @@ configuring your @file{~/.ne/.keys} file.
 
 If the optional integer @var{k} (between 0 and 511) is given, @code{KeyCode}
 uses @var{k} as the key code and displays the information described above.
+@var{k} can be either decimal, hexadecimal if preceded by '0x', or octal if
+preceded by '0'.
 
 
 @node NameConvert
