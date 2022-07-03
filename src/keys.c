@@ -499,14 +499,14 @@ int get_key_code(void) {
 		if (cur_len) {
 
 			/* Something is already in the buffer. last_match is the position
-			we have to check. */
+			   we have to check. */
 
 			while(last_match < cur_len) {
 				if (last_match == 0 && io_utf8 && (unsigned char)kbd_buffer[0] >= 0x80) {
 					partial_is_utf8 = true;
 					last_match++;
 				}
-				else if (partial_is_utf8) { 	/* Our partial match is an UTF-8 sequence. */
+				else if (partial_is_utf8) {   /* Our partial match is an UTF-8 sequence. */
 					if ((kbd_buffer[last_match] & 0xC0) == 0x80) {
 						if (utf8len(kbd_buffer[0]) == ++last_match) {
 							c = utf8char(kbd_buffer);
@@ -523,7 +523,7 @@ int get_key_code(void) {
 				}
 				else {
 					/* First easy case. We felt off the array. We return the first character
-						in the buffer and restart the match. */
+					   in the buffer and restart the match. */
 
 					if (!key[cur_key].string) {
 						c = kbd_buffer[0];
@@ -532,8 +532,8 @@ int get_key_code(void) {
 					}
 
 					/* Second case. We have a partial match on the first last_match
-						characters. If another character matches, either the string is terminated,
-						and we return the key code, or we increment the match count. */
+					   characters. If another character matches, either the string is terminated,
+					   and we return the key code, or we increment the match count. */
 
 
 					else if (key[cur_key].string[last_match] == kbd_buffer[last_match]) {
@@ -548,12 +548,12 @@ int get_key_code(void) {
 					}
 
 					/* The tricky part. If there is a failed match, the order guarantees that
-						no match if possible if the code of the keyboard char is greater than the code of
-						the capability char. Otherwise, we check for the first capability starting
-						with the current keyboard characters. */
+					   no match is possible if the code of the keyboard char is greater than the code of
+					   the capability char. Otherwise, we check for the first capability starting
+					   with the current keyboard characters. */
 
 					else {
-						if (kbd_buffer[last_match] > key[cur_key].string[last_match]) {
+						if ((unsigned char)kbd_buffer[last_match] > (unsigned char)key[cur_key].string[last_match]) {
 							c = kbd_buffer[0];
 							if (--cur_len) memmove(kbd_buffer, kbd_buffer + 1, cur_len);
 							return (unsigned char)c;
