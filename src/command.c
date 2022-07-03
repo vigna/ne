@@ -266,11 +266,13 @@ int parse_command_line(const char * command_line, int64_t * const num_arg, char 
 	while(isasciispace(*command_line)) command_line++;
 	const char *p = command_line;
 
+	D(fprintf(stderr,"parse_command_line[%d]: command_line=\"%s\"\n", __LINE__, p);)
 	if (!isalpha((unsigned char)*p)) { /* Comment, treated as NOP. */
 		const int len = strlen(p);
 		if (!(*string_arg = malloc(len + 1))) return -OUT_OF_MEMORY;
 		memcpy(*string_arg, p, len);
 		(*string_arg)[len] = 0;
+		D(fprintf(stderr,"parse_command_line[%d]: returning NOP_A\n", __LINE__);)
 		return NOP_A;
 	}
 
@@ -309,16 +311,16 @@ int parse_command_line(const char * command_line, int64_t * const num_arg, char 
 					}
 					return a;
 				}
-				D(fprintf(stderr, "parse_command error: Can execute only options.\n");)
+				D(fprintf(stderr, "parse_command[%d] error: Can execute only options \"%s\"\n", __LINE__, command_line);)
 				return -CAN_EXECUTE_ONLY_OPTIONS;
 			}
-			D(fprintf(stderr, "parse_command error: Has numeric argument.\n");)
+			D(fprintf(stderr, "parse_command[%d] error: Has numeric argument \"%s\"\n", __LINE__, command_line);)
 			return -HAS_NUMERIC_ARGUMENT;
 		}
-		D(fprintf(stderr, "parse_command error: Has no argument.\n");)
+		D(fprintf(stderr, "parse_command[%d] error: Has no argument \"%s\"\n", __LINE__, command_line);)
 		return -HAS_NO_ARGUMENT;
 	}
-	D(fprintf(stderr, "parse_command error: No such command.\n");)
+	D(fprintf(stderr, "parse_command[%d] error: No such command \"%s\"\n", __LINE__, command_line);)
 	return -NO_SUCH_COMMAND;
 }
 
@@ -552,17 +554,20 @@ macro_desc *load_macro(const char *name) {
 	if (!md) return NULL;
 
 	char_stream * cs = load_stream(md->cs, name, false, false);
+	D(fprintf(stderr,"load_macro[%d]: name=%s, cs=%lx\n", __LINE__, name, cs);)
 
 	char *macro_dir, *prefs_dir;
 	if (!cs && (prefs_dir = exists_prefs_dir()) && (macro_dir = malloc(strlen(prefs_dir) + 2 + strlen(name)))) {
 		strcat(strcpy(macro_dir, prefs_dir), name);
 		cs = load_stream(md->cs, macro_dir, false, false);
+		D(fprintf(stderr,"load_macro[%d]: name=%s, cs=%lx\n", __LINE__, macro_dir, cs);)
 		free(macro_dir);
 	}
 
 	if (!cs && (prefs_dir = exists_gprefs_dir()) && (macro_dir = malloc(strlen(prefs_dir) + 2 + strlen(name) + 7))) {
 		strcat(strcat(strcpy(macro_dir, prefs_dir), "macros/"), name);
 		cs = load_stream(md->cs, macro_dir, false, false);
+		D(fprintf(stderr,"load_macro[%d]: name=%s, cs=%lx\n", __LINE__, macro_dir, cs);)
 		free(macro_dir);
 	}
 
@@ -603,9 +608,13 @@ int execute_macro(buffer *b, const char *name) {
 	const char * const p = file_part(name);
 	int h = hash_macro(p, strlen(p));
 
+   D(fprintf(stderr,"execute_macro[%d]: searching macro_hash_table for file_part of name=%s\n", __LINE__, name);)
 	macro_desc *md;
 	for(md = macro_hash_table[h]; md && cmdcmp(md->name, p); md = md->next );
-	if (!md) md = load_macro(name);
+	if (!md) {
+		md = load_macro(name);
+		D(fprintf(stderr,"execute_macro[%d]: load_macro(\"%s\") returned md=%lx\n", __LINE__, name, md);)
+	}
 
 	assert_macro_desc(md);
 

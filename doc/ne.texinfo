@@ -649,11 +649,16 @@ menu item or the @code{Macro} command. (This won't modify the recorded
 anonymous macro that may be in the @dfn{current macro} buffer;
 @code{OpenMacro} does that.) Useful macros can be permanently bound to a
 keystroke as explained in @ref{Key Bindings}. Moreover, whenever a
-command line does not specify one of @code{ne}'s built in commands, it is
+command line's first non-blank character is an ASCII letter but does
+not specify one of @code{ne}'s built in commands, it is
 assumed to specify the name of a macro to execute. Thus, you can execute
-macros just by typing their file names at the command line. Include a path if the macro
-file's directory is different from your current directory or your
-@file{~/.ne} directory.
+macros just by typing their file names at the command line. If the file
+containing your macro is somewhere besides your current directory or
+your @file{~/.ne} directory, and you have not already loaded it, then
+use the @code{Macro} command on the command line followed by the path
+to the macro. That's only necessary the first time you use such a macro.
+From then on, you can use the macro's base name on the command line without
+the preceding @code{Macro} command.
 
 If the first attempt to open a macro fails, @code{ne} checks for a macro
 with the given name in your @file{~/.ne} directory. This allows you
