@@ -715,25 +715,16 @@ int context_prefix(const buffer *b, char **p, int64_t *prefix_pos) {
 }
 
 /* Given a buffer, return a string like
-   "1,3-5,7,9" indicating which bookmarks are set. */
+   "134579-<>" indicating which bookmarks are set. */
 const char *cur_bookmarks_string(const buffer *b) {
-	int bits = b->bookmark_mask;
-	static char str[16];
+	static char str[NUM_BOOKMARKS];
 	char *s = str;
 	int i;
 
-	memset(str, 0, 16);
-	for (i=0, bits &= 0x03ff; i<10 && bits; i++, bits >>= 1) {
-		if ( bits & 1 ) {
-			*(s++) = '0' + i;
-			if ( (bits & 0x07 ) == 0x07 ) *(s++) = '-';
-			else *(s++) = ',';
-			while ( (bits & 0x07) == 0x07 ) {
-				bits >>= 1;
-				i++;
-			}
-		}
+	memset(str, 0, NUM_BOOKMARKS);
+	for (i=0; i<NUM_BOOKMARKS; i++) {
+		if (b->bookmark_mask & (1 << i ))
+			*(s++) = "0123456789-<>w"[i];
 	}
-	if (s > str) *(--s) = '\0';
 	return str;
 }

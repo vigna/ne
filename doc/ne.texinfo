@@ -602,7 +602,7 @@ into a macro. You could create a macro by editing a document that only
 contains valid @code{ne} commands and saving it, but by far the easiest way to create
 a macro is to have @code{ne} record your actions. @code{ne} allows you
 to record macros and then play them (execute the commands they contain)
-many times. You can save them on disk for future use, edit them, or bind
+many times. You can save them as files for future use, edit them, or bind
 them to any key. You could even reconfigure each key of your keyboard to
 play a complex macro if you wanted to.
 
@@ -767,7 +767,11 @@ frequently between a small number of positions. In this case, you can use
 @dfn{bookmarks}. There are up to ten bookmarks per document, each
 designated by a single digit, with the default being @samp{0}. You can set
 them with the @code{SetBookmark} command, and you can return to any set
-bookmark with the @code{GotoBookmark} command. Also, @code{ne} sets an
+bookmark with the @code{GotoBookmark} command. Another pair of bookmarks
+designated by @samp{<} and @samp{>} mark the start and end points of the
+last block of text you pasted into your current document. So for example
+@code{GotoBookmark >} will take you to the end of the most recently pasted
+text. Also, @code{ne} sets an
 automatic bookmark (designated by @samp{-}) at your current position in a
 document whenever you use the @code{GotoBookmark} command. You can use
 a @code{GotoBookmark -} command to return to the location of the previous
@@ -2829,6 +2833,10 @@ copied instead.
 document at the cursor position. If you don't specify the clip number,
 the current clip is used; Specify which clip is current with @ref{ClipNumber}.
 
+Every time you paste into a document, a pair of bookmarks
+designated by @samp{<} and @samp{>} mark the start and end points of the
+text you pasted. Subsequently you can move to either end of a pasted block
+with the @code{GotoBookmark <} or @code{GotoBookmark >} commands.
 
 
 @node PasteVert
@@ -2842,6 +2850,10 @@ the current clip is used; Specify which clip is current with @ref{ClipNumber}.
 being the current clip. Each line of the clip is inserted on consecutive
 lines at the horizontal cursor position.
 
+Every time you paste into a document, a pair of bookmarks
+designated by @samp{<} and @samp{>} mark the start and end points of the
+text you pasted. Subsequently you can move to either end of a pasted block
+with the @code{GotoBookmark <} or @code{GotoBookmark >} commands.
 
 
 @node Erase
@@ -5016,17 +5028,20 @@ order to gain some keystrokes on systems with very few keys. See also
 @subsection SetBookmark
 @cmindex SetBookmark
 
-@noindent Syntax: @code{SetBookmark [@var{n}|@var{+1}|@var{-1}|@var{-}|@var{?}]}@*
+@noindent Syntax: @code{SetBookmark [@var{n}|@var{+1}|@var{-1}|@var{<}|@var{>}|@var{-}|@var{?}]}@*
 @noindent Abbreviation: @code{SBM}
 
 @noindent sets a document bookmark to the current cursor position.
 Each document has 10 available bookmarks designated @samp{0} to @samp{9},
+the most recently pasted block's start and end designated @samp{<} and @samp{>},
 plus the automatic bookmark designated by @samp{-}. If no option is given,
 @samp{0} is assumed. Values of @var{n} from @samp{0} to @samp{9} set the
 @var{n}th bookmark, while @samp{+1} and @samp{-1} indicate respectively
 the next and previous available unset bookmarks. You can also set the
-@samp{-} automatic bookmark, but it will be reset automatically to the
-current position whenever a @code{GotoBookmark} command is issued.
+pasted block's start and end which will be reset on the next @code{Paste}
+or @code{PasteVert} command, or the @samp{-} automatic bookmark, but it will
+be reset automatically to the current position whenever a @code{GotoBookmark}
+command is issued.
 
 The @samp{?} option will cause @code{SetBookmark} to prompt you
 for a bookmark designation. The promp will include an indication of which
@@ -5038,16 +5053,19 @@ a key to @samp{SetBookmark ?}.
 @subsection GotoBookmark
 @cmindex GotoBookmark
 
-@noindent Syntax: @code{GotoBookmark [@var{n}|@var{+1}|@var{-1}|@var{-}]}@*
+@noindent Syntax: @code{GotoBookmark [@var{n}|@var{+1}|@var{-1}|@var{<}|@var{>}|@var{-}]}@*
 @noindent Abbreviation: @code{GBM}
 
 @noindent moves the cursor to the designated bookmark if that bookmark is
 set; see @ref{SetBookmark}. Each document has 10 available bookmarks
-designated @samp{0} to @samp{9}, plus the automatic bookmark designated by
+designated @samp{0} to @samp{9}, either end of the most recently pasted
+text block designated @samp{<} and @samp{>}, plus the automatic bookmark designated by
 @samp{-}. If no option is given, @samp{0} is assumed. The options @samp{+1}
 and @samp{-1} indicate respectively the next and previous set bookmarks,
 so that repeated @code{GotoBookmark +1} commands will cycle through all
-currently set bookmarks. When successful, the @samp{-} automatic bookmark
+currently set numbered bookmarks.
+
+When successful, the automatic bookmark @samp{-}
 is set to the position in the document from which the command was issued,
 so that @code{GotoBookmark -} returns you to the location from which you
 last issued a successful @code{GotoBookmark} command. Subsequent repeated
@@ -5063,17 +5081,20 @@ a key to @samp{GotoBookmark ?}.
 @subsection UnsetBookmark
 @cmindex UnsetBookmark
 
-@noindent Syntax: @code{UnsetBookmark [@var{n}|@var{+1}|@var{-1}|@var{-}|@var{*}]}@*
+@noindent Syntax: @code{UnsetBookmark [@var{n}|@var{+1}|@var{-1}|@var{<}|@var{>}|@var{-}|@var{*}]}@*
 @noindent Abbreviation: @code{UBM}
 
-@noindent unsets either the @var{n}th bookmark, the next (@var{+1}) or
-previous (@var{-1}) set bookmarks, the automatic (@var{-}) bookmark, or
+@noindent unsets either the @var{n}th bookmark (0 through 9), the next (@var{+1}) or
+previous (@var{-1}) set bookmarks, the bookmarks designating the
+start (@var{<}) or end (@var{>}) of the most recently pasted text
+block, the automatic (@var{-}) bookmark, or
 all (@var{*}) bookmarks, making it as if they had never been set; see
 @ref{SetBookmark}. If no option is specified, @var{n} is assumed to be
-zero. While you can unset the automatic bookmark @samp{-}, it will be
+zero.
+
+While you can unset the automatic bookmark @samp{-}, it will be
 reset automatically to the current position whenever a @code{GotoBookmark}
-command is issued. Each document's valid bookmark designations are 0 to 9,
-and the  @samp{-} automatic bookmark.
+command is issued.
 
 
 

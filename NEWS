@@ -2,6 +2,10 @@
 
 unreleased
 
+  * Paste and PasteVert now set two bookmarks designated '<' and '>' which
+    are set to the start and end of the most recently pasted text. Accessed
+    by the "GotoBookmark <" and "GotoBookmark >" commands.
+
   * Added toml.jsf syntax.
 
   * Support '_' in numeric constants, binary and hex constants, imaginary

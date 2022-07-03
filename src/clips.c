@@ -344,12 +344,23 @@ int paste_to_buffer(buffer *b, int n) {
 		line_desc * const ld = b->cur_line_desc, * const end_ld = (line_desc *)b->cur_line_desc->ld_node.next;
 		if (b->encoding == ENC_ASCII) b->encoding = cd->cs->encoding;
 
+		b->bookmark[PASTE_START_BOOKMARK].pos = b->cur_pos;
+		b->bookmark[PASTE_START_BOOKMARK].line = b->cur_line;
+		b->bookmark[PASTE_START_BOOKMARK].cur_y = b->cur_y;
+		b->bookmark_mask |= (1 << PASTE_START_BOOKMARK);
+
+		b->bookmark[PASTE_END_BOOKMARK].pos = next_pos(b->cur_line_desc->line, b->cur_pos, b->encoding);
+		b->bookmark[PASTE_END_BOOKMARK].line = b->cur_line;
+		b->bookmark_mask |= (1 << PASTE_END_BOOKMARK);
+
 		start_undo_chain(b);
 		if (b->cur_pos > ld->line_len) 
 			insert_spaces(b, ld, b->cur_line, ld->line_len, b->win_x + b->cur_x - calc_width(ld, ld->line_len, b->opt.tab_size, b->encoding));
 
 		insert_stream(b, ld, b->cur_line, b->cur_pos, cd->cs->stream, cd->cs->len);
 		end_undo_chain(b);
+		b->bookmark[PASTE_END_BOOKMARK].pos = prev_pos(nth_line_desc(b, b->bookmark[PASTE_END_BOOKMARK].line)->line, b->bookmark[PASTE_END_BOOKMARK].pos, b->encoding);
+		b->bookmark[PASTE_END_BOOKMARK].cur_y = min(ne_lines - 2, b->bookmark[PASTE_START_BOOKMARK].cur_y + b->bookmark[PASTE_END_BOOKMARK].line - b->bookmark[PASTE_START_BOOKMARK].line);
 
 		assert(ld == b->cur_line_desc);
 		update_syntax_states_delay(b, ld, end_ld);
@@ -568,6 +579,11 @@ int paste_vert_to_buffer(buffer *b, int n) {
 
 	start_undo_chain(b);
 
+	b->bookmark[PASTE_START_BOOKMARK].pos = b->cur_pos;
+	b->bookmark[PASTE_START_BOOKMARK].line = b->cur_line;
+	b->bookmark[PASTE_START_BOOKMARK].cur_y = b->cur_y;
+	b->bookmark_mask |= (1 << PASTE_START_BOOKMARK);
+
 	while(p - stream < stream_len) {
 		if (!ld->ld_node.next) {
 			insert_one_line(b, (line_desc *)ld->ld_node.prev, line - 1, ((line_desc *)ld->ld_node.prev)->line_len);
@@ -582,18 +598,27 @@ int paste_vert_to_buffer(buffer *b, int n) {
 				else n += get_char_width(&ld->line[pos], b->encoding);
 			}
 
+			b->bookmark[PASTE_END_BOOKMARK].line = line;
+			b->bookmark_mask |= (1 << PASTE_END_BOOKMARK);
+
 			if (pos == ld->line_len && n < x) {
 				/* We miss x - n characters after the end of the line. */
 				insert_spaces(b, ld, line, ld->line_len, x - n);
+				b->bookmark[PASTE_END_BOOKMARK].pos = next_pos(ld->line, ld->line_len, b->encoding);
 				insert_stream(b, ld, line, ld->line_len, p, len);
 			}
-			else insert_stream(b, ld, line, pos, p, len);
+			else {
+				b->bookmark[PASTE_END_BOOKMARK].pos = next_pos(ld->line, pos, b->encoding);
+				insert_stream(b, ld, line, pos, p, len);
+			}
 		}
 
 		p += len + 1;
 		ld = (line_desc *)ld->ld_node.next;
 		line++;
 	}
+	b->bookmark[PASTE_END_BOOKMARK].pos = prev_pos(ld->line, b->bookmark[PASTE_END_BOOKMARK].pos, b->encoding);
+	b->bookmark[PASTE_END_BOOKMARK].cur_y = min(ne_lines - 2, b->bookmark[PASTE_START_BOOKMARK].cur_y + b->bookmark[PASTE_END_BOOKMARK].line - b->bookmark[PASTE_START_BOOKMARK].line);
 	
 	end_undo_chain(b);
 	update_syntax_states_delay(b, b->cur_line_desc, ld);

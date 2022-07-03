@@ -33,7 +33,7 @@ char *error_msg[ERROR_COUNT] = {
 	/*  5 */ "You are not positioned over {}, (), [] or <>.",
 	/*  6 */ "Can't find matching bracket.",
 	/*  7 */ "Bookmark not set.",
-	/*  8 */ "Invalid Bookmark designation (use 0 through 9, -1, +1, or '-').",
+	/*  8 */ "Invalid Bookmark designation (use 0 through 9, -1, +1, '<', '>', or '-').",
 	/*  9 */ "No unset Bookmarks to set.",
 	/* 10 */ "No set Bookmarks to goto.",
 	/* 11 */ "No set Bookmarks to unset.",
