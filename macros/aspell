@@ -13,4 +13,5 @@ AtomicUndo +
     OpenClip ~/.ne/ne-aspell.txt
     System rm -f ~/.ne/ne-aspell.txt ~/.ne/ne-aspell.txt.bak
   Paste
+  GotoBookmark >
 AtomicUndo -
