@@ -5053,7 +5053,7 @@ a key to @samp{SetBookmark ?}.
 @subsection GotoBookmark
 @cmindex GotoBookmark
 
-@noindent Syntax: @code{GotoBookmark [@var{n}|@var{+1}|@var{-1}|@var{<}|@var{>}|@var{-}]}@*
+@noindent Syntax: @code{GotoBookmark [@var{n}|@var{+1}|@var{-1}|@var{<}|@var{>}|@var{-}]}|@var{?}]}@*
 @noindent Abbreviation: @code{GBM}
 
 @noindent moves the cursor to the designated bookmark if that bookmark is
