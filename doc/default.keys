@@ -2,7 +2,9 @@
 # This is a ready-made keyboard binding configuration file that replicates
 # ne's built-in bindings. You can use it as a start for modifications.
 #
-
+# Note: the keycode numbers in this file are case-insensitive hexadecimal
+# values as reported by the KeyCode command. The "0x" prefixes are
+# optional and omitted. Valid range is from 0 to 1FF.
 #
 # Cursor/editing keys
 #
