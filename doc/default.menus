@@ -38,18 +38,20 @@ ITEM "Open Clip   [O" OpenClip
 ITEM "Save Clip   [S" SaveClip
 
 MENU "Search"
-ITEM "Find...        ^F" Find
-ITEM "Find RegExp... ^_" FindRegExp
-ITEM "Replace...     ^R" Replace
-ITEM "Replace Once...  " ReplaceOnce
-ITEM "Replace All...   " ReplaceAll
-ITEM "Repeat Last    ^G" RepeatLast
-ITEM "Goto Line...   ^J" GotoLine
-ITEM "Goto Col...    [J" GotoColumn
-ITEM "Goto Mark        " GotoMark
-ITEM "Match Bracket  ^]" MatchBracket
-ITEM "Set Bookmark   [K" SetBookmark
-ITEM "Goto Bookmark  [G" GotoBookmark
+ITEM "Find...          ^F" Find
+ITEM "Find RegExp...   ^_" FindRegExp
+ITEM "Replace...       ^R" Replace
+ITEM "Replace Once...    " ReplaceOnce
+ITEM "Replace All...     " ReplaceAll
+ITEM "Repeat Last      ^G" RepeatLast
+ITEM "Goto Line...     ^J" GotoLine
+ITEM "Goto Col...      [J" GotoColumn
+ITEM "Goto Mark          " GotoMark
+ITEM "Goto Start Of Paste" GotoBookmark <
+ITEM "Goto End Of Paste  " GotoBookmark >
+ITEM "Match Bracket    ^]" MatchBracket
+ITEM "Set Bookmark     [K" SetBookmark
+ITEM "Goto Bookmark    [G" GotoBookmark
 
 MENU "Macros"
 ITEM "Start/Stop Rec ^T" Record
