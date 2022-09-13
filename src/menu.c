@@ -130,18 +130,20 @@ static const menu_item edit_item[] =
 
 static const menu_item search_item[] =
 	{
-		{ "Find...        ^F", FIND_ABBREV },
-		{ "Find RegExp... ^_", FINDREGEXP_ABBREV },
-		{ "Replace...     ^R", REPLACE_ABBREV },
-		{ "Replace Once...  ", REPLACEONCE_ABBREV },
-		{ "Replace All...   ", REPLACEALL_ABBREV },
-		{ "Repeat Last    ^G", REPEATLAST_ABBREV },
-		{ "Goto Line...   ^J", GOTOLINE_ABBREV },
-		{ "Goto Col...    [J", GOTOCOLUMN_ABBREV },
-		{ "Goto Mark        ", GOTOMARK_ABBREV },
-		{ "Match Bracket  ^]", MATCHBRACKET_ABBREV },
-		{ "Set Bookmark   [K", SETBOOKMARK_ABBREV },
-		{ "Goto Bookmark  [G", GOTOBOOKMARK_ABBREV }
+		{ "Find...          ^F", FIND_ABBREV },
+		{ "Find RegExp...   ^_", FINDREGEXP_ABBREV },
+		{ "Replace...       ^R", REPLACE_ABBREV },
+		{ "Replace Once...    ", REPLACEONCE_ABBREV },
+		{ "Replace All...     ", REPLACEALL_ABBREV },
+		{ "Repeat Last      ^G", REPEATLAST_ABBREV },
+		{ "Goto Line...     ^J", GOTOLINE_ABBREV },
+		{ "Goto Col...      [J", GOTOCOLUMN_ABBREV },
+		{ "Goto Mark          ", GOTOMARK_ABBREV },
+		{ "Goto Start Of Paste", "GBM <" },
+		{ "Goto End Of Paste  ", "GBM >" },
+		{ "Match Bracket    ^]", MATCHBRACKET_ABBREV },
+		{ "Set Bookmark     [K", SETBOOKMARK_ABBREV },
+		{ "Goto Bookmark    [G", GOTOBOOKMARK_ABBREV }
 	};
 
 
