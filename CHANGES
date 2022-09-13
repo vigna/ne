@@ -1,6 +1,6 @@
 (This file, CHANGES, lists fixes. See NEWS for new features and enhancements.)
 
-unreleased
+3.3.2 2022-09-13
 
   * Fixed issue where autocomplete could fail/crash with UTF-8 characters.
 

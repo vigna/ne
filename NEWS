@@ -1,6 +1,6 @@
 (This file, NEWS, lists new features and enhancements. See CHANGES for fixes.)
 
-unreleased
+3.3.2 2022-09-13
 
   * Paste and PasteVert now set two bookmarks designated '<' and '>' which
     are set to the start and end of the most recently pasted text. Accessed
