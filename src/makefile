@@ -18,7 +18,7 @@
 #
 # The OPTS make parameter can be used to add options to the compilation
 # and linking phases. The options are added in the last position, so
-# they will override ne's default options, making the inclusion of 
+# they will override ne's default options, making the inclusion of
 # distribution-specific options easy for distro packagers.
 #
 # Defining ALTPAGING will create an ne with slightly different configuration:
