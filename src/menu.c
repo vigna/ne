@@ -258,7 +258,7 @@ static menu def_menus[DEF_MENU_NUM] = {
 	{
 		sizeof(search_item) / sizeof(menu_item),
 		21,
-		17,
+		19,
 		0,
 		"Search",
 		search_item
