@@ -754,25 +754,27 @@ void print_message(const char * const message) {
 		msg_cache[MAX_MESSAGE_LENGTH - 1] = '\0';
 	}
 
-	if (message || showing_msg) {
-		move_cursor(ne_lines - 1, 0);
+	if (interactive_mode) {
+		if (message || showing_msg) {
+			move_cursor(ne_lines - 1, 0);
 
-		set_attr(0);
+			set_attr(0);
 
-		if (fast_gui || !standout_ok || !status_bar) {
-			clear_to_eol();
-			output_string(msg_cache, true);
+			if (fast_gui || !standout_ok || !status_bar) {
+				clear_to_eol();
+				output_string(msg_cache, true);
+			}
+			else {
+				standout_on();
+				output_string(msg_cache, true);
+				output_spaces(ne_columns - strlen(msg_cache), NULL);
+				standout_off();
+			}
+
+			fflush(stdout);
+
+			showing_msg = true;
 		}
-		else {
-			standout_on();
-			output_string(msg_cache, true);
-			output_spaces(ne_columns - strlen(msg_cache), NULL);
-			standout_off();
-		}
-
-		fflush(stdout);
-
-		showing_msg = true;
 	}
 }
 

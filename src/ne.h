@@ -612,6 +612,11 @@ extern bool req_order;
 extern bool status_bar;
 
 
+/* Track whether we are in interactive mode. */
+
+extern bool interactive_mode;
+
+
 /* If true, we want abbreviated screen updates. */
 
 extern bool fast_gui;

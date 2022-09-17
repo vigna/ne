@@ -102,6 +102,7 @@ bool req_order = true;
 #endif
 bool fast_gui;
 bool status_bar = true;
+bool interactive_mode;
 bool verbose_macros = true;
 /* end of global prefs */
 

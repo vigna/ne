@@ -541,7 +541,7 @@ void set_interactive_mode(void) {
 	/* We enable the keypad, cursor addressing, etc. */
 
 	set_terminal_modes();
-
+	interactive_mode = true;
 }
 
 
@@ -578,6 +578,7 @@ void unset_interactive_mode(void) {
 #endif
 	signal(SIGINT, SIG_DFL);
 	signal(SIGTSTP, SIG_DFL);
+	interactive_mode = false;
 }
 
 
