@@ -3,7 +3,7 @@
 use strict;
 $| = 1;
 
-# Todd_Lewis@unc.edu
+# Todd M. Lewis <utoddl@gmail.com>
 #
 # This program reads the ne.info* files and ne's command names
 # and descriptions from them, and creates relevant parts of

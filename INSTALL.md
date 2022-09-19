@@ -96,5 +96,5 @@ If something does not work, please feel free to email us.
 
 
 * seba (<mailto:sebastiano.vigna@unimi.it>)
-* Todd (<mailto:Todd_Lewis@unc.edu>)
+* Todd (<mailto:utoddl@gmail.com>)
 * <mailto:niceeditor@googlegroups.com>

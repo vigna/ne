@@ -6278,12 +6278,11 @@ Comments, complaints, desiderata are welcome.
 
 
     Todd M. Lewis
-    CB 1150 2210 ITS Franklin
-    University of North Carolina
-    Chapel Hill, NC 27599-1150
+    418 Arlington Cir.
+    Sanford, NC 27330-7600
     USA
 
-    Todd_Lewis@@unc.edu
+    utoddl@@gmail.com
 
 
     ne home page: @uref{http://ne.di.unimi.it/}
