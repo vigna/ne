@@ -4,7 +4,8 @@
 
   * Paste and PasteVert now set two bookmarks designated '<' and '>' which
     are set to the start and end of the most recently pasted text. Accessed
-    by the "GotoBookmark <" and "GotoBookmark >" commands.
+    by the "GotoBookmark <" and "GotoBookmark >" commands. Two associated
+    menu items have been added to the "Search" menu.
 
   * Added toml.jsf syntax.
 
