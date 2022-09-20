@@ -617,7 +617,7 @@ int paste_vert_to_buffer(buffer *b, int n) {
 		ld = (line_desc *)ld->ld_node.next;
 		line++;
 	}
-	b->bookmark[PASTE_END_BOOKMARK].pos = prev_pos(ld->line, b->bookmark[PASTE_END_BOOKMARK].pos, b->encoding);
+	b->bookmark[PASTE_END_BOOKMARK].pos = prev_pos(((line_desc *)ld->ld_node.prev)->line, b->bookmark[PASTE_END_BOOKMARK].pos, b->encoding);
 	b->bookmark[PASTE_END_BOOKMARK].cur_y = min(ne_lines - 2, b->bookmark[PASTE_START_BOOKMARK].cur_y + b->bookmark[PASTE_END_BOOKMARK].line - b->bookmark[PASTE_START_BOOKMARK].line);
 	
 	end_undo_chain(b);
