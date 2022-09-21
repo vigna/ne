@@ -90,14 +90,18 @@ ARGV[0].to_i.times do |i|
 		when 23
 			puts("GOTOBOOKMARK -")
 		when 24
-			puts("UNSETBOOKMARK")
+			puts("GOTOBOOKMARK <")
 		when 25
-			puts("ADJUSTVIEW " + "TMB"[rand(3),1] + "LCR"[rand(3),1])
+			puts("GOTOBOOKMARK >")
 		when 26
-			puts("TOGGLESEOL")
+			puts("UNSETBOOKMARK")
 		when 27
-			puts("TOGGLESEOF")
+			puts("ADJUSTVIEW " + "TMB"[rand(3),1] + "LCR"[rand(3),1])
 		when 28
+			puts("TOGGLESEOL")
+		when 29
+			puts("TOGGLESEOF")
+		when 30
 			# This is actually intended to start a bracket matching
 			puts("FINDREGEXP \\(|\\)|\\[|\\]|{|}|<|>")
 		end
