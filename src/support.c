@@ -604,7 +604,7 @@ bool copy_file(const int in, const int out, size_t size) {
    true on success, false on error. */
 
 bool zero_file(const int out, size_t size) {
-	char buffer[8192] = {};
+	char buffer[8192] = {0};
 
 	while(size) {
 		const ssize_t to_do = min(size, sizeof buffer);
