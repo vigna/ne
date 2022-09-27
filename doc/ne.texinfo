@@ -80,6 +80,8 @@ by the Free Software Foundation.
 
 @end titlepage
 
+@contents
+
 @ifnottex
 
 
@@ -6302,5 +6304,4 @@ Comments, complaints, desiderata are welcome.
 @unnumbered Command Index
 @printindex cm
 
-@contents
 @bye
