@@ -96,8 +96,15 @@ endif
 
 # Test for GCC
 ifneq (,$(findstring gcc,$(shell $(CC) 2>&1)))
-GCCFLAGS=-std=c99 -Wall -Wno-parentheses -fno-strict-aliasing -flto=auto -ffat-lto-objects -Wp,-D_FORTIFY_SOURCE=2
+GCCFLAGS=-std=c99 -Wall -Wno-parentheses -fno-strict-aliasing -Wp,-D_FORTIFY_SOURCE=2
+
+# link-time optimizer only on GCC 4.6+
+GCC_VERSION_GT_46=$(shell expr `$(CC) -dumpversion` ">=" 4.6)
+ifeq ($(GCC_VERSION_GT_46),1)
+GCCFLAGS+= -flto=auto -ffat-lto-objects 
 LDFLAGS=-flto=auto
+endif
+
 endif
 
 CFLAGS=$(GCCFLAGS) \
