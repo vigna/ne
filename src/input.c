@@ -39,10 +39,10 @@
    buffer, but this could change in the future.
 
    completion_type has several possible values:
-    0 COMPLETE_NONE   means no completion,
-    1 COMPLETE_FILE   complete as a filename,
-    2                 complete as a command followed by a filename, (not implemented?)
-    3 COMPLETE_SYNTAX complete as a recognized syntax name.
+    0 COMPLETE_NONE     means no completion,
+    1 COMPLETE_FILE     complete as a filename,
+    2 COMPLETE_CMD      complete as a command followed by a filename, (not implemented?)
+    3 COMPLETE_SYNTAX   complete as a recognized syntax name.
 
    If prefer_utf8 is true, editing an ASCII line inserting an ISO-8859-1 character
    will turn it into an UTF-8 line.
@@ -745,8 +745,10 @@ char *request(const buffer * const b, const char *prompt, const char * const def
 				}
 
 				if (!quoted) {
-					prefix = strrchr(ib.buf, ' ');
-					if (prefix) prefix++;
+					prefix = strchr(ib.buf, ' ');
+					if (prefix) {
+						while (*prefix == ' ') prefix++;
+					}
 					else prefix = ib.buf;
 				}
 

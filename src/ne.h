@@ -163,7 +163,7 @@ enum {
 enum {
 	COMPLETE_NONE = 0,
 	COMPLETE_FILE,
-	COMPLETE_CMD_FILE,  /* Unimplemented ??? */
+	COMPLETE_CMD,  /* Unimplemented ??? */
 	COMPLETE_SYNTAX
 };
 
