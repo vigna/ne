@@ -4509,22 +4509,27 @@ a list of common extensions. Don't get fancy with this format.
 
 @example
    ada: adb, ads
-   asm: s
-   c: c++, cc, cpp, cxx, h, h++, hpp, l, lex, y, yacc
+   asm: s, S, sx
+   c: asy, C, c++, cc, cp, cpp, CPP, cxx, dox, h, H, h++, hh, hp,
+      hpp, HPP, hxx, i, ii, l, lex, tcc, y, yacc
    cobol: cbl, cob
    csh: tcsh
    diff: patch
-   fortran: f, F, for, f90, F90
+   fortran: f, F, for, FOR, f90, F90, f95, F95, f03, F03, f08,
+            F08, f18, ftn, FTN, fpp, FPP
+   haskell: hs, lhs
    html: htm
    java: js
    lisp: el, lsp
    mason: mas
+   md: markdown
    ocaml: ml, mli
    pascal: p, pas
    perl: pl, pm
+   php: inc, php4, php5
    ps: eps
    puppet: pp
-   python: py, sage
+   python: py, pyw, pyx, sage
    rexx: rex
    ruby: rb
    sh: bash, bash_login, bash_logout, bash_profile, bashrc, ksh,
@@ -4532,10 +4537,10 @@ a list of common extensions. Don't get fancy with this format.
    skill: il
    tex: latex, dtx, sty
    texinfo: texi, txi
-   troff: 1
-   verilog: v, vh, vhd
+   troff: 1, 3
+   verilog: v, vh, vhd, vhdl
    xml: xsd
-   yaml: yml
+   yaml: cff, yml
 @end example
 
 
