@@ -412,6 +412,32 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		move_inc_down(b);
 		return OK;
 
+	case BRACKETEDPASTE_A:
+		if (!p || (p && p[0] == '?')) {
+			free(p);
+			snprintf(msg, MAX_MESSAGE_SIZE, "BracketedPaste: *=disable; 1..15=(sum of 1:auto_indent 2:tabs 4:word_wrap 8:atomic_undo)");
+			p = request_string(b, msg, cur_bracketed_paste_value(), true, COMPLETE_NONE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto);
+		}
+		if (p) {
+			char *q;
+			c = strtoll(p, &q, 0);
+			if (p == q) c = p[0];
+			free(p);
+			if (c == '*') {
+				if (!(bracketed_paste & BPASTE_IS_ENABLED)) return OK;
+				turn_off_bracketed_paste();
+			}
+			else if (c >= 0 && c <= 15) {
+				if (bracketed_paste == (BPASTE_IS_ENABLED | c)) return OK;
+				turn_on_bracketed_paste();
+				bracketed_paste = BPASTE_IS_ENABLED | c;
+			} else {
+				return INVALID_BRACKETED_PASTE_DESIGNATION;
+			}
+			print_message(cur_bracketed_paste_string());
+		}
+		return OK;
+
 	case UNSETBOOKMARK_A:
 		if (p && p[0] == '*' && !p[1]) { /* Special parm "*" for UNSETBOOKMARK_A */
 			b->bookmark_mask = b->cur_bookmark = 0;

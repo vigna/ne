@@ -74,6 +74,7 @@ char ARG_HELP[] = ABOUT_MSG "\n"
 						"--no-ansi     do not use built-in ANSI control sequences. [--noansi]\n"
 						"--no-config   do not read configuration files. [--noconfig]\n"
 						"--no-syntax   disable syntax-highlighting support.\n"
+						"--no-bpaste   start with bracketed paste disabled. [--nobpaste]\n"
 						"--prefs EXT   set autoprefs for the provided extension before loading the first file.\n"
 						"--keys FILE   use this file for keyboard configuration.\n"
 						"--menus FILE  use this file for menu configuration.\n"
@@ -104,6 +105,7 @@ bool fast_gui;
 bool status_bar = true;
 bool interactive_mode;
 bool verbose_macros = true;
+int bracketed_paste = BPASTE_DEFAULT;
 /* end of global prefs */
 
 buffer *cur_buffer;
@@ -207,16 +209,20 @@ int main(int argc, char **argv) {
 
 		if (argv[i][0] == '-' && argv[i][1] == '-') {
 			if (!argv[i][2]) i++; /* You can use "--" to force the next token to be a filename */
-			else if (!strcmp(&argv[i][2], "noconfig") || !strcmp(&argv[i][2], "no-config")) {
+			else if (!strcmp(&argv[i][2], "no-config") || !strcmp(&argv[i][2], "noconfig")) {
 				no_config = true;
 				skiplist[i] = 1; /* argv[i] = NULL; */
 			}
-			else if (!strcmp(&argv[i][2], "noansi") || !strcmp(&argv[i][2], "no-ansi")) {
+			else if (!strcmp(&argv[i][2], "no-ansi") || !strcmp(&argv[i][2], "noansi")) {
 				ansi = false;
 				skiplist[i] = 1; /* argv[i] = NULL; */
 			}
-			else if (!strcmp(&argv[i][2], "no-syntax")) {
+			else if (!strcmp(&argv[i][2], "no-syntax") || !strcmp(&argv[i][2], "nosyntax")) {
 				do_syntax = false;
+				skiplist[i] = 1; /* argv[i] = NULL; */
+			}
+			else if (!strcmp(&argv[i][2], "no-bpaste") || !strcmp(&argv[i][2], "nobpaste")) {
+				turn_off_bracketed_paste();
 				skiplist[i] = 1; /* argv[i] = NULL; */
 			}
 			else if (!strcmp(&argv[i][2], "prefs")) {
@@ -458,7 +464,7 @@ int main(int argc, char **argv) {
 		free(skiplist);
 
 		/* This call makes current the first specified file. It is called
-		   only if more than one buffer exist. */
+		   only if more than one buffer exists. */
 
 		if (get_nth_buffer(1)) do_action(cur_buffer, NEXTDOC_A, -1, NULL);
 
@@ -531,6 +537,8 @@ int main(int argc, char **argv) {
 		case COMMAND:
 			if (c < 0) c = -c - 1;
 			if (key_binding[c]) print_error(execute_command_line(cur_buffer, key_binding[c]));
+			else if (c == NE_KEY_BPASTE_BEGIN) bracketed_paste_begin(cur_buffer);
+			else if (c == NE_KEY_BPASTE_END) bracketed_paste_end(cur_buffer);
 			break;
 
 		default:

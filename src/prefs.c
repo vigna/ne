@@ -187,13 +187,15 @@ int save_prefs(buffer * const b, const char * const name) {
 			/* We only save the global flags that differ from their defaults. */
 			/* Make sure these are in sync with the defaults near the top of ne.c. */
 #ifndef ALTPAGING
-			if (req_order)       record_action(cs, REQUESTORDER_A,  req_order,      NULL, verbose_macros);
+			if (req_order)       record_action(cs, REQUESTORDER_A,   req_order,      NULL, verbose_macros);
 #else
-			if (!req_order)      record_action(cs, REQUESTORDER_A,  req_order,      NULL, verbose_macros);
+			if (!req_order)      record_action(cs, REQUESTORDER_A,   req_order,      NULL, verbose_macros);
 #endif
-			if (fast_gui)        record_action(cs, FASTGUI_A,       fast_gui,       NULL, verbose_macros);
-			if (!status_bar)     record_action(cs, STATUSBAR_A,     status_bar,     NULL, verbose_macros);
-			if (!verbose_macros) record_action(cs, VERBOSEMACROS_A, verbose_macros, NULL, verbose_macros);
+			if (fast_gui)        record_action(cs, FASTGUI_A,        fast_gui,       NULL, verbose_macros);
+			if (!status_bar)     record_action(cs, STATUSBAR_A,      status_bar,     NULL, verbose_macros);
+			if (!verbose_macros) record_action(cs, VERBOSEMACROS_A,  verbose_macros, NULL, verbose_macros);
+			if (bracketed_paste != BPASTE_DEFAULT)
+			                     record_action(cs, BRACKETEDPASTE_A, -1, cur_bracketed_paste_value(), verbose_macros);
 			saving_defaults = false;
 		}
 
@@ -523,4 +525,23 @@ int pop_prefs(buffer * const b) {
 		print_message(msg);
 		return OK;
 	}
+}
+
+/* Bracketed paste support has its own private options cache. */
+
+static options_t bpaste_opt_cache;
+
+void bracketed_paste_begin(buffer *b) {
+	if (!(bracketed_paste & BPASTE_IS_ENABLED)) return;
+	bpaste_opt_cache = b->opt;
+	b->opt.auto_indent = (bracketed_paste & BPASTE_AUTOINDENT) ? 1 : 0;
+	b->opt.tabs        = (bracketed_paste & BPASTE_TABS)       ? 1 : 0;
+	b->opt.word_wrap   = (bracketed_paste & BPASTE_WORDWRAP)   ? 1 : 0;
+	if (bracketed_paste & BPASTE_ATOMIC) start_undo_chain(b);
+}
+
+void bracketed_paste_end(buffer *b) {
+	if (!(bracketed_paste & BPASTE_IS_ENABLED)) return;
+	b->opt = bpaste_opt_cache;
+	if (bracketed_paste & BPASTE_ATOMIC) end_undo_chain(b);
 }

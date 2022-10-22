@@ -38,7 +38,7 @@
 /* Maximum number of key definitions from terminfo plus others
    we may get from keys file -- i.e. key_may_set(). */
 
-#define MAX_TERM_KEY 512
+#define MAX_TERM_KEY NUM_KEYS
 
 /* Size of the keyboard input buffer. */
 
@@ -224,7 +224,7 @@ void read_key_capabilities(void) {
 		key_set(key_sr,    NE_KEY_SCROLL_REVERSE, BUILT_IN);
 
 
-	/* Editing keys */
+		/* Editing keys */
 
 		key_set(key_eol,   NE_KEY_CLEAR_TO_EOL, BUILT_IN);
 		key_set(key_eos,   NE_KEY_CLEAR_TO_EOS, BUILT_IN);
@@ -325,9 +325,12 @@ void read_key_capabilities(void) {
 
 	key_set("\x1B:", NE_KEY_COMMAND, BUILT_IN);
 
+	key_set(BPASTE_BEGIN_SEQ, NE_KEY_BPASTE_BEGIN, BUILT_IN);
+	key_set(BPASTE_END_SEQ,   NE_KEY_BPASTE_END,   BUILT_IN);
+
 	assert(num_keys < MAX_TERM_KEY - 1);
 
-	D(fprintf(stderr, "Got %d keys from terminfo\n", num_keys);)
+	D(fprintf(stderr, "Got %d keys from terminfo, etc.\n", num_keys);)
 
 	qsort(key, num_keys, sizeof(term_key), keycmp);
 

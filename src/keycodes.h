@@ -1,6 +1,6 @@
 /* Extended codes for special keys.
 
-	Copyright (C) 1993-1998 Sebastiano Vigna 
+	Copyright (C) 1993-1998 Sebastiano Vigna
 	Copyright (C) 1999-2022 Todd M. Lewis and Sebastiano Vigna
 
 	This file is part of ne, the nice editor.
@@ -112,4 +112,6 @@ onto an unused function key capability. */
 
 #define	NE_KEY_META(n) 	(NE_KEY_META0+(n))
 
+#define	NE_KEY_BPASTE_BEGIN	0x201
 
+#define	NE_KEY_BPASTE_END	0x202

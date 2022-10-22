@@ -199,3 +199,23 @@ extern bool ne_transparent_underline;
 extern bool io_utf8;
 
 extern uint32_t curr_attr;
+
+/* BracketedPaste defaults to "AutoIndent 0", "Tabs 1", "WordWrap 0", and
+   "AtomicUndo 1". A user may opt for any combination of AutoIndent, Tabs,
+   WordWrap, and Atomic, or to disable BracketedPaste entirely. The final
+   setting is the sum (logical OR) of the bits for each pref. If
+   BPASTE_IS_ENABLED, then ne will emit the BPASTE_ENABLE_SEQ escape sequence
+   whenever the terminal is set, and emit BPASTE_DISABLE_SEQ when relinquishing
+   control of the terminal. */
+
+#define BPASTE_AUTOINDENT   (1 << 0)
+#define BPASTE_TABS         (1 << 1)
+#define BPASTE_WORDWRAP     (1 << 2)
+#define BPASTE_ATOMIC       (1 << 3)
+#define BPASTE_IS_ENABLED   (1 << 4)
+#define BPASTE_DEFAULT      (BPASTE_TABS | BPASTE_ATOMIC | BPASTE_IS_ENABLED)
+#define BPASTE_ENABLE_SEQ   "\x1b[?2004h"
+#define BPASTE_DISABLE_SEQ  "\x1b[?2004l"
+#define BPASTE_BEGIN_SEQ    "\x1b[200~"
+#define BPASTE_END_SEQ      "\x1b[201~"
+extern int bracketed_paste;

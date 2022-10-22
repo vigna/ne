@@ -3815,6 +3815,7 @@ preferences flag. See @ref{AutoPrefs}.
 * VerboseMacros::
 * PreserveCR::
 * CRLF::
+* BracketedPaste::
 * VisualBell::
 * PushPrefs::
 * PopPrefs::
@@ -4287,6 +4288,52 @@ If you invoke @code{CRLF} with no arguments, it will toggle the flag.
 If you specify 0 or 1, the flag will be set to false or true,
 respectively. An upper case @samp{C} will appear on the status bar if the
 flag is true.
+
+
+
+@node BracketedPaste
+@subsection BracketedPaste
+@cmindex BracketedPaste
+
+@noindent Syntax: @code{BracketedPaste [0..15|*]}@*
+@noindent Abbreviation: @code{BP}
+
+@noindent disables @code{BracketedPaste}, or enables it with temporarily
+adjusted prefs flags @code{AutoIndent}, @code{Tabs}, @code{WordWrap}, and
+whether to make the paste @code{Atomic}. If you invoke @code{BracketedPaste}
+with no argument you will be prompted to enter a new value with the default
+being the current value.
+
+The argument is either @samp{*} to disable @code{BracketedPaste}, or the sum
+of the numbers associated with each of the flags listed below which you would
+like to be set during Bracketed pastes. Each of the flags will be restored to
+its original value when returning to normal keyboard input.
+
+@example
+  1 - AutoIndent (See @ref{AutoIndent})
+  2 - Tabs       (See @ref{Tabs})
+  4 - WordWrap   (See @ref{WordWrap})
+  8 - Atomic     (See @ref{AtomicUndo})
+@end example
+
+The default value is @samp{10} -- the sum of 2 and 8 -- which means the
+@code{AutoIndent} and @code{WordWrap} flags are off while the @code{Tabs} flag
+is on to preserve incoming tabs, and @code{Atomic} is set so that a single
+@code{Undo} command can revert the entire paste. If you also wanted to
+convert those tabs to spaces, subtract 2 and use @samp{8}. Using @samp{6} -- the sum
+of 2 and 4 -- would preserve @code{Tabs} and enable @code{WordWrap} while
+avoiding @code{AutoIndent} and @code{Atomic}.
+
+``Bracketed paste'' is an informal though widely adopted protocol between
+terminal mode programs (like @code{ne}) and the terminal emulators through
+which they present their user interfaces. When @code{BracketedPaste} is
+enabled, blocks of text pasted from a system clipboard are ``bracketed'' --
+that is, they are immediately preceded and followed -- by special character
+sequences which distinguish such blocks from text you actually typed. Bracketed
+paste text is usually already indented, tabbed, and line wrapped. The
+@code{BracketedPaste} argument lets you choose which of the three relevant
+prefs flags to temporarily set or clear while inserting bracketed paste text
+into your document.
 
 
 

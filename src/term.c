@@ -562,6 +562,15 @@ static void turn_off_insert (void) {
 	insert_mode = false;
 }
 
+void turn_on_bracketed_paste(void) {
+	if (!(bracketed_paste & BPASTE_IS_ENABLED)) OUTPUT1_IF(BPASTE_ENABLE_SEQ);
+	bracketed_paste |= BPASTE_IS_ENABLED;
+}
+
+void turn_off_bracketed_paste(void) {
+	if (bracketed_paste & BPASTE_IS_ENABLED) OUTPUT1_IF(BPASTE_DISABLE_SEQ);
+	bracketed_paste &= ~BPASTE_IS_ENABLED;
+}
 
 
 /* Prepares the terminal for interactive I/O. It
@@ -581,6 +590,7 @@ void set_terminal_modes(void) {
 	OUTPUT1_IF(ne_exit_underline_mode);
 	OUTPUT1_IF(ne_enter_ca_mode);
 	OUTPUT1_IF(ne_keypad_xmit);
+	if (bracketed_paste & BPASTE_IS_ENABLED) OUTPUT1_IF(BPASTE_ENABLE_SEQ);
 
 	if (ne_has_meta_key) OUTPUT1_IF(ne_meta_on);
 		turn_off_standout();
@@ -593,6 +603,7 @@ void set_terminal_modes(void) {
 
 void reset_terminal_modes (void) {
 
+	if (bracketed_paste & BPASTE_IS_ENABLED) OUTPUT1_IF(BPASTE_DISABLE_SEQ);
 	OUTPUT1_IF(ne_exit_attribute_mode);
 	OUTPUT1_IF(ne_exit_alt_charset_mode);
 	turn_off_standout();

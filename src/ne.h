@@ -116,9 +116,10 @@ extern const char *config_source_names[];
 
 #define UNNAMED_NAME       "<unnamed>"
 
-/* The number of key codes, including ISO-8859-1 plus 256 extra codes. */
+/* The number of key codes, including ISO-8859-1 plus 256 extra codes,
+   plus two more reserved for bracketed paste begin and end. */
 
-#define NUM_KEYS           (256+256)
+#define NUM_KEYS           (256+256+2)
 
 /* A key code that has class INVALID. */
 
@@ -149,7 +150,7 @@ typedef enum {
 	ENC_ASCII = 0, ENC_UTF8, ENC_8_BIT
 } encoding_type;
 
-/* Bookmark designations. User get 0 through 9 plus the AUTO_BOOKMARK '-'. */
+/* Bookmark designations. Users get 0 through 9 plus the AUTO_BOOKMARK '-'. */
 
 enum {
 	MAX_USER_BOOKMARK = 9,

@@ -729,3 +729,27 @@ const char *cur_bookmarks_string(const buffer *b) {
 	}
 	return str;
 }
+
+const char *cur_bracketed_paste_value() {
+	static char str[MAX_INT_LEN];
+	char *s = str;
+	memset(str, 0, MAX_INT_LEN);
+	if (!(bracketed_paste & BPASTE_IS_ENABLED)) *s = '*';
+	else sprintf(str, "%d", bracketed_paste & 15);
+	return str;
+}
+
+const char *cur_bracketed_paste_string() {
+	static char str[128];
+	memset(str, 0, 128);
+	strncat(str, "BracketedPaste:", 127);
+	if (!(bracketed_paste & BPASTE_IS_ENABLED)) strncat(str, " disabled", 127);
+	else {
+		strncat(str, " enabled;", 127);
+		strncat(strncat(str, " AutoIndent=", 127), (bracketed_paste & BPASTE_AUTOINDENT) ? "on" : "off", 127);
+		strncat(strncat(str, " Tabs=", 127),       (bracketed_paste & BPASTE_TABS)       ? "on" : "off", 127);
+		strncat(strncat(str, " WordWrap=", 127),   (bracketed_paste & BPASTE_WORDWRAP)   ? "on" : "off", 127);
+		strncat(strncat(str, " Atomic=", 127),     (bracketed_paste & BPASTE_ATOMIC)     ? "on" : "off", 127);
+	}
+	return str;
+}

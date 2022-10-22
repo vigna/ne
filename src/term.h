@@ -24,6 +24,8 @@
 int output_width(int c);
 void ring_bell(void);
 void do_flash(void);
+void turn_off_bracketed_paste(void);
+void turn_on_bracketed_paste(void);
 void set_terminal_modes(void);
 void reset_terminal_modes(void);
 void set_terminal_window(int size);

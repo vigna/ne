@@ -223,6 +223,8 @@ int   save_auto_prefs(buffer *b, const char *name);
 void  load_virtual_extensions();
 int   pop_prefs(buffer *b);
 int   push_prefs(buffer *b);
+void  bracketed_paste_begin(buffer *b);
+void  bracketed_paste_end(buffer *b);
 
 /* input.c */
 void  input_and_prompt_refresh(void);
@@ -310,6 +312,8 @@ encoding_type detect_encoding(const char *s, int64_t len);
 int context_prefix(const buffer *b, char **p, int64_t *prefix_pos);
 line_desc *nth_line_desc(const buffer *b, const int64_t n);
 const char *cur_bookmarks_string(const buffer *b);
+const char *cur_bracketed_paste_value(void);
+const char *cur_bracketed_paste_string(void);
 
 /* undo.c */
 void start_undo_chain(buffer *b);
