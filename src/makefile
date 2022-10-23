@@ -116,7 +116,7 @@ CFLAGS=$(GCCFLAGS) \
 	$(if $(NE_ANSI),    -DNE_TERMCAP -DNE_ANSI,) \
 	$(OPTS)
 
-LIBS=$(if $(NE_TERMCAP)$(NE_ANSI),,-lcurses)
+LIBS=$(if $(NE_TERMCAP)$(NE_ANSI),,-lcurses -lm)
 
 ne:	$(OBJS) $(if $(NE_TERMCAP)$(NE_ANSI),$(TERMCAPOBJS),)
 	$(CC) $(LDFLAGS) $(if $(NE_TEST), -coverage,) $(if $(NE_DEBUG), -fsanitize=address -fsanitize=undefined,) $^ $(LIBS) $(OPTS) -lm -o $(PROGRAM)
