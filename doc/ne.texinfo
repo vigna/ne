@@ -4295,45 +4295,44 @@ flag is true.
 @subsection BracketedPaste
 @cmindex BracketedPaste
 
-@noindent Syntax: @code{BracketedPaste [0..15|*]}@*
+@noindent Syntax: @code{BracketedPaste [0|1|@var{macro_name_before} @var{macro_name_after}]}@*
 @noindent Abbreviation: @code{BP}
 
-@noindent disables @code{BracketedPaste}, or enables it with temporarily
-adjusted prefs flags @code{AutoIndent}, @code{Tabs}, @code{WordWrap}, and
-whether to make the paste @code{Atomic}. If you invoke @code{BracketedPaste}
-with no argument you will be prompted to enter a new value with the default
-being the current value.
-
-The argument is either @samp{*} to disable @code{BracketedPaste}, or the sum
-of the numbers associated with each of the flags listed below which you would
-like to be set during Bracketed pastes. Each of the flags will be restored to
-its original value when returning to normal keyboard input.
-
-@example
-  1 - AutoIndent (See @ref{AutoIndent})
-  2 - Tabs       (See @ref{Tabs})
-  4 - WordWrap   (See @ref{WordWrap})
-  8 - Atomic     (See @ref{AtomicUndo})
-@end example
-
-The default value is @samp{10} -- the sum of 2 and 8 -- which means the
-@code{AutoIndent} and @code{WordWrap} flags are off while the @code{Tabs} flag
-is on to preserve incoming tabs, and @code{Atomic} is set so that a single
-@code{Undo} command can revert the entire paste. If you also wanted to
-convert those tabs to spaces, subtract 2 and use @samp{8}. Using @samp{6} -- the sum
-of 2 and 4 -- would preserve @code{Tabs} and enable @code{WordWrap} while
-avoiding @code{AutoIndent} and @code{Atomic}.
-
-``Bracketed paste'' is an informal though widely adopted protocol between
+@noindent ``Bracketed paste'' is an informal though widely adopted protocol between
 terminal mode programs (like @code{ne}) and the terminal emulators through
 which they present their user interfaces. When @code{BracketedPaste} is
 enabled, blocks of text pasted from a system clipboard are ``bracketed'' --
 that is, they are immediately preceded and followed -- by special character
 sequences which distinguish such blocks from text you actually typed. Bracketed
 paste text is usually already indented, tabbed, and line wrapped. The
-@code{BracketedPaste} argument lets you choose which of the three relevant
-prefs flags to temporarily set or clear while inserting bracketed paste text
-into your document.
+@code{BracketedPaste} command lets you manage factors that change input
+handling while inserting bracketed paste text into your document.
+
+@code{BracketedPaste 0} disables bracketed paste support entirely;
+@code{BracketedPaste 1} enables bracketed paste support and temporarily
+disables the @code{AutoIndent} flag and increases the @code{AtomicUndo} level
+during bracketed pastes; when given a pair of macro names, bracketed paste
+support is enabled and the indicated macros will be run immediately before and
+after processing bracketed paste text. The macros need not already exist. (See
+the @code{Macro} help page, especially the warning at the bottom.)
+@code{BracketedPaste} with no argument will prompt you to enter a new value
+with the prompt's default being the current value.
+
+The default value is @samp{1} -- enabled with default behaviour. This is an
+automatic preference (see @ref{AutoPrefs}) and so will be saved by both
+@code{SaveAutoPrefs} and @code{SaveDefPrefs}.
+
+Other flags you may want to manage through macros include @code{Tabs} and
+@code{WordWrap} as they affect handling of pasted text. The examples below show
+contents of before and after macros which would have the same effect as
+@samp{BracketedPaste 1}.
+
+@example
+# Invoked Before Bracketed Paste    # Invoked After Bracketed Paste
+PushPrefs                           PopPrefs
+AtomicUndo +                        AtomicUndo -
+AutoIndent 0
+@end example
 
 
 

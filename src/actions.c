@@ -413,28 +413,58 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		return OK;
 
 	case BRACKETEDPASTE_A:
+		if (!bpaste_supported) {
+			print_message("Bracketed Paste support is globally disabled.");
+			free(p);
+			return OK;
+		}
 		if (!p || (p && p[0] == '?')) {
 			free(p);
-			snprintf(msg, MAX_MESSAGE_SIZE, "BracketedPaste: *=disable; 1..15=(sum of 1:auto_indent 2:tabs 4:word_wrap 8:atomic_undo)");
-			p = request_string(b, msg, cur_bracketed_paste_value(), true, COMPLETE_NONE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto);
+			snprintf(msg, MAX_MESSAGE_SIZE, "BracketedPaste: 0|1|macro_before macro_after");
+			p = request_string(b, msg, cur_bracketed_paste_value(b), true, COMPLETE_NONE, b->encoding == ENC_UTF8 || b->encoding == ENC_ASCII && b->opt.utf8auto);
 		}
 		if (p) {
-			char *q;
-			c = strtoll(p, &q, 0);
-			if (p == q) c = p[0];
+			if ((*p == '0' || *p == '1') && *(p+1) == '\0') {
+				c = *p - '0';
+				if (b->bpaste_support == c) {
+					free(p);
+					return OK;
+				}
+				b->bpaste_support = c;
+				if (c == 0)	turn_off_bracketed_paste();
+				if (c == 1) turn_on_bracketed_paste();
+				free(b->bpaste_macro_before);
+				free(b->bpaste_macro_after);
+				b->bpaste_macro_before = NULL;
+				b->bpaste_macro_after = NULL;
+			}
+			else {
+				char *q = p;
+				char *m1, *m2;
+				while (*q && *q == ' ') q++; /* skip leading spaces */
+				m1 = q;                      /* start of 1st macro name */
+				while (*q && *q != ' ') q++; /* keep non-spaces */
+				if (*q == ' ') {
+					*q = '\0';                /* mark end of 1st macro name */
+					q++;
+				}
+				while (*q && *q == ' ') q++; /* skip middle spaces */
+				m2 = q;                      /* start of 2nd macro name */
+				while (*q && *q != ' ') q++; /* keep non-spaces */
+				*q = '\0';                   /* mark end of 2nd macro name */
+				if (strlen(m1) && strlen(m2)) {
+					free(b->bpaste_macro_before);
+					b->bpaste_macro_before = str_dup(m1);
+					free(b->bpaste_macro_after);
+					b->bpaste_macro_after = str_dup(m2);
+					b->bpaste_support = 2;
+				} else {
+					free(p);
+					return INVALID_BRACKETED_PASTE_DESIGNATION;
+				}
+			}
 			free(p);
-			if (c == '*') {
-				if (!(bracketed_paste & BPASTE_IS_ENABLED)) return OK;
-				turn_off_bracketed_paste();
-			}
-			else if (c >= 0 && c <= 15) {
-				if (bracketed_paste == (BPASTE_IS_ENABLED | c)) return OK;
-				turn_on_bracketed_paste();
-				bracketed_paste = BPASTE_IS_ENABLED | c;
-			} else {
-				return INVALID_BRACKETED_PASTE_DESIGNATION;
-			}
-			print_message(cur_bracketed_paste_string());
+			print_message(cur_bracketed_paste_string(b));
 		}
 		return OK;
 

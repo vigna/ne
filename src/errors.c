@@ -94,7 +94,7 @@ char *error_msg[ERROR_COUNT] = {
 	/* 66 */ "File is too large--syntax highlighting disabled (use SYNTAX to reactivate).",
 	/* 67 */ "Cannot save: disk full.",
 	/* 68 */ "Out of memory (insufficient disk space?). DANGER!",
-	/* 69 */ "Invalid Bracketed Paste designation (use '*' to disable or 0 through 15)."
+	/* 69 */ "Invalid Bracketed Paste designation (use '0', '1', or two macro names)."
 };
 
 char *info_msg[INFO_COUNT] = {

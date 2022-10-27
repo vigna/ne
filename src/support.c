@@ -730,26 +730,22 @@ const char *cur_bookmarks_string(const buffer *b) {
 	return str;
 }
 
-const char *cur_bracketed_paste_value() {
-	static char str[MAX_INT_LEN];
+#define MAX_MESSAGE_SIZE 1024
+static char str[MAX_MESSAGE_SIZE+1];
+const char *cur_bracketed_paste_value(const buffer *b) {
 	char *s = str;
-	memset(str, 0, MAX_INT_LEN);
-	if (!(bracketed_paste & BPASTE_IS_ENABLED)) *s = '*';
-	else sprintf(str, "%d", bracketed_paste & 15);
+	memset(str, 0, MAX_MESSAGE_SIZE);
+	if (b->bpaste_support < 1) *s = '0';
+	else if (b->bpaste_support == 1) *s = '1';
+	else strncat(strncat(strncpy(str, b->bpaste_macro_before, MAX_MESSAGE_SIZE)," ",MAX_MESSAGE_SIZE), b->bpaste_macro_after, MAX_MESSAGE_SIZE);
 	return str;
 }
 
-const char *cur_bracketed_paste_string() {
-	static char str[128];
-	memset(str, 0, 128);
-	strncat(str, "BracketedPaste:", 127);
-	if (!(bracketed_paste & BPASTE_IS_ENABLED)) strncat(str, " disabled", 127);
-	else {
-		strncat(str, " enabled;", 127);
-		strncat(strncat(str, " AutoIndent=", 127), (bracketed_paste & BPASTE_AUTOINDENT) ? "on" : "off", 127);
-		strncat(strncat(str, " Tabs=", 127),       (bracketed_paste & BPASTE_TABS)       ? "on" : "off", 127);
-		strncat(strncat(str, " WordWrap=", 127),   (bracketed_paste & BPASTE_WORDWRAP)   ? "on" : "off", 127);
-		strncat(strncat(str, " Atomic=", 127),     (bracketed_paste & BPASTE_ATOMIC)     ? "on" : "off", 127);
-	}
+const char *cur_bracketed_paste_string(const buffer *b) {
+	memset(str, 0, MAX_MESSAGE_SIZE);
+	strncpy(str, "BracketedPaste ", MAX_MESSAGE_SIZE);
+	if (b->bpaste_support < 1) strncat(str, "disabled", MAX_MESSAGE_SIZE);
+	else if (b->bpaste_support == 1) strncat(str, "enabled with internal defaults", MAX_MESSAGE_SIZE);
+	else if (b->bpaste_support == 2) strncat(strncat(strncat(strncat(str, "macros: ", MAX_MESSAGE_SIZE), b->bpaste_macro_before, MAX_MESSAGE_SIZE), ", ", MAX_MESSAGE_SIZE), b->bpaste_macro_after, MAX_MESSAGE_SIZE);
 	return str;
 }

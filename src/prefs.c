@@ -182,6 +182,8 @@ int save_prefs(buffer * const b, const char * const name) {
 		record_action(cs, BINARY_A,           b->opt.binary,         NULL, verbose_macros);
 		record_action(cs, UTF8AUTO_A,         b->opt.utf8auto,       NULL, verbose_macros);
 		record_action(cs, VISUALBELL_A,       b->opt.visual_bell,    NULL, verbose_macros);
+		if (bpaste_supported)
+			record_action(cs, BRACKETEDPASTE_A, -1, cur_bracketed_paste_value(b), verbose_macros);
 
 		if (saving_defaults) {
 			/* We only save the global flags that differ from their defaults. */
@@ -194,8 +196,6 @@ int save_prefs(buffer * const b, const char * const name) {
 			if (fast_gui)        record_action(cs, FASTGUI_A,        fast_gui,       NULL, verbose_macros);
 			if (!status_bar)     record_action(cs, STATUSBAR_A,      status_bar,     NULL, verbose_macros);
 			if (!verbose_macros) record_action(cs, VERBOSEMACROS_A,  verbose_macros, NULL, verbose_macros);
-			if (bracketed_paste != BPASTE_DEFAULT)
-			                     record_action(cs, BRACKETEDPASTE_A, -1, cur_bracketed_paste_value(), verbose_macros);
 			saving_defaults = false;
 		}
 
@@ -531,17 +531,29 @@ int pop_prefs(buffer * const b) {
 
 static options_t bpaste_opt_cache;
 
+#define BUFSIZE 2048
+static char cmdbuf[BUFSIZE+1];
+
 void bracketed_paste_begin(buffer *b) {
-	if (!(bracketed_paste & BPASTE_IS_ENABLED)) return;
+	if (!bpaste_supported || b->bpaste_support < 1) return;
 	bpaste_opt_cache = b->opt;
-	b->opt.auto_indent = (bracketed_paste & BPASTE_AUTOINDENT) ? 1 : 0;
-	b->opt.tabs        = (bracketed_paste & BPASTE_TABS)       ? 1 : 0;
-	b->opt.word_wrap   = (bracketed_paste & BPASTE_WORDWRAP)   ? 1 : 0;
-	if (bracketed_paste & BPASTE_ATOMIC) start_undo_chain(b);
+	if (b->bpaste_support == 1) {
+		b->opt.auto_indent = 0;
+		start_undo_chain(b);
+	} else if (b->bpaste_support == 2) {
+		cmdbuf[0] = '\0';
+		strncat(strncpy(cmdbuf, "Macro ", BUFSIZE), b->bpaste_macro_before, BUFSIZE);
+		execute_command_line(b, cmdbuf);
+	}
 }
 
 void bracketed_paste_end(buffer *b) {
-	if (!(bracketed_paste & BPASTE_IS_ENABLED)) return;
+	if (!bpaste_supported || b->bpaste_support < 1) return;
 	b->opt = bpaste_opt_cache;
-	if (bracketed_paste & BPASTE_ATOMIC) end_undo_chain(b);
+	if (b->bpaste_support == 1) {
+		end_undo_chain(b);
+	} else if (b->bpaste_support == 2) {
+		strncat(strncpy(cmdbuf, "Macro ", BUFSIZE), b->bpaste_macro_after, BUFSIZE);
+		execute_command_line(b, cmdbuf);
+	}
 }

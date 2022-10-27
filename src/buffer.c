@@ -199,6 +199,7 @@ buffer *alloc_buffer(const buffer * const cur_b) {
 		new_list(&b->char_pool_list);
 
 		b->cur_macro = alloc_char_stream(0);
+		b->bpaste_support = bpaste_supported ? 1 : 0;
 		b->opt.tab_size = 8;
 
 		b->opt.insert         =
@@ -237,9 +238,15 @@ buffer *alloc_buffer(const buffer * const cur_b) {
 			b->opt.utf8auto       = cur_b->opt.utf8auto;
 			b->opt.visual_bell    = cur_b->opt.visual_bell;
 
+			b->bpaste_support     = cur_b->bpaste_support;
+			if (b->bpaste_support == 2) {
+				b->bpaste_macro_before = str_dup(cur_b->bpaste_macro_before);
+				b->bpaste_macro_after  = str_dup(cur_b->bpaste_macro_after);
+			}
+
 		}
 		/* This leaves out only opt.read_only and opt.search_back, which are
-		 implicitly set to 0 by the calloc(). */
+		   implicitly set to 0 by the calloc(). */
 		return b;
 	}
 
@@ -320,6 +327,8 @@ void free_buffer(buffer * const b) {
 	free(b->find_string);
 	free(b->replace_string);
 	free(b->command_line);
+	free(b->bpaste_macro_before);
+	free(b->bpaste_macro_after);
 	if (b->attr_buf) free(b->attr_buf);
 	free(b);
 }

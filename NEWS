@@ -1,5 +1,10 @@
 (This file, NEWS, lists new features and enhancements. See CHANGES for fixes.)
 
+<unreleased>
+
+  * BracketedPaste support has been added; turns off AutoIndent when
+    pasting text from the system clipboard.
+
 3.3.2 2022-09-13
 
   * Paste and PasteVert now set two bookmarks designated '<' and '>' which

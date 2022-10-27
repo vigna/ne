@@ -312,8 +312,8 @@ encoding_type detect_encoding(const char *s, int64_t len);
 int context_prefix(const buffer *b, char **p, int64_t *prefix_pos);
 line_desc *nth_line_desc(const buffer *b, const int64_t n);
 const char *cur_bookmarks_string(const buffer *b);
-const char *cur_bracketed_paste_value(void);
-const char *cur_bracketed_paste_string(void);
+const char *cur_bracketed_paste_value(const buffer *b);
+const char *cur_bracketed_paste_string(const buffer *b);
 
 /* undo.c */
 void start_undo_chain(buffer *b);

@@ -484,6 +484,9 @@ typedef struct {
 	char *find_string;
 	char *replace_string;
 	char *command_line;
+	char *bpaste_macro_before; /* name of macro to run before processing bracketed pastes */
+	char *bpaste_macro_after;  /* name of macro to run after processing bracketed pastes */
+	int   bpaste_support;      /* 0=not supported; 1=supported w/ defaults; 2=supported with before and after macros */
 	unsigned long mtime;      /* mod time of on-disk file when it was last loaded/saved, or 0 */
 	int64_t win_x, win_y;     /* line and pos of upper left-most visible character. */
 	int cur_x, cur_y;         /* position of cursor within the window */
