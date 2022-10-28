@@ -4331,7 +4331,8 @@ contents of before and after macros which would have the same effect as
 # Invoked Before Bracketed Paste    # Invoked After Bracketed Paste
 PushPrefs                           PopPrefs
 AtomicUndo +                        AtomicUndo -
-AutoIndent 0
+AutoIndent 0                        Refresh
+Refresh
 @end example
 
 

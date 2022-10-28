@@ -1099,6 +1099,8 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		ttysize();
 		keep_cursor_on_screen(cur_buffer);
 		reset_window();
+		refresh_window(b);
+		draw_status_bar();
 		return OK;
 
 	case FIND_A:
