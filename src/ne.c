@@ -105,7 +105,7 @@ bool fast_gui;
 bool status_bar = true;
 bool interactive_mode;
 bool verbose_macros = true;
-bool bpaste_supported = true;
+bool bracketed_paste = true;
 /* end of global prefs */
 
 buffer *cur_buffer;
@@ -223,7 +223,7 @@ int main(int argc, char **argv) {
 			}
 			else if (!strcmp(&argv[i][2], "no-bpaste") || !strcmp(&argv[i][2], "nobpaste")) {
 				turn_off_bracketed_paste();
-				bpaste_supported = false;
+				bracketed_paste = false;
 				skiplist[i] = 1; /* argv[i] = NULL; */
 			}
 			else if (!strcmp(&argv[i][2], "prefs")) {
@@ -538,8 +538,8 @@ int main(int argc, char **argv) {
 		case COMMAND:
 			if (c < 0) c = -c - 1;
 			if (key_binding[c]) print_error(execute_command_line(cur_buffer, key_binding[c]));
-			else if (c == NE_KEY_BPASTE_BEGIN && bpaste_supported) bracketed_paste_begin(cur_buffer);
-			else if (c == NE_KEY_BPASTE_END   && bpaste_supported) bracketed_paste_end(cur_buffer);
+			else if (c == NE_KEY_BPASTE_BEGIN && bracketed_paste) bracketed_paste_begin(cur_buffer);
+			else if (c == NE_KEY_BPASTE_END   && bracketed_paste) bracketed_paste_end(cur_buffer);
 			break;
 
 		default:

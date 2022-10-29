@@ -413,7 +413,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		return OK;
 
 	case BRACKETEDPASTE_A:
-		if (!bpaste_supported) {
+		if (!bracketed_paste) {
 			print_message("Bracketed Paste support is globally disabled.");
 			free(p);
 			return OK;
@@ -464,7 +464,6 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 				}
 			}
 			free(p);
-			print_message(cur_bracketed_paste_string(b));
 		}
 		return OK;
 
@@ -1098,9 +1097,10 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		clear_entire_screen();
 		ttysize();
 		keep_cursor_on_screen(cur_buffer);
-		reset_window();
-		refresh_window(b);
-		draw_status_bar();
+		if (executing_macro) {
+			refresh_window(b);
+			draw_status_bar();
+		} else reset_window();
 		return OK;
 
 	case FIND_A:
@@ -1533,9 +1533,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 	case PLAY_A:
 		if (!recording_macro && !executing_macro) {
 			if (c < 0 && (c = request_number(b, "Times", 1))<=0) return NUMERIC_ERROR(c);
-			executing_macro = 1;
 			for(int64_t i = 0; i < c && !(error = play_macro(b->cur_macro)); i++);
-			executing_macro = 0;
 			return print_error(error) ? ERROR : 0;
 		}
 		else return ERROR;

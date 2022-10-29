@@ -182,7 +182,7 @@ int save_prefs(buffer * const b, const char * const name) {
 		record_action(cs, BINARY_A,           b->opt.binary,         NULL, verbose_macros);
 		record_action(cs, UTF8AUTO_A,         b->opt.utf8auto,       NULL, verbose_macros);
 		record_action(cs, VISUALBELL_A,       b->opt.visual_bell,    NULL, verbose_macros);
-		if (bpaste_supported)
+		if (bracketed_paste)
 			record_action(cs, BRACKETEDPASTE_A, -1, cur_bracketed_paste_value(b), verbose_macros);
 
 		if (saving_defaults) {
@@ -535,7 +535,7 @@ static options_t bpaste_opt_cache;
 static char cmdbuf[BUFSIZE+1];
 
 void bracketed_paste_begin(buffer *b) {
-	if (!bpaste_supported || b->bpaste_support < 1) return;
+	if (!bracketed_paste || b->bpaste_support < 1) return;
 	bpaste_opt_cache = b->opt;
 	if (b->bpaste_support == 1) {
 		b->opt.auto_indent = 0;
@@ -548,7 +548,7 @@ void bracketed_paste_begin(buffer *b) {
 }
 
 void bracketed_paste_end(buffer *b) {
-	if (!bpaste_supported || b->bpaste_support < 1) return;
+	if (!bracketed_paste || b->bpaste_support < 1) return;
 	b->opt = bpaste_opt_cache;
 	if (b->bpaste_support == 1) {
 		end_undo_chain(b);

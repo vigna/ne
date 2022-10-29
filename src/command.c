@@ -608,6 +608,7 @@ int execute_macro(buffer *b, const char *name) {
 
 	const char * const p = file_part(name);
 	int h = hash_macro(p, strlen(p));
+	executing_macro = true;
 
    D(fprintf(stderr,"execute_macro[%d]: searching macro_hash_table for file_part of name=%s\n", __LINE__, name);)
 	macro_desc *md;
@@ -619,22 +620,22 @@ int execute_macro(buffer *b, const char *name) {
 
 	assert_macro_desc(md);
 
+	int rc = CANT_OPEN_MACRO;
+
 	if (md) {
 		if (recording_macro) {
 			add_to_stream(recording_macro, "# include macro ", 16);
 			add_to_stream(recording_macro, md->name, strlen(md->name)+1);
 		}
-		h = play_macro(md->cs);
+		rc = play_macro(md->cs);
 		if (recording_macro) {
 			add_to_stream(recording_macro, "# conclude macro ", 17);
 			add_to_stream(recording_macro, md->name, strlen(md->name)+1);
 		}
-		--call_depth;
-		return h;
 	}
 
-	--call_depth;
-	return CANT_OPEN_MACRO;
+	if (--call_depth == 0) executing_macro = false;
+	return rc;
 }
 
 
