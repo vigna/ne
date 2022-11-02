@@ -1531,12 +1531,11 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		return OK;
 
 	case PLAY_A:
-		if (!recording_macro && !executing_macro) {
-			if (c < 0 && (c = request_number(b, "Times", 1))<=0) return NUMERIC_ERROR(c);
-			for(int64_t i = 0; i < c && !(error = play_macro(b->cur_macro)); i++);
-			return print_error(error) ? ERROR : 0;
-		}
-		else return ERROR;
+		if (c < 0 && (c = request_number(b, "Times", 1))<=0) return NUMERIC_ERROR(c);
+		if (recording_macro) add_to_stream(recording_macro, "# include macro <unnamed>", 26);
+		error = play_macro(b->cur_macro, c);
+		if (recording_macro) add_to_stream(recording_macro, "# conclude macro <unnamed>", 27);
+		return print_error(error) ? ERROR : 0;
 
 	case SAVEMACRO_A:
 		if (p || (p = request_file(b, "Macro Name", NULL))) {

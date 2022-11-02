@@ -147,7 +147,7 @@ static const command commands[ACTION_COUNT] = {
 	{ NAHL(PARAGRAPH     ),0                                                                      },
 	{ NAHL(PASTE         ),0                                                                      },
 	{ NAHL(PASTEVERT     ),0                                                                      },
-	{ NAHL(PLAY          ),0                                                                      },
+	{ NAHL(PLAY          ),                                       DO_NOT_RECORD                   },
 	{ NAHL(POPPREFS      ),0                                                                      },
 	{ NAHL(PRESERVECR    ),                           IS_OPTION                                   },
 	{ NAHL(PREVDOC       ), NO_ARGS                                                               },
@@ -494,47 +494,58 @@ void optimize_macro(char_stream *cs, bool verbose) {
 }
 
 
-/* Plays a character stream, considering each line as a command line. It
+/* Plays a character stream c times, considering each line as a command line. It
    polls the global stop variable in order to check for the user interrupting.
-   Note that the macro is duplicated before execution: this is absolutely
+   Note that the macro is duplicated before the first execution: this is absolutely
    necessary, for otherwise a call to CloseDoc, Record or UnloadMacros could
    free() the block of memory which we are executing. */
 
-int play_macro(char_stream *cs) {
+int play_macro(char_stream *cs, int64_t c) {
 	if (!cs) return ERROR;
 
 	/* If len is 0 or 1, the character stream does not contain anything. */
 	const int64_t len = cs->len;
-	if (len < 2) return OK;
+	if (len < 2 || c < 1) return OK;
 
 	char * const stream = malloc(len);
 	if (!stream) return OUT_OF_MEMORY;
-	char * p = stream;
+
+	static int call_depth = 0;
+
+	if (++call_depth > 32) {
+		--call_depth;
+		return MAX_MACRO_DEPTH_EXCEEDED;
+	}
+	executing_macro = true;
 
 	memcpy(stream, cs->stream, len);
 
 	stop = false;
 
 	int error = OK;
-	while(!stop && p - stream < len) {
+	while(!stop && !error && c--) {
+		char * p = stream;
+		while(!stop && p - stream < len) {
 #ifdef NE_TEST
-		fprintf(stderr, "%s\n", p); /* During tests, we output to stderr the current command. */
+			fprintf(stderr, "%s\n", p); /* During tests, we output to stderr the current command. */
 #endif
 
-		if (error = execute_command_line(cur_buffer, p))
+			if (error = execute_command_line(cur_buffer, p))
 #ifndef NE_TEST
-			break /* During tests, we never interrupt a macro. */
+				break /* During tests, we never interrupt a macro. */
 #endif
-				;
+					;
 
 #ifdef NE_TEST
-		refresh_window(cur_buffer);
-		draw_status_bar();
+			refresh_window(cur_buffer);
+			draw_status_bar();
 #endif
-		p += strlen(p) + 1;
+			p += strlen(p) + 1;
+		}
 	}
 
 	free(stream);
+	if (--call_depth == 0) executing_macro = false;
 
 	return stop ? STOPPED : error;
 }
@@ -599,16 +610,8 @@ macro_desc *load_macro(const char *name) {
    macro list, it is loaded. A standard error code is returned. */
 
 int execute_macro(buffer *b, const char *name) {
-	static int call_depth = 0;
-
-	if (++call_depth > 32) {
-		--call_depth;
-		return MAX_MACRO_DEPTH_EXCEEDED;
-	}
-
 	const char * const p = file_part(name);
 	int h = hash_macro(p, strlen(p));
-	executing_macro = true;
 
    D(fprintf(stderr,"execute_macro[%d]: searching macro_hash_table for file_part of name=%s\n", __LINE__, name);)
 	macro_desc *md;
@@ -627,14 +630,13 @@ int execute_macro(buffer *b, const char *name) {
 			add_to_stream(recording_macro, "# include macro ", 16);
 			add_to_stream(recording_macro, md->name, strlen(md->name)+1);
 		}
-		rc = play_macro(md->cs);
+		rc = play_macro(md->cs, 1);
 		if (recording_macro) {
 			add_to_stream(recording_macro, "# conclude macro ", 17);
 			add_to_stream(recording_macro, md->name, strlen(md->name)+1);
 		}
 	}
 
-	if (--call_depth == 0) executing_macro = false;
 	return rc;
 }
 

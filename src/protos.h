@@ -90,7 +90,7 @@ int execute_command_line(buffer *b, const char *command_line);
 macro_desc *alloc_macro_desc(void);
 void free_macro_desc(macro_desc *md);
 void record_action(char_stream *cs, action a, int64_t c, const char *p, bool verbose);
-int play_macro(char_stream *cs);
+int play_macro(char_stream *cs, int64_t c);
 macro_desc *load_macro(const char *name);
 int execute_macro(buffer *b, const char *name);
 void help(char *p);

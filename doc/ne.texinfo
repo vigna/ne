@@ -251,11 +251,11 @@ documents and files are handled by the commands under the
 @samp{File} menu. The @samp{Documents} menu commands only deal with
 documents. @xref{Menus}.
 
-Internally, @code{ne} holds its documents in @dfn{buffers}.  A
-@dfn{buffer} is a chunk of memory in which @code{ne} holds something.
-For example, each document is held in its own buffer, as are any loaded
-or recorded macros, undo records, a copy of your last deleted line of
-text, a copy of all your previous responses to long input, and several
+Internally, @code{ne} holds its documents' text in @dfn{buffers}.  A
+@dfn{buffer} is a chunk of memory in which @code{ne} holds text.
+In addition to each document's text, buffers hold any loaded
+or recorded macros, undo records, a copy of your last deleted line,
+a copy of all your previous responses to long input, and several
 other things.
 
 
@@ -543,7 +543,7 @@ after the last dot. For instance, the extension of @file{ne.texinfo} is
 @samp{texinfo}, the extension of @file{source.c} is @samp{c}, and the
 extension of @file{my.txt} is @samp{txt}.
 
-Thus, when you select the @samp{Save Def Prefs} menu item or the
+Thus, when you select the @samp{Save Def Prefs} menu item or use the
 @code{SaveDefPrefs} command, a special preferences file named
 @file{.default#ap} is saved. In addition to other preferences, this file also
 includes a small set of preferences which are global to @code{ne} rather than
@@ -604,47 +604,54 @@ into a macro. You could create a macro by editing a document that only
 contains valid @code{ne} commands and saving it, but by far the easiest way to create
 a macro is to have @code{ne} record your actions. @code{ne} allows you
 to record macros and then play them (execute the commands they contain)
-many times. You can save them as files for future use, edit them, or bind
+many times. You can save recorded macros as files for future use, edit them, or bind
 them to any key. You could even reconfigure each key of your keyboard to
 play a complex macro if you wanted to.
 
 @code{ne} can have any number of named macros loaded at the same time.
-In addition, each document can also have one unnamed macro in its @dfn{current macro} buffer.
-Named macros are typically loaded from files, while each document's
-current macro buffer is where your recorded macro is held before you
+In addition, each document has one unnamed macro in its @dfn{current macro} buffer.
+Named macros are loaded from---and get the name of---files, while each document's
+unnamed current macro buffer is where your recorded macro is held before you
 save it, play it, or record over it.
 
-Recording a macro is very simple. The keystroke @kbd{@key{Control}-T}
-starts and stops recording a macro.  When you start recording a macro,
-@code{ne} starts recording all
-your actions (with a few exceptions). You can see that you are recording
-a macro if an @samp{R} appears on the status bar. After you stop the
-recording process (again using @kbd{@key{Control}-T}), you can play the
-macro with the @samp{Play Once} item of the @samp{Macros} menu or with
-the @key{f9} key. If you want to repeat the action many times, the
-@code{Play} command allows you to specify a number of times to repeat
-the macro. You can always interrupt the macro's execution with
+Recording a macro is very simple. The keystroke @kbd{@key{Control}-T} starts
+and stops recording a macro.  When you start recording a macro, @code{ne}
+starts recording all your actions (with a few exceptions). You can see that you
+are recording a macro if an @samp{R} appears on the status bar. When you stop
+recording (again using @kbd{@key{Control}-T}), @code{ne} throws away the
+current document's current macro and replaces it with the one you just finished
+recording. You can then play the macro with the @samp{Play Once} item of the
+@samp{Macros} menu or with the @key{f9} key. If you want to repeat the action
+many times, the @code{Play} command allows you to specify a number of times to
+repeat the macro. You can always interrupt the macro's execution with
 @kbd{@key{Control}-\}.
+
+These commands are omitted from recorded macros:
+@example
+   Escape       Help         Play
+   Exec         KeyCode      Quit
+   Flags        Macro        Record
+@end example
 
 A recorded macro has no name. It's just an anonymous sequence of
 commands associated with your current document. It will go away when you
 record another macro, close the document, or exit @code{ne}. If you want to save your
-recorded macro for future use, you can give it a name and save it with
+recorded macro for future use, you can give it a name by saving it with
 the @samp{Save Macro...} menu item or the @code{SaveMacro} command.
 The macro is saved as a regular text file in your current directory by default or
 whatever directory you specify when prompted for the macro's name. If
 you save it in your @file{~/.ne} directory then it will be easy to
 access it later from any other directory. The @samp{Open Macro...} menu item
 and the @code{OpenMacro} command load a macro from a file into the
-current document's buffer just as if you had just @code{Record}ed it.
+current document's macro buffer just as if you had just @code{Record}ed it.
 
 The current setting of your @code{VerboseMacros} flag determines whether
 long or abbreviated command names are used when saving a macro. For your
-convenience, @code{SaveMacro} will also convert sequences of
+convenience, @code{SaveMacro} will also convert consecutive
 @code{InsertChar} commands into single---usually much more readable---
 @code{InsertString} commands, but only if all the inserted characters are
-simple printable characters, and only if there are no subsequent @code{Undo}
-commands or macro invocations.
+simple printable characters, and only if the macro contains no @code{Undo}
+commands or macro invocations later in the macro.
 
 Any macro can be loaded from a file and played with the @samp{Play Macro...}
 menu item or the @code{Macro} command. (This won't modify the recorded
@@ -668,7 +675,7 @@ to program simple extensions to @code{ne}'s command set. For instance, all
 automatic preferences macros---which are just specially named macros
 that contain only commands to set preferences flags---can be executed
 just by typing their names. For example, if you have an automatic
-preference for the @samp{txt} extension for example, you can set
+preference for the @samp{txt} extension, you can set
 @code{ne}'s flags exactly as if you had loaded a file ending with
 @samp{.txt} by typing the command @code{txt#ap}.
 
@@ -697,27 +704,27 @@ Subsequent invocations of the named macro will use the cached version.
 when initially loading macros, loaded macro names are @emph{not} case
 sensitive or path sensitive. @code{ne} only caches the file name of an
 already loaded macro, not the path, and it uses a case insensitive
-comparison when resolving command names. As such, if you invoke @file{~/foobar/MyMacro}, @code{ne}
+comparison when resolving command and macro names. As such, if you invoke @file{~/foobar/MyMacro}, @code{ne}
 remembers it with the case-insensitive name @file{mymacro}; a subsequent
 call for @file{/usr/MYMACRO} will instead find and use the cached version
-of @file{~/foobar/MyMacro}. You can clear the cache by using the
+of @file{~/foobar/MyMacro}. You can clear all macros from the cache by using the
 @code{UnloadMacros} command. @xref{UnloadMacros}.
 
 The behaviour of macros may vary with different preferences. If the user
 changes the @code{AutoIndent} and @code{WordWrap} flags, for example, new lines and new
-text may not appear in the same way they would have when a macro was
-recorded. Good general purpose macros avoid such problems by using the
-@code{PushPrefs} command first. This preserves the user's preferences.
-Then they set any preferences that could affect their behaviour. Once
-that is taken care of they get on with the actual work for which they
-were intended. Finally, they use the @code{PopPrefs} command to restore
-the user's preferences. Note that if a macro is stopped before it
+text may not appear the way they would have when a macro was
+recorded. A good general purpose macro avoids such problems by using the
+@code{PushPrefs} command first to preserve the current preferences.
+The macro then sets any preferences that could affect its behaviour. Once
+that is taken care of it can get on with the actual work for which it
+were intended. Finally, it will use the @code{PopPrefs} command to restore
+the original preferences. Note that if a macro stops before it
 restores the preferences (either by the user pressing
 @kbd{@key{Control}-\} or by a command failing) then dealing with the
 changed preferences falls to the user.
 
 Any changes made to a document by a macro are recorded just as if you had
-entered the commands yourself. Therefore you can use the @code{Undo} command
+entered the text and commands yourself. Therefore you can use the @code{Undo} command
 to roll back those changes one at a time. This can be useful especially when
 developing macros, but you may want to be able to undo all the changes made
 by a macro with a single @code{Undo} command. The @code{AtomicUndo} command
@@ -728,7 +735,8 @@ i.e., as if they had been made by a single command, even if your macro
 calls other macros which could themselves contain matching @code{AtomicUndo +}
 and @code{AtomicUndo -} commands. @xref{AtomicUndo}.
 
-Any line in a macro that starts with a non-alphabetical character
+Leading spaces in macros are ignored, so you can indent your macros to make
+them more readable. Any line in a macro that starts with a non-blank, non-alphabetical character
 is considered a comment, so you can add comments to a macro by starting
 a line with @samp{#}. Recorded macros sometimes have comments added to them
 indicating calls to other macros.
@@ -738,12 +746,19 @@ Macros can operate across multiple documents, by using the @code{NextDoc} and
 macro is associated with the current document, replacing that document's
 prior unnamed macro.
 
-You can cancel in-progress macro recording with the @code{Record 0}
+You can cancel in-progress macro recording---and thus avoid wiping out a
+document's existing unnamed macro---with the @code{Record 0}
 command, or by selecting @code{Record Cancel} from the @code{Macro} menu.
 
 You can append additional recorded commands to your document's current
 macro with the @code{Record 1} command, or by selecting @code{Record Append}
 from the @code{Macro} menu.
+
+Finally, you can insert the current document's unnamed macro into your
+in-progress macro recording as many times as you like either by pressing the
+@key{f9} key or entering the @code{Play 1} command. Although the unnamed macro
+is distroyed and replaced when you stop recording your new macro, until then
+it's available for use like any other.
 
 
 
