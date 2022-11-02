@@ -366,6 +366,7 @@ const char *key_binding[NUM_KEYS] = {
 	/* ESC ^ */ NULL,
 	/* ESC _ */ PICK(NULL, AUTOINDENT_ABBREV),
 
+   /* Two fake ones for bracketed paste        200..201 */
    /*  n/a  */ NULL,  /* NE_KEY_BPASTE_BEGIN */
    /*  n/a  */ NULL,  /* NE_KEY_BPASTE_END */
 };

@@ -1097,10 +1097,11 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		clear_entire_screen();
 		ttysize();
 		keep_cursor_on_screen(cur_buffer);
+		reset_window();
 		if (executing_macro) {
 			refresh_window(b);
 			draw_status_bar();
-		} else reset_window();
+		}
 		return OK;
 
 	case FIND_A:
