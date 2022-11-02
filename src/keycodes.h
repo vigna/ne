@@ -112,6 +112,6 @@ onto an unused function key capability. */
 
 #define	NE_KEY_META(n) 	(NE_KEY_META0+(n))
 
-#define	NE_KEY_BPASTE_BEGIN	0x201
+#define	NE_KEY_BPASTE_BEGIN	0x200
 
-#define	NE_KEY_BPASTE_END	0x202
+#define	NE_KEY_BPASTE_END	0x201

@@ -559,7 +559,7 @@ typedef struct {
 	assert((b)->cur_pos == -1 || calc_width((b)->cur_line_desc, (b)->cur_pos, (b)->opt.tab_size, (b)->encoding) == (b)->win_x + (b)->cur_x);\
 	assert((b)->cur_pos == -1 || calc_virt_pos((b)->cur_line_desc, (b)->win_x + (b)->cur_x, (b)->opt.tab_size, (b)->encoding) == (b)->cur_pos);\
 	assert((b)->cur_pos == -1 || (b)->cur_pos > (b)->cur_line_desc->line_len || calc_char_len((b)->cur_line_desc, (b)->cur_pos, (b)->encoding) == (b)->cur_char);\
-	assert((b)->cur_pos < 0 || (b)->cur_pos >= (b)->cur_line_desc->line_len || (b)->encoding != ENC_UTF8 || utf8len((b)->cur_line_desc->line[(b)->cur_pos] > 0));\
+	assert((b)->cur_pos < 0 || (b)->cur_pos >= (b)->cur_line_desc->line_len || (b)->encoding != ENC_UTF8 || utf8len((b)->cur_line_desc->line[(b)->cur_pos]) > 0);\
 	assert_undo_buffer(&(b)->undo);\
 }}
 
