@@ -1,6 +1,8 @@
 #!/usr/bin/env perl
 
 use strict;
+use utf8;
+use open ':std', ':encoding(UTF-8)';
 $| = 1;
 
 # Todd M. Lewis <utoddl@gmail.com>
@@ -65,7 +67,11 @@ foreach ( @infofiles )
     my @line = <INFO>;
     close INFO;
     my $line = join '', @line;
-    $line =~ s<\*note *(\s*)(.+?)::> <$1`$2'>gis;
+
+    # Pick left- and right-quote depending on whether our docs contain u+2018 and u+2019 already.
+    my ($lq, $rq) = ($line =~ m/‘.+?’/) ? ('‘', '’') : ("'", "'");
+
+    $line =~ s<\*note *(\s*)(.+?)::> <$1$lq$2$rq>gis;
 
     my $state = 'searching';
     my $command;
@@ -74,7 +80,7 @@ foreach ( @infofiles )
         chomp;
         if ( $state eq 'searching' )
             {
-              next unless ( m/^(Syntax: )['`](([^ ]+).*)'\s*$/ );
+              next unless ( m/^(Syntax: )[‘'`](([^ ]+).*)[’']\s*$/ );
               $command = uc $3;
               $commands{$command}->{"cmd"}     = "$3";
               $commands{$command}->{"text"}[0] = "$1$2";
@@ -93,7 +99,7 @@ foreach ( @infofiles )
 
               # print "---2 read \"$_\"\n";
 
-              if ( m/^(Abbreviation: )['`](.+)'/ )
+              if ( m/^(Abbreviation: )[‘'`](.+)[’']/ )
                   {
                     $commands{$command}->{"abbr"} = "$2";
                     push @{$commands{$command}->{"text"}}, "$1$2";
