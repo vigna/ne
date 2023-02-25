@@ -1123,7 +1123,7 @@ off the status bar using either the @samp{Status Bar} menu item of the
 command. @xref{StatusBar}. Alternatively you can turn on the fast GUI
 mode using either the @samp{Fast GUI} menu item of the @samp{Prefs} menu
 or the @code{FastGUI} command (@pxref{FastGUI}). In fast GUI mode the
-location of the mark is not highlighted, and 
+location of the mark is not highlighted, and
 status bar is not draw in reverse, so some additional optimization can
 be done when refreshing it.
 
@@ -1396,7 +1396,7 @@ were opened. However, in this requester you can reorder these documents
 by using the keys bound to the @code{NextDoc} and @code{PrevDoc}
 commands, usually @key{f2} and @key{f3}. Any document reordering and
 selection will only take effect if you exit the requester with the
-@key{Return} key. 
+@key{Return} key.
 
 You can also save named documents and close unmodified documents without
 leaving the @code{SelectDoc} requester by using the key bound to the
@@ -1439,7 +1439,7 @@ before filling in the next row down. If you prefer your lists displayed in
 ``column major order''---the first, second, and third strings are in
 the same column and each column is filled before starting on the next
 column to the right---then use the @code{RequestOrder} command to
-switch that preference. The setting will be stored in your default
+switch that preference. The setting can be stored in your default
 preferences the next time you save them. See @ref{Preferences Commands}.
 
 
@@ -2064,7 +2064,7 @@ characters, as in @samp{[a-z$%.]}, which matches any lower case letter or
 
 Note that the usual special characters are not special any more inside a
 character set.  A completely different set of special characters exists
-inside character sets: @samp{]}, @samp{-} and @samp{^}. As @samp{\} is 
+inside character sets: @samp{]}, @samp{-} and @samp{^}. As @samp{\} is
 not special inside character sets, you cannot use the shortcuts
 @samp{\s} or @samp{\w} there.
 
@@ -2186,10 +2186,10 @@ matches the empty string, but only if it is at the end of a word.
 
 @item \s
 matches any white-space character in US-ASCII. These are @key{tab},
-@kbd{@key{Control}-J} (line feed), 
-@kbd{@key{Control}-k} (vertical tab), 
-@kbd{@key{Control}-L} (form feed), 
-@kbd{@key{Control}-M} (carriage return), and space. 
+@kbd{@key{Control}-J} (line feed),
+@kbd{@key{Control}-k} (vertical tab),
+@kbd{@key{Control}-L} (form feed),
+@kbd{@key{Control}-M} (carriage return), and space.
 
 @item \w
 matches any word-constituent character. These are US-ASCII letters,
@@ -2712,15 +2712,22 @@ documents in memory. Your cursor will be on your current document's
 name, and documents with unsaved changes will be indicated with
 asterisks (and bold if your terminal supports that). You select
 whichever document you want to become the current document by moving
-your cursor to its name and hitting @key{Return}..
+your cursor to its name and hitting @key{Return}.
 
 While the list of documents is displayed, you can close unmodified
 documents with your @code{CloseDoc} key (@kbd{@key{Control}-Q}), save
 named documents with your @code{Save} key (@kbd{@key{Control}-S}), and
 you can alter their relative order using your @code{NextDoc} and
 @code{PrevDoc} keys (@key{f2} and @key{f3}), which have the effect of
-swapping your currently selected document with the next or previous
-document in the list, respectively.
+moving the currently selected document forward or backward in the list,
+respectively.
+
+Using plain characters and the @key{BackSpace} navigates your displayed
+document names based on their common prefixes. The text between the
+beginning and the cursor within the currently selected document's name
+is the current common prefix. The @key{Ins} key toggles between hiding
+or displaying names not matching the current common prefix. This can be
+especially useful if you have a large number of open documents.
 
 If you escape from the requester, the requester goes away, you are
 returned to your original current document (unless you closed it!),

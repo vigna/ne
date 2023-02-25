@@ -93,29 +93,30 @@ static int X, R, C, page, fuzz_len;
 #define DY(d)                (dyd((d)))
 
 
-/* The master req_list that gets built prior to calling request_strings() has its own
-   copy of each of the strings. request() builds a working copy of the master
-   req_list. This working req_list doesn't duplicate the master's strings, but
-   it does have an array of pointers to some of those strings. The working
-   req_list's array may exclude some entries if progressive search (rl.prune) is
-   turned on (via the Insert key), and some entries may be out of order
-   relative to those in the master req_list because of F2/F3 reordering during
-   SelectDoc, in which case the master req_list keeps a mapping between the
-   original order and the displayed order.
+/* The initial req_list (*rl0) that gets built prior to calling request_strings()
+   has its own copy of each of the strings. request() builds a working copy of
+   the initial req_list (rl). This working req_list doesn't duplicate rl0's
+   strings, but it does have an array of pointers to some of those strings; it
+   may exclude some entries if progressive search (rl.prune) is turned on (via
+   the Insert key), and some entries may be out of order relative to those in the
+   initial req_list because of F2/F3 reordering during SelectDoc, in which case
+   *rl0 keeps a mapping between the original order and the displayed order. Conversely,
+   rl does not keep a mapping going the other way; use reorder_referent(n) to
+   discover which entry in *rl0 refers to the n-th entry in rl.
 
    The req_list_del() function removes an item from the req_list. It is the
-   counterpart to req_list_add() which we use for building the master req_list
+   counterpart to req_list_add() which we use for building the initial req_list
    one item at a time. req_list_del() can be called either while building the
-   req_list, or after the req_list has been finalized. It's used when we close
-   a document with the SelectDoc req_list showing to remove that closed
-   document's entry from the master req_list. Coordinating changes between the
-   working req_list and the master req_list when deleting an entry from the
-   master req_list requires some of the string data of the master req_list to be
-   shifted. Because the working list doesn't have its own copy of the strings,
+   req_list, or after the req_list has been finalized. It's used when we close a
+   document during SelectDoc to remove that closed document's entry from *rl0.
+
+   Coordinating changes between the working req_list (rl) and the initial
+   req_list (*rl0) when deleting an entry requires some of the string data to be
+   shifted. Because the working req_list doesn't have its own copy of the strings,
    there's no character data that needs shifting for the working req_list.
    However, the working req_list does have its own list of pointers into that
    data, and any of them pointing into the shifted character memory needs to be
-   adjusted appropriately. */
+   adjusted. */
 
 static req_list rl, *rl0; /* working req_list and pointer to the original req_list */
 
@@ -130,11 +131,12 @@ typedef struct {
 } req_page_t;
 
 
-/* n0        index of the first entry for this page.
-   entries   number of entries to fit onto this page.
-   cols      number of columns to create.
-   rows      number of rows to create.
-   page      req_page_t to fill in with these parameters.
+/* fit_page() parameters are:
+     n0        index of the first entry for this page.
+     entries   number of entries to fit onto this page.
+     cols      number of columns to create.
+     rows      number of rows to create.
+     page      req_page_t to fill in with these parameters.
    Returns true if the *page will fit on screen and has the requested number of entries; false otherwise.
    (Assumes 1 column always fits.) */
 
@@ -165,7 +167,7 @@ static bool fit_page(int n0, int entries, int cols, int rows, req_page_t * page)
 
 
 static struct {
-	int pages;             /* allocated req_pag_t structures */
+	int pages;             /* allocated req_page_t structures */
 	req_page_t * req_page; /* array of allocated req_page_t */
 } req_page_table = { 0, NULL} ;
 
@@ -351,7 +353,7 @@ static int common_prefix_len(req_list *cpl_rl) {
 
 /* Given that the req_list entries in rl may be reordered WRT *rl0,
    return the original index corresponding to the new index "n". */
-static int reverse_reorder(const int n) {
+static int reorder_referent(const int n) {
 	if (!rl0->allow_reorder) return n;
 	for (int i = 0; i < rl0->cur_entries; i++)
 		if (rl0->reorder[i] == n) return i;
@@ -364,8 +366,8 @@ static void dump_reorder() {
 		fprintf(stderr,"===================================\n");
 		for (int i = 0; i < rl0->cur_entries; i++) {
 			fprintf(stderr,"%d:%d %s | %s\n", i, rl0->reorder[i],
-			   rl0->entries[i],
-			   i < rl.cur_entries ? rl.entries[i] : "");
+				rl0->entries[i],
+				i < rl.cur_entries ? rl.entries[i] : "");
 		}
 		fprintf(stderr,"-----------------------------------\n");
 		fflush(NULL);
@@ -428,10 +430,8 @@ static bool normalize(int n) {
 	if (n >= rl.cur_entries ) n = rl.cur_entries - 1;
 	N2PCRX(n, page, C, R, X);
 	D(dump_reorder();)
-	if ( p != page ) {
+	if ( p != page )
 		print_strings();
-		return true;
-	}
 	return false;
 }
 
@@ -535,49 +535,40 @@ static void request_move_right(void) {
 
 
 /* Reorder (i.e. swap) the current entry n with entry n+dir.
-   dir should be either 1 or -1.
-   Rearranges pointers in rl.cur_entries, and
-   updates the reorder array in *rl0.
+   dir must be either 1 or -1.
+   Swaps rl.entries[n, n+dir],
+         rl.lengths[n, n+dir], and
+         rl0.reorder[a, b] where a and b refer to rl.entries[n, n+dir].
    Note: under no circumstances do the original rl0->entries[] change order. */
 
-static bool request_reorder(const int dir) {
-	if (! rl0->allow_reorder || rl.cur_entries < 2) return false;
+static void request_reorder(int dir) {
+	if (! rl0->allow_reorder || rl.cur_entries < 2 || abs(dir) != 1) return;
 
-	/* p0 and p1 point to the strings we want to swap */
-	/* n0 and n1 are the indices in   rl.entries[] for p0 and p1. (Also for rl.lengths[].) */
-	/* i0 and i1 are the indices in rl0->entries[] for p0 and p1 */
 	const int n0 = PCR2N(page, C, R);
-	const int n1 = (n0 + dir + rl.cur_entries ) % rl.cur_entries; /* Allows wrap around. */
+	const int n_fin = (n0 + dir + rl.cur_entries ) % rl.cur_entries; /* allows wrap-around */
+	dir = (n0 > n_fin) ? -1 : 1; /* adjust dir in case of wrap-around */
 
-	char * const p0 = rl.entries[n0];
-	char * const p1 = rl.entries[n1];
+	for (int n_cur = n0; n_cur != n_fin; n_cur += dir) {
+		int n_nxt = n_cur + dir;
 
-	int i0, i1, i;
-	for (i = 0, i0 = i1 = -1; i < rl0->cur_entries && (i0 < 0 || i1 < 0); i++) {
-		if (i0 < 0 && p0 == rl0->entries[i] ) {
-			i0 = i;
-		}
-		if (i1 < 0 && p1 == rl0->entries[i] ) {
-			i1 = i;
-		}
+		int cur_ref = reorder_referent(n_cur);
+		int nxt_ref = reorder_referent(n_nxt);
+		int tmp = rl0->reorder[cur_ref];
+		rl0->reorder[cur_ref] = rl0->reorder[nxt_ref];
+		rl0->reorder[nxt_ref] = tmp;
+
+		char * p = rl.entries[n_cur];
+		rl.entries[n_cur] = rl.entries[n_nxt];
+		rl.entries[n_nxt] = p;
+
+		tmp = rl.lengths[n_cur];
+		rl.lengths[n_cur] = rl.lengths[n_nxt];
+		rl.lengths[n_nxt] = tmp;
 	}
-
-   i = rl0->reorder[i0];
-	rl0->reorder[i0] = rl0->reorder[i1];
-	rl0->reorder[i1] = i;
-
-	rl.entries[n0] = p1;
-	rl.entries[n1] = p0;
-
-	i = rl.lengths[n0];
-	rl.lengths[n0] = rl.lengths[n1];
-	rl.lengths[n1] = i;
-
 	rl0->reordered = rl.reordered = true;
-	reset_req_pages(min(n0,n1));
+	reset_req_pages(min(n0,n_fin));
 	page = -1; /* causes normalize() to call print_strings() */
-	normalize(n1);
-	return true;
+	normalize(n_fin);
 }
 
 
@@ -591,7 +582,7 @@ static int rebuild_rl_entries() {
 	const char * const p0 = rl.entries[PCR2N(page, C, R)];
 	int i, j, n;
 	for (i = j = n = 0; i < rl0->cur_entries; i++) {
-		int orig = reverse_reorder(i);
+		int orig = reorder_referent(i);
 		char * const p1 = rl0->entries[orig];
 		D(fprintf(stderr, "rre: i:%d, j:%d, n:%d p0:%lx p1:%lx fuzz_len:%d rl.prune:%d\n",
 		                          i,    j,    n,
@@ -723,13 +714,14 @@ static void fuzz_forward(const int c) {
 
 /* request_strings_init() is only ever called by request_strings().
 
-   request_strings_init() takes the original master list of strings, described
-   by *rlp0, and makes a working copy described by the static rl. This working
-   copy has an allocated buffer large enough to hold a copy of all the master's
-   original char pointers, but at any time may have fewer entries due to fuzzy
-   matching (prune) and entry deletions. The counterpart to
-   request_strings_init() is request_strings_cleanup() which cleans up the
-   allocations. It too is only ever called by request_strings(). */
+   request_strings_init() takes the original list of strings, described by *rlp0,
+   and makes a working copy described by the static rl. This working copy has an
+   allocated buffer large enough to hold a copy of all the original's char
+   pointers, but at any time may have fewer entries due to fuzzy matching (prune)
+   and entry deletions.
+
+   The counterpart to request_strings_init() is request_strings_cleanup() which
+   cleans up the allocations. It too is only ever called by request_strings(). */
 
 static int request_strings_init(req_list *rlp0) {
 	rl.cur_entries = rlp0->cur_entries;
@@ -1169,7 +1161,7 @@ char *request_files(const char * const filename, bool use_prefix) {
 		req_list_free(&rf_rl);
 	} while(next_dir);
 
-	chdir(cur_dir_name);
+	if (chdir(cur_dir_name)) alert();
 	free(cur_dir_name);
 
 	return result;
@@ -1446,7 +1438,7 @@ void req_list_free(req_list * const rlf) {
    The boolean allow_reorder, when set, enables the user to move the highlighted
    entry forward or backward in the list of entries by use of the NextDoc and
    PrevDoc commands (invoked normally by the F2 and F3 keys). In this case, you
-   will need to consult the rl->reorder map upon return to determine the
+   will need to consult the rl0->reorder map upon return to determine the
    indicated new order for entries.
 
    If a suffix character is provided, it can optionally be added to individual
@@ -1564,8 +1556,7 @@ char *req_list_add(req_list * const rla, char * const str, const int suffix) {
 	/* make enough space to store the new string */
 	if (rla->cur_chars + lentot > rla->alloc_chars) {
 		char * p0 = rla->chars;
-		char * p1;
-		p1 = realloc(rla->chars, sizeof(char) * (rla->alloc_chars * 2 + lentot));
+		char * p1 = realloc(rla->chars, sizeof(char) * (rla->alloc_chars * 2 + lentot));
 		if (!p1) return NULL;
 		rla->alloc_chars = rla->alloc_chars * 2 + lentot;
 		rla->chars = p1;
