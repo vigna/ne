@@ -2670,10 +2670,11 @@ marked as modified, you have to confirm the action.
 @noindent Syntax: @code{CloseDoc}@*
 @noindent Abbreviation: @code{CD}
 
-@noindent closes the current document. The document is removed from
-@code{ne}'s list and, if it is the only existing document, @code{ne}
-exits. If the document was modified since it was last saved, you have to
-confirm the action.
+@noindent closes the current document. If the document was modified since it was
+last saved, you have to confirm the action. If it is the only document, @code{ne}
+exits. Otherwise @code{ne} will select the most recently active next or previous
+document adjacent to the one you just closed as the new current document. See
+@ref{NextDoc}, and @ref{PrevDoc}.
 
 
 
@@ -2685,7 +2686,7 @@ confirm the action.
 @noindent Abbreviation: @code{ND}
 
 @noindent sets as current document the next document in the document list.
-
+See @ref{PrevDoc} and @ref{SelectDoc}.
 
 
 
@@ -2697,6 +2698,7 @@ confirm the action.
 @noindent Abbreviation: @code{PD}
 
 @noindent sets as current document the previous document in the document list.
+See @ref{NextDoc} and @ref{SelectDoc}.
 
 
 

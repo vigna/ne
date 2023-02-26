@@ -198,6 +198,7 @@ buffer *alloc_buffer(const buffer * const cur_b) {
 		new_list(&b->line_desc_list);
 		new_list(&b->char_pool_list);
 
+		b->act = ++buffer_actuations;
 		b->cur_macro = alloc_char_stream(0);
 		b->bpaste_support = bracketed_paste ? 1 : 0;
 		b->opt.tab_size = 8;

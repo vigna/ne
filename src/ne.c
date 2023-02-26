@@ -109,6 +109,7 @@ bool bracketed_paste = true;
 /* end of global prefs */
 
 buffer *cur_buffer;
+unsigned long buffer_actuations = 0;
 int turbo;
 bool do_syntax = true;
 
@@ -134,7 +135,11 @@ buffer *new_buffer(void) {
 }
 
 bool delete_buffer(void) {
-	buffer *b = (buffer *)cur_buffer->b_node.next;
+	buffer *b;
+	if (is_first(cur_buffer)) b = (buffer *)cur_buffer->b_node.next;
+	else if (is_last(cur_buffer)) b = (buffer *)cur_buffer->b_node.prev;
+	else if (((buffer *)cur_buffer->b_node.next)->act > ((buffer *)cur_buffer->b_node.prev)->act) b = (buffer *)cur_buffer->b_node.next;
+	else b = (buffer *)cur_buffer->b_node.prev;
 
 	rem(&cur_buffer->b_node);
 	free_buffer(cur_buffer);

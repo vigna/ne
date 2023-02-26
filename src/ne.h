@@ -208,7 +208,8 @@ typedef struct {
 	node *tail_pred;
 } list;
 
-
+#define is_first(n) (((node *)n)->prev->prev == NULL)
+#define is_last(n)  (((node *)n)->next->next == NULL)
 
 /* All the structures that follow have an assertion macro which checks for
    partial internal consistency of the structure. These macros are extensively
@@ -488,6 +489,7 @@ typedef struct {
 	char *bpaste_macro_after;  /* name of macro to run after processing bracketed pastes */
 	int   bpaste_support;      /* 0=not supported; 1=supported w/ defaults; 2=supported with before and after macros */
 	unsigned long mtime;      /* mod time of on-disk file when it was last loaded/saved, or 0 */
+	unsigned long act;        /* increasing indicator of recently active relative to other buffers */
 	int64_t win_x, win_y;     /* line and pos of upper left-most visible character. */
 	int cur_x, cur_y;         /* position of cursor within the window */
 	int64_t wanted_x;         /* desired x position modulo short lines, tabs, etc. Valid only if x_wanted is true. */
@@ -585,6 +587,8 @@ extern const char *key_binding[];
 extern config_source key_binding_source[NUM_KEYS];
 
 extern buffer *cur_buffer;
+
+extern unsigned long buffer_actuations;
 
 /* These are the global lists. */
 

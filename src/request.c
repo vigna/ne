@@ -1556,13 +1556,15 @@ char *req_list_add(req_list * const rla, char * const str, const int suffix) {
 	/* make enough space to store the new string */
 	if (rla->cur_chars + lentot > rla->alloc_chars) {
 		char * p0 = rla->chars;
-		char * p1 = realloc(rla->chars, sizeof(char) * (rla->alloc_chars * 2 + lentot));
+		char * p1 = malloc(sizeof(char) * (rla->alloc_chars * 2 + lentot));
 		if (!p1) return NULL;
+		memcpy(p1, p0, rla->alloc_chars);
 		rla->alloc_chars = rla->alloc_chars * 2 + lentot;
 		rla->chars = p1;
 		/* all the strings just moved from *p0 to *p1, so adjust accordingly */
 		for (int i = 0; i < rla->cur_entries; i++)
 			rla->entries[i] += ( p1 - p0 );
+		free(p0);
 	}
 
 	/* make enough slots to hold the string pointer and lengths */
