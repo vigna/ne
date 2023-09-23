@@ -83,9 +83,9 @@ static void search_buff(const buffer *b, char * p, const int encoding, const boo
    will contain a value out of those in the enum info that start with AUTOCOMPLETE_. */
 
 char *autocomplete(char *p, char *req_msg, const int ext, int * const error) {
+	assert(p);
 	int max_len = 0, min_len = INT_MAX, prefix_len = strlen(p);
 	static int ac_prune = true;
-	assert(p);
 
 	req_list_init(&rl, (cur_buffer->opt.case_search ? strcmp : strdictcmp), false, false, EXTERNAL_FLAG_CHAR);
 	rl.prune = ac_prune;
@@ -140,12 +140,12 @@ char *autocomplete(char *p, char *req_msg, const int ext, int * const error) {
 		qsort(rl.entries, rl.cur_entries, sizeof(char *), strdictcmpp);
 		/* Find maximum common prefix. */
 		int m = strlen(rl.entries[0]);
-		if (rl.entries[0][m-1] == EXTERNAL_FLAG_CHAR) m--;
-		for(int i = 1; i < rl.cur_entries; i++) {
-			int j;
-			for(j = 0; j < m; j++)
-				if (rl.entries[i][j] != rl.entries[0][j]) break;
-			m = j;
+		if (m && rl.entries[0][m-1] == EXTERNAL_FLAG_CHAR) m--;
+		encoding_type enc_0 = detect_encoding(rl.entries[0], m);
+		for (int i = 1; m && i < rl.cur_entries; i++) {
+			encoding_type enc_i = detect_encoding(rl.entries[i], strlen(rl.entries[i]));
+			int mi = max_prefix(rl.entries[0], enc_0, rl.entries[i], enc_i);
+			if (mi < m) m = mi;
 		}
 
 		/* If we can output more characters than the prefix len, we do so without

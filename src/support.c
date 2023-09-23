@@ -142,7 +142,7 @@ char *relative_file_path(const char *aa, const char *b) {
 	if (!a) return NULL;
 	normalize_path(a);
 
-	int match = max_prefix(a, b);
+	int match = max_prefix(a, ENC_8_BIT, b, ENC_8_BIT);
 	if (a[0] != '/' || b[0] != '/') {
 		if (a) free(a);
 		return NULL;
@@ -415,10 +415,13 @@ bool same_str(const char *p, const char *q) {
 
 /* Computes the length of the maximal common prefix of s and t. */
 
-int max_prefix(const char * const s, const char * const t) {
-	int i;
-	for(i = 0; s[i] && t[i] && s[i] == t[i]; i++);
-	return i;
+int max_prefix(const char * const s, encoding_type s_enc, const char * const t, encoding_type t_enc) {
+	int s_pos = 0, t_pos = 0;
+	while (s[s_pos] && t[t_pos] && get_char(&s[s_pos], s_enc) == get_char(&t[t_pos], t_enc)) {
+		s_pos = next_pos(s, s_pos, s_enc);
+		t_pos = next_pos(t, t_pos, t_enc);
+	}
+	return s_pos;
 }
 
 

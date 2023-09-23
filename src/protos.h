@@ -304,7 +304,7 @@ int filenamecmp(const char *a, const char *b);
 void set_interactive_mode(void);
 void unset_interactive_mode(void);
 void *alloc_or_mmap(size_t size, int fd_or_zero, int *force);
-int max_prefix(const char *s, const char *t);
+int max_prefix(const char *s, encoding_type s_enc, const char *t, encoding_type t_enc);
 bool is_prefix(const char *p, const char *s);
 bool is_migrated(const char *name);
 bool is_directory(const char *name);

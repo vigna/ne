@@ -614,7 +614,7 @@ static char *complete_filename(const char *start_prefix) {
 		for(struct dirent * de; !stop && (de = readdir(d)); ) {
 			if (is_prefix(start_prefix, de->d_name))
 				if (cur_prefix) {
-					cur_prefix[max_prefix(cur_prefix, de->d_name)] = 0;
+					cur_prefix[max_prefix(cur_prefix, ENC_8_BIT, de->d_name, ENC_8_BIT)] = 0;
 					unique = false;
 				}
 				else {
