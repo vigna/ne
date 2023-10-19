@@ -1,6 +1,6 @@
 Summary: ne, the nice editor
 Name: ne
-Version: 3.3.2
+Version: 3.3.3
 Release: 1%{?dist}
 License: GPLv3+
 Source0: https://ne.di.unimi.it/ne-%{version}.tar.gz

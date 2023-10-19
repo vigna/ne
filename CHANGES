@@ -1,6 +1,6 @@
 (This file, CHANGES, lists fixes. See NEWS for new features and enhancements.)
 
-<unreleased>
+3.3.3 2023-10-19
 
   * Fixed document reordering in SelectDoc requester when first or last
     document wraps around to the other end of the document list.
