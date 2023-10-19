@@ -1,3 +1,5 @@
+%define _hardened_build 1
+
 Summary: ne, the nice editor
 Name: ne
 Version: 3.3.3
@@ -69,6 +71,15 @@ Documentation for ne, the nice editor.
 %changelog
 * Thu Oct 19 2023 Sebastiano Vigna <sebastiano.vigna@gmail.com> - 3.3.3-1
 - First release
+
+* Thu Jul 20 2023 Fedora Release Engineering <releng@fedoraproject.org> - 3.3.2-4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_39_Mass_Rebuild
+
+* Thu Jan 19 2023 Fedora Release Engineering <releng@fedoraproject.org> - 3.3.2-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_38_Mass_Rebuild
+
+* Tue Oct 25 2022 Sebastiano Vigna <sebastiano.vigna@gmail.com> - 3.3.2-2
+- Hardened build
 * Tue Sep 13 2022 Sebastiano Vigna <sebastiano.vigna@gmail.com> - 3.3.2-1
 - First release
 * Tue May 18 2021 Sebastiano Vigna <sebastiano.vigna@gmail.com> - 3.3.1-1
