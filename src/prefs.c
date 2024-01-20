@@ -530,27 +530,51 @@ int pop_prefs(buffer * const b) {
 /* Bracketed paste support has its own private options cache. */
 
 static options_t bpaste_opt_cache;
+static struct {
+	int64_t pos;
+	int64_t line;
+	int cur_y;
+} bpaste_marks[2];
 
 #define BUFSIZE 2048
 static char cmdbuf[BUFSIZE+1];
 
 void bracketed_paste_begin(buffer *b) {
-	if (!bracketed_paste || b->bpaste_support < 1) return;
+	if (!bracketed_paste || b->bpaste_support < 1 || b->bpasting) return;
 	bpaste_opt_cache = b->opt;
+	b->bpasting = 1;
 	if (b->bpaste_support == 1) {
+		bpaste_marks[0].pos = b->cur_pos;
+		bpaste_marks[0].line = b->cur_line;
+		bpaste_marks[0].cur_y = b->cur_y;
 		b->opt.auto_indent = 0;
 		start_undo_chain(b);
 	} else if (b->bpaste_support == 2) {
 		cmdbuf[0] = '\0';
 		strncat(strncpy(cmdbuf, "Macro ", BUFSIZE), b->bpaste_macro_before, BUFSIZE);
 		execute_command_line(b, cmdbuf);
-	}
+	} else b->bpasting = 0;
 }
 
 void bracketed_paste_end(buffer *b) {
+	b->bpasting = 0;
 	if (!bracketed_paste || b->bpaste_support < 1) return;
 	b->opt = bpaste_opt_cache;
 	if (b->bpaste_support == 1) {
+		if (b->opt.auto_indent && bpaste_marks[0].line < b->cur_line && bpaste_marks[0].pos > 0) {
+			int64_t block_start_line_tmp = b->block_start_line, block_start_pos_tmp = b->block_start_pos;
+			int marking_tmp = b->marking, mark_is_vertical_tmp = b->mark_is_vertical;
+			b->block_start_line = bpaste_marks[0].line + 1;
+			b->block_start_pos = 0;
+			b->marking = 1;
+			b->mark_is_vertical = 0;
+			snprintf(cmdbuf, BUFSIZE, "> %ld s", bpaste_marks[0].pos);
+			shift(b, cmdbuf, &cmdbuf[0], BUFSIZE);
+			b->block_start_line = block_start_line_tmp;
+			b->block_start_pos = block_start_pos_tmp;
+			b->marking - marking_tmp;
+			b->mark_is_vertical = mark_is_vertical_tmp;
+		}
 		end_undo_chain(b);
 	} else if (b->bpaste_support == 2) {
 		strncat(strncpy(cmdbuf, "Macro ", BUFSIZE), b->bpaste_macro_after, BUFSIZE);

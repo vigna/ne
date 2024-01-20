@@ -432,25 +432,25 @@ typedef struct {
 	int tab_size;
 	int right_margin;
 	unsigned int
+		auto_indent:1,     /* Replicate indentation when creating a new line */
+		automatch:4,       /* Automatically match visible brackets */
+		auto_prefs:1,      /* Use autoprefs */
+		binary:1,          /* Load and save in binary mode */
+		case_search:1,     /* Look at case matching in searches */
+		del_tabs:1,        /* DEL/BS deletes tab's worth of space. */
+		do_undo:1,         /* Record each action and allow undoing it */
 		free_form:1,       /* Editing is free form (cursor can be anywhere) */
 		hex_code:1,        /* Show hexadecimal code under the cursor */
-		word_wrap:1,       /* Word wrap is on */
-		auto_indent:1,     /* Replicate indentation when creating a new line */
-		preserve_cr:1,     /* Preserve Carriage Returns, don't treat as line terminators. */
 		insert:1,          /* Insert mode */
-		do_undo:1,         /* Record each action and allow undoing it */
-		auto_prefs:1,      /* Use autoprefs */
 		no_file_req:1,     /* Do not display the file requester */
+		preserve_cr:1,     /* Preserve Carriage Returns, don't treat as line terminators. */
 		read_only:1,       /* Read-only mode */
 		search_back:1,     /* Last search was backwards */
-		case_search:1,     /* Look at case matching in searches */
-		tabs:1,            /* TAB inserts TABs(1) vs. spaces(0) */
-		del_tabs:1,        /* DEL/BS deletes tab's worth of space. */
 		shift_tabs:1,      /* Shift may insert tabs, but only if tabs is also true */
-		automatch:4,       /* Automatically match visible brackets */
-		binary:1,          /* Load and save in binary mode */
+		tabs:1,            /* TAB inserts TABs(1) vs. spaces(0) */
 		utf8auto:1,        /* Try to detect automatically UTF-8 */
-		visual_bell:1;     /* Prefer visible bell to audible */
+		visual_bell:1,     /* Prefer visible bell to audible */
+		word_wrap:1;       /* Word wrap is on */
 } options_t;
 
 #ifndef NDEBUG
@@ -535,6 +535,7 @@ typedef struct {
 		last_was_regexp:1,       /* The last search operation was done with regexps */
 		undoing:1,               /* We are currently undoing an action */
 		redoing:1,               /* We are currently redoing an action */
+		bpasting:1,              /* We are currently doing a bracketed paste */
 		mark_is_vertical:1,      /* The current marking is vertical */
 		atomic_undo:1,           /* subsequent commands undo as a block */
 		is_CRLF:1;               /* Buffer should be saved with CR/LF terminators */

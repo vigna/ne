@@ -1,5 +1,13 @@
 (This file, NEWS, lists new features and enhancements. See CHANGES for fixes.)
 
+<unreleased>
+
+  * Bracketed paste now consults the AutoIndent flag to determine whether to
+    preserve the cursor's initial horizontal offset. It's like a block
+    level auto indent rather than a line-by-line (and therefore
+    cumulative) auto indent. Being created internally by the Shift command
+    the introduced leading space also honors the Tabs and ShiftTabs flags.
+
 3.3.3 2023-10-19
 
   * BracketedPaste support has been added; turns off AutoIndent when
