@@ -9,7 +9,7 @@
 =Keyword	bold
 =Bad		bold red
 =Brace		magenta
-
+=Quote		blue
 =Directive	red
 =Reference	yellow
 =LocalType	fg_310 # brown
@@ -18,18 +18,19 @@
 =BadTab		inverse red
 
 :line_start Idle
-	*		maybe_key	noeat
+	*		maybe_key	noeat mark
 	"\t"		bad_tab		recolor=-1
 	"#"		line_comment	recolor=-1
+	"."		maybe_block_end1
 	" "		line_start
 
 :idle Constant
-	*		plain_scalar	noeat
+	*		plain_scalar	noeat mark
 	"\n"		line_start
 	"%"		directive	recolor=-1
 	" "		maybe_idle_comment
-	"'"		string_sq_1	recolor=-1
-	"\""		string_dq_1	recolor=-1
+	"'"		string_sq_start	recolor=-1
+	"\""		string_dq_start	recolor=-1
 	"{[]}"		brace		recolor=-1
 	"."		maybe_block_end1
 	"*&"		maybe_reference
@@ -38,24 +39,43 @@
 :plain_scalar Constant
 	*		plain_scalar
 	"\t"		bad_tab		recolor=-1
-	"\n"		line_start	noeat
+	"\n"		line_start
 	" "		maybe_plain_scalar_comment
+	":"		plain_scalar_interrupt	recolor=-1
+	"{[]},"		post_scalar	noeat
+
+:plain_scalar_interrupt Constant
+	*		plain_scalar	recolor=-1
+	" \n"		key		recolormark
+	"{[]},"		brace
+
+:post_scalar Idle
+	*		maybe_key	noeat
+	"#"		line_comment	recolor=-1
+	",\n"		line_start	recolor=-1
+	"{[]}"		brace		recolor=-1
+	"'"		string_sq_1	recolor=-1
+	"\""		string_dq_1	recolor=-1
+
 
 :maybe_key Idle
-	*		maybe_key1	recolor=-1 mark
+	*		maybe_key1	recolor=-1
 	"\n"		line_start
 	"%#'\"{[]}*&!"	idle		noeat
-	"-"		maybe_block1	mark
+	"-"		maybe_block1
 
 :maybe_key1 Constant
 	*		idle		noeat
-	":"		key
+	":"		maybe_key2
 	"a-zA-Z0-9_.-"	maybe_key1
 	" "		maybe_key1_comment
 
-# necessary to include the :
+:maybe_key2 Constant
+	*		idle		noeat
+	" \n"		key		noeat recolormark
+
 :key Idle
-	*		key_end		noeat recolormark
+	*		key_end		noeat
 
 :key_end Idle
 	*		idle		noeat
@@ -64,16 +84,17 @@
 :bad_tab BadTab
 	*		line_start	noeat
 
-:maybe_plain_scalar_comment Comment
-	*		plain_scalar	noeat
+
+:maybe_idle_comment Comment
+	*		idle		noeat
 	"#"		line_comment
 
 :maybe_key1_comment Comment
 	*		maybe_key1	noeat
 	"#"		line_comment
 
-:maybe_idle_comment Comment
-	*		idle		noeat
+:maybe_plain_scalar_comment Comment
+	*		plain_scalar	noeat
 	"#"		line_comment
 
 :line_comment Comment
@@ -81,36 +102,41 @@
 	"\n"		line_start
 
 :brace Brace
-	*		idle		noeat
+	*		line_start	noeat
 
 :directive Directive
 	*		directive
 	"\n"		line_start
 
-:string_sq_1 Constant
+#============ Quoted Strings ===================
+:string_q_end Quote
+	*		idle		noeat
+#------------ single-quotes --------------------
+:string_sq_start Quote
 	*		string_sq	noeat
 
 :string_sq Constant
 	*		string_sq
-	"\'"		idle
-	"\\"		string_sq_esc	recolor=-1
+	"'"		string_sq_maybe_end	recolor=-1
 
-:string_sq_esc Escape
-	*		string_sq
-	"\n"		string_sq	recolor=-2
+:string_sq_maybe_end Escape
+	*		string_q_end	noeat recolor=-2
+	"'"		string_sq
 
-:string_dq_1 Constant
+#------------ double-quotes --------------------
+:string_dq_start Quote
 	*		string_dq	noeat
 
 :string_dq Constant
 	*		string_dq
-	"\""		idle
+	"\""		string_q_end	recolor=-1
 	"\\"		string_dq_esc	recolor=-1
 
 :string_dq_esc Escape
 	*		string_dq
 	"\n"		string_dq	recolor=-2
 
+#============ '---' Blocks =====================
 :maybe_block1 Constant
 	*		maybe_key1	noeat
 	"-"		maybe_block2
@@ -120,19 +146,22 @@
 	"-"		block		recolor=-3
 
 :block BlockDelim
-	*		idle		noeat
+	*		idle		noeat recolor=-4
+	"\n"		line_start
 
 :maybe_block_end1 Constant
-	*		idle		noeat
+	*		idle		noeat recolor=-2
 	"."		maybe_block_end2
 
 :maybe_block_end2 Constant
-	*		idle		noeat
+	*		idle		noeat recolor=-3
 	"."		block_end	recolor=-3
 
 :block_end BlockDelim
-	*		idle		noeat
+	*		idle		noeat recolor=-4
+	"\n"		line_start
 
+#============ Reference ========================
 :maybe_reference Constant
 	*		idle
 	"a-zA-Z_"	reference	recolor=-2
@@ -141,6 +170,7 @@
 	*		idle		noeat
 	"a-zA-Z0-9_"	reference
 
+#============ Types ============================
 :maybe_typecast Constant
 	*		idle		noeat
 	"a-zA-Z_"	local_type	recolor=-1

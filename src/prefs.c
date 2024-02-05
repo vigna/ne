@@ -572,7 +572,7 @@ void bracketed_paste_end(buffer *b) {
 			shift(b, cmdbuf, &cmdbuf[0], BUFSIZE);
 			b->block_start_line = block_start_line_tmp;
 			b->block_start_pos = block_start_pos_tmp;
-			b->marking - marking_tmp;
+			b->marking = marking_tmp;
 			b->mark_is_vertical = mark_is_vertical_tmp;
 		}
 		end_undo_chain(b);
