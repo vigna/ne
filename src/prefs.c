@@ -561,6 +561,15 @@ void bracketed_paste_end(buffer *b) {
 	if (!bracketed_paste || b->bpaste_support < 1) return;
 	b->opt = bpaste_opt_cache;
 	if (b->bpaste_support == 1) {
+		b->bookmark[PASTE_START_BOOKMARK].pos   = bpaste_marks[0].pos;
+		b->bookmark[PASTE_START_BOOKMARK].line  = bpaste_marks[0].line;
+		b->bookmark[PASTE_START_BOOKMARK].cur_y = bpaste_marks[0].cur_y;
+		b->bookmark_mask |= (1 << PASTE_START_BOOKMARK);
+		b->bookmark[PASTE_END_BOOKMARK].pos   = b->cur_pos;
+		b->bookmark[PASTE_END_BOOKMARK].line  = b->cur_line;
+		b->bookmark[PASTE_END_BOOKMARK].cur_y = b->cur_y;
+		b->bookmark_mask |= (1 << PASTE_END_BOOKMARK);
+		end_undo_chain(b);
 		if (b->opt.auto_indent && bpaste_marks[0].line < b->cur_line && bpaste_marks[0].pos > 0) {
 			int64_t block_start_line_tmp = b->block_start_line, block_start_pos_tmp = b->block_start_pos;
 			int marking_tmp = b->marking, mark_is_vertical_tmp = b->mark_is_vertical;
@@ -575,7 +584,7 @@ void bracketed_paste_end(buffer *b) {
 			b->marking = marking_tmp;
 			b->mark_is_vertical = mark_is_vertical_tmp;
 		}
-		end_undo_chain(b);
+		do_action(b, GOTOBOOKMARK_A, -1, str_dup("<"));
 	} else if (b->bpaste_support == 2) {
 		strncat(strncpy(cmdbuf, "Macro ", BUFSIZE), b->bpaste_macro_after, BUFSIZE);
 		execute_command_line(b, cmdbuf);

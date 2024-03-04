@@ -153,8 +153,12 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 /* This is the dispatcher of all actions that have some effect on the text.
 
-   The arguments are an action to be executed, a possible integer parameter and
-   a possible string parameter. -1 and NULL are, respectively, reserved values
+   The arguments are:
+     b: the buffer to act on,
+     a: an action to be executed,
+     c: a possible integer parameter, and
+     p: a possible string parameter.
+   -1 and NULL are, respectively, reserved values
    meaning "no argument". For most operations, the integer argument is the
    number of repetitions. When an on/off choice is required, nonzero means on,
    zero means off, no argument means toggle.

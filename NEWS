@@ -4,9 +4,14 @@
 
   * Bracketed paste now consults the AutoIndent flag to determine whether to
     preserve the cursor's initial horizontal offset. It's like a block
-    level auto indent rather than a line-by-line (and therefore
-    cumulative) auto indent. Being created internally by the Shift command
+    level AutoIndent rather than a line-by-line (and therefore
+    cumulative) AutoIndent. Being created internally by the Shift command,
     the introduced leading space also honors the Tabs and ShiftTabs flags.
+    Like leading space introduced by AutoIndent, a single Undo removes the
+    bracketed paste's auto indented space; a second Undo removes the pasted
+    text itself.
+    Bracketed pastes now act like "normal" pastes, setting the '<' and
+    '>' bookmarks, and leaving the cursor at the head of the paste.
 
 3.3.3 2023-10-19
 
