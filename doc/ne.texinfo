@@ -4135,8 +4135,10 @@ Along slow connections, it can happen that the default value of 10 is
 too low: in this case, escape sequences (e.g., those of the arrow keys)
 could be erroneously broken into an escape and some spurious characters.
 Rising the escape time usually solves this problem. Allowed values range
-from 0 to 255. Note that you can accelerate the recognition of the @key{Escape}
-key by hitting it twice in a row.
+from 0 to 255, with 0 disabling escape time, which means that a
+single @key{Escape} will not be recognized as a distinct command. Note
+that you can accelerate the recognition of the @key{Escape} key by hitting
+it twice in a row.
 
 Note that the escape time is global to @code{ne}, and it is not saved. However,
 you can add an @code{EscapeTime} command manually to a preferences file.
