@@ -809,7 +809,7 @@ change the key bindings. @xref{Key Bindings}.
 
 @subsection Automatic Completion
 The @code{AutoComplete} command helps you extend a given prefix with matching
-words from your open documents.  You can specify the @code{AutoCompete} command
+words from your open documents.  You can specify the @code{AutoComplete} command
 and prefix on the command line, or you can enter the prefix directly into your
 document and activate the @code{AutoComplete} command. With the cursor at the
 right end of your prefix, activate the @code{AutoComplete} command by entering
@@ -5930,7 +5930,7 @@ highlighting requires a great deal of additional memory.
 If you are a Mac user, you need to check the ``Delete sends CTRL-H'' option
 in the @samp{Advanced} tab of the @command{Terminal} application settings.
 
-@item @code{ne} does tilda expansion.
+@item @code{ne} does tilde expansion.
 When you have to specify a file name, you can always start with @file{~/} in
 order to specify your home directory, or @file{~@var{user}/} to
 specify the home directory of another user.
