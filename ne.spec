@@ -72,6 +72,9 @@ Documentation for ne, the nice editor.
 * Thu Feb 6 2025 Sebastiano Vigna <sebastiano.vigna@gmail.com> - 3.3.4-1
 - First release
 
+* Fri Jan 17 2025 Fedora Release Engineering <releng@fedoraproject.org> - 3.3.3-6
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_42_Mass_Rebuild
+
 * Thu Jul 25 2024 Miroslav Suchý <msuchy@redhat.com> - 3.3.3-5
 - convert license to SPDX
 
