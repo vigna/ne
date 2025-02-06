@@ -1,5 +1,9 @@
 (This file, CHANGES, lists fixes. See NEWS for new features and enhancements.)
 
+3.3.4 2025-02-06
+
+  * Improved YAML style file.
+
 3.3.3 2023-10-19
 
   * Fixed document reordering in SelectDoc requester when first or last

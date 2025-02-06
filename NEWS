@@ -1,6 +1,6 @@
 (This file, NEWS, lists new features and enhancements. See CHANGES for fixes.)
 
-<unreleased>
+3.3.4 2025-02-06
 
   * Bracketed paste now consults the AutoIndent flag to determine whether to
     preserve the cursor's initial horizontal offset. It's like a block

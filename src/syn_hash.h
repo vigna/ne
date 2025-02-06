@@ -1,7 +1,7 @@
 /* Syntax highlighting from Joe's Own Editor: Simple hash tables.
 
 	Copyright (C) 1992 Joseph H. Allen
-	Copyright (C) 2009-2023 Todd M. Lewis and Sebastiano Vigna
+	Copyright (C) 2009-2025 Todd M. Lewis and Sebastiano Vigna
 
 	This file is part of ne, the nice editor.
 
