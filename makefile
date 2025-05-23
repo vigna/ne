@@ -39,7 +39,7 @@ version:
 	./version.pl VERSION=$(VERSION)
 
 source: version alldocs
-	( cd src; $(MAKE) clean; $(MAKE) )
+	( cd src; $(MAKE) clean; $(MAKE); touch enums.h hash.* names.* help.* )
 	-rm -f ne-$(VERSION)
 	ln -s . ne-$(VERSION)
 	tar cvf ne-$(VERSION).tar ne-$(VERSION)/version.pl ne-$(VERSION)/makefile ne-$(VERSION)/COPYING ne-$(VERSION)/INSTALL.md ne-$(VERSION)/README.md ne-$(VERSION)/NEWS ne-$(VERSION)/CHANGES \
