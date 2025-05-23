@@ -23,7 +23,7 @@ and modify very large files…
 
 … then you should try `ne`.
 
-![ne editor screenshot](https://github/vigna/ne/ne.png)
+![ne editor screenshot](https://github.com/vigna/ne/ne.png)
 
 Some of the features of `ne` are:
 
