@@ -56,9 +56,6 @@ Some of the features of `ne` are:
 
 * editing of binary files.
 
-[Linux Voice](http://www.linuxvoice.com/issues/006/foss6.pdf) ranked `ne`
-as the third best editor for Linux!
-
 # Downloads
 
 If you need a source tarball you can generate it by running `make source`.
