@@ -1,4 +1,6 @@
-# Introduction
+# Welcome to `ne`, the nice editor!
+
+## Introduction
 
 `ne` is a free (GPL'd) text editor based on the POSIX standard that runs
 (we hope) on almost every UN*X machine. `ne` is easy to use for the
@@ -56,7 +58,7 @@ Some of the features of `ne` are:
 
 * editing of binary files.
 
-# Downloads
+## Downloads
 
 If you need a source tarball you can generate it by running `make source`.
 Note that you will need `makeinfo`. The tarball, however, can be compiled
@@ -77,7 +79,7 @@ Linux. Todd Lewis joined the development donating code he wrote to add
 features required at the University of North Carolina. Daniele Filaretti
 helped with syntax highlighting.
 
-# Ports
+## Ports
 
 * [Fedora](https://src.fedoraproject.org/rpms/ne)
 * [Debian package](https://packages.debian.org/stable/editors/ne)
@@ -87,7 +89,7 @@ helped with syntax highlighting.
 * [Homebrew formula](https://github.com/Homebrew/homebrew-core/blob/master/Formula/n/ne.rb)
 * [Haiku port](https://depot.haiku-os.org/#!/pkg/ne)
 
-# Discussion
+## Discussion
 
 There is a [discussion group](http://groups.google.com/group/niceeditor)
 about `ne`. You can join or [send a
