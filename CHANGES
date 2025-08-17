@@ -1,5 +1,9 @@
 (This file, CHANGES, lists fixes. See NEWS for new features and enhancements.)
 
+<unreleased>
+
+  * Fixed initialization of bracketed paste handling.
+
 3.3.4 2025-02-06
 
   * Improved YAML style file.

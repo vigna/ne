@@ -230,7 +230,7 @@ static bool standout_mode;         /* True when in standout mode. */
 static bool standout_wanted;       /* True if we should be writing in standout mode. */
 static bool underline_mode;        /* True when in underline mode. */
 static bool underline_wanted;      /* True if we should be writing in underline mode. */
-static bool bpaste_support_enabled;
+static bool bpaste_mode;           /* True when we're accepting bracketed pastes. */
 /* Size of window specified by higher levels. This is the number of lines,
    starting from top of screen, to participate in ins/del line operations.
    Effectively it excludes the bottom lines - specified_window_size lines from
@@ -563,13 +563,13 @@ static void turn_off_insert (void) {
 }
 
 void turn_on_bracketed_paste(void) {
-	if (bpaste_support_enabled) OUTPUT1_IF(BPASTE_ENABLE_SEQ);
-	bpaste_support_enabled = true;
+	if (!bpaste_mode) OUTPUT1_IF(BPASTE_ENABLE_SEQ);
+	bpaste_mode = true;
 }
 
 void turn_off_bracketed_paste(void) {
-	if (bpaste_support_enabled) OUTPUT1_IF(BPASTE_DISABLE_SEQ);
-	bpaste_support_enabled = false;
+	if (bpaste_mode) OUTPUT1_IF(BPASTE_DISABLE_SEQ);
+	bpaste_mode = false;
 }
 
 
