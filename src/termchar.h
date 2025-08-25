@@ -219,7 +219,7 @@ extern uint32_t curr_attr;
 #define BPASTE_DISABLE_SEQ  "\x1b[?2004l"
 #define BPASTE_BEGIN_SEQ    "\x1b[200~"
 #define BPASTE_END_SEQ      "\x1b[201~"
-extern bool  bracketed_paste;
+extern bool  bracketed_paste_ok;
 extern char *bpaste_macro_before;
 extern char *bpaste_macro_after;
 

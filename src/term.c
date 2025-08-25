@@ -590,7 +590,7 @@ void set_terminal_modes(void) {
 	OUTPUT1_IF(ne_exit_underline_mode);
 	OUTPUT1_IF(ne_enter_ca_mode);
 	OUTPUT1_IF(ne_keypad_xmit);
-	if (bracketed_paste) OUTPUT1_IF(BPASTE_ENABLE_SEQ);
+	if (bracketed_paste_ok) OUTPUT1_IF(BPASTE_ENABLE_SEQ);
 
 	if (ne_has_meta_key) OUTPUT1_IF(ne_meta_on);
 		turn_off_standout();
@@ -603,7 +603,7 @@ void set_terminal_modes(void) {
 
 void reset_terminal_modes (void) {
 
-	if (bracketed_paste) OUTPUT1_IF(BPASTE_DISABLE_SEQ);
+	if (bracketed_paste_ok) OUTPUT1_IF(BPASTE_DISABLE_SEQ);
 	OUTPUT1_IF(ne_exit_attribute_mode);
 	OUTPUT1_IF(ne_exit_alt_charset_mode);
 	turn_off_standout();

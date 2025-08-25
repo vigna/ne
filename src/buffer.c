@@ -200,7 +200,7 @@ buffer *alloc_buffer(const buffer * const cur_b) {
 
 		b->act = ++buffer_actuations;
 		b->cur_macro = alloc_char_stream(0);
-		b->bpaste_support = bracketed_paste ? 1 : 0;
+		b->bpaste_support = bracketed_paste_ok ? 1 : 0;
 		b->opt.tab_size = 8;
 
 		b->opt.insert         =

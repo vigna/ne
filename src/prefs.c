@@ -182,7 +182,7 @@ int save_prefs(buffer * const b, const char * const name) {
 		record_action(cs, BINARY_A,           b->opt.binary,         NULL, verbose_macros);
 		record_action(cs, UTF8AUTO_A,         b->opt.utf8auto,       NULL, verbose_macros);
 		record_action(cs, VISUALBELL_A,       b->opt.visual_bell,    NULL, verbose_macros);
-		if (bracketed_paste)
+		if (bracketed_paste_ok)
 			record_action(cs, BRACKETEDPASTE_A, -1, cur_bracketed_paste_value(b), verbose_macros);
 
 		if (saving_defaults) {
@@ -540,7 +540,7 @@ static struct {
 static char cmdbuf[BUFSIZE+1];
 
 void bracketed_paste_begin(buffer *b) {
-	if (!bracketed_paste || b->bpaste_support < 1 || b->bpasting) return;
+	if (!bracketed_paste_ok || b->bpaste_support < 1 || b->bpasting) return;
 	bpaste_opt_cache = b->opt;
 	b->bpasting = 1;
 	if (b->bpaste_support == 1) {
@@ -558,7 +558,7 @@ void bracketed_paste_begin(buffer *b) {
 
 void bracketed_paste_end(buffer *b) {
 	b->bpasting = 0;
-	if (!bracketed_paste || b->bpaste_support < 1) return;
+	if (!bracketed_paste_ok || b->bpaste_support < 1) return;
 	b->opt = bpaste_opt_cache;
 	if (b->bpaste_support == 1) {
 		b->bookmark[PASTE_START_BOOKMARK].pos   = bpaste_marks[0].pos;

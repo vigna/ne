@@ -417,7 +417,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 		return OK;
 
 	case BRACKETEDPASTE_A:
-		if (!bracketed_paste) {
+		if (!bracketed_paste_ok) {
 			print_message("Bracketed Paste support is globally disabled.");
 			free(p);
 			return OK;
