@@ -156,6 +156,8 @@ enums.h names.c names.h hash.c hash.h help.c help.h ext.c: ne.texinfo version.te
 	perl info2src.pl
 	rm -f ne.info*
 
+ansi.o: $(MAINH)
+
 actions.o: $(MAINH) support.h keycodes.h names.h names.c errors.h errors.c protos.h version.h
 
 autocomp.o: $(MAINH) support.h protos.h
