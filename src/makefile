@@ -146,12 +146,15 @@ ne.texinfo:
 version.texinfo: ../doc/version.texinfo
 	-ln -sf ../doc/version.texinfo
 
-SYNH = syn_types.h syn_hash.h syn_regex.h syn_utf8.h syn_utils.h
+ENUMH = enums.h
+SYNH = syn_types.h syn_hash.h syn_regex.h syn_utf8.h syn_utils.h $(ENUMH)
 MAINH = ne.h debug.h enums.h errors.h utf8.h syntax.h keycodes.h termchar.h info2cap.h $(SYNH)
 
 ext.c: ext.c.in
 
-enums.h names.c names.h hash.c hash.h help.c help.h ext.c: ne.texinfo version.texinfo info2src.pl
+names.c names.h hash.c hash.h help.c help.h ext.c: $(ENUMH)
+
+$(ENUMH): ne.texinfo version.texinfo info2src.pl
 	makeinfo -D autohelp ne.texinfo
 	perl info2src.pl
 	rm -f ne.info*
