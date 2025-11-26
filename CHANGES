@@ -1,8 +1,11 @@
 (This file, CHANGES, lists fixes. See NEWS for new features and enhancements.)
 
-<unreleased>
+3.3.5
 
   * Fixed initialization of bracketed paste handling.
+
+  * Fixed makefile so that it works with heavy parallelization. Thanks
+    to Ivan Trepakov for contributing this fix.
 
 3.3.4 2025-02-06
 
