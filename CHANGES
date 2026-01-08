@@ -1,5 +1,10 @@
 (This file, CHANGES, lists fixes. See NEWS for new features and enhancements.)
 
+unreleased
+
+  * Work around some terminals' alternative handling of line endings
+    within bracketed paste data.
+
 3.3.5
 
   * Fixed initialization of bracketed paste handling.

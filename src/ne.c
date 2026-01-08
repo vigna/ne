@@ -505,6 +505,9 @@ int main(int argc, char **argv) {
 		move_cursor(cur_buffer->cur_y, cur_buffer->cur_x);
 
 		int c = get_key_code();
+		/* Work around alternative handling of bracketed paste
+		   blocks in some terminals. */
+		if (cur_buffer->bpasting && c == '\n') c = '\r';
 
 		if (window_changed_size) {
 			print_error(do_action(cur_buffer, REFRESH_A, 0, NULL));
