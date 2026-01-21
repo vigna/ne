@@ -1,0 +1,22 @@
+# Parser settings.
+cff-version: 1.2.0
+message: Please cite this software using these meta data.
+
+# Version information.
+date-released: 2022-09-21
+version: 3.3.2
+
+# Project information.
+abstract: ne, the nice editor
+authors:
+  - alias: vigna
+    family-names: Vigna
+    given-names: Sebastiano
+  - alias: utoddl
+    family-names: Lewis
+    given-names: Todd M.
+  - name: The ne Community
+license: GPL-3.0+
+repository-code: https://github.com/vigna/ne
+title: ne
+url: http://ne.di.unimi.it/
