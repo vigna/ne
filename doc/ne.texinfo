@@ -4355,10 +4355,11 @@ contents of before and after macros which would have effects similar to
 
 @example
 # Invoked Before Bracketed Paste    # Invoked After Bracketed Paste
+SetBookMark <                       SetBookMark >
 PushPrefs                           PopPrefs
 AtomicUndo +                        AtomicUndo -
-AutoIndent 0                        Refresh
-Refresh
+AutoIndent 0                        GotoBookMark <
+Refresh                             Refresh
 @end example
 
 
