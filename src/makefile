@@ -95,14 +95,21 @@ CC=c99
 endif
 
 # Test for GCC
-ifneq (,$(findstring gcc,$(shell $(CC) 2>&1)))
+
+GCC=$(findstring gcc,$(shell $(CC) 2>&1))
+CLANG=$(findstring clang,$(shell $(CC) 2>&1))
+
+ifneq (,$(or $(GCC), $(CLANG)))
+CC=cc
 GCCFLAGS=-std=c99 -Wall -Wno-parentheses -fno-strict-aliasing -Wp,-D_FORTIFY_SOURCE=2
 
+ifneq (,$(GCC))
 # link-time optimizer only on GCC 4.6+
 GCC_VERSION_GT_46=$(shell expr `$(CC) -dumpversion` ">=" 4.6)
 ifeq ($(GCC_VERSION_GT_46),1)
 GCCFLAGS+= -flto=auto -ffat-lto-objects 
 LDFLAGS=-flto=auto
+endif
 endif
 
 endif
