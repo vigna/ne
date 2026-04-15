@@ -108,8 +108,8 @@ int find(buffer * const b, const char *pattern, const bool skip_first, bool wrap
 		search_serial_num = ((search_serial_num & ~1) + 2)|2;
 	}
 
+	if (!pattern || !*pattern) return ERROR;
 	const int m = strlen(pattern);
-	if (!pattern || !m) return ERROR;
 
 	if (recompile_string) for(int i = 0; i < sizeof d / sizeof *d; i++) d[i] = m;
 
