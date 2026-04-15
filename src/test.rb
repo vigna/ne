@@ -40,7 +40,7 @@ ARGV[0].to_i.times do |i|
 	r = (rand * 100).to_i
 
 	if r < 10 then # Move around
-		case rand(29)
+		case rand(31)
 		when 0
 			puts("GOTOCOLUMN " + (rand(80)+1).to_s)
 		when 1
@@ -191,12 +191,12 @@ ARGV[0].to_i.times do |i|
 		when 2
 			begin
 			s = a[rand(a.length)].chomp
-			end while s.length == 0
+			end while s.length < 2
 			start = rand(s.length/2);
 			puts("FIND \"" + s[start..start+rand(s.length/2)] + "\"")
 			begin
 			s = a[rand(a.length)].chomp
-			end while s.length == 0
+			end while s.length < 2
 			start = rand(s.length/2);
 			puts((rand(2)==0?"REPLACEALL":"REPLACEONCE") + " \"" + s[start..start+rand(s.length/2)] + "\"")
 		when 3
@@ -211,7 +211,7 @@ ARGV[0].to_i.times do |i|
 
 			begin
 				s = a[rand(a.length)].chomp
-			end while s.length == 0
+			end while s.length < 2
 			start = rand(s.length/2);
 			puts((rand(2)==0?"REPLACEALL":"REPLACEONCE") + " \"" + s[start..start+rand(s.length/2)] + "\"")
 		when 4
