@@ -76,7 +76,7 @@ void start_undo_chain(buffer * const b) {
 
 #ifdef NE_TEST
 	D(fprintf(stderr, "# start_undo_chain: %d -> %d\n", b->link_undos, b->link_undos + 1);)
-	D(fprintf(stderr, "#   undo.cur_step: %d; undo.last_step: %d\n", b->undo.cur_step, b->undo.last_step);)
+	D(fprintf(stderr, "#   undo.cur_step: %" PRId64 "; undo.last_step: %" PRId64 "\n", b->undo.cur_step, b->undo.last_step);)
 #endif
 
 	assert_buffer(b);
@@ -92,7 +92,7 @@ void end_undo_chain(buffer * const b) {
 
 #ifdef NE_TEST
 	D(fprintf(stderr, "# end_undo_chain: %d -> %d\n", b->link_undos, b->link_undos - 1);)
-	D(fprintf(stderr, "#   undo.cur_step: %d; undo.last_step: %d\n", b->undo.cur_step, b->undo.last_step);)
+	D(fprintf(stderr, "#   undo.cur_step: %" PRId64 "; undo.last_step: %" PRId64 "\n", b->undo.cur_step, b->undo.last_step);)
 #endif
 
 	assert_undo_buffer(&b->undo);
@@ -189,7 +189,7 @@ int undo(buffer * const b) {
 	b->undoing = 1;
 
 #ifdef NE_TEST
-	D(fprintf(stderr, "# undo():  undo.cur_step: %d; undo.last_step: %d\n", b->undo.cur_step, b->undo.last_step);)
+	D(fprintf(stderr, "# undo():  undo.cur_step: %" PRId64 "; undo.last_step: %" PRId64 "\n", b->undo.cur_step, b->undo.last_step);)
 #endif
 	do {
 
@@ -212,7 +212,7 @@ int undo(buffer * const b) {
 		}
 
 #ifdef NE_TEST
-	D(fprintf(stderr, "# undo():  undo.cur_step: %d; undo.last_step: %d\n", b->undo.cur_step, b->undo.last_step);)
+	D(fprintf(stderr, "# undo():  undo.cur_step: %" PRId64 "; undo.last_step: %" PRId64 "\n", b->undo.cur_step, b->undo.last_step);)
 #endif
 	} while(b->undo.cur_step && b->undo.steps[b->undo.cur_step - 1].pos < 0);
 
@@ -239,7 +239,7 @@ int redo(buffer * const b) {
 	b->redoing = 1;
 
 #ifdef NE_TEST
-	D(fprintf(stderr, "# redo():  undo.cur_step: %d; undo.last_step: %d\n", b->undo.cur_step, b->undo.last_step);)
+	D(fprintf(stderr, "# redo():  undo.cur_step: %" PRId64 "; undo.last_step: %" PRId64 "\n", b->undo.cur_step, b->undo.last_step);)
 #endif
 	do {
 		if (b->undo.steps[b->undo.cur_step].len) {
@@ -261,7 +261,7 @@ int redo(buffer * const b) {
 		b->undo.cur_step++;
 
 #ifdef NE_TEST
-	D(fprintf(stderr, "# redo():  undo.cur_step: %d; undo.last_step: %d\n", b->undo.cur_step, b->undo.last_step);)
+	D(fprintf(stderr, "# redo():  undo.cur_step: %" PRId64 "; undo.last_step: %" PRId64 "\n", b->undo.cur_step, b->undo.last_step);)
 #endif
 	} while(b->undo.cur_step < b->undo.last_step && b->undo.steps[b->undo.cur_step - 1].pos < 0);
 
