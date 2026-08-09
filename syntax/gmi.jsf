@@ -1,0 +1,89 @@
+# JOE syntax highlight file for Gemtext by Skylar Gallup (https://skyebound.gay)
+
+=Idle
+=Headline	bold yellow
+=Quote		green
+=Pre		green
+=List		yellow
+=LinkDesc	green
+=Link		blue
+
+:line_start	Idle
+	*		idle		noeat
+	"="		maybe_link
+	"#"		heading1	recolor=-1
+	"*"		list 		recolor=-1
+	">"		quote		recolor=-1
+	"`"		maybe_pre1
+
+:idle		Idle
+	*		idle
+	"\n"	line_start
+
+:maybe_link		Idle
+	*			idle
+	">"			probably_link
+	"\n"		line_start
+
+:probably_link	Idle
+	*			link		recolor=-3
+	" "			link		recolor=-3
+	"\n"		line_start
+
+:link		Link
+	*		link
+	" "		link_desc
+	"\n"	line_start
+
+:link_desc	LinkDesc
+	*		link_desc
+	"\n"	line_start
+
+:heading 	Headline
+	*		heading
+	"\n"	line_start
+
+:heading1	Headline
+	*		heading
+	"#"		heading2
+	"\n"	line_start
+
+:heading2	Headline
+	*		heading
+	"#"		heading3
+	"\n"	line_start
+
+:heading3	Headline
+	*		heading
+	"#"		idle		recolor=-4
+	"\n"	line_start
+
+:quote		Quote
+	*		quote
+	"\n"	line_start
+
+:list		List
+	*		list
+	"\n"	line_start
+
+:maybe_pre1	Idle
+	*		idle
+	"`"		maybe_pre2
+	"\n"	line_start
+
+:maybe_pre2	Idle
+	*		idle
+	"`"		pre			recolor=-3
+	"\n"	line_start
+
+:pre		Pre
+	*		pre
+	"`" 	maybe_end_pre1
+
+:maybe_end_pre1	Pre
+	*		pre
+	"`"		maybe_end_pre2
+
+:maybe_end_pre2	Pre
+	*		pre
+	"`"		idle
