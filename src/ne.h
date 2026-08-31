@@ -170,27 +170,47 @@ enum {
 
 /* This provides a mechanism to easily create a list for request(). */
 
+enum req_list_flags {
+	RL_ALLOW_DUPES      = 1 << 0,
+	RL_ALLOW_REORDER    = 1 << 1,
+	RL_IGNORE_TAB       = 1 << 2, /* Prevent Tab from exiting requester. */
+	RL_PRUNE            = 1 << 3, /* Use progressive search filtering. */
+	RL_UNIFORM          = 1 << 4, /* Make all columns the same width. */
+	RL_SINGLE_COLUMN    = 1 << 5, /* Make only one column. */
+	RL_FIND_QUITS       = 1 << 6,
+	RL_HELP_QUITS       = 1 << 7,
+	RL_SELECTDOC_QUITS  = 1 << 8
+};
+
+typedef struct {
+	char *string;
+	encoding_type encoding; /* as per detect_encoding() */
+	int length;             /* in bytes, a la strlen() plus the trailing NUL */
+	int width;              /* columns required to display */
+	int reorder;
+	char suffix;
+} req_list_entry;
+
 typedef struct {
 	int (*cmpfnc)(const char *, const char *);
-	unsigned int
+	bool
 		allow_dupes:1,     /* Searches are more efficient if we have no duplicate entries. */
 		allow_reorder:1,   /* Allow NextDoc/PrevDoc keys to re-order entries. */
-		ignore_tab:1,      /* Permits Tab to exit requester. */
-		reordered:1,       /* Indicates whether reordering was done during request. */
-		prune:1,           /* Whether to start off pruning by partial input. */
+		ignore_tab:1,      /* Prevent Tab from exiting requester. */
+		prune:1,           /* Whether to use progressive search filtering. */
+		uniform:1,         /* Make all columns the same width. */
+		single_column:1,   /* Make only one column. */
 		find_quits:1,      /* Map FIND_A to QUIT_A (for long input ^F requester). */
 		help_quits:1,      /* Map HELP_A to QUIT_A (for help requester). */
-		selectdoc_quits:1; /* Map SELECTDOC_A to QUIT_A (for F4 requester). */
-	char suffix;
-	int cur_entries;      /* count of entries */
-	int alloc_entries;    /* allocated slots in **entries */
-	char **entries;       /* The array of alloc_entries string pointers pointing into *chars */
-	int *lengths;         /* When set, the column width needed to display corresponding entry (strlen() + suffix + blank) */
-	int *reorder;         /* maps from original order to new order when allow_reorder is true. */
+		selectdoc_quits:1, /* Map SELECTDOC_A to QUIT_A (for F4 requester). */
+		reordered:1;       /* Indicates whether reordering was done during request. */
+	int cur_entries;      /* number of "used" entries */
+	int alloc_entries;    /* number allocated slots in **entries */
+	req_list_entry *entries; /* The array of entries pointing into *chars. */
 
 	int cur_chars;        /* count of used characters */
 	int alloc_chars;      /* allocated characters in *chars */
-	char *chars;          /* contiguous block of allocated characters */
+	char *chars;          /* contiguous block of allocated characters; contains cur_entries null-terminated strings */
 } req_list;
 
 /* These are the list and node structures used throughout ne. See the exec.c

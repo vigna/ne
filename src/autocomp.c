@@ -21,8 +21,6 @@
 #include "ne.h"
 #include "support.h"
 
-#define EXTERNAL_FLAG_CHAR '*'
-
 #define MAX_AUTOCOMPLETE_SCAN (1000000)
 
 static req_list rl;
@@ -30,13 +28,13 @@ static req_list rl;
 /* Keeps track of how many strings we have scanned. At MAX_AUTOCOMPLETE_SCAN we return. */
 static int count_scanned;
 
-static void add_string(const char * const s, const int len, const int ext) {
+static void add_string(const char * const s, const int len, const char ext) {
 	char *buf = strntmp(s, len);
 	if (len < 1) return;
 	req_list_add(&rl, buf, ext);
 }
 
-static void search_buff(const buffer *b, char * p, const int encoding, const bool case_search, const int ext) {
+static void search_buff(const buffer *b, char * p, const int encoding, const bool case_search, const char ext) {
 	assert(p);
 	const int p_len = strlen(p);
 	const int (*cmp)(const char *, const char *, size_t) = (const int (*)(const char *, const char *, size_t))(case_search ? strncmp : strncasecmp);
@@ -73,6 +71,18 @@ static void search_buff(const buffer *b, char * p, const int encoding, const boo
 	add_string(NULL, -1, 0);
 }
 
+
+/* A qsort comparison function for sorting a req_list_entry list
+   in dictionary order. */
+
+static int req_list_entries_qsorter(const void *a, const void *b) {
+	const req_list_entry *rle_a = (const req_list_entry *)a;
+	const req_list_entry *rle_b = (const req_list_entry *)b;
+
+	return strdictcmp((const char *)rle_a->string, (const char *)rle_b->string);
+}
+
+
 /* Returns a completion for the (non-NULL) prefix p, showing suffixes from
    all buffers if ext is true. Note that p is free()'d by this function,
    and that, in turn, the returned string must be free()'d by the caller
@@ -85,13 +95,16 @@ static void search_buff(const buffer *b, char * p, const int encoding, const boo
 char *autocomplete(char *p, char *req_msg, const int ext, int * const error) {
 	assert(p);
 	int max_len = 0, min_len = INT_MAX, prefix_len = strlen(p);
-	static int ac_prune = true;
+	static int ac_prune = RL_PRUNE;
 
-	req_list_init(&rl, (cur_buffer->opt.case_search ? strcmp : strdictcmp), false, false, EXTERNAL_FLAG_CHAR);
-	rl.prune = ac_prune;
+	*error = AUTOCOMPLETE_CANCELLED;
+	if (req_list_init(&rl, (cur_buffer->opt.case_search ? strcmp : strdictcmp), ac_prune) != OK) {
+		free(p);
+		return NULL;
+	}
 	count_scanned = 0;
 
-	search_buff(cur_buffer, p, cur_buffer->encoding, cur_buffer->opt.case_search, false);
+	search_buff(cur_buffer, p, cur_buffer->encoding, cur_buffer->opt.case_search, '\0');
 	if (stop) {
 		req_list_free(&rl);
 		free(p);
@@ -102,7 +115,7 @@ char *autocomplete(char *p, char *req_msg, const int ext, int * const error) {
 		buffer *b = (buffer *)buffers.head;
 		while (b->b_node.next) {
 			if (b != cur_buffer) {
-				search_buff(b, p, cur_buffer->encoding, cur_buffer->opt.case_search, true);
+				search_buff(b, p, cur_buffer->encoding, cur_buffer->opt.case_search, '*');
 				if (stop) {
 					req_list_free(&rl);
 					free(p);
@@ -111,14 +124,13 @@ char *autocomplete(char *p, char *req_msg, const int ext, int * const error) {
 			}
 			b = (buffer *)b->b_node.next;
 		}
- 	}
+	}
 
 	for(int i = 0; i < rl.cur_entries; i++) {
-		const int l = strlen(rl.entries[i]);
+		const int l = rl.entries[i].length - 1;
 		if (max_len < l) max_len = l;
 		if (min_len > l) min_len = l;
 	}
-	/* We compact the table into a vector of char pointers. */
 	req_list_finalize(&rl);
 
 
@@ -128,23 +140,22 @@ char *autocomplete(char *p, char *req_msg, const int ext, int * const error) {
 #ifdef NE_TEST
 	/* During tests, we always output the middle entry. */
 	if (rl.cur_entries) {
-		if (rl.entries[rl.cur_entries/2][strlen(rl.entries[rl.cur_entries/2]) - 1] == EXTERNAL_FLAG_CHAR) rl.entries[rl.cur_entries/2][strlen(rl.entries[rl.cur_entries/2]) - 1] = 0;
-		p = str_dup(rl.entries[rl.cur_entries/2]);
+		qsort(rl.entries, rl.cur_entries, sizeof(req_list_entry), req_list_entries_qsorter);
+		p = str_dup(rl.entries[rl.cur_entries/2].string);
 	}
 	*error = AUTOCOMPLETE_COMPLETED;
 	req_list_free(&rl);
 	return p;
 #endif
 
-	if (rl.cur_entries > 0) {
-		qsort(rl.entries, rl.cur_entries, sizeof(char *), strdictcmpp);
+	if (rl.cur_entries) {
+		qsort(rl.entries, rl.cur_entries, sizeof(req_list_entry), req_list_entries_qsorter);
 		/* Find maximum common prefix. */
-		int m = strlen(rl.entries[0]);
-		if (m && rl.entries[0][m-1] == EXTERNAL_FLAG_CHAR) m--;
-		encoding_type enc_0 = detect_encoding(rl.entries[0], m);
+		int m = rl.entries[0].length - 1;
+		encoding_type enc_0 = rl.entries[0].encoding;
 		for (int i = 1; m && i < rl.cur_entries; i++) {
-			encoding_type enc_i = detect_encoding(rl.entries[i], strlen(rl.entries[i]));
-			int mi = max_prefix(rl.entries[0], enc_0, rl.entries[i], enc_i);
+			encoding_type enc_i = rl.entries[i].encoding;
+			int mi = max_prefix(rl.entries[0].string, enc_0, rl.entries[i].string, enc_i);
 			if (mi < m) m = mi;
 		}
 
@@ -152,19 +163,17 @@ char *autocomplete(char *p, char *req_msg, const int ext, int * const error) {
 		   starting the requester. */
 		if (m > prefix_len) {
 			p = malloc(m + 1);
-			strncpy(p, rl.entries[0], m);
+			strncpy(p, rl.entries[0].string, m);
 			p[m] = 0;
 			*error = min_len == m ? AUTOCOMPLETE_COMPLETED : AUTOCOMPLETE_PARTIAL;
 		}
 		else {
 			if (req_msg) print_message(req_msg);
 			int result = request_strings(&rl, 0);
-			ac_prune = rl.prune;
+			ac_prune = rl.prune ? RL_PRUNE : 0; /* Preserve preferred prune option across invocations. */
 			if (result != ERROR) {
 				result = result >= 0 ? result : -result - 2;
-				/* Delete EXTERNAL_FLAG_CHAR at the end of the strings if necessary. */
-				if (rl.entries[result][strlen(rl.entries[result]) - 1] == EXTERNAL_FLAG_CHAR) rl.entries[result][strlen(rl.entries[result]) - 1] = 0;
-				p = str_dup(rl.entries[result]);
+				p = str_dup(rl.entries[result].string);
 				*error = AUTOCOMPLETE_COMPLETED;
 			}
 			else *error = AUTOCOMPLETE_CANCELLED;
@@ -177,5 +186,3 @@ char *autocomplete(char *p, char *req_msg, const int ext, int * const error) {
 	D(fprintf(stderr, "autocomp returning '%s', entries: %d\n", p, rl.cur_entries);)
 	return p;
 }
-
-

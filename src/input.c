@@ -558,27 +558,24 @@ static int request_history(void) {
 	if (!history_buff) return -1;
 	line_desc *ld = (line_desc *)history_buff->line_desc_list.tail_pred;
 
-	if (ld->ld_node.prev && req_list_init(&rl, NULL, true, false, '\0')==OK) {
+	if (ld->ld_node.prev && req_list_init(&rl, NULL, RL_ALLOW_DUPES | RL_PRUNE | RL_FIND_QUITS)==OK) {
 		while (ld->ld_node.prev) {
 			if (ld->line_len) {
 				tmpstr = strntmp(ld->line, ld->line_len);
-				req_list_add(&rl, tmpstr, false);
+				req_list_add(&rl, tmpstr, '\0');
 			}
 			ld = (line_desc *)ld->ld_node.prev;
 		}
-		rl.ignore_tab = false;
-		rl.prune = true;
-		rl.find_quits = true;
 		req_list_finalize(&rl);
 		i = request_strings(&rl, 0);
 		if (i != ERROR) {
 			int selection = i >= 0 ? i : -i - 2;
 			if (i >= 0) {
-				strncpy(ib.buf, rl.entries[selection], MAX_INPUT_LINE_LEN);
+				strncpy(ib.buf, rl.entries[selection].string, MAX_INPUT_LINE_LEN);
 				ib.len = strlen(ib.buf);
 				ib.encoding = detect_encoding(ib.buf, ib.len);
 				input_move_to_sol();
-			} else input_paste(rl.entries[selection]);
+			} else input_paste(rl.entries[selection].string);
 		}
 		req_list_free(&rl);
 	}
@@ -660,7 +657,7 @@ char *request(const buffer * const b, const char *prompt, const char * const def
 		input_refresh();
 	}
 
-	bool first_char_typed = true, last_char_completion = false, selection = false;
+	bool first_char_typed = true, last_char_completion = false, selected = false;
 
 	while(true) {
 
@@ -728,7 +725,7 @@ char *request(const buffer * const b, const char *prompt, const char * const def
 			break;
 
 		case RETURN:
-			selection = true;
+			selected = true;
 			break;
 
 		case TAB:
@@ -754,20 +751,16 @@ char *request(const buffer * const b, const char *prompt, const char * const def
 
 				if (last_char_completion || completion_type == COMPLETE_SYNTAX) {
 					if (completion_type == COMPLETE_FILE )
-						completion = p = request_files(prefix, true);
+						completion = p = request_files(prefix, true, &selected);
 					else
-						completion = p = request_syntax(prefix, true);
+						completion = p = request_syntax(&selected);
 					reset_window();
-					if (completion) {
-						if (*completion) selection = true;
-						else completion++;
-					}
 				}
 				else {
 					if (completion_type == COMPLETE_FILE )
 						completion = p = complete_filename(prefix);
 					else
-						completion = p = request_syntax(prefix, true);
+						completion = p = request_syntax(&selected);
 					last_char_completion = true;
 					if (!completion) alert();
 				}
@@ -988,7 +981,7 @@ char *request(const buffer * const b, const char *prompt, const char * const def
 			break;
 		}
 
-		if (selection) {
+		if (selected) {
 			const line_desc * const last = (line_desc *)history_buff->line_desc_list.tail_pred->prev;
 			assert(ib.buf[ib.len] == 0);
 			if (history_buff->num_lines == 0 || ib.len != last->line_len || strncmp(ib.buf, last->line, last->line_len)) add_to_history(ib.buf);

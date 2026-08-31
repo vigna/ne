@@ -708,99 +708,86 @@ char *bound_keys_string(int c) {
    by p is displayed (p can also contain arguments). The string *p is not
    free'd by help(). If p is NULL, the alphabetically ordered list of commands
    is displayed with the string requester. The help finishes when the user
-   escapes.
+   escapes. */
 
-   WARNING: help() assumes a lot about how request_strings() and 'req_list's
-   work rather than using the support functions to build its req_list. Any
-   changes here or in request.c need to be thoroughly checked in both places. */
+static int help_set_entries(req_list *rl, char **strings, int count, const int flags) {
+	req_list_free(rl);
+	if (req_list_init(rl, NULL, RL_ALLOW_DUPES | RL_IGNORE_TAB | RL_HELP_QUITS | flags) != OK) return ERROR;
+	for (int i = 0; i < count; i++) {
+		req_list_add(rl, strings[i], '\0');
+	}
+	req_list_finalize(rl);
+	return OK;
+}
 
 void help(char *p) {
 	bool request_order_orig = req_order;
-	req_list rl = { .ignore_tab=true, .help_quits=true };
-
+	req_list rl = {0};
 	D(fprintf(stderr, "Help Called with parm %p.\n", p);)
-	int r = 0, width;
+	int r = 0;
 	do {
 		print_message(info_msg[HELP_KEYS]);
-		rl.cur_entries = ACTION_COUNT;
-		rl.alloc_entries = 0;
-		rl.entries = (char **)command_names;
-		rl.lengths = realloc(rl.lengths, sizeof(int) * rl.cur_entries);
-		width = 0;
-		for (int i=0,w; i<rl.cur_entries; i++)
-			if ((w=strlen(rl.entries[i])) > width) width = w;
-		for (int i=0; i<rl.cur_entries; i++)
-			rl.lengths[i] = width + 2;
-		req_order = request_order_orig;
-		if (p || (r = request_strings(&rl, r)) >= 0) {
-			D(fprintf(stderr, "Help check #2: p=%p, r=%d\n", p, r);)
-			if (p) {
-				for(r = 0; r < strlen(p); r++) if (isasciispace((unsigned char)p[r])) break;
+		if (help_set_entries(&rl, (char **)command_names, ACTION_COUNT, RL_UNIFORM) == OK) {
+			req_order = request_order_orig;
+			if (p || (r = request_strings(&rl, r)) >= 0) {
+				D(fprintf(stderr, "Help check #2: p=%p, r=%d\n", p, r);)
+				if (p) {
+					for(r = 0; r < strlen(p); r++) if (isasciispace((unsigned char)p[r])) break;
 
-				r = hash_cmd(p, r);
-				D(fprintf(stderr, "Help check #3: p=%p, *p=%s, r=%d\n", p, p, r);)
+					r = hash_cmd(p, r);
+					D(fprintf(stderr, "Help check #3: p=%p, *p=%s, r=%d\n", p, p, r);)
 
-				action a;
-				if ((a = hash_table[r]) && !cmdcmp(commands[--a].name, p)
-				|| (a = short_hash_table[r]) && !cmdcmp(commands[--a].short_name, p)) r = a;
-				else r = -1;
-				D(fprintf(stderr, "Help check #4: r=%d\n", r);)
+					action a;
+					if ((a = hash_table[r]) && !cmdcmp(commands[--a].name, p)
+					|| (a = short_hash_table[r]) && !cmdcmp(commands[--a].short_name, p)) r = a;
+					else r = -1;
+					D(fprintf(stderr, "Help check #4: r=%d\n", r);)
 
-				p = NULL;
+					p = NULL;
+				}
+				else {
+					D(fprintf(stderr, "Gonna parse_command_line(\"%s\",NULL,NULL,false);\n", command_names[r]);)
+					r = parse_command_line(command_names[r], NULL, NULL, false);
+					D(fprintf(stderr, "...and got r=%d\n", r);)
+				}
+
+				if (r < 0) {
+					r = 0;
+					continue;
+				}
+
+				assert(r >= 0 && r < ACTION_COUNT);
+
+				print_message(info_msg[HELP_COMMAND_KEYS]);
+				char *key_strokes, **tmphelp;
+				if ((key_strokes = bound_keys_string(r)) && (tmphelp = calloc(commands[r].help_len+1, sizeof(char *)))) {
+					tmphelp[0] = (char *)commands[r].help[0];
+					tmphelp[1] = (char *)commands[r].help[1];
+					tmphelp[2] = key_strokes;
+					memcpy(&tmphelp[3], &commands[r].help[2], sizeof(char *) * (commands[r].help_len-2));
+					if (help_set_entries(&rl, tmphelp, commands[r].help_len+1, RL_SINGLE_COLUMN) == OK) {
+						req_order = true;
+						const int s = request_strings(&rl, 0);
+						req_order = request_order_orig;
+						if (s < 0) r = s;
+					}
+					else r = -1;
+					free(tmphelp);
+				} else {
+					if (help_set_entries(&rl, (char **)commands[r].help, commands[r].help_len, RL_SINGLE_COLUMN) == OK) {
+						req_order = true;
+						const int s = request_strings(&rl, 0);
+						req_order = request_order_orig;
+						if (s < 0) r = s;
+					}
+					else r = -1;
+				}
+				if (key_strokes) free(key_strokes);
 			}
-			else {
-				D(fprintf(stderr, "Gonna parse_command_line(\"%s\",NULL,NULL,false);\n", command_names[r]);)
-				r = parse_command_line(command_names[r], NULL, NULL, false);
-				D(fprintf(stderr, "...and got r=%d\n", r);)
-			}
-
-			if (r < 0) {
-				r = 0;
-				continue;
-			}
-
-			assert(r >= 0 && r < ACTION_COUNT);
-
-			print_message(info_msg[HELP_COMMAND_KEYS]);
-			char *key_strokes, **tmphelp;
-			if ((key_strokes = bound_keys_string(r)) && (tmphelp = calloc(commands[r].help_len+1, sizeof(char *)))) {
-				tmphelp[0] = (char *)commands[r].help[0];
-				tmphelp[1] = (char *)commands[r].help[1];
-				tmphelp[2] = key_strokes;
-				memcpy(&tmphelp[3], &commands[r].help[2], sizeof(char *) * (commands[r].help_len-2));
-				rl.cur_entries = commands[r].help_len+1;
-				rl.alloc_entries = 0;
-				rl.entries = tmphelp;
-				rl.lengths = realloc(rl.lengths, sizeof(int) * rl.cur_entries);
-				width = 0;
-				for (int i=0,w; i<rl.cur_entries; i++)
-					if ((w=strlen(rl.entries[i])) > width) width = w;
-				for (int i=0; i<rl.cur_entries; i++)
-					rl.lengths[i] = width + 2;
-				req_order = true;
-				const int s = request_strings(&rl, 0);
-				req_order = request_order_orig;
-				if (s < 0) r = s;
-				free(tmphelp);
-			} else {
-				rl.cur_entries = commands[r].help_len;
-				rl.alloc_entries = 0;
-				rl.entries = (char **)commands[r].help;
-				rl.lengths = realloc(rl.lengths, sizeof(int) * rl.cur_entries);
-				width = 0;
-				for (int i=0,w; i<rl.cur_entries; i++)
-					if ((w=strlen(rl.entries[i])) > width) width = w;
-				for (int i=0; i<rl.cur_entries; i++)
-					rl.lengths[i] = width + 2;
-				req_order = true;
-				const int s = request_strings(&rl, 0);
-				req_order = request_order_orig;
-				if (s < 0) r = s;
-			}
-			if (key_strokes) free(key_strokes);
 		}
+		else r = -1;
 	} while(r >= 0);
-	free(rl.lengths);
+	req_list_free(&rl);
 	draw_status_bar();
 }
 

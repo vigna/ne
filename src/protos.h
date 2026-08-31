@@ -238,14 +238,14 @@ char *request(const buffer *b, const char *prompt, const char *default_string, b
 
 /* request.c */
 int   request_strings(req_list * const rl, int default_entry);
-char *request_syntax();
-char *request_files(const char *filename, bool use_prefix);
+char *request_syntax(bool * const selected);
+char *request_files(const char *filename, bool use_prefix, bool * const selected);
 char *request_file(const buffer *b, const char *prompt, const char *default_name);
 int   request_document(void);
 int   req_list_del(req_list * const rl, int nth);
 void  req_list_free(req_list * const rl);
-int   req_list_init(req_list * const rl, int cmpfnc(const char *, const char *), const bool allow_dupes, const bool allow_reorder, const char suffix);
-char *req_list_add(req_list * const rl, char * const str, const int suffix);
+int   req_list_init(req_list * const rl, int cmpfnc(const char *, const char *), const int flags);
+char *req_list_add(req_list * const rl, char * const str, const char suffix);
 void  req_list_finalize(req_list * const rl);
 
 
@@ -297,7 +297,6 @@ char *str_dup(const char *s);
 char *strntmp(const char * const s, const int len);
 int64_t strnlen_ne(const char *s, int64_t n);
 int strcmpp(const void *a, const void *b);
-int strdictcmpp(const void *a, const void *b);
 int strdictcmp(const char *a, const char *b);
 int filenamecmpp(const void *a, const void *b);
 int filenamecmp(const char *a, const char *b);

@@ -84,9 +84,7 @@ void normalize_path(char *c) {
 
 /* Given relative file path a and absolute directory path b, return a newly
    allocated file path c that is the absolute path to file a.
-   Ex: "../../xx/yy/f.c","/aa/bb/dd" -> "/aa/xx/yy/f.c"
-   The returned string has at least one extra char so it can be shifted
-   if necessary as per relative_file_path(). */
+   Ex: "../../xx/yy/f.c","/aa/bb/dd" -> "/aa/xx/yy/f.c" */
 
 char *absolute_file_path(const char *a0, const char *b) {
 	char *a, *c;
@@ -130,8 +128,7 @@ char *absolute_file_path(const char *a0, const char *b) {
 
 /* Given absolute file path aa and absolute directory path b, return a newly
    allocated file path c that is the relative path from b to aa.
-   Ex: "/aa/bb/cc/x.c","/aa/bb/dd" -> "../cc/x.c"
-   The returned string has one extra '\0' so request_files() can shift it. */
+   Ex: "/aa/bb/cc/x.c","/aa/bb/dd" -> "../cc/x.c" */
 
 char *relative_file_path(const char *aa, const char *b) {
 	int up_dirs=0, i, j=0;
@@ -159,7 +156,7 @@ char *relative_file_path(const char *aa, const char *b) {
 		if (b[i] == '/') up_dirs++;
 	}
 
-	int newlen = 3 * up_dirs + (strlen(a+j) ) + 2; /* 3 for each "../" and two trailing '\0' */
+	int newlen = 3 * up_dirs + (strlen(a+j) ) + 1; /* 3 for each "../" and a trailing '\0' */
 	c = malloc(newlen);
 	if (c) {
 		*c = '\0';
@@ -254,7 +251,7 @@ ssize_t read_safely(const int fd, void * const buf, const int64_t len) {
 		if (t == 0) return done;
 		done += t;
 	}
-	
+
 	return len;
 }
 
@@ -354,7 +351,7 @@ const char *file_part(const char * const pathname) {
 }
 
 
-/* Duplicates a string. */
+/* Copies a string into a newly allocated buffer. */
 
 char *str_dup(const char * const s) {
 	if (!s) return NULL;
@@ -442,12 +439,6 @@ bool is_prefix(const char * const p, const char * const s) {
 
 int strcmpp(const void *a, const void *b) {
 	return strcmp(*(const char **)a, *(const char **)b);
-}
-
-/* Another comparison for qsort, this one does dictionary order. */
-
-int strdictcmpp(const void *a, const void *b) {
-	return strdictcmp(*(const char **)a, *(const char **)b);
 }
 
 int strdictcmp(const char *a, const char *b) {

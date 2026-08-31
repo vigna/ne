@@ -201,7 +201,7 @@ prefs.o: $(MAINH) support.h keycodes.h names.h errors.h protos.h
 
 regex.o: regex.h regex_internal.h regex_internal.c regexec.c regcomp.c
 
-request.o: $(MAINH) keycodes.h names.h errors.h protos.h
+request.o: $(MAINH) support.h keycodes.h names.h errors.h protos.h
 
 search.o: $(MAINH) support.h keycodes.h names.h errors.h protos.h regex.h
 
