@@ -589,6 +589,8 @@ extern config_source key_binding_source[NUM_KEYS];
 
 extern buffer *cur_buffer;
 
+extern bool lastopen_enabled;
+
 extern unsigned long buffer_actuations;
 
 /* These are the global lists. */

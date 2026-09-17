@@ -212,6 +212,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 			return ERROR;
 		}
 		else {
+			save_lastopen();
 			close_history();
 			unset_interactive_mode();
 			exit(0);
@@ -238,6 +239,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 
 	case QUIT_A:
 		if (modified_buffers() && !request_response(b, info_msg[SOME_DOCUMENTS_ARE_NOT_SAVED], false)) return ERROR;
+		save_lastopen();
 		close_history();
 		unset_interactive_mode();
 		exit(0);
@@ -1064,6 +1066,7 @@ int do_action(buffer *b, action a, int64_t c, char *p) {
 						}
 						else if (error == OK) error = FILE_TOO_LARGE_SYNTAX_HIGHLIGHTING_DISABLED;
 					}
+					load_lastopen(b);
 					buffer * old_buffer = (buffer *)cur_buffer->b_node.prev;
 					/* preserve cur_macro, find_string, and replace_string */
 

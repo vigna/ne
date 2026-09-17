@@ -109,6 +109,7 @@ bool bracketed_paste_ok = true;
 /* end of global prefs */
 
 buffer *cur_buffer;
+bool lastopen_enabled;
 unsigned long buffer_actuations = 0;
 int turbo;
 bool do_syntax = true;
@@ -168,6 +169,280 @@ void about(void) {
 	if (gprefs_dir) strncat(strncat(t, ": ", sizeof t - 1), gprefs_dir, sizeof t - 1);
 	else strncat(strncat(strncat(t, " ", sizeof t - 1), get_global_dir(), sizeof t - 1), " not found!", sizeof t - 1);
 	print_message(t);
+}
+
+/* The file in ~/.ne in which we keep the last position of opened files. */
+#define LASTOPEN_NAME "lastopen"
+
+#ifndef LASTOPEN_MAX_LINES
+#define LASTOPEN_MAX_LINES 2000
+#endif
+
+typedef struct {
+	char *filename;
+	int64_t line;
+	int64_t pos;
+} lastopen_entry;
+
+static lastopen_entry lastopen_entries[LASTOPEN_MAX_LINES];
+static int lastopen_entry_count;
+
+/*
+ * Return an absolute pathname for a buffer filename.
+ *
+ * Filenames containing newline or carriage-return characters cannot be
+ * represented safely in lastopen, so they are deliberately excluded.
+ */
+static char *lastopen_path(const char *filename) {
+	char *cwd, *path;
+
+	if (!filename || strchr(filename, '\n') || strchr(filename, '\r')) return NULL;
+
+	filename = tilde_expand(filename);
+	if (!(cwd = ne_getcwd(CUR_DIR_MAX_SIZE))) return NULL;
+	path = absolute_file_path(filename, cwd);
+	free(cwd);
+
+	return path;
+}
+
+/*
+ * Return the pathname of ~/.ne/lastopen.
+ * exists_prefs_dir() also ensures that ~/.ne exists.
+ */
+static char *lastopen_filename(void) {
+	char *prefs_dir, *name;
+
+	if (!(prefs_dir = exists_prefs_dir())) return NULL;
+
+	name = malloc(strlen(prefs_dir) + strlen(LASTOPEN_NAME) + 1);
+	if (!name) return NULL;
+
+	strcat(strcpy(name, prefs_dir), LASTOPEN_NAME);
+	return name;
+}
+
+/*
+ * In-memory MRU cache of lastopen entries.
+ *
+ * Entries are kept in most-recently-used order: index 0 is the most
+ * recently accessed file. Linear scan is used for lookup; the compact,
+ * contiguous layout keeps cache performance good for up to 2000 entries.
+ */
+
+/*
+ * Find a filename in the MRU array. Returns its index, or -1 if not found.
+ */
+static int lastopen_find(const char *key) {
+	for (int i = 0; i < lastopen_entry_count; i++)
+		if (!strcmp(lastopen_entries[i].filename, key)) return i;
+	return -1;
+}
+
+/*
+ * Promote an entry at index i to position 0 (most recent).
+ */
+static void lastopen_promote(int i) {
+	if (i <= 0) return;
+	lastopen_entry temp = lastopen_entries[i];
+	memmove(&lastopen_entries[1], &lastopen_entries[0], i * sizeof(lastopen_entry));
+	lastopen_entries[0] = temp;
+}
+
+/*
+ * Look up a filename in the MRU cache.
+ * If found, promotes it to MRU position 0 and returns true.
+ */
+static bool lastopen_lookup(const char *key, int64_t *line, int64_t *pos) {
+	int i = lastopen_find(key);
+	if (i < 0) return false;
+	*line = lastopen_entries[i].line;
+	*pos = lastopen_entries[i].pos;
+	lastopen_promote(i);
+	return true;
+}
+
+/*
+ * Insert or update a file in the MRU cache at position 0.
+ * If the file is already present, updates its line/pos and promotes.
+ * If the cache is full, the oldest entry is evicted.
+ */
+static void lastopen_insert(const char *key, int64_t line, int64_t pos) {
+	int i = lastopen_find(key);
+	if (i >= 0) {
+		lastopen_entries[i].line = line;
+		lastopen_entries[i].pos = pos;
+		lastopen_promote(i);
+		return;
+	}
+
+	if (lastopen_entry_count == LASTOPEN_MAX_LINES) {
+		free(lastopen_entries[lastopen_entry_count - 1].filename);
+		lastopen_entry_count--;
+	}
+
+	memmove(&lastopen_entries[1], &lastopen_entries[0],
+	        lastopen_entry_count * sizeof(lastopen_entry));
+	lastopen_entries[0].filename = strdup(key);
+	lastopen_entries[0].line = line;
+	lastopen_entries[0].pos = pos;
+	lastopen_entry_count++;
+}
+
+/*
+ * Load all entries from ~/.ne/lastopen into the in-memory MRU cache.
+ */
+static void load_lastopen_entries(void) {
+	FILE *f;
+	char *line = NULL;
+	size_t line_size = 0;
+	char *name;
+
+	if (!lastopen_enabled) return;
+	if (!(name = lastopen_filename())) return;
+	if (!(f = fopen(name, "r"))) {
+		free(name);
+		return;
+	}
+	free(name);
+
+	while (getline(&line, &line_size, f) != -1 && lastopen_entry_count < LASTOPEN_MAX_LINES) {
+		char *p = line, *end;
+		int64_t line_no, pos;
+
+		errno = 0;
+		line_no = strtoll(p, &end, 10);
+		if (errno || end == p) continue;
+
+		p = end;
+		while (isspace((unsigned char)*p)) p++;
+
+		errno = 0;
+		pos = strtoll(p, &end, 10);
+		if (errno || end == p) continue;
+
+		p = end;
+		while (*p == ' ' || *p == '\t') p++;
+		if (!*p) continue;
+
+		end = p + strlen(p);
+		while (end > p && (end[-1] == '\n' || end[-1] == '\r')) *--end = '\0';
+
+		if (!*p || strchr(p, '\n') || strchr(p, '\r')) continue;
+
+		char *key;
+		if (!(key = lastopen_path(p))) continue;
+
+		if (lastopen_find(key) < 0) {
+			lastopen_entries[lastopen_entry_count].filename = key;
+			lastopen_entries[lastopen_entry_count].line = line_no;
+			lastopen_entries[lastopen_entry_count].pos = pos;
+			lastopen_entry_count++;
+		}
+		else free(key);
+	}
+
+	free(line);
+	fclose(f);
+}
+
+static void free_lastopen_entries(void) {
+	for (int i = 0; i < lastopen_entry_count; i++)
+		free(lastopen_entries[i].filename);
+	lastopen_entry_count = 0;
+}
+
+/*
+ * Restore the saved position of b, if one exists.
+ *
+ * Records have the form
+ *
+ *     line position filename
+ *
+ * with line and position zero-based. The filename is the final field,
+ * allowing spaces in filenames.
+ */
+void load_lastopen(buffer *b) {
+	char *key;
+	int64_t line_no, pos;
+
+	if (!lastopen_enabled || !b || !b->filename) return;
+	if (!(key = lastopen_path(b->filename))) return;
+
+	if (lastopen_lookup(key, &line_no, &pos) && line_no >= 0 && pos >= 0) {
+		goto_line_pos(b, line_no, pos);
+		keep_cursor_on_screen(b);
+	}
+
+	free(key);
+}
+
+/*
+ * Save the current position of every named buffer.
+ *
+ * The file is replaced atomically so an interrupted write cannot leave a
+ * truncated lastopen file.
+ */
+void save_lastopen(void) {
+	char *prefs_dir, *name, *tmpname;
+	FILE *f;
+	int fd;
+
+	if (!lastopen_enabled) return;
+	if (!(prefs_dir = exists_prefs_dir())) return;
+
+	name = malloc(strlen(prefs_dir) + strlen(LASTOPEN_NAME) + 1);
+	tmpname = malloc(strlen(prefs_dir) + strlen(LASTOPEN_NAME) + 8);
+	if (!name || !tmpname) {
+		free(name);
+		free(tmpname);
+		return;
+	}
+
+	strcat(strcpy(name, prefs_dir), LASTOPEN_NAME);
+	strcat(strcpy(tmpname, name), ".XXXXXX");
+
+	if ((fd = mkstemp(tmpname)) == -1) {
+		free(name);
+		free(tmpname);
+		return;
+	}
+
+	if (!(f = fdopen(fd, "w"))) {
+		close(fd);
+		unlink(tmpname);
+		free(name);
+		free(tmpname);
+		return;
+	}
+
+	/* Update positions of all currently open buffers in the MRU cache. */
+	for (node *n = buffers.head; n->next; n = n->next) {
+		buffer *b = (buffer *)n;
+		char *path;
+
+		if (!b->filename) continue;
+		if (!(path = lastopen_path(b->filename))) continue;
+
+		lastopen_insert(path, b->cur_line, b->cur_pos);
+		free(path);
+	}
+
+	/* Write at most LASTOPEN_MAX_LINES entries. */
+	int n = lastopen_entry_count < LASTOPEN_MAX_LINES ? lastopen_entry_count : LASTOPEN_MAX_LINES;
+	for (int i = 0; i < n; i++) {
+		fprintf(f, "%" PRId64 " %" PRId64 " %s\n",
+		        lastopen_entries[i].line, lastopen_entries[i].pos,
+		        lastopen_entries[i].filename);
+	}
+
+	if (fclose(f) == 0) {
+		if (rename(tmpname, name) != 0) unlink(tmpname);
+	}
+	else unlink(tmpname);
+
+	free(name);
+	free(tmpname);
 }
 
 /* The main() function. It is responsible for argument parsing, calling
@@ -285,6 +560,10 @@ int main(int argc, char **argv) {
 		}
 	}
 #endif
+
+	lastopen_enabled = !no_config;
+
+	load_lastopen_entries();
 
 	/* Unless --noconfig was specified, we try to configure the
 	   menus and the keyboard. Note that these functions can exit() on error. */
@@ -554,4 +833,6 @@ int main(int argc, char **argv) {
 			break;
 		}
 	}
+
+	free_lastopen_entries();
 }
