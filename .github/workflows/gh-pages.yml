@@ -1,0 +1,32 @@
+on:
+  push:
+     branches:
+       - master
+  workflow_dispatch:
+
+name: Render documentation
+
+jobs:
+  documentation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install build-prerequisites
+        run: sudo apt install --no-install-recommends build-essential libncurses-dev perl texinfo texlive-latex-base texlive-fonts-recommended
+
+      - name: Build HTML docs
+        run: make -C doc html/index.html
+
+      - name: Build PDF docs
+        run: make -C doc ne.pdf
+
+      - name: Copy parts to deploy dir
+        run: mkdir gh-pages && cp -r doc/html gh-pages/docs && cp -r doc/ne.pdf gh-pages/
+
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./gh-pages/
+          destination_dir: ./
