@@ -102,12 +102,12 @@ GCCFLAGS=-std=c99 -Wall -Wno-parentheses -fno-strict-aliasing -Wp,-D_FORTIFY_SOU
 GCC_VERSION_GT_46=$(shell expr `$(CC) -dumpversion` ">=" 4.6)
 ifeq ($(GCC_VERSION_GT_46),1)
 GCCFLAGS+= -flto=auto -ffat-lto-objects 
-LDFLAGS=-flto=auto
+LDFLAGS+=-flto=auto
 endif
 
 endif
 
-CFLAGS=$(GCCFLAGS) \
+CFLAGS+=$(GCCFLAGS) \
 	-D_REGEX_LARGE_OFFSETS -D_GNU_SOURCE -DSTDC_HEADERS -DHAVE_SNPRINTF \
 	$(if $(NE_NOWCHAR), -DNOWCHAR,) \
 	$(if $(NE_TEST),    -DNE_TEST -coverage,) \
