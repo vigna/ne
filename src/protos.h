@@ -209,6 +209,8 @@ void move_inc_up(buffer *b);
 buffer *new_buffer(void);
 bool delete_buffer(void);
 void about(void);
+void load_lastopen(buffer *b);
+void save_lastopen(void);
 void automatch_bracket(buffer *b, bool show);
 
 /* prefs.c */
